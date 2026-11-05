@@ -90,7 +90,7 @@ account luke_denial of peter_denies by luke
   luke_man sees: peter_disciple "After a little while someone else saw him" src luke.22.58
   luke_man tells peter: peter_disciple "You also are one of them!" src luke.22.58
   peter lies luke_man: not peter_disciple "Man, I am not!" src luke.22.58
-  luke_other sees: peter_with_jesus "for he is a Galilean" src luke.22.59
+  luke_other sees: peter_with_jesus "for he is a Galilean" src luke.22.59   # 해석: 본문은 "확언했다"뿐, 갈릴리 사람임을 보고 알았다는 지각은 "for he is a Galilean" 에서 읽어 낸 것
   luke_other tells peter: peter_with_jesus "Truly this man also was with him, for he is a Galilean!" src luke.22.59
   peter lies luke_other: not peter_with_jesus "Man, I don't know what you are talking about!" src luke.22.60
   peter sees: rooster_crows "Immediately, while he was still speaking, a rooster crowed." src luke.22.60

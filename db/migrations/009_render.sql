@@ -1,5 +1,6 @@
 -- 009: 렌더 요청(Task 12, ADR-010·012). render_scene(작품, 장면) 은 internal/render.Scene 과 같은 모양의 JSON 을 낸다.
---   ID 는 작품 접두어를 뗀 짧은 꼴(lint_short)이다. 사실 ID 는 정규 명제(lint_canon)라서 별칭끼리 갈라지지 않는다.
+--   ID 는 작품 접두어를 뗀 짧은 꼴(lint_short)이다. 사실 ID·문장은 지은이가 쓴 것이고, 정규 명제(lint_canon)는
+--   다를 때만 canon 에 싣는다(비교 전용: 별칭끼리 갈라지지 않게 Go diff 가 canon 으로 맞춘다). 내부 비교도 정규 명제로 한다.
 --   입·퇴장은 presence 의 바깥 경계로 만든다: from_pt 바로 뒤에 들어오고 to_pt 바로 앞에서 나간다.
 --   경계가 행위면 그 행위 앞뒤, 비트 시점이면 그 비트의 첫 행위 앞, 장면 끝이면 마지막 행위 뒤다. 같은 틈에서는 퇴장이 먼저다.
 --   장면 시작부터 있는 인물, 출석 기록이 없는 인물(기록(account) 블록)은 on_stage 다.
@@ -28,7 +29,7 @@ BEGIN
     SELECT x.def, x.text INTO d, t FROM fact x WHERE x.work_id = w AND x.id = f;
     IF NOT FOUND AND f LIKE w || '/not %' THEN -- lint_neg 가 만든, 행이 없는 부정
       RETURN 'It is not true that ' || render_fact_text(w, substr(f, length(w) + 6));
-    ELSIF d ? 'alias' THEN
+    ELSIF d ? 'alias' AND nullif(t, '') IS NULL THEN -- 별칭에 지은이 문장이 있으면 그것을 쓴다(아래 ELSE)
       f := d->>'alias';
     ELSIF d ? 'not' THEN
       RETURN 'It is not true that ' || render_fact_text(w, d->>'not');
@@ -70,6 +71,7 @@ CREATE FUNCTION render_scene(w text, s text) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SET search_path = public, ag_catalog AS $$
 DECLARE
   sc scene; n int; pov_v text; pov text; acts jsonb; beats jsonb; cast_ids text[]; facts text[]; held text[];
+  facts_c text[]; held_c text[]; -- 정규 명제(비교용)
 BEGIN
   SELECT count(*) INTO n FROM scene x WHERE x.work_id = w AND (x.id = s OR lint_short(x.id) = s);
   IF n <> 1 THEN
@@ -95,8 +97,8 @@ BEGIN
                                                                           FROM artifact art WHERE art.id = ANY (a.objects)), ''))),
          ARRAY[coalesce(a.resolved_actor_id, a.actor_id)] || ARRAY(SELECT t FROM unnest(a.objects || a."to") t
                                                               WHERE EXISTS (SELECT 1 FROM entity e WHERE e.id = t AND e.kind <> 'place')),
-         lint_canon(w, coalesce(a.prop_id, (SELECT art.contains[1] FROM artifact art
-                                             WHERE art.id = ANY (a.objects) AND a.verb IN ('reads', 'writes') LIMIT 1)))
+         coalesce(a.prop_id, (SELECT art.contains[1] FROM artifact art
+                               WHERE art.id = ANY (a.objects) AND a.verb IN ('reads', 'writes') LIMIT 1))
     FROM render_act a;
 
   INSERT INTO render_row
@@ -123,18 +125,20 @@ BEGIN
     SELECT unnest(r.ents) x FROM render_row r UNION SELECT p.entity_id FROM presence p WHERE p.scene_id = sc.id UNION SELECT pov) c
    WHERE x IS NOT NULL;
   SELECT coalesce(array_agg(DISTINCT r.fact) FILTER (WHERE r.fact IS NOT NULL), '{}') INTO facts FROM render_row r;
+  SELECT coalesce(array_agg(lint_canon(w, f)), '{}') INTO facts_c FROM unnest(facts) f;
 
-  SELECT coalesce(array_agg(DISTINCT c), '{}') INTO held FROM (
-    SELECT lint_canon(w, wh.prop_id) c, wh.until_pt, su.discourse_ord u_ord, sd.discourse_ord d_ord
+  SELECT coalesce(array_agg(DISTINCT h.p), '{}') INTO held FROM (
+    SELECT wh.prop_id p, lint_canon(w, wh.prop_id) c, wh.until_pt, su.discourse_ord u_ord, sd.discourse_ord d_ord
       FROM withhold wh
       LEFT JOIN scene sd ON sd.id = wh.scene_id
-      LEFT JOIN scene su ON su.work_id = w AND (su.start_pt = wh.until_pt OR wh.until_pt LIKE su.id || '#%')
+      LEFT JOIN scene su ON su.work_id = w AND (su.start_pt = wh.until_pt OR starts_with(wh.until_pt, su.id || '#'))
      WHERE wh.work_id = w AND wh.prop_id IS NOT NULL) h
    WHERE (h.d_ord IS NULL OR h.d_ord <= sc.discourse_ord)
      AND (h.until_pt IS NULL OR h.u_ord > sc.discourse_ord)
-     AND NOT h.c = ANY (facts)
+     AND NOT h.c = ANY (facts_c)
      AND NOT EXISTS (SELECT 1 FROM reveal r JOIN scene sr ON sr.id = r.scene_id
                       WHERE r.work_id = w AND lint_canon(w, r.prop_id) = h.c AND sr.discourse_ord < sc.discourse_ord);
+  SELECT coalesce(array_agg(lint_canon(w, f)), '{}') INTO held_c FROM unnest(held) f;
 
   -- 비트: 같은 비트 ID 가 이어지는 구간(섬)마다 하나.
   SELECT jsonb_agg(jsonb_build_object('id', coalesce(substring(b.beat from '#(.*)$'), ''), 'acts', b.acts) ORDER BY b.first) INTO beats FROM (
@@ -151,9 +155,9 @@ BEGIN
     'previously', coalesce((
       SELECT string_agg(t.line, ' ' ORDER BY t.ord) FROM (
         SELECT s2.discourse_ord ord, coalesce(nullif(s2.title, ''), 'Scene ' || lint_short(s2.id)) || ': ' ||
-               coalesce((SELECT string_agg(DISTINCT render_fact_text(w, lint_canon(w, c.prop_id)), '; ')
+               coalesce((SELECT string_agg(DISTINCT render_fact_text(w, c.prop_id), '; ')
                            FROM act_content c JOIN act a ON a.id = c.act_id
-                          WHERE a.scene_id = s2.id AND NOT lint_canon(w, c.prop_id) = ANY (held)), '(no facts)') || '.' line
+                          WHERE a.scene_id = s2.id AND NOT lint_canon(w, c.prop_id) = ANY (held_c)), '(no facts)') || '.' line
           FROM scene s2 WHERE s2.work_id = w AND s2.shown AND sc.shown AND s2.discourse_ord < sc.discourse_ord
          ORDER BY s2.discourse_ord DESC LIMIT 3) t), ''),
     'cast', coalesce((SELECT jsonb_agg(jsonb_build_object('id', lint_short(x), 'names', coalesce(
@@ -165,8 +169,11 @@ BEGIN
        WHERE EXISTS (SELECT 1 FROM presence p WHERE p.scene_id = sc.id AND p.entity_id = x AND p.from_pt = sc.start_pt)
           OR NOT EXISTS (SELECT 1 FROM presence p WHERE p.scene_id = sc.id AND p.entity_id = x) ORDER BY x)),
     'facts', coalesce((SELECT jsonb_agg(jsonb_build_object('id', lint_short(f), 'text', render_fact_text(w, f),
-                                                          'true', render_fact_true(w, f)) ORDER BY f)
-       FROM unnest(facts || held) f), '[]'),
+                                                          'true', render_fact_true(w, f))
+                                       || CASE WHEN lint_canon(w, f) <> f
+                                               THEN jsonb_build_object('canon', lint_short(lint_canon(w, f))) ELSE '{}' END
+                                       ORDER BY f)
+       FROM (SELECT DISTINCT unnest(facts || held) f) u), '[]'),
     'beats', coalesce(beats, '[]'),
     'directives', jsonb_build_object(
        'pov', coalesce(lint_short(pov), ''),
@@ -176,15 +183,16 @@ BEGIN
        'focus', coalesce((SELECT to_jsonb(d."values") FROM directive d WHERE d.scene_id = sc.id AND d.key = 'focus' LIMIT 1), '[]'),
        'omit', coalesce((SELECT to_jsonb(d."values") FROM directive d WHERE d.scene_id = sc.id AND d.key = 'omit' LIMIT 1), '[]')),
     'pov_beliefs', to_jsonb(ARRAY(SELECT lint_short(f) FROM unnest(facts) f
-       WHERE pov IS NOT NULL AND lint_known(w, pov, f, sc.start_pt) = 2 ORDER BY f)),
-    'reader_knows', to_jsonb(ARRAY(SELECT lint_short(f) FROM unnest(facts) f WHERE sc.shown AND (
+       WHERE pov IS NOT NULL AND lint_known(w, pov, lint_canon(w, f), sc.start_pt) = 2 ORDER BY f)),
+    'reader_knows', to_jsonb(ARRAY(SELECT lint_short(f) FROM unnest(facts) f, LATERAL (SELECT lint_canon(w, f) fc) z
+     WHERE sc.shown AND (
        EXISTS (SELECT 1 FROM act a JOIN scene s2 ON s2.id = a.scene_id
                 WHERE a.work_id = w AND s2.shown AND s2.discourse_ord < sc.discourse_ord
-                  AND (lint_canon(w, a.prop_id) = f OR f IN (SELECT lint_canon(w, p) FROM unnest(a."with") p)
-                       OR (a.verb = 'reads' AND f IN (SELECT lint_canon(w, p) FROM artifact art, unnest(art.contains) p
-                                                       WHERE art.id = ANY (a.objects)))))
+                  AND (lint_canon(w, a.prop_id) = z.fc OR z.fc IN (SELECT lint_canon(w, p) FROM unnest(a."with") p)
+                       OR (a.verb = 'reads' AND z.fc IN (SELECT lint_canon(w, p) FROM artifact art, unnest(art.contains) p
+                                                          WHERE art.id = ANY (a.objects)))))
        OR EXISTS (SELECT 1 FROM reveal r JOIN scene sr ON sr.id = r.scene_id
-                   WHERE r.work_id = w AND lint_canon(w, r.prop_id) = f AND sr.discourse_ord < sc.discourse_ord)) ORDER BY f)),
+                   WHERE r.work_id = w AND lint_canon(w, r.prop_id) = z.fc AND sr.discourse_ord < sc.discourse_ord)) ORDER BY f)),
     'withheld', to_jsonb(ARRAY(SELECT lint_short(f) FROM unnest(held) f ORDER BY f)),
     'narration', coalesce((SELECT d."values"[1] FROM directive d WHERE d.scene_id = sc.id AND d.key = 'narration'
                              AND d."values"[1] IN ('first-person', 'third-person') LIMIT 1), ''));

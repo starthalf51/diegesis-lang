@@ -14,9 +14,10 @@ type Entity struct {
 }
 
 type Fact struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	True bool   `json:"true"`
+	ID    string `json:"id"` // 지은이가 쓴 ID
+	Text  string `json:"text"`
+	True  bool   `json:"true"`
+	Canon string `json:"canon,omitempty"` // 정규 명제(별칭·부정을 푼 꼴). 비교에만 쓴다. 비면 ID
 }
 
 type Act struct {
@@ -106,6 +107,14 @@ func (s Scene) FactByID(id string) (Fact, bool) {
 		}
 	}
 	return Fact{}, false
+}
+
+// Canon 은 사실 ID 의 정규 명제(비교 키). 카탈로그에 없거나 canon 이 없으면 ID 그대로.
+func (s Scene) Canon(id string) string {
+	if f, ok := s.FactByID(id); ok && f.Canon != "" {
+		return f.Canon
+	}
+	return id
 }
 
 // Validate collects every violation, with field paths, via errors.Join.

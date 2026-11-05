@@ -169,11 +169,12 @@ func renderCheck(dirs []string, styles string, force bool) (bool, error) {
 				fmt.Fprintln(os.Stderr, "slc:", err)
 				continue
 			}
+			r = render.Score(s, r)
 			fmt.Printf("%s %s %s: missing %d, hallucinated %d, leaked %d, tones %v %s\n", work, s.ID, b.ID,
 				len(r.Report.Missing), len(r.Report.Hallucinated), len(r.Report.Leaked), shares(r.Tones), r.Report.ExtractError)
 			rs = append(rs, r)
 		}
-		vs = append(vs, render.Judge(work, s.ID, rs))
+		vs = append(vs, render.Judge(work, s, rs))
 	}
 	pass := len(errs) == 0
 	for _, v := range vs {
@@ -209,7 +210,8 @@ func shares(t map[string]float64) string {
 func checkReport(vs []render.SceneVerdict, errs []string, pass bool) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# 렌더 판정 (ADR-012) — %s\n\n", map[bool]string{true: "PASS", false: "FAIL"}[pass])
-	fmt.Fprintf(&b, "기준: 렌더마다 missing ≤ %d, hallucinated ≤ %d, leaked = 0. 같은 장면의 백엔드끼리 재추출 액트 키 Jaccard ≥ %.1f. "+
+	fmt.Fprintf(&b, "기준: 렌더마다 missing ≤ %d, hallucinated ≤ %d, leaked = 0. 같은 장면의 백엔드끼리 Jaccard ≥ %.1f — 재추출 액트 중 "+
+		"사실을 전하는 비입퇴장 액트만의 actor|동사류|정규 사실 키 멀티셋이다(모든 액트 Jaccard 는 참고로만 싣는다). "+
 		"한국어 백엔드는 목표 어투 비율 ≥ %.1f, 1위 어투가 서로 다르다. 어투 비율은 따옴표 밖 서술 문장의 종결어미로 센다.\n",
 		render.MaxMissing, render.MaxHallucinated, render.MinJaccard, render.MinToneShare)
 	for _, v := range vs {
@@ -233,14 +235,19 @@ func checkReport(vs []render.SceneVerdict, errs []string, pass bool) string {
 			ks = append(ks, k)
 		}
 		sort.Strings(ks)
-		b.WriteString("\nJaccard(재추출 액트 키 멀티셋): ")
-		for i, k := range ks {
-			if i > 0 {
-				b.WriteString(", ")
+		for _, j := range []struct {
+			label string
+			m     map[string]float64
+		}{{"Jaccard(사실을 전하는 비입퇴장 액트 — 판정)", v.Jaccard}, {"Jaccard(모든 액트 — 참고, 판정에 쓰지 않음)", v.JaccardAll}} {
+			b.WriteString("\n" + j.label + ": ")
+			for i, k := range ks {
+				if i > 0 {
+					b.WriteString(", ")
+				}
+				fmt.Fprintf(&b, "%s %.2f", k, j.m[k])
 			}
-			fmt.Fprintf(&b, "%s %.2f", k, v.Jaccard[k])
+			b.WriteString("\n")
 		}
-		b.WriteString("\n")
 		for _, r := range v.Rows {
 			rep := r.Report
 			for _, it := range []struct {

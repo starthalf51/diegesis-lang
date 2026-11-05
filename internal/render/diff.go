@@ -29,19 +29,19 @@ func VerbClass(v string) string {
 
 func actKey(actor, verb, fact string) string { return actor + "|" + VerbClass(verb) + "|" + fact }
 
-// Diff compares original scene to re-extracted IR by actor|class|fact keys only.
+// Diff compares original scene to re-extracted IR by actor|class|canon(fact) keys only: 별칭끼리는 같은 사실이다.
 func Diff(s Scene, e Extracted) Report {
 	got := map[string]int{}
 	hall, leak := set{}, set{}
 	withheld := map[string]bool{}
 	for _, id := range s.Withheld {
-		withheld[id] = true
+		withheld[s.Canon(id)] = true
 	}
 	check := func(id string) {
 		if id == "" {
 			return
 		}
-		if withheld[id] {
+		if withheld[s.Canon(id)] {
 			leak[id] = true
 		}
 		if _, ok := s.FactByID(id); !ok {
@@ -49,7 +49,7 @@ func Diff(s Scene, e Extracted) Report {
 		}
 	}
 	for _, a := range e.Acts {
-		got[actKey(a.Actor, a.Verb, a.Fact)]++
+		got[actKey(a.Actor, a.Verb, s.Canon(a.Fact))]++
 		check(a.Fact)
 	}
 	for _, id := range e.FactsStated {
@@ -64,7 +64,7 @@ func Diff(s Scene, e Extracted) Report {
 			if a.Fact == "" || VerbClass(a.Verb) == "presence" {
 				continue
 			}
-			want[actKey(a.Actor, a.Verb, a.Fact)]++
+			want[actKey(a.Actor, a.Verb, s.Canon(a.Fact))]++
 		}
 	}
 	// multiset: one Missing entry per shortfall, so same-key acts cannot mask each other

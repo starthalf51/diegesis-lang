@@ -140,7 +140,8 @@ queries:
   - name: peter-remembers-the-prediction
     why: >-
       닭이 울자 베드로는 예언을 기억한다(마 26:75 "Peter remembered the word which Jesus had said to him", 막 14:72,
-      눅 22:61). 그 순간 그는 예언을 확정적으로 믿는다(lint_known = 2). 요한에는 기억이 없다.
+      눅 22:61). 이 검사는 코퍼스가 그 자리에 써 둔 재믿음(`peter believes peter_will_deny`, 앞선 doubts 를 뒤집는다)이
+      기억 행위(thinks) 시점에 lint_known = 2 로 살아 있는지를 본다 — 엔진이 기억을 추론하는지가 아니다. 요한에는 기억이 없다.
     sql: |
       SELECT a.src_ref, lint_known($1, $1 || '/bible.cast/peter', $1 || '/bible.cast/peter_will_deny', a.pt)
         FROM act a WHERE a.work_id = $1 AND a.verb = 'thinks' AND a.resolved_actor_id = $1 || '/bible.cast/peter'

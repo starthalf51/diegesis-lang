@@ -58,7 +58,7 @@ func TestRenderSceneJSON(t *testing.T) {
 		t.Errorf("macbeth names: %v", e.Names)
 	}
 	// 시점 인물은 1.3 시작에 글래미스 영주임을 안다. 왕이 된다는 예언은 1.3 에서 처음 듣는다.
-	if !slices.Contains(s.POVBeliefs, "holds(thane_of_glamis,macbeth)") || slices.Contains(s.POVBeliefs, "holds(king,macbeth)") {
+	if !slices.Contains(s.POVBeliefs, "holds(thane_of_glamis,macbeth)") || slices.Contains(s.POVBeliefs, "king_hereafter") {
 		t.Errorf("pov_beliefs: %v", s.POVBeliefs)
 	}
 	var proph []string
@@ -70,11 +70,18 @@ func TestRenderSceneJSON(t *testing.T) {
 		}
 	}
 	if !slices.Equal(proph, []string{"witch1:holds(thane_of_glamis,macbeth)", "witch2:holds(thane_of_cawdor,macbeth)",
-		"witch3:holds(king,macbeth)", "witch3:banquo_line"}) {
+		"witch3:king_hereafter", "witch3:banquo_line"}) {
 		t.Errorf("prophecy beat: %v", proph)
 	}
-	if f, _ := s.FactByID("holds(king,macbeth)"); f.Text != "Macbeth is the King" {
-		t.Errorf("fact text: %q", f.Text)
+	// 사실 ID·문장은 지은이의 것(king_hereafter, cawdor_in_favour), 정규 명제는 비교용 canon 에만.
+	if f, _ := s.FactByID("king_hereafter"); f.Text != "Macbeth is the King" || f.Canon != "holds(king,macbeth)" {
+		t.Errorf("king_hereafter: %+v", f)
+	}
+	if f, _ := s.FactByID("cawdor_in_favour"); f.Canon != "not cawdor_traitor" || f.True {
+		t.Errorf("cawdor_in_favour: %+v", f)
+	}
+	if _, ok := s.FactByID("not cawdor_traitor"); ok {
+		t.Error("catalog lists the canonical id not cawdor_traitor")
 	}
 	if _, err := pg.RenderScene(ctx, pool, id, "nope"); err == nil {
 		t.Error("unknown scene: want error")

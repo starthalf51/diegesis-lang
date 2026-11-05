@@ -7,18 +7,20 @@ import (
 )
 
 // 따옴표 쌍 안(대사)은 어투 판정에서 뺀다. 대사는 원작 언어의 인용이라 백엔드가 고르는 서술 어투가 아니다.
-var quoted = regexp.MustCompile(`“[^”]*”|"[^"]*"|「[^」]*」|『[^』]*』|‘[^’]*’|'[^']*'`)
+// ASCII 작은따옴표는 아포스트로피(Peter's)와 구별되지 않으니 대사 따옴표로 보지 않는다.
+var quoted = regexp.MustCompile(`“[^”]*”|"[^"]*"|「[^」]*」|『[^』]*』|‘[^’]*’`)
 
 var sentenceEnd = regexp.MustCompile(`[.!?…\n]+`)
 
 var (
-	hapshoEnd = regexp.MustCompile(`(습니다|습니까|십시오|세요)$`)
+	hapshoEnd = regexp.MustCompile(`(습니다|습니까|십시오)$`)
 	gojeonEnd = regexp.MustCompile(`(더라|니라|도다|노라|로다|하매|하니|이로다)$`)
 	haeraEnd  = regexp.MustCompile(`(다|라|냐|자)$`)
 )
 
 // ClassifyTone 은 서술 문장의 종결어미 분포(비율)를 낸다: hapsho(하십시오체) → gojeon(고전소설체) → haera(해라체) → other
-// 순서로 문장의 마지막 어절을 분류한다. 한글이 없는 문장은 세지 않는다. 빈 결과 = 셀 문장이 없다.
+// 순서로 문장의 마지막 어절을 분류한다. 한글이 없는 문장, 쉼표·쌍점으로 끝나는 이음 절(대사를 다음 줄에 둔
+// "…가로되,")은 세지 않는다. 빈 결과 = 셀 문장이 없다.
 func ClassifyTone(prose string) map[string]float64 {
 	counts := map[string]int{}
 	n := 0
@@ -59,10 +61,10 @@ func bieupNida(w string) bool {
 	return s >= 0xAC00 && s <= 0xD7A3 && (s-0xAC00)%28 == 17
 }
 
-// lastEojeol 은 문장의 마지막 어절에서 끝의 문장부호를 떼어 낸다. 한글이 없으면 "".
+// lastEojeol 은 문장의 마지막 어절에서 끝의 문장부호를 떼어 낸다. 한글이 없거나 이음 절(끝이 , : 、)이면 "".
 func lastEojeol(s string) string {
 	f := strings.Fields(s)
-	if len(f) == 0 {
+	if len(f) == 0 || strings.ContainsAny(lastRune(f[len(f)-1]), ",:、，：") {
 		return ""
 	}
 	w := strings.TrimRightFunc(f[len(f)-1], func(r rune) bool { return !unicode.IsLetter(r) })
@@ -70,4 +72,9 @@ func lastEojeol(s string) string {
 		return ""
 	}
 	return w
+}
+
+func lastRune(s string) string {
+	r := []rune(s)
+	return string(r[len(r)-1])
 }
