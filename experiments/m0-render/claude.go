@@ -7,7 +7,12 @@ import (
 	"github.com/anthropics/anthropic-sdk-go"
 )
 
-type Usage struct{ Input, Output, CacheRead, CacheWrite int64 }
+type Usage struct {
+	Input      int64 `json:"input"`
+	Output     int64 `json:"output"`
+	CacheRead  int64 `json:"cache_read"`
+	CacheWrite int64 `json:"cache_write"`
+}
 
 type Result struct {
 	Text, StopReason string

@@ -43,11 +43,15 @@ func run(scenesDir, stylesDir, out, variants, langs, only string, force bool) er
 	if err != nil {
 		return err
 	}
+	var ls []string
+	for _, l := range strings.Split(langs, ",") {
+		ls = append(ls, strings.TrimSpace(l))
+	}
 	var vs []Variant
 	for _, v := range strings.Split(variants, ",") {
 		vs = append(vs, Variant(strings.TrimSpace(v)))
 	}
-	jobs, err := Jobs(scenes, styles, vs, strings.Split(langs, ","))
+	jobs, err := Jobs(scenes, styles, vs, ls)
 	if err != nil {
 		return err
 	}
@@ -55,8 +59,7 @@ func run(scenesDir, stylesDir, out, variants, langs, only string, force bool) er
 		return err
 	}
 	c := NewClaude()
-	var recs []Record
-	failed := 0
+	failedMsgs := map[string]string{}
 	for _, j := range jobs {
 		if !strings.Contains(j.Key(), only) {
 			continue
@@ -64,10 +67,9 @@ func run(scenesDir, stylesDir, out, variants, langs, only string, force bool) er
 		r, err := RunJob(context.Background(), c, j, out, force)
 		if err != nil {
 			fmt.Printf("%s ERROR %v\n", j.Key(), err)
-			failed++
+			failedMsgs[j.Key()] = err.Error()
 			continue
 		}
-		recs = append(recs, r)
 		note := fmt.Sprintf("cost=$%.4f", r.RenderCost+r.ExtractCost)
 		if r.Skipped {
 			note = "skipped"
@@ -75,11 +77,15 @@ func run(scenesDir, stylesDir, out, variants, langs, only string, force bool) er
 		fmt.Printf("%s %s stop=%s missing=%d halluc=%d leaked=%d err=%q\n", r.Key, note, r.StopReason,
 			len(r.Report.Missing), len(r.Report.Hallucinated), len(r.Report.Leaked), r.Report.ExtractError)
 	}
-	if err := WriteResults(recs, filepath.Join(out, "results.md")); err != nil {
+	recs, err := LoadRecords(out)
+	if err != nil {
 		return err
 	}
-	if failed > 0 {
-		return fmt.Errorf("%d job(s) failed", failed)
+	if err := WriteResults(recs, failedMsgs, filepath.Join(out, "results.md")); err != nil {
+		return err
+	}
+	if len(failedMsgs) > 0 {
+		return fmt.Errorf("%d job(s) failed", len(failedMsgs))
 	}
 	return nil
 }

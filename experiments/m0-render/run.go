@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
-	"strings"
 )
 
 type Job struct {
@@ -46,13 +44,15 @@ func Jobs(scenes []Scene, styles []StyleSample, variants []Variant, langs []stri
 }
 
 type Record struct {
-	Key         string  `json:"key"`
-	Prose       string  `json:"prose"`
-	StopReason  string  `json:"stop_reason"`
-	Report      Report  `json:"report"`
-	RenderCost  float64 `json:"render_cost"`
-	ExtractCost float64 `json:"extract_cost"`
-	Skipped     bool    `json:"skipped"`
+	Key          string  `json:"key"`
+	Prose        string  `json:"prose"`
+	StopReason   string  `json:"stop_reason"`
+	Report       Report  `json:"report"`
+	RenderCost   float64 `json:"render_cost"`
+	ExtractCost  float64 `json:"extract_cost"`
+	RenderUsage  Usage   `json:"render_usage"`
+	ExtractUsage Usage   `json:"extract_usage"`
+	Skipped      bool    `json:"skipped"`
 }
 
 func stopped(what, reason string) string {
@@ -85,7 +85,7 @@ func RunJob(ctx context.Context, c Completer, j Job, outDir string, force bool) 
 	if err != nil {
 		return Record{}, fmt.Errorf("%s render: %w", key, err)
 	}
-	rec := Record{Key: key, Prose: res.Text, StopReason: res.StopReason, RenderCost: Cost(res.Usage)}
+	rec := Record{Key: key, Prose: res.Text, StopReason: res.StopReason, RenderCost: Cost(res.Usage), RenderUsage: res.Usage}
 	if res.StopReason != "end_turn" {
 		rec.Report.ExtractError = stopped("render", res.StopReason)
 	} else {
@@ -95,6 +95,7 @@ func RunJob(ctx context.Context, c Completer, j Job, outDir string, force bool) 
 			return Record{}, fmt.Errorf("%s extract: %w", key, err)
 		}
 		rec.ExtractCost = Cost(xr.Usage)
+		rec.ExtractUsage = xr.Usage
 		if xr.StopReason != "end_turn" {
 			rec.Report.ExtractError = stopped("extract", xr.StopReason)
 		} else if e, err := ParseExtracted(xr.Text); err != nil {
@@ -126,23 +127,4 @@ func writeOutputs(c Completer, j Job, rec Record, outDir string) error {
 		return err
 	}
 	return os.WriteFile(filepath.Join(outDir, rec.Key+".json"), b, 0o644)
-}
-
-func WriteResults(records []Record, path string) error {
-	rs := append([]Record(nil), records...)
-	sort.Slice(rs, func(i, k int) bool { return rs[i].Key < rs[k].Key })
-	var sb strings.Builder
-	sb.WriteString("| key | 손실 | 환각 | 누출 | 추출오류 | 비용($) | 판정(1-5) |\n|---|---|---|---|---|---|---|\n")
-	var total float64
-	for _, r := range rs {
-		m, h, l := "?", "?", "?"
-		if r.Report.ExtractError == "" {
-			m, h, l = fmt.Sprint(len(r.Report.Missing)), fmt.Sprint(len(r.Report.Hallucinated)), fmt.Sprint(len(r.Report.Leaked))
-		}
-		cost := r.RenderCost + r.ExtractCost
-		total += cost
-		fmt.Fprintf(&sb, "| %s | %s | %s | %s | %s | %.4f |  |\n", r.Key, m, h, l, strings.ReplaceAll(r.Report.ExtractError, "|", "/"), cost)
-	}
-	fmt.Fprintf(&sb, "\n총비용: $%.4f\n", total)
-	return os.WriteFile(path, []byte(sb.String()), 0o644)
 }
