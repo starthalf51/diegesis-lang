@@ -1,0 +1,44 @@
+{
+  "id": "macbeth-1.3", "title": "The heath", "place": "a heath",
+  "previously": "Duncan has decreed that Macbeth shall be Thane of Cawdor and sent Ross and Angus to tell him. Macbeth does not know yet.",
+  "cast": [
+    {"id":"macbeth","names":{"ko":["맥베스"],"en":["Macbeth"]}},
+    {"id":"banquo","names":{"ko":["뱅쿼"],"en":["Banquo"]}},
+    {"id":"witches","names":{"ko":["마녀들","세 마녀"],"en":["the Weird Sisters","the witches"]}},
+    {"id":"ross","names":{"ko":["로스"],"en":["Ross"]}},
+    {"id":"angus","names":{"ko":["앵거스"],"en":["Angus"]}}
+  ],
+  "on_stage": [],
+  "facts": [
+    {"id":"thane_of_glamis","text":"Macbeth is Thane of Glamis.","true":true},
+    {"id":"thane_of_cawdor","text":"Macbeth is now Thane of Cawdor.","true":true},
+    {"id":"king_hereafter","text":"Macbeth shall be king hereafter.","true":true},
+    {"id":"banquo_line","text":"Banquo's descendants shall be kings, though he himself will not.","true":true},
+    {"id":"cawdor_lives","text":"The Thane of Cawdor lives, a prosperous gentleman.","true":false},
+    {"id":"cawdor_traitor","text":"The old Thane of Cawdor is a convicted traitor who confessed his treasons.","true":true}
+  ],
+  "beats": [
+    {"id":"prophecy","acts":[
+      {"verb":"enter","targets":["witches"]},
+      {"verb":"enter","targets":["macbeth","banquo"]},
+      {"actor":"witches","verb":"hails","targets":["macbeth"],"fact":"thane_of_glamis","quote":"All hail, Macbeth! hail to thee, Thane of Glamis!"},
+      {"actor":"witches","verb":"hails","targets":["macbeth"],"fact":"thane_of_cawdor","quote":"All hail, Macbeth, hail to thee, Thane of Cawdor!"},
+      {"actor":"witches","verb":"hails","targets":["macbeth"],"fact":"king_hereafter","quote":"All hail, Macbeth, that shalt be King hereafter!"},
+      {"actor":"witches","verb":"tells","targets":["banquo"],"fact":"banquo_line","quote":"Thou shalt get kings, though thou be none"},
+      {"actor":"macbeth","verb":"says","fact":"cawdor_lives","quote":"The Thane of Cawdor lives, A prosperous gentleman"},
+      {"verb":"exit","targets":["witches"]}
+    ]},
+    {"id":"ross_news","acts":[
+      {"verb":"enter","targets":["ross","angus"]},
+      {"actor":"ross","verb":"tells","targets":["macbeth","banquo"],"fact":"thane_of_cawdor","quote":"He bade me, from him, call thee Thane of Cawdor"},
+      {"actor":"angus","verb":"tells","targets":["macbeth","banquo"],"fact":"cawdor_traitor","quote":"treasons capital, confess'd and proved"},
+      {"actor":"macbeth","verb":"aside","quote":"Two truths are told"},
+      {"actor":"macbeth","verb":"aside","fact":"king_hereafter","quote":"why do I yield to that suggestion Whose horrid image doth unfix my hair"},
+      {"actor":"banquo","verb":"aside","quote":"oftentimes, to win us to our harm, The instruments of darkness tell us truths"}
+    ]}
+  ],
+  "directives": {"pov":"macbeth","pace":"slow","tension":0.8,"focus":["witches","macbeth's face"]},
+  "pov_beliefs": ["cawdor_lives"],
+  "reader_knows": ["thane_of_cawdor","cawdor_traitor"],
+  "withheld": []
+}

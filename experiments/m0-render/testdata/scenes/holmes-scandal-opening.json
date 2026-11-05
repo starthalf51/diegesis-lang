@@ -1,0 +1,45 @@
+{
+  "id": "holmes-scandal-opening", "title": "A Scandal in Bohemia, opening", "place": "Baker Street, Holmes's rooms",
+  "previously": "Watson is married and has left Baker Street; he has not seen Holmes for some time.",
+  "cast": [
+    {"id":"watson","names":{"ko":["왓슨"],"en":["Watson"]}},
+    {"id":"holmes","names":{"ko":["홈즈","셜록 홈즈"],"en":["Holmes","Sherlock Holmes"]}},
+    {"id":"visitor","names":{"ko":["가면 쓴 방문자","폰 크램 백작"],"en":["the masked visitor","Count Von Kramm"]}}
+  ],
+  "on_stage": [],
+  "facts": [
+    {"id":"watson_wet","text":"Watson has been out in the wet lately.","true":true},
+    {"id":"watson_servant","text":"Watson has a clumsy and careless servant girl.","true":true},
+    {"id":"watson_practice","text":"Watson has resumed his medical practice.","true":true},
+    {"id":"note_announces","text":"A note on Bohemian paper announces that a visitor will call at a quarter to eight, masked, and begs to be received.","true":true},
+    {"id":"visitor_name","text":"The visitor calls himself Count Von Kramm, a Bohemian nobleman.","true":true},
+    {"id":"visitor_is_king","text":"The masked visitor is really the hereditary King of Bohemia.","true":true}
+  ],
+  "beats": [
+    {"id":"call","acts":[
+      {"verb":"enter","targets":["watson","holmes"]},
+      {"actor":"holmes","verb":"hails","targets":["watson"]},
+      {"actor":"watson","verb":"sees","targets":["holmes"]}
+    ]},
+    {"id":"deductions","acts":[
+      {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_wet"},
+      {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_servant"},
+      {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_practice"},
+      {"actor":"watson","verb":"aside"}
+    ]},
+    {"id":"the_note","acts":[
+      {"actor":"holmes","verb":"does","targets":["watson"]},
+      {"actor":"watson","verb":"reads","fact":"note_announces"},
+      {"actor":"holmes","verb":"says"}
+    ]},
+    {"id":"visitor_enters","acts":[
+      {"verb":"enter","targets":["visitor"]},
+      {"actor":"visitor","verb":"tells","targets":["holmes","watson"],"fact":"visitor_name"},
+      {"actor":"watson","verb":"sees","targets":["visitor"]}
+    ]}
+  ],
+  "directives": {"pov":"watson","pace":"brisk","tension":0.5,"focus":["Holmes's deductions"]},
+  "pov_beliefs": ["watson_wet","watson_servant","watson_practice","note_announces","visitor_name"],
+  "reader_knows": [],
+  "withheld": ["visitor_is_king"]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "chibi-jianggan", "title": "Jiang Gan steals the letter", "place": "Zhou Yu's camp on the south bank of the Yangtze",
+  "previously": "Cao Cao's fleet faces Wu across the river. Jiang Gan, an old classmate of Zhou Yu, has boasted to Cao Cao that he can talk Zhou Yu into defecting, and has crossed the river alone.",
+  "cast": [
+    {"id":"jiang_gan","names":{"ko":["장간"],"en":["Jiang Gan"]}},
+    {"id":"zhou_yu","names":{"ko":["주유"],"en":["Zhou Yu"]}},
+    {"id":"cao_cao","names":{"ko":["조조","曹操"],"en":["Cao Cao"]}},
+    {"id":"cai_mao","names":{"ko":["채모"],"en":["Cai Mao"]}},
+    {"id":"zhang_yun","names":{"ko":["장윤"],"en":["Zhang Yun"]}}
+  ],
+  "on_stage": [],
+  "facts": [
+    {"id":"classmate_visit","text":"Jiang Gan has come only to visit an old classmate.","true":false},
+    {"id":"feast","text":"Zhou Yu is giving a feast in honor of his old friend.","true":true},
+    {"id":"drunk","text":"Zhou Yu is too drunk to go on talking about the war.","true":false},
+    {"id":"letter_content","text":"A letter signed by Cai Mao and Zhang Yun, Cao Cao's naval commanders, promises to betray Cao Cao and deliver his fleet.","true":true},
+    {"id":"commanders_traitors","text":"Cai Mao and Zhang Yun are plotting to betray Cao Cao.","true":false},
+    {"id":"letter_forged","text":"The letter was forged and left on the desk by Zhou Yu on purpose.","true":true}
+  ],
+  "beats": [
+    {"id":"feast_and_bed","acts":[
+      {"verb":"enter","targets":["jiang_gan","zhou_yu"]},
+      {"actor":"jiang_gan","verb":"says","fact":"classmate_visit"},
+      {"actor":"zhou_yu","verb":"says","fact":"feast"},
+      {"actor":"zhou_yu","verb":"says","fact":"drunk"},
+      {"actor":"zhou_yu","verb":"does","targets":["jiang_gan"]}
+    ]},
+    {"id":"the_letter","acts":[
+      {"actor":"jiang_gan","verb":"sees"},
+      {"actor":"jiang_gan","verb":"reads","fact":"letter_content"},
+      {"actor":"jiang_gan","verb":"aside","fact":"commanders_traitors"},
+      {"actor":"jiang_gan","verb":"does"}
+    ]},
+    {"id":"escape","acts":[
+      {"verb":"exit","targets":["jiang_gan"]},
+      {"verb":"enter","targets":["jiang_gan","cao_cao"]},
+      {"actor":"jiang_gan","verb":"tells","targets":["cao_cao"],"fact":"commanders_traitors"}
+    ]}
+  ],
+  "directives": {"pov":"jiang_gan","pace":"measured","tension":0.7,"focus":["the letter on the desk"]},
+  "pov_beliefs": ["classmate_visit","drunk","letter_content","commanders_traitors"],
+  "reader_knows": ["feast"],
+  "withheld": ["letter_forged"]
+}
