@@ -1,0 +1,179 @@
+# 적벽(삼국지연의 45~47회) 합격 기준. 기대값은 원문(texts/brewitt-taylor-45-47.txt, `<회>.<단락>`)과
+# 정사(texts/sanguozhi.txt)에서 왔다. 도구 출력에 맞춰 고치지 않는다. 고칠 때는 원문 근거를 why 와 보고서에 남긴다.
+work: chibi
+compile_errors: 0
+
+expected:
+  # 정사 대조(accounts.sl.md). 연의에만 있는 것 셋, 정사에만 있는 것 하나. 보고서다(info).
+  - rule: account-variance
+    target: "chibi.accounts/romance_account#a2"
+    severity: info
+    why: >-
+      蔣幹盜書(45.115-116 "he secreted the letter in his dress")는 연의에만 있다. 陳壽 본문에는 蔣幹이 없고,
+      裴注 《江表傳》의 蔣幹은 "幹還，稱瑜雅量高致，非言辭所間" — 서신 없이 돌아간다.
+  - rule: account-variance
+    target: "chibi.accounts/romance_account#a3"
+    severity: info
+    why: 채모·장윤의 처형(45.136)은 周瑜傳·武帝紀 어디에도 없다.
+  - rule: account-variance
+    target: "chibi.accounts/romance_account#a4"
+    severity: info
+    why: >-
+      苦肉計(46.102 "fifty blows were given")는 연의에만 있다. 周瑜傳의 黃蓋는 "先書報曹公，欺以欲降" 할 뿐 매를 맞지 않는다.
+  - rule: account-variance
+    target: "chibi.accounts/sanguozhi_account#a2"
+    severity: info
+    why: >-
+      周瑜傳 "時曹公軍眾已有疾病"(武帝紀 "於是大疫")은 조조 군의 병을 적는다. 45~47회는 병을 말하지 않는다.
+
+queries:
+  - name: execution-not-because-unbelieved
+    why: >-
+      조조는 장간이 가져온 서신을 보고 곧 두 사람을 불러 벤다(45.133-136). 그 순간 조조는 commanders_traitors 를
+      확정적으로 믿고(lint_known = 2) 있어 because-unbelieved 가 없어야 한다. 처형의 주어는 role:chancellor 로 적었다.
+    sql: |
+      SELECT lint_short(a.resolved_actor_id), a.action,
+             lint_known($1, a.resolved_actor_id, lint_canon($1, a.because_id), a.pt),
+             (SELECT count(*) FROM diagnostic d WHERE d.work_id = $1 AND d.rule_id = 'because-unbelieved' AND d.target_id = a.id)
+        FROM act a WHERE a.work_id = $1 AND a.verb = 'does' AND a.because_id = $1 || '/chibi.cast/commanders_traitors'
+    rows: [["cao_cao", "execute", "2", "0"]]
+
+  - name: cao-knows-letter-forged-after-execution
+    why: >-
+      45.137 "it dawned upon him that he had been tricked", 45.139 "Though Tsʻao knew he had been victimised he would not
+      acknowledge it", 46.8 "Only he will not confess his mistake". 처형 뒤 조조의 모든 행위에서 letter_forged 는 확정(2),
+      commanders_traitors 는 더 믿지 않는다(0). 처형 앞의 행위에서는 letter_forged 를 모른다.
+    sql: |
+      WITH ex AS (SELECT pt FROM act WHERE work_id = $1 AND action = 'execute'),
+      c AS (SELECT a.pt, precedes($1, ex.pt, a.pt) = 'yes' AND a.pt <> ex.pt AS after
+              FROM act a, ex WHERE a.work_id = $1 AND a.resolved_actor_id = $1 || '/chibi.cast/cao_cao')
+      SELECT after, min(lint_known($1, $1 || '/chibi.cast/cao_cao', $1 || '/chibi.cast/letter_forged', pt)),
+             max(lint_known($1, $1 || '/chibi.cast/cao_cao', $1 || '/chibi.cast/letter_forged', pt)),
+             max(lint_known($1, $1 || '/chibi.cast/cao_cao', $1 || '/chibi.cast/commanders_traitors', pt)) FILTER (WHERE after)
+        FROM c GROUP BY after ORDER BY after
+    rows:
+      - ["false", "0", "0", ""]
+      - ["true", "2", "2", "0"]
+
+  - name: forged-letters-are-deception
+    why: >-
+      문서마다 쓴 사람이 그 내용을 거짓으로 알았는가. 주유의 채모·장윤 서신(45.115, 주유는 45.77-78 에서 그들이 조조의
+      충실한 도독임을 안다), 황개의 항복 서신(47.5·47.14, 황개는 46.89·46.124 에서 오에 충성한다), 감택의 둘째 서신
+      (47.62 "Huang had found no opportunity so far", 감택은 46.124 에서 황개의 충성을 들었다)은 거짓말이다.
+      채씨 형제의 두 서신(47.36 매질 보고, 47.62 감녕의 배반)은 그들이 보고 들은 대로 쓴 것이라 거짓말이 아니다
+      (감녕의 배반은 감녕에게 속은 것이다, 47.58).
+    sql: |
+      SELECT lint_short(a.resolved_actor_id), lint_short(art.id), lint_short(p),
+             EXISTS (SELECT 1 FROM deception d WHERE d.act_id = a.id AND d.prop_id = p)
+        FROM act a JOIN artifact art ON art.id = ANY (a.objects) CROSS JOIN LATERAL unnest(art.contains) p
+       WHERE a.work_id = $1 AND a.verb = 'writes' ORDER BY 2
+    rows:
+      - ["cai_zhong", "cai_letter", "gan_ning_defects", "false"]
+      - ["zhou_yu", "forged_letter", "commanders_traitors", "true"]
+      - ["kan_ze", "kan_letter", "huang_gai_defects", "true"]
+      - ["cai_zhong", "spy_report", "huang_gai_beaten", "false"]
+      - ["huang_gai", "surrender_letter", "huang_gai_defects", "true"]
+
+  - name: false-surrender-told-to-cao
+    why: >-
+      감택은 조조 앞에서 두 번 황개의 투항을 거짓으로 말한다: 47.12 "wishes to desert to your side that he may be
+      revenged", 47.32 "Huang Kai and I are both inclined to desert to you". 조조가 들은 거짓말은 이 둘과
+      주유의 거짓 서신(장간을 거쳐) 뿐이다.
+    sql: |
+      SELECT lint_short(d.liar_id), lint_short(d.prop_id), a.src_ref
+        FROM deception d JOIN act a ON a.id = d.act_id JOIN audience au ON au.act_id = a.id
+       WHERE d.work_id = $1 AND au.entity_id = $1 || '/chibi.cast/cao_cao' ORDER BY a.src_ref
+    rows:
+      - ["kan_ze", "huang_gai_defects", "47.12"]
+      - ["kan_ze", "huang_gai_defects", "47.32"]
+
+  - name: explain-traitors-back-to-reads
+    why: >-
+      조조의 commanders_traitors 믿음은 장간의 말(45.132-133 "produced the letter he had stolen")에서 왔고,
+      장간의 믿음은 주유의 막사에서 서신을 읽은 데서(45.115 "He read it") 왔다. 그래프(TOLD·BELIEVES)를 따라가면
+      조조 ← 장간(tells) ← 장간이 읽음(reads) 이다. 장간은 엿들은 말(45.124)로도 믿었지만 이 경로의 끝은 reads 다.
+    sql: |
+      SELECT lint_short(btrim(x.told::text, '"')), lint_short(a.actor_id), a.verb, a.src_ref
+        FROM cypher('g_chibi', $$
+          MATCH (j:Entity)-[t:TOLD]->(c:Entity {id: 'chibi/chibi.cast/cao_cao'}),
+                (c)-[cb:BELIEVES]->(f:Fact {id: 'chibi/chibi.cast/commanders_traitors'}),
+                (j)-[jb:BELIEVES]->(f)
+          WHERE t.prop = f.id AND cb.cause = t.act AND jb.value = true
+          RETURN t.act, jb.cause $$) AS x(told agtype, cause agtype)
+        JOIN act a ON a.id = btrim(x.cause::text, '"')
+       WHERE a.work_id = $1 AND a.verb = 'reads'
+    rows: [["45.129#a3", "jiang_gan", "reads", "45.115"]]
+
+  - name: chancellor-is-cao-cao
+    why: >-
+      "승상"(the Prime Minister)은 조조다 — 45.84 "Rest contented, O Minister", 47.15 "You, O Minister", 47.60
+      "I have given the Minister a letter". role:chancellor 로 적은 세 행위(45.136 처형, 47.9 심문, 47.37 감택을 돌려보냄)는
+      모두 조조로 풀려야 한다.
+    sql: |
+      SELECT a.src_ref, a.verb, lint_short(coalesce(a.resolved_actor_id, '?'))
+        FROM act a WHERE a.work_id = $1 AND a.actor_is_role AND a.actor_id = $1 || '/chibi.cast/chancellor'
+       ORDER BY a.src_ref
+    rows:
+      - ["45.136", "does", "cao_cao"]
+      - ["47.37", "orders", "cao_cao"]
+      - ["47.9", "asks", "cao_cao"]
+
+  - name: cao-doubts-the-surrender
+    why: >-
+      조조는 서신을 읽자 곧 의심하고(47.16 "the personal injury trick"), 감택의 말에 설득되어 믿고(47.31-33, 47.37 날짜를
+      정하러 돌려보냄), 두 번째 서신을 받고는 다시 의심한다(47.63 "Only I still distrust the whole thing").
+      읽은 순간(47.14)은 아직 믿는다.
+    sql: |
+      SELECT a.src_ref, a.verb, lint_known($1, $1 || '/chibi.cast/cao_cao', $1 || '/chibi.cast/huang_gai_defects', a.pt)
+        FROM act a WHERE a.work_id = $1 AND a.resolved_actor_id = $1 || '/chibi.cast/cao_cao'
+         AND a.src_ref IN ('47.14', '47.23', '47.33', '47.37', '47.64')
+          OR a.work_id = $1 AND a.resolved_actor_id = $1 || '/chibi.cast/cao_cao' AND a.verb = 'asks' AND a.src_ref = '47.63'
+       ORDER BY a.src_ref, a.verb
+    rows:
+      - ["47.14", "reads", "2"]
+      - ["47.23", "says", "0"]
+      - ["47.33", "says", "2"]
+      - ["47.37", "orders", "2"]
+      - ["47.63", "asks", "0"]
+
+  - name: zhou-yu-sees-through-the-visitors
+    why: >-
+      주유는 장간이 조조의 세객임을 처음부터 안다(45.88 "A guest is coming", 45.91, 45.93) — "옛정으로 왔다"(45.92)는
+      핑계를 믿지 않는다. 채씨 형제의 투항(46.74)도 "They have come without their families and so I know their
+      desertion is only pretence"(46.76) 로 믿지 않는다. 그 뒤 노숙에게 한 말(46.78)은 거짓말이다.
+    sql: |
+      SELECT a.src_ref, lint_short(p.prop), lint_known($1, $1 || '/chibi.cast/zhou_yu', lint_canon($1, $1 || '/chibi.cast/' || p.prop), a.pt)
+        FROM act a CROSS JOIN (VALUES ('not_envoy'), ('jiang_gan_envoy'), ('cai_brothers_defect'), ('cai_brothers_spies')) p(prop)
+       WHERE a.work_id = $1 AND a.resolved_actor_id = $1 || '/chibi.cast/zhou_yu' AND a.src_ref IN ('45.93', '46.78')
+       ORDER BY 1, 2
+    rows:
+      - ["45.93", "cai_brothers_defect", "0"]
+      - ["45.93", "cai_brothers_spies", "0"]
+      - ["45.93", "jiang_gan_envoy", "2"]
+      - ["45.93", "not_envoy", "0"]
+      - ["46.78", "cai_brothers_defect", "0"]
+      - ["46.78", "cai_brothers_spies", "2"]
+      - ["46.78", "jiang_gan_envoy", "2"]
+      - ["46.78", "not_envoy", "0"]
+
+  - name: spies-carry-the-beating
+    why: >-
+      조조는 황개의 매질을 두 경로로 안다: 감택의 말(47.12 "cruelly beaten … before the face of all the officers")과
+      채씨 형제의 서신(47.35-36 "They are reporting the punishment of my friend"). 그 서신을 쓴 채중은 매질을 직접 봤다
+      (46.102, 46.108 "the two Tsʻao spies duly tell the tale").
+    sql: |
+      SELECT a.verb, lint_short(coalesce(art.id, a.actor_id)), a.src_ref
+        FROM believes b JOIN act a ON a.id = b.cause_act LEFT JOIN artifact art ON art.id = ANY (a.objects)
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/chibi.cast/cao_cao' AND b.value
+         AND b.prop_id = $1 || '/chibi.cast/huang_gai_beaten'
+      UNION ALL
+      SELECT a.verb, lint_short(a.actor_id), a.src_ref
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/chibi.cast/cai_zhong' AND b.prop_id = $1 || '/chibi.cast/huang_gai_beaten'
+       ORDER BY 3, 1
+    rows:
+      - ["sees", "cai_zhong", "46.102"]
+      - ["tells", "kan_ze", "47.12"]
+      - ["reads", "spy_report", "47.35"]
+
+mutation_min_rate: 0.8
