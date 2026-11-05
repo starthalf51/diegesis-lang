@@ -114,3 +114,12 @@ func TestBuildPromptForbidsSourceLines(t *testing.T) {
 		t.Error("system prompt lacks the no-extra-speech rule")
 	}
 }
+
+// 사실은 그 사실을 가진 액트로만 전한다: 인물의 생각·반응으로 되풀이하지 않는다(live 판정: 고전소설체가 대사 뒤에
+// "맥베스의 생각에 …" 로 사실을 다시 말해 재추출 thinks 액트가 늘었다).
+func TestBuildPromptNoFactsThroughAddedThoughts(t *testing.T) {
+	sys, _, _ := BuildPrompt(mustLoad(t, "testdata/min.json"), VariantIROnly, "ko", nil)
+	if !strings.Contains(sys, "Do not restate a fact through a character's thoughts or reactions") {
+		t.Error("system prompt lacks the no-restated-facts rule")
+	}
+}

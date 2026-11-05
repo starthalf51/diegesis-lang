@@ -42,7 +42,7 @@ func TestRenderSceneJSON(t *testing.T) {
 			verbs = append(verbs, a.Verb)
 		}
 	}
-	if acts != 18 || got != acts+bounds {
+	if acts != 19 || got != acts+bounds {
 		t.Errorf("acts: got %d, want %d rows + %d presence bounds", got, acts, bounds)
 	}
 	if len(s.Cast) != cast {

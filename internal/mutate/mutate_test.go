@@ -206,8 +206,8 @@ func TestMacbethDropTellsDetected(t *testing.T) {
 			got = append(got, strings.TrimPrefix(d.TargetID, id+"/"))
 		}
 	}
-	if !slices.Contains(got, "macbeth.act1/1.3#a14") {
-		t.Errorf("info-flow warns = %v, want angus's 1.3#a14", got)
+	if !slices.Contains(got, "macbeth.act1/1.3#a15") {
+		t.Errorf("info-flow warns = %v, want angus's 1.3#a15", got)
 	}
 }
 
