@@ -32,6 +32,12 @@ func main() {
 	if args[0] == "test" {
 		os.Exit(cmdTest(args[1:]))
 	}
+	if args[0] == "render" {
+		os.Exit(cmdRender(args[1:]))
+	}
+	if args[0] == "render-check" {
+		os.Exit(cmdRenderCheck(args[1:]))
+	}
 	if args[0] == "lint" {
 		os.Exit(cmdLint(args[1:]))
 	}

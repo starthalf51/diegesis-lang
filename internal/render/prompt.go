@@ -118,8 +118,8 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	factList("The point-of-view character believes", s.POVBeliefs)
 	factList("The reader already knows", s.ReaderKnows)
 	factList("Must not state or imply", s.Withheld)
-	if v == VariantStyleDirectives {
-		d := s.Directives
+	// 지시어가 하나도 없는 장면(render_scene 의 기본값)에는 빈 절을 쓰지 않는다.
+	if d := s.Directives; v == VariantStyleDirectives && (d.Pace != "" || d.Tension != 0 || len(d.Focus)+len(d.Omit) > 0) {
 		fmt.Fprintf(&sb, "\n## Directives\n- pace: %s\n- tension: %g (0 to 1)\n", d.Pace, d.Tension)
 		if len(d.Focus) > 0 {
 			fmt.Fprintf(&sb, "- focus: %s\n", strings.Join(d.Focus, "; "))
