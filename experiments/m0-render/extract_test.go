@@ -13,8 +13,8 @@ func TestParseExtracted(t *testing.T) {
 	if e, err := ParseExtracted(" {\"acts\":[],\"facts_stated\":[\"a\"],\"new_events\":[]} "); err != nil || e.FactsStated[0] != "a" {
 		t.Fatal("bare json", err, e)
 	}
-	for _, bad := range []string{"", "  \n", "not json", "```json\n{\"acts\": [\n```", `{"acts":[],"extra":1}`,
-		"```json\n{\"acts\":[]}", `{"acts":[]} {"acts":[]}`, "```json\n{}\n``` trailing"[:0] + "```json\n{\"acts\":[]} x\n```"} {
+	for _, bad := range []string{"", "  \n", "not json", "```json\n{\"acts\": [\n```", `{"acts":[],"extra":1}`, "null", "{}", `{"acts":[]}`, `{"acts":null,"facts_stated":[]}`,
+		"```json\n{\"acts\":[],\"facts_stated\":[]}", `{"acts":[],"facts_stated":[]} {"acts":[]}`, "```json\n{\"acts\":[],\"facts_stated\":[]} x\n```"} {
 		if _, err := ParseExtracted(bad); err == nil {
 			t.Errorf("want error for %q", bad)
 		}

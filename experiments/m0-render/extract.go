@@ -33,7 +33,7 @@ func BuildExtractPrompt(s Scene, lang, prose string) (system, user string) {
 	system = `You convert a piece of narrative prose back into a structured record of what happens in it.
 Answer only with IDs from the catalog you are given. Do not invent IDs.
 - acts: every action in the prose, in order. actor is an entity ID (empty for enter/exit), verb is one of: ` + strings.Join(vs, ", ") + `, targets are entity IDs, fact is the ID of the catalog fact the act conveys (empty if none).
-- facts_stated: the ID of every catalog fact the prose states or strongly implies. The catalog is a full list of possible facts; many may be absent from the prose, and some may be false or secret. Include a fact only if the prose actually conveys it.
+- facts_stated: the ID of every catalog fact the prose states or strongly implies. Report in facts_stated every listed fact the prose states or clearly implies, whether true or not in the story; do not report facts the prose does not convey.
 - new_events: anything that happens in the prose that no listed fact covers, each as one short sentence. Use [] if none.
 Reply with a single ` + "```json" + ` fenced block and nothing else, shaped as {"acts":[{"actor":"","verb":"","targets":[],"fact":""}],"facts_stated":[],"new_events":[]}.`
 
@@ -82,6 +82,13 @@ func ParseExtracted(text string) (Extracted, error) {
 	}
 	if _, err := dec.Token(); err != io.EOF {
 		return Extracted{}, errors.New("extract: trailing data after JSON object")
+	}
+	var keys map[string]json.RawMessage // nil for `null`
+	_ = json.Unmarshal([]byte(body), &keys)
+	for _, k := range []string{"acts", "facts_stated"} {
+		if v, ok := keys[k]; !ok || string(v) == "null" {
+			return Extracted{}, fmt.Errorf("extract: missing required key %q", k)
+		}
 	}
 	return e, nil
 }
