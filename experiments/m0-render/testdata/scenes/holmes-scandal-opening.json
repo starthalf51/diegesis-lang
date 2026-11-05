@@ -8,6 +8,7 @@
   ],
   "on_stage": [],
   "facts": [
+    {"id":"watson_married","text":"Watson is married, and his marriage has agreed with him: he has put on weight since Holmes last saw him.","true":true},
     {"id":"watson_wet","text":"Watson has been out in the wet lately.","true":true},
     {"id":"watson_servant","text":"Watson has a clumsy and careless servant girl.","true":true},
     {"id":"watson_practice","text":"Watson has resumed his medical practice.","true":true},
@@ -22,6 +23,7 @@
       {"actor":"watson","verb":"sees","targets":["holmes"]}
     ]},
     {"id":"deductions","acts":[
+      {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_married"},
       {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_wet"},
       {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_servant"},
       {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_practice"},
@@ -29,8 +31,8 @@
     ]},
     {"id":"the_note","acts":[
       {"actor":"holmes","verb":"does","targets":["watson"]},
-      {"actor":"watson","verb":"reads","fact":"note_announces"},
-      {"actor":"holmes","verb":"says"}
+      {"actor":"watson","verb":"reads"},
+      {"actor":"holmes","verb":"says","fact":"note_announces","quote":"read aloud to Watson"}
     ]},
     {"id":"visitor_enters","acts":[
       {"verb":"enter","targets":["visitor"]},
@@ -39,7 +41,7 @@
     ]}
   ],
   "directives": {"pov":"watson","pace":"brisk","tension":0.5,"focus":["Holmes's deductions"]},
-  "pov_beliefs": ["watson_wet","watson_servant","watson_practice","note_announces","visitor_name"],
+  "pov_beliefs": ["watson_married","watson_wet","watson_servant","watson_practice","note_announces","visitor_name"],
   "reader_knows": [],
   "withheld": ["visitor_is_king"]
 }
