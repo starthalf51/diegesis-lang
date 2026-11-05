@@ -8,6 +8,7 @@ import (
 	"os"
 	"sort"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -19,7 +20,16 @@ func Connect(ctx context.Context) (*pgxpool.Pool, error) {
 	if dsn == "" {
 		dsn = defaultDSN
 	}
-	return pgxpool.New(ctx, dsn)
+	cfg, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, err
+	}
+	// ALTER DATABASE 설정은 이미 열린 연결에 적용되지 않으므로 연결마다 직접 로드한다.
+	cfg.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
+		_, err := c.Exec(ctx, `LOAD 'age'; SET search_path = ag_catalog, "$user", public`)
+		return err
+	}
+	return pgxpool.NewWithConfig(ctx, cfg)
 }
 
 // Migrate 는 dir 의 *.sql 을 이름순으로 한 번씩, 파일당 트랜잭션 하나로 적용한다.
