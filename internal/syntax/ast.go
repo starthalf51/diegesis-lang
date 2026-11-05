@@ -82,7 +82,7 @@ type Decl struct {
 	Tier  string
 	Def   *Prop  // fact x = prop
 	Value string // "true" | "false" | ""
-	Attrs []Node // Name Members Knows Held Shared Contains Text Pragma
+	Attrs []Node // Name Members Knows Held Shared Contains Belief Text Pragma
 }
 
 type Unit struct {

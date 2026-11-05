@@ -48,6 +48,10 @@ func (b *builder) top(m *module, n syntax.Node) (string, string) {
 		return "parent", b.parent(m, n)
 	case *syntax.Life:
 		return "life", b.life(m, n, nil)
+	case *syntax.Belief:
+		who := b.want(m, n.Who, "believer", "character", "group")
+		b.belief(m, n, who, "", "")
+		return "belief", who
 	}
 	return "", ""
 }
@@ -153,6 +157,12 @@ func (b *builder) declItem(m *module, d *syntax.Decl) (string, string) {
 				continue
 			}
 			art.Text = append(art.Text, a.Text)
+		case *syntax.Belief:
+			if ent == nil || (d.Kind != "character" && d.Kind != "group") {
+				misplaced(a.Pos, a.Verb)
+				continue
+			}
+			b.belief(m, a, id, "", "")
 		case *syntax.Pragma:
 			b.waiver(m, a, waiverKind(d.Kind), id)
 		}

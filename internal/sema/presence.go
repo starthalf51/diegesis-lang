@@ -140,8 +140,12 @@ func (w *walker) audience(a ir.Act) []string {
 		return out
 	}
 	if a.Verb == "whispers" || speech[a.Verb] && w.stage == nil {
+		named := append(slices.Clone(a.Objects), a.To...)
+		if a.Verb == "sends" {
+			named = slices.Clone(a.Objects) // 받는 사람은 전령이 말해 줄 때 안다
+		}
 		var targets []string
-		for _, t := range append(slices.Clone(a.Objects), a.To...) {
+		for _, t := range named {
 			targets = append(targets, w.b.expand(t)...)
 		}
 		return keep(targets)

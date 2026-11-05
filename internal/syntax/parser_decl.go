@@ -114,6 +114,9 @@ func (c *cur) attr() Node {
 	case "contains":
 		c.k++
 		n = &Contains{t.Pos, c.proplist()}
+	case "believes", "doubts": // 선언한 인물·그룹의 배경 지식(Who 는 sema 가 채운다)
+		c.k++
+		n = &Belief{Pos: t.Pos, Verb: t.Val, Prop: c.prop()}
 	default:
 		c.fail("unknown attribute %s", describe(t))
 	}

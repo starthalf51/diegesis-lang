@@ -74,13 +74,7 @@ func (w *walker) stmt(n syntax.Node) (string, string) {
 	case *syntax.Act:
 		return "act", w.act(n)
 	case *syntax.Belief:
-		who := b.want(m, n.Who, "believer", "character", "group")
-		bl := ir.Belief{EntityID: who, Verb: n.Verb, PropID: b.prop(m, n.Prop), SceneID: c.id, AtPt: w.last,
-			SrcID: b.srcID(n.Pos)}
-		if n.Because != nil {
-			bl.BecausePt, _ = b.tref(m, n.Because)
-		}
-		m.out.Beliefs = append(m.out.Beliefs, bl)
+		b.belief(m, n, b.want(m, n.Who, "believer", "character", "group"), c.id, w.last)
 		return "belief", c.id
 	case *syntax.Reveal:
 		r := ir.Reveal{PropID: b.prop(m, n.Prop), SceneID: c.id, AtPt: w.last, SrcID: b.srcID(n.Pos)}
@@ -145,7 +139,9 @@ func objectKinds(verb string) []string {
 	switch verb {
 	case "reads", "writes":
 		return []string{"artifact"}
-	case "sees", "does":
+	case "sees": // 사실 객체는 act 에서 내용으로 빠진다. 남는 것은 엔티티여야 한다
+		return []string{"character", "group", "place", "thing", "faction", "thread"}
+	case "does":
 		return nil
 	}
 	return []string{"character", "group"}
@@ -161,9 +157,21 @@ func (w *walker) act(a *syntax.Act) string {
 	} else {
 		actor = b.want(m, a.Actor, "actor", "character", "group")
 	}
+	// `X sees p`: 사실(또는 별칭) 객체는 본 내용이다(with 로 옮겨 derive 가 지각 믿음을 만든다)
+	objs, seen := a.Objects, []string{}
+	if a.Verb == "sees" {
+		objs = nil
+		for _, o := range a.Objects {
+			if d, ok := b.lookup(m, o.Name); ok && d.kind == "fact" {
+				seen = append(seen, d.id)
+			} else {
+				objs = append(objs, o)
+			}
+		}
+	}
 	row := ir.Act{ID: id, SceneID: w.c.id, BeatID: w.beat, Ord: w.nact, Pt: id, ActorID: actor, ActorIsRole: a.Role,
-		Verb: a.Verb, Action: a.Action, Objects: b.wantAll(m, a.Objects, a.Verb+" object", objectKinds(a.Verb)...),
-		To: b.wantAll(m, a.To, "recipient", "character", "group"), With: b.props(m, a.With), PropID: b.prop(m, a.Prop),
+		Verb: a.Verb, Action: a.Action, Objects: b.wantAll(m, objs, a.Verb+" object", objectKinds(a.Verb)...),
+		To: b.wantAll(m, a.To, "recipient", "character", "group"), With: append(b.props(m, a.With), seen...), PropID: b.prop(m, a.Prop),
 		Quote: a.Quote, BecauseID: b.prop(m, a.Because), SrcRef: a.Src, SrcID: b.srcID(a.Pos)}
 	w.point(id, "act", a.Pos)
 	m.out.Acts = append(m.out.Acts, row)
@@ -174,4 +182,14 @@ func (w *walker) act(a *syntax.Act) string {
 		m.out.Audience = append(m.out.Audience, ir.Audience{ActID: id, EntityID: e})
 	}
 	return id
+}
+
+// belief emits one `believes`/`doubts` row. scene/at "" = background
+// knowledge (top level or a declaration block): held from the start.
+func (b *builder) belief(m *module, n *syntax.Belief, who, scene, at string) {
+	bl := ir.Belief{EntityID: who, Verb: n.Verb, PropID: b.prop(m, n.Prop), SceneID: scene, AtPt: at, SrcID: b.srcID(n.Pos)}
+	if n.Because != nil {
+		bl.BecausePt, _ = b.tref(m, n.Because)
+	}
+	m.out.Beliefs = append(m.out.Beliefs, bl)
 }

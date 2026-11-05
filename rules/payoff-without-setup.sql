@@ -12,7 +12,7 @@ SELECT 'payoff' AS target_kind, p.setup_id AS target_id, p.src_id,
        format(CASE WHEN s.id IS NULL THEN 'payoff of %s has no setup'
                    WHEN x.o = 'no' THEN 'payoff of %s comes before its setup'
                    ELSE 'payoff of %s may come before its setup (order not determined)' END,
-              regexp_replace(p.setup_id, '[^(), ]*/', '', 'g')) AS message,
+              lint_short(p.setup_id)) AS message,
        jsonb_build_object('setup', p.setup_id, 'payoff_at', p.at_pt, 'order', coalesce(x.o, 'missing')) AS data
   FROM payoff p
   LEFT JOIN setup s ON s.work_id = p.work_id AND s.id = p.setup_id

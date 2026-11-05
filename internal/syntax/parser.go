@@ -270,6 +270,9 @@ func (p *parser) top(c *cur) Node {
 		if declKinds[t.Val] {
 			return c.decl()
 		}
+		if next := c.peekN(1); next != nil && next.Kind == tWord && (next.Val == "believes" || next.Val == "doubts") {
+			return c.belief() // 배경 지식: 처음부터 믿는다
+		}
 	}
 	c.fail("unknown keyword %s at top level", describe(t))
 	return nil

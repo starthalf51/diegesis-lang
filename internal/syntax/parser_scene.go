@@ -149,12 +149,7 @@ func (c *cur) stmt() Node {
 		case next != nil && next.Kind == tWord && verbs[next.Val]:
 			return c.act()
 		case next != nil && next.Kind == tWord && (next.Val == "believes" || next.Val == "doubts"):
-			c.k += 2
-			b := &Belief{Pos: t.Pos, Who: Ident{t.Pos, t.Val}, Verb: next.Val, Prop: c.prop()}
-			if c.accept("because") {
-				b.Because = c.tref()
-			}
-			n = b
+			return c.belief()
 		case topOnly[t.Val] || declKinds[t.Val]:
 			c.fail("%q is not allowed inside a block", t.Val)
 		case next != nil && next.Kind == tWord:
@@ -318,4 +313,16 @@ func (c *cur) durRange() (Dur, Dur) {
 	lo := c.dur()
 	c.expect("..")
 	return lo, c.dur()
+}
+
+// belief: <who> believes|doubts prop [because tref] (장면 안, 또는 최상위 배경 지식)
+func (c *cur) belief() Node {
+	t, next := c.peek(), c.peekN(1)
+	c.k += 2
+	b := &Belief{Pos: t.Pos, Who: Ident{t.Pos, t.Val}, Verb: next.Val, Prop: c.prop()}
+	if c.accept("because") {
+		b.Because = c.tref()
+	}
+	c.end()
+	return b
 }

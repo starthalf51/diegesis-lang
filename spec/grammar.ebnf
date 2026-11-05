@@ -19,7 +19,8 @@
 
 file        = header { top } ;
 header      = "module" qname NL { "import" qname NL } ;             (* module 두 번 → dup-decl, 같은 import 두 번 → dup-decl *)
-top         = work | decl | scene | event | account | setup | distance | parent | life | pragma ;
+top         = work | decl | scene | event | account | setup | distance | parent | life | belief | pragma ;
+              (* 최상위 belief = 배경 지식: 시점 없이 처음부터 믿는다(IR at_pt "") *)
 
 (* 선언 *)
 work        = "work" ident [string] [ BLOCK(wattr) ] ;
@@ -34,6 +35,7 @@ attr        = name
             | "held" actor ( "from" tref [ "until" tref ] | "until" tref )
             | "shared"                                               (* 공동 보유 역할: 배타 제약 제외 *)
             | "contains" proplist
+            | ("believes" | "doubts") prop                            (* character/group 만: 그 인물의 배경 지식 *)
             | string                                                 (* artifact 본문 발췌 *)
             | pragma ;
 name        = "name" ident string ;                                  (* 언어별 이름: name ko "맥베스" *)
@@ -55,7 +57,8 @@ presence    = "enter" idlist | "exit" "all" | "exit" idlist | "mention" idlist ;
 beat        = "beat" ident ":" [ BLOCK(stmt) ] ;
 act         = actor verb [ ident ] [ idlist ] [ "to" idlist ] [ "with" proplist ]
               [ ":" [prop] ] [ string ] [ "because" prop ] [ "src" (word | string) ] ;
-              (* "[ ident ]" 은 verb = "does" 일 때만: 행동 이름. does execute cai_mao because P
+              (* verb = "sees" 의 idlist 중 fact(별칭 포함)는 본 내용이다(with 로 들어간다). 나머지는 엔티티여야 한다
+                 "[ ident ]" 은 verb = "does" 일 때만: 행동 이름. does execute cai_mao because P
                  idlist 는 to/with/because/src 에서 멈춘다 *)
 actor       = ident | "role" ":" ident ;                             (* role:chancellor — 그 시점의 보유자 *)
 verb        = "tells" | "says" | "hails" | "asks" | "lies" | "whispers" | "aside" | "thinks"
