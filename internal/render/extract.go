@@ -33,6 +33,8 @@ func BuildExtractPrompt(s Scene, lang, prose string) (system, user string) {
 	system = `You convert a piece of narrative prose back into a structured record of what happens in it.
 Answer only with IDs from the catalog you are given. Do not invent IDs.
 - acts: every action in the prose, in order. actor is an entity ID (empty for enter/exit), verb is one of: ` + strings.Join(vs, ", ") + `, targets are entity IDs, fact is the ID of the catalog fact the act conveys (empty if none).
+- Perception is an act: when the prose narrates that a character sees, hears, notices or recognises something (a sound reaching someone's ear, a searching look that settles a question), record it as verb "sees" with that character as actor and the perceived catalog fact as fact.
+- A line can convey a fact without stating it: how a speaker addresses someone, what a speaker admits about themselves, or what a deceiver wants the listener to believe. Use that fact for the act.
 - facts_stated: the ID of every catalog fact the prose states or strongly implies. Report in facts_stated every listed fact the prose states or clearly implies, whether true or not in the story; do not report facts the prose does not convey.
 - new_events: plot events only: an action or revelation that changes the situation, not already reported in acts, and not covered by any listed fact. Ignore description, gesture, setting, and manner. Each as one short sentence. Use [] if none.
 - Judge only from what this prose says or implies to a reader who does not know the source story; ignore your knowledge of any original work.

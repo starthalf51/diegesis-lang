@@ -51,3 +51,13 @@ func TestExtractPromptScopesNewEventsAndIgnoresWorldKnowledge(t *testing.T) {
 		}
 	}
 }
+
+// 지각(보고 듣고 알아봄)은 sees 액트이고, 암시로 전한 사실도 그 액트의 fact 다(live 판정: 닭 울음·정체 고백 누락).
+func TestExtractPromptCoversPerceptionAndImplication(t *testing.T) {
+	sys, _ := BuildExtractPrompt(Scene{}, "en", "")
+	for _, want := range []string{`record it as verb "sees"`, "can convey a fact without stating it"} {
+		if !strings.Contains(sys, want) {
+			t.Errorf("extract prompt lacks %q", want)
+		}
+	}
+}
