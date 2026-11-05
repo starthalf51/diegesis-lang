@@ -42,7 +42,7 @@ func TestRenderSceneJSON(t *testing.T) {
 			verbs = append(verbs, a.Verb)
 		}
 	}
-	if acts != 19 || got != acts+bounds {
+	if acts != 22 || got != acts+bounds { // 1.3.74, 1.3.123 을 사실마다 나눠 19 → 22
 		t.Errorf("acts: got %d, want %d rows + %d presence bounds", got, acts, bounds)
 	}
 	if len(s.Cast) != cast {

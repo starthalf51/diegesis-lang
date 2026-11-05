@@ -19,6 +19,7 @@ character macbeth "Macbeth" major
   name en "Macbeth"
   believes holds(thane_of_glamis, macbeth)   # 1.3.73 "By Sinel's death I know I am thane of Glamis"
   believes cawdor_in_favour                  # 극 이전 상식: 코더 영주는 번창하는 충신이다(1.3.74-75)
+  believes alive(cawdor)                     # 극 이전 상식: 1.3.74 "the thane of Cawdor lives"(1.3.113 에서도 되풀이)
 character lady_macbeth "Lady Macbeth" major
   name ko "맥베스 부인"
   name en "Lady Macbeth"
