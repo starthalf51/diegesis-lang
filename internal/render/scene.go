@@ -1,6 +1,7 @@
 package render
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,6 +25,7 @@ type Act struct {
 	Targets []string `json:"targets"`
 	Fact    string   `json:"fact"`
 	Quote   string   `json:"quote"`
+	Action  string   `json:"action,omitempty"` // does 의 동작, 다루는 문서 이름
 }
 
 type Beat struct {
@@ -58,24 +60,34 @@ type Scene struct {
 var verbs = map[string]bool{
 	"enter": true, "exit": true, "tells": true, "says": true, "hails": true, "lies": true,
 	"whispers": true, "sees": true, "reads": true, "does": true, "aside": true,
+	// 컴파일러 IR 의 나머지 동사(render_scene 이 그대로 넘긴다)
+	"asks": true, "orders": true, "shows": true, "decrees": true, "sends": true, "writes": true, "thinks": true,
 }
 
 func LoadScene(path string) (Scene, error) {
-	var s Scene
-	f, err := os.Open(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
-		return s, err
+		return Scene{}, err
 	}
-	defer f.Close()
-	dec := json.NewDecoder(f)
-	dec.DisallowUnknownFields()
-	if err := dec.Decode(&s); err != nil {
-		return s, fmt.Errorf("%s: %w", path, err)
-	}
-	if err := s.Validate(); err != nil {
+	s, err := ParseScene(b)
+	if err != nil {
 		return s, fmt.Errorf("%s: %w", path, err)
 	}
 	return s, nil
+}
+
+// ParseScene 은 Scene JSON(파일 또는 PG render_scene)을 엄격하게 읽고 검사한다: 모르는 키, 뒤에 붙은 데이터는 오류다.
+func ParseScene(b []byte) (Scene, error) {
+	var s Scene
+	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&s); err != nil {
+		return s, err
+	}
+	if dec.More() {
+		return s, errors.New("trailing data after scene JSON")
+	}
+	return s, s.Validate()
 }
 
 func (s Scene) Entity(id string) (Entity, bool) {

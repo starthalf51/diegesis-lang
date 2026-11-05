@@ -92,6 +92,9 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 				parts = append(parts, name(a.Actor))
 			}
 			parts = append(parts, a.Verb)
+			if a.Action != "" {
+				parts = append(parts, "("+a.Action+")")
+			}
 			if len(a.Targets) > 0 {
 				parts = append(parts, names(a.Targets))
 			}

@@ -13,11 +13,11 @@ type Report struct {
 // VerbClass collapses synonyms; an unknown verb is its own class so it never silently matches.
 func VerbClass(v string) string {
 	switch v {
-	case "tells", "says", "hails", "lies", "whispers", "aside":
+	case "tells", "says", "hails", "lies", "whispers", "aside", "asks", "orders", "shows", "decrees", "sends", "thinks":
 		return "assert"
 	case "sees":
 		return "perceive"
-	case "reads":
+	case "reads", "writes":
 		return "read"
 	case "does":
 		return "act"
