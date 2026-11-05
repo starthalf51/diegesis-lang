@@ -42,18 +42,27 @@ func LoadStyles(dir string) ([]StyleSample, error) {
 	sort.Strings(paths)
 	var out []StyleSample
 	for _, p := range paths {
-		b, err := os.ReadFile(p)
+		s, err := loadStyle(p)
 		if err != nil {
 			return nil, err
-		}
-		var s StyleSample
-		if err := json.Unmarshal(b, &s); err != nil {
-			return nil, fmt.Errorf("%s: %w", p, err)
-		}
-		if err := CheckPublicDomain(s, 2026); err != nil {
-			return nil, fmt.Errorf("%s: %w", p, err)
 		}
 		out = append(out, s)
 	}
 	return out, nil
+}
+
+// loadStyle reads one style file and checks it is public domain (2026).
+func loadStyle(p string) (StyleSample, error) {
+	var s StyleSample
+	b, err := os.ReadFile(p)
+	if err != nil {
+		return s, err
+	}
+	if err := json.Unmarshal(b, &s); err != nil {
+		return s, fmt.Errorf("%s: %w", p, err)
+	}
+	if err := CheckPublicDomain(s, 2026); err != nil {
+		return s, fmt.Errorf("%s: %w", p, err)
+	}
+	return s, nil
 }
