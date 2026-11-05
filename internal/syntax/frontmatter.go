@@ -11,15 +11,21 @@ import (
 // sugar remembers what the frontmatter declared so that the same fact
 // written again in a block is a dup-decl (checkSugarDups).
 type sugar struct {
-	fmEnd    int // last frontmatter line; nodes at or above it came from sugar
-	chars    map[string]bool
-	anyChars bool
-	mentions map[string]bool
-	rkeys    map[string]bool
+	fmEnd        int // last frontmatter line; nodes at or above it came from sugar
+	chars        map[string]bool
+	anyChars     bool
+	hasTime      bool // when/date/time given in frontmatter
+	hasDiscourse bool
+	mentions     map[string]bool
+	rkeys        map[string]bool
 }
 
 var declMaps = map[string]string{"characters": "character", "groups": "group", "places": "place",
 	"things": "thing", "factions": "faction", "facts": "fact"}
+
+var needsValue = map[string]bool{"module": true, "import": true, "scene": true, "location": true,
+	"thread": true, "when": true, "date": true, "time": true, "discourse": true, "characters": true,
+	"mentions": true, "pov": true, "render": true}
 
 var yamlLine = regexp.MustCompile(`line (\d+)`)
 
@@ -27,7 +33,8 @@ var yamlLine = regexp.MustCompile(`line (\d+)`)
 // frontmatter) and wraps the block lines, per the table in spec/grammar.ebnf.
 type fm struct {
 	p   *parser
-	off int // yaml line + off = file line
+	off int      // yaml line + off = file line
+	src []string // frontmatter lines (yaml line 1 = src[0])
 }
 
 func (g *fm) pos(n *yaml.Node) Pos { return Pos{n.Line + g.off, n.Column} }
@@ -36,12 +43,15 @@ func (g *fm) err(n *yaml.Node, rule, format string, args ...any) {
 	g.p.errAt(g.pos(n), rule, format, args...)
 }
 
-func kw(v string, p Pos) tok { return tok{tWord, v, p} }
+func kw(v string, p Pos) tok { return tok{tWord, v, p, p.Col + len([]rune(v))} }
 
 // toks lexes a scalar, or a sequence of scalars joined by commas.
 func (g *fm) toks(n *yaml.Node) ([]tok, bool) {
 	switch n.Kind {
 	case yaml.ScalarNode:
+		if !g.single(n) {
+			return nil, false
+		}
 		p := g.pos(n)
 		if n.Style&(yaml.DoubleQuotedStyle|yaml.SingleQuotedStyle) != 0 {
 			p.Col++
@@ -51,7 +61,7 @@ func (g *fm) toks(n *yaml.Node) ([]tok, bool) {
 		var out []tok
 		for i, it := range n.Content {
 			if i > 0 {
-				out = append(out, tok{tPunct, ",", g.pos(it)})
+				out = append(out, tok{tPunct, ",", g.pos(it), g.pos(it).Col + 1})
 			}
 			ts, ok := g.toks(it)
 			if !ok {
@@ -105,9 +115,9 @@ func (p *parser) frontmatter(pr parts, code []line) []line {
 	if len(doc.Content) == 0 {
 		return code
 	}
-	g := &fm{p: p, off: pr.fmStart}
+	g := &fm{p: p, off: pr.fmStart, src: texts}
 	root := doc.Content[0]
-	g.checkAnchors(root)
+	g.checkYAML(root)
 	if root.Kind != yaml.MappingNode {
 		g.err(root, "syntax", "frontmatter must be a mapping")
 		return code
@@ -115,8 +125,21 @@ func (p *parser) frontmatter(pr parts, code []line) []line {
 	var head, decls, whens, dates, disc, enter, mention, rnd, tail []line
 	var scene, loc, thread, date, tim, chars, pov, render *yaml.Node
 	var needScene []*yaml.Node
+	seenKey := map[string]bool{}
 	for i := 0; i+1 < len(root.Content); i += 2 {
 		k, v := root.Content[i], root.Content[i+1]
+		if seenKey[k.Value] {
+			continue // dup-decl reported by checkYAML
+		}
+		seenKey[k.Value] = true
+		if needsValue[k.Value] && v.Kind == yaml.ScalarNode && v.Value == "" && v.Style == 0 {
+			g.err(k, "syntax", "frontmatter key %q needs a value", k.Value)
+			continue
+		}
+		if (k.Value == "characters" || k.Value == "mentions") && v.Kind == yaml.SequenceNode && len(v.Content) == 0 {
+			needScene = append(needScene, k)
+			continue // empty list: nobody
+		}
 		switch k.Value {
 		case "module":
 			g.ln(&head, 0, kw("module", g.pos(k)), v)
@@ -131,16 +154,16 @@ func (p *parser) frontmatter(pr parts, code []line) []line {
 		case "thread":
 			thread, needScene = k, append(needScene, k)
 		case "when":
-			needScene = append(needScene, k)
+			needScene, p.sugar.hasTime = append(needScene, k), true
 			for _, it := range items(v) {
 				g.ln(&whens, 2, kw("when", g.pos(k)), it)
 			}
 		case "date":
-			date, needScene = k, append(needScene, k)
+			date, needScene, p.sugar.hasTime = k, append(needScene, k), true
 		case "time":
-			tim, needScene = k, append(needScene, k)
+			tim, needScene, p.sugar.hasTime = k, append(needScene, k), true
 		case "discourse":
-			needScene = append(needScene, k)
+			needScene, p.sugar.hasDiscourse = append(needScene, k), true
 			g.ln(&disc, 2, kw("discourse", g.pos(k)), v)
 		case "characters":
 			if v.Kind == yaml.MappingNode {
@@ -242,9 +265,12 @@ func (p *parser) frontmatter(pr parts, code []line) []line {
 			}
 			for j := 0; rv.Kind == yaml.MappingNode && j+1 < len(rv.Content); j += 2 {
 				rk := rv.Content[j]
-				if p.sugar.rkeys[rk.Value] {
-					g.err(rk, "dup-decl", "render key %q is given twice", rk.Value)
+				if rk.Value == "pov" && pov != nil {
+					g.err(rk, "dup-decl", "render pov is already given by the pov key")
 					continue
+				}
+				if p.sugar.rkeys[rk.Value] {
+					continue // repeated key: reported by checkYAML
 				}
 				p.sugar.rkeys[rk.Value] = true
 				g.ln(&rnd, 4, kw(rk.Value, g.pos(rk)), rv.Content[j+1])
@@ -291,17 +317,25 @@ func (g *fm) decls(out *[]line, kind string, m *yaml.Node) {
 		g.err(m, "syntax", "%s declarations must be a mapping", kind)
 		return
 	}
+	seenID := map[string]bool{}
 	for i := 0; i+1 < len(m.Content); i += 2 {
 		idN, v := m.Content[i], m.Content[i+1]
+		if seenID[idN.Value] {
+			continue // dup-decl reported by checkYAML
+		}
+		seenID[idN.Value] = true
 		var names, tier, def, val []tok
 		var attrs []line
 		ok := true
-		str := func(n *yaml.Node) tok {
-			p := g.pos(n)
-			if n.Style&(yaml.DoubleQuotedStyle|yaml.SingleQuotedStyle) != 0 {
-				p.Col++
+		str := func(n *yaml.Node) tok { // Pos = opening quote, as the lexer does
+			if !g.single(n) {
+				ok = false
 			}
-			return tok{tString, n.Value, p}
+			p, w := g.pos(n), len([]rune(n.Value))
+			if n.Style&(yaml.DoubleQuotedStyle|yaml.SingleQuotedStyle) != 0 {
+				w += 2
+			}
+			return tok{tString, n.Value, p, p.Col + w}
 		}
 		switch v.Kind {
 		case yaml.ScalarNode:
@@ -309,14 +343,19 @@ func (g *fm) decls(out *[]line, kind string, m *yaml.Node) {
 				names = []tok{str(v)}
 			}
 		case yaml.MappingNode:
+			seenField := map[string]bool{}
 			for j := 0; j+1 < len(v.Content); j += 2 {
 				fk, fv := v.Content[j], v.Content[j+1]
+				if seenField[fk.Value] {
+					continue // dup-decl reported by checkYAML
+				}
+				seenField[fk.Value] = true
 				var good bool
 				switch fk.Value {
 				case "name":
 					for n, it := range items(fv) {
 						if n > 0 {
-							names = append(names, tok{tPunct, ",", g.pos(it)})
+							names = append(names, tok{tPunct, ",", g.pos(it), g.pos(it).Col + 1})
 						}
 						names = append(names, str(it))
 					}
@@ -327,7 +366,7 @@ func (g *fm) decls(out *[]line, kind string, m *yaml.Node) {
 					val, good = g.toks(fv)
 				case "def":
 					def, good = g.toks(fv)
-					def = append([]tok{{tPunct, "=", g.pos(fk)}}, def...)
+					def = append([]tok{{tPunct, "=", g.pos(fk), g.pos(fk).Col + 1}}, def...)
 				case "members", "knows":
 					g.ln(&attrs, 2, kw(fk.Value, g.pos(fk)), fv)
 					good = true
@@ -361,61 +400,4 @@ func (g *fm) decls(out *[]line, kind string, m *yaml.Node) {
 		*out = append(*out, line{No: g.pos(idN).Line, Toks: ts})
 		*out = append(*out, attrs...)
 	}
-}
-
-func (g *fm) checkAnchors(n *yaml.Node) {
-	if n.Anchor != "" {
-		g.err(n, "yaml-anchor", "YAML anchors (&%s) are not allowed", n.Anchor)
-	}
-	if n.Kind == yaml.AliasNode {
-		g.err(n, "yaml-anchor", "YAML aliases (*%s) are not allowed", n.Value)
-		return
-	}
-	for i, c := range n.Content {
-		if n.Kind == yaml.MappingNode && i%2 == 0 && c.Value == "<<" && c.Tag == "!!merge" {
-			g.err(c, "yaml-anchor", "YAML merge keys (<<) are not allowed")
-		}
-		g.checkAnchors(c)
-	}
-}
-
-// checkSugarDups reports block statements that repeat frontmatter facts.
-func (p *parser) checkSugarDups() {
-	s := p.sugar
-	if s.fmEnd == 0 {
-		return
-	}
-	var walk func([]Node)
-	walk = func(ns []Node) {
-		for _, n := range ns {
-			switch x := n.(type) {
-			case *Scene:
-				walk(x.Body)
-			case *Beat:
-				walk(x.Body)
-			case *Presence:
-				if x.Line <= s.fmEnd {
-					continue
-				}
-				if x.All && s.anyChars {
-					p.errAt(x.Pos, "dup-decl", "exit all is implied by frontmatter characters")
-				}
-				for _, id := range x.IDs {
-					if x.Op == "enter" && s.chars[id.Name] || x.Op == "mention" && s.mentions[id.Name] {
-						p.errAt(id.Pos, "dup-decl", "%s %q is already in frontmatter", x.Op, id.Name)
-					}
-				}
-			case *Render:
-				if x.Line <= s.fmEnd {
-					continue
-				}
-				for _, e := range x.Entries {
-					if s.rkeys[e.Key] {
-						p.errAt(e.Pos, "dup-decl", "render %s is already in frontmatter", e.Key)
-					}
-				}
-			}
-		}
-	}
-	walk(p.f.Items)
 }

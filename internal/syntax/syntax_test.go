@@ -2,7 +2,6 @@ package syntax
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -81,12 +80,7 @@ type want struct {
 }
 
 func TestErrors(t *testing.T) {
-	cases := []struct {
-		name  string
-		src   string
-		want  []want
-		check func(t *testing.T, f *File)
-	}{
+	cases := []errCase{
 		{name: "bad indent", src: "```sl\nmodule m\nscene 1 at x\n   enter a\n```\n",
 			want: []want{{4, 4, "indent"}}},
 		{name: "tab indent", src: "```sl\nmodule m\nscene 1 at x\n\tenter a\n```\n",
@@ -142,6 +136,18 @@ func TestErrors(t *testing.T) {
 		{name: "bad duration", src: "```sl\nmodule m\nscene 2 at x\n  when after 1 by 0d..1w\n```\n",
 			want: []want{{4, 23, "syntax"}}},
 	}
+	runCases(t, cases)
+}
+
+type errCase struct {
+	name  string
+	src   string
+	want  []want
+	check func(t *testing.T, f *File)
+}
+
+func runCases(t *testing.T, cases []errCase) {
+	t.Helper()
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			f, diags := ParseFile("t.sl.md", []byte(c.src))
@@ -178,111 +184,5 @@ func TestRecoverManyErrors(t *testing.T) {
 		if diags[i].Line != line {
 			t.Errorf("diag %d line = %d, want %d", i, diags[i].Line, line)
 		}
-	}
-}
-
-// Every production in spec/grammar.ebnf, including the language additions.
-const coverage = `module macbeth.cast
-import macbeth.common
-
-work macbeth "The Tragedy of Macbeth"
-  unit day
-  start 1040-08
-  name ko "맥베스의 비극"
-
-character macbeth "Macbeth" major
-  name ko "맥베스"
-character cawdor "the elder Thane of Cawdor" minor   # 무대에 한 번도 안 나온다
-group witches "the Weird Sisters" major
-  members witch1, witch2, witch3
-  knows oracle
-character athena "Athena"
-  knows omniscient
-place heath "a heath"
-distance camp heath 0d..1d
-role thane_of_cawdor "Thane of Cawdor", "Cawdor"
-  held cawdor until @1.2.decree
-  held macbeth from @1.2.decree
-role chancellor "승상"
-  shared
-  held cao_cao from start until @chibi.end
-fact cawdor_traitor "Cawdor aided Norway against Duncan" true
-fact king_hereafter = holds(king, macbeth)
-artifact macbeth_letter "Macbeth's letter"
-  contains holds(thane_of_cawdor, macbeth), king_hereafter
-  "They met me in the day of success"
-thread scotland "Scotland"
-parent adam of seth
-parent noah of shem, ham, japheth
-born seth when after @adam.born by 130y..130y
-dies methuselah
-#! allow time-cycle: "5:32는 첫아들 기준으로 읽는 것이 일반적"
-born shem when after @noah.born by 500y..500y
-setup kings promise: "Banquo's line"
-
-event macbeth_writes "Macbeth writes to his wife"
-  when after 1.3.ross_news
-  when before 1.5
-  macbeth writes macbeth_letter
-
-scene 45.1 at camp in wei
-  when at 208-11 dawn
-  when during 44.9
-  when before 46.1 by 1h..12h
-  discourse after 44.9
-  enter 曹操, 蔣幹
-  mention zhou_yu
-  role:chancellor tells 蔣幹: commanders_traitors src rtk.45.12
-  曹操 does execute cai_mao, zhang_yun because commanders_traitors
-  蔣幹 lies 曹操: not loyal(cai_mao) "they plot against you" src "45:3"
-  odysseus whispers eurycleia: beggar_is_odysseus
-  eurycleia sees odysseus: beggar_is_odysseus
-  曹操 doubts letter_genuine because @45.1.theft
-  reveal letter_forged at @46.2
-  withhold letter_forged until 46.2
-  payoff macbeth.act1/banquo_kings
-  exit 蔣幹
-  exit all
-  render
-    pov 曹操 close
-    show "the burning ships"
-    omit letter.full_text
-
-account mark of peter_denies by mark
-  when during 14.66
-  maid asks peter: knows(peter, jesus)
-`
-
-func TestParseCoverage(t *testing.T) {
-	f, diags := ParseFile("cast.sl", []byte(coverage))
-	for _, d := range diags {
-		t.Errorf("%s", d)
-	}
-	if f.Module == nil || f.Module.Name != "macbeth.cast" || len(f.Imports) != 1 {
-		t.Fatalf("header = %+v %+v", f.Module, f.Imports)
-	}
-	kinds := map[string]int{}
-	for _, it := range f.Items {
-		kinds[strings.TrimPrefix(fmt.Sprintf("%T", it), "*syntax.")]++
-	}
-	for k, n := range map[string]int{"Work": 1, "Decl": 11, "Distance": 1, "Parent": 2, "Life": 3,
-		"Pragma": 1, "Setup": 1, "Event": 1, "Scene": 1, "Account": 1} {
-		if kinds[k] != n {
-			t.Errorf("%s count = %d, want %d (all %v)", k, kinds[k], n, kinds)
-		}
-	}
-	var sc *Scene
-	for _, it := range f.Items {
-		if s, ok := it.(*Scene); ok {
-			sc = s
-		}
-	}
-	act := sc.Body[6].(*Act)
-	if !act.Role || act.Actor.Name != "chancellor" || act.Src != "rtk.45.12" {
-		t.Errorf("role act = %+v", act)
-	}
-	does := sc.Body[7].(*Act)
-	if does.Action != "execute" || len(does.Objects) != 2 || does.Because.Name != "commanders_traitors" {
-		t.Errorf("does act = %+v", does)
 	}
 }

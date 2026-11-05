@@ -1,6 +1,7 @@
 package syntax
 
 import (
+	"bytes"
 	"regexp"
 	"strings"
 )
@@ -24,6 +25,7 @@ type parts struct {
 var beatAnchor = regexp.MustCompile(`^\s*<!--\s*beat:\s*([^\s>]+)\s*-->\s*$`)
 
 func split(path string, src []byte, diag func(Diag)) parts {
+	src = bytes.TrimPrefix(src, []byte{0xEF, 0xBB, 0xBF}) // UTF-8 BOM
 	raw := strings.Split(strings.ReplaceAll(string(src), "\r\n", "\n"), "\n")
 	if len(raw) > 0 && raw[len(raw)-1] == "" {
 		raw = raw[:len(raw)-1]

@@ -272,6 +272,7 @@ type Dur struct {
 	Pos
 	N    int64
 	Unit string // y d h m
+	Sec  int64  // N in seconds, 1y = 365d
 }
 
 type Prose struct {

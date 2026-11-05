@@ -18,6 +18,7 @@ type tok struct {
 	Kind tokKind
 	Val  string
 	Pos
+	End int // column just after the token (strings include their quotes)
 }
 
 // line is one logical source line: indentation level and tokens.
@@ -79,7 +80,7 @@ func lexRunes(rs []rune, i, ln, col0 int, diag func(Diag)) ([]tok, bool) {
 			i++
 		case r == '#':
 			if i+1 < len(rs) && rs[i+1] == '!' {
-				toks = append(toks, tok{tPragma, "#!", p})
+				toks = append(toks, tok{tPragma, "#!", p, p.Col + 2})
 				i += 2
 				continue
 			}
@@ -100,13 +101,13 @@ func lexRunes(rs []rune, i, ln, col0 int, diag func(Diag)) ([]tok, bool) {
 			if j == len(rs) {
 				return fail(i, "unterminated string")
 			}
-			toks = append(toks, tok{tString, b.String(), p})
+			toks = append(toks, tok{tString, b.String(), p, col0 + j + 1})
 			i = j + 1
 		case r == '.' && i+1 < len(rs) && rs[i+1] == '.':
-			toks = append(toks, tok{tPunct, "..", p})
+			toks = append(toks, tok{tPunct, "..", p, p.Col + 2})
 			i += 2
 		case strings.ContainsRune(":,()=", r):
-			toks = append(toks, tok{tPunct, string(r), p})
+			toks = append(toks, tok{tPunct, string(r), p, p.Col + 1})
 			i++
 		case wordStart(r):
 			j := i + 1
@@ -119,7 +120,7 @@ func lexRunes(rs []rune, i, ln, col0 int, diag func(Diag)) ([]tok, bool) {
 					break
 				}
 			}
-			toks = append(toks, tok{tWord, string(rs[i:j]), p})
+			toks = append(toks, tok{tWord, string(rs[i:j]), p, col0 + j})
 			i = j
 		default:
 			return fail(i, "unexpected character "+string(r))

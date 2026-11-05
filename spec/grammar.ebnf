@@ -11,7 +11,9 @@
      dur(0d, 65y), number(0.8), date(208-11, 1805-07-?), ruleid(belief-contradiction),
      ref(macbeth.act1/banquo_kings) 를 모두 덮는다. 뜻은 자리(문맥)로 정한다.
    - 구두점: ":" "," "(" ")" "=" ".." 그리고 프라그마 "#!".
-   - 키워드는 예약어가 아니다. 문장 첫 단어와 둘째 단어로 문장 종류를 고른다.
+   - 키워드는 문장 첫 단어와 둘째 단어로 고른다. 다만 다음 단어는 선언 id(decl 의 ident)로 쓸 수 없다
+     (syntax "reserved word used as id"): when enter exit mention beat render reveal withhold setup payoff
+     discourse parent born dies all not to with because src major minor extra
 
    표기: NL = 줄 끝, BLOCK(x) = NL INDENT { x NL } DEDENT, [ BLOCK(x) ] = 빈 몸체 허용. *)
 
@@ -74,13 +76,14 @@ prop        = [ "not" ] ident [ "(" [ prop { "," prop } ] ")" ] ; (* 인자 자�
 proplist    = prop { "," prop } ;
 idlist      = ident { "," ident } ;
 tref        = word ;                                                 (* [@] sid [. beat | .end | .born | .died] | start *)
-dur         = 숫자 { 숫자 } ("y" | "d" | "h" | "m") ;               (* 1y = 365d *)
+dur         = 숫자 { 숫자 } ("y" | "d" | "h" | "m") ;               (* 1y = 365d. AST Dur 는 N, Unit 과 초 단위 Sec 를 함께 가진다 *)
 
 (* ───── .sl.md 파일 ─────
    - 1행이 "---" 이면 다음 "---"(또는 "...") 줄까지가 YAML 프론트매터. 닫히지 않으면 unterminated-fence.
    - 0열의 "```sl" ~ "```" 가 언어 블록. 여러 개면 순서대로 이어 붙인다. 닫히지 않으면 unterminated-fence.
    - 나머지는 산문(Prose, 원래 줄 번호 보존). 한 줄 전체가 "<!-- beat:<id> -->" 이면 BeatAnchor.
    - 확장자가 .sl 이면 파일 전체가 언어 소스다.
+   - 파일 맨 앞의 UTF-8 BOM 은 무시한다.
 
    프론트매터 (yaml.v3 Node, 스칼라는 원문 문자열. 앵커·별칭·병합 키 → yaml-anchor, 모르는 키 → unknown-key)
    생성되는 문장의 위치는 프론트매터의 그 줄이다. 생성 순서:
@@ -98,13 +101,20 @@ dur         = 숫자 { 숫자 } ("y" | "d" | "h" | "m") ;               (* 1y = 
         date: D  time: X           →   when at D X
         discourse: after S         →   discourse after S
         characters: [a, b]         →   enter a, b           (몸체 첫머리)
+        characters: [] / mentions: []  → 아무것도 만들지 않는다(빈 목록 = 아무도 없음, exit all 도 없음)
         mentions: [c]              →   mention c
         … 언어 블록 …
         pov: P  render: {k: v, …}  →   render / pov P / k v  (몸체 끝)
         characters 가 있으면       →   exit all              (맨 끝)
      status, mode, rendered: {…}  → 메타데이터(File.Status/Mode/Rendered). 문장을 만들지 않는다.
 
+   값 규칙: 스칼라 값은 한 줄이어야 한다(블록 스칼라 | > 와 여러 줄 스칼라 → syntax "frontmatter values must be single-line").
+     값이 필요한 키(module import scene location thread when date time discourse characters mentions pov render)가
+     비어 있으면 키 위치에 syntax. 값에서 난 오류는 그 키의 줄, 값 안의 열을 가리킨다.
+
    dup-decl: 같은 정보를 두 곳에 쓰면 오류.
+     같은 YAML 맵 안에서 같은 키 두 번(두 번째 키 위치) / 시간 키(when date time) + 장면 몸체 블록의 when /
+     discourse 키 + 블록의 discourse /
      scene 키 + 블록의 scene 머리줄 / characters 의 인물을 블록에서 enter / characters + 블록의 exit all /
      mentions 의 인물을 블록에서 mention / pov·render 키 + 블록 render 의 같은 키 /
      같은 파일 안에서 같은 선언 id 두 번, 같은 장면 id 두 번.

@@ -1,6 +1,7 @@
 package syntax
 
 import (
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -305,11 +306,12 @@ func (c *cur) dur() Dur {
 		c.fail("bad duration %q (want <n>y|d|h|m)", t.Val)
 	}
 	n, err := strconv.ParseInt(m[1], 10, 64)
-	if err != nil {
+	unit := map[string]int64{"y": 365 * 86400, "d": 86400, "h": 3600, "m": 60}[m[2]]
+	if err != nil || n > math.MaxInt64/unit {
 		c.k--
 		c.fail("duration %q out of range", t.Val)
 	}
-	return Dur{t.Pos, n, m[2]}
+	return Dur{t.Pos, n, m[2], n * unit}
 }
 
 func (c *cur) durRange() (Dur, Dur) {

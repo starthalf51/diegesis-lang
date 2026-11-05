@@ -1,5 +1,7 @@
 package syntax
 
+import "strings"
+
 // work ident [string] [BLOCK(wattr)]
 func (c *cur) work() Node {
 	w := &Work{Pos: c.peek().Pos}
@@ -30,11 +32,24 @@ func (c *cur) work() Node {
 	return w
 }
 
+// reserved cannot be entity ids: they start statements or clauses (spec/grammar.ebnf).
+var reserved = map[string]bool{}
+
+func init() {
+	for _, w := range strings.Fields("when enter exit mention beat render reveal withhold setup payoff discourse " +
+		"parent born dies all not to with because src major minor extra") {
+		reserved[w] = true
+	}
+}
+
 // kind ident [string {"," string}] [tier] ["=" prop] [bool] [BLOCK(attr)]
 func (c *cur) decl() Node {
 	d := &Decl{Pos: c.peek().Pos, Kind: c.peek().Val}
 	c.k++
 	d.ID = c.ident(d.Kind + " id")
+	if reserved[d.ID.Name] {
+		c.p.errAt(d.ID.Pos, "syntax", "reserved word used as id: %q", d.ID.Name)
+	}
 	if s, ok := c.str(); ok {
 		d.Names = append(d.Names, s)
 		for c.accept(",") {

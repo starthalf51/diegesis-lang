@@ -132,8 +132,8 @@ func (c *cur) here() Pos {
 	if t := c.peek(); t != nil {
 		return t.Pos
 	}
-	last := c.l.Toks[len(c.l.Toks)-1]
-	return Pos{last.Line, last.Col + len([]rune(last.Val))}
+	last := c.l.Toks[len(c.l.Toks)-1] // end of line: point at the last character of the line
+	return Pos{last.Line, max(last.Col, last.End-1)}
 }
 
 func (c *cur) fail(format string, args ...any) {
