@@ -1,0 +1,118 @@
+# 맥베스 합격 기준. 기대값은 원작(texts/macbeth-mit.txt, MIT 판 막.장.줄)과 학계 해석에서 왔다.
+# 도구 출력에 맞춰 고치지 않는다. 고칠 때는 원문 근거를 why 와 보고서에 남긴다.
+work: macbeth
+compile_errors: 0
+
+expected:
+  - rule: belief-contradiction
+    target: "macbeth.act1/1.3#a9"     # 1.3 의 아홉째 행위: macbeth says witches: cawdor_in_favour (1.3.74)
+    waived: true
+    why: >-
+      코더 문제. 1.2.59-63 에서 맥베스는 코더가 도운 노르웨이군과 맞섰다(이 포팅은 전장에서 반역을 봤다고 쓴다).
+      그런데 1.3.74-75 에서 "the thane of Cawdor lives, / A prosperous gentleman" 이라고 말한다.
+      앵거스(1.3.117-120)의 "hidden help" 해명 때문에 학계에서 논쟁 중이라 억제하고 사유를 남긴다.
+
+queries:
+  - name: banquo-heard-prophecy
+    why: >-
+      뱅쿼는 1.3.38 에 맥베스와 함께 들어와 셋째 마녀의 "thou shalt be king hereafter"(1.3.52)를 듣는다.
+      그래서 1.3.89 "You shall be king" 은 정보 흐름 위반이 아니다. 출처는 1.3 의 예언 비트 하나뿐이다.
+    sql: |
+      SELECT DISTINCT lint_short(b.entity_id), lint_short(a.actor_id), a.verb, lint_short(a.scene_id), lint_short(a.beat_id)
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/macbeth.cast/banquo' AND b.value
+         AND lint_canon($1, b.prop_id) = lint_canon($1, $1 || '/macbeth.cast/king_hereafter')
+    rows: [["banquo", "witch3", "hails", "1.3", "1.3#prophecy"]]
+
+  - name: lady-macbeth-learns-by-letter
+    why: >-
+      맥베스 부인은 1.5.1 에서 편지를 읽고 예언을 처음 안다("hail, king that shalt be!", 1.5.9).
+      그 전에는 무대에 없었고, 맥베스는 1.5.59 이후에도 예언을 다시 말하지 않는다. 출처는 reads 하나다.
+    sql: |
+      SELECT DISTINCT a.verb, lint_short(a.scene_id)
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/macbeth.cast/lady_macbeth' AND b.value
+         AND lint_canon($1, b.prop_id) = lint_canon($1, $1 || '/macbeth.cast/king_hereafter')
+    rows: [["reads", "1.5"]]
+
+  - name: banquo-kings-paid-off
+    why: >-
+      1.3.69 "Thou shalt get kings" 의 회수는 4.1 의 왕들의 행렬(4.1.123 지문, 4.1.135-136 "points at them for his")이다.
+      unpaid-promise 가 없어야 한다.
+    sql: |
+      SELECT lint_short(p.setup_id), lint_short(p.scene_id),
+             (SELECT count(*) FROM diagnostic d WHERE d.work_id = $1 AND d.rule_id = 'unpaid-promise')
+        FROM payoff p WHERE p.work_id = $1 AND p.setup_id = $1 || '/macbeth.act1/banquo_kings'
+    rows: [["banquo_kings", "4.1", "0"]]
+
+  - name: duncan-silent-after-death
+    why: >-
+      덩컨의 마지막 대사는 1.6.34-37 이다. 2.1 이후 덩컨은 말하지 않고 2.2 에서 죽어 있다("I have done the deed", 2.2.18).
+      덩컨의 행위 중 죽음보다 확실히 앞서지 않는 것은 없어야 한다.
+    sql: |
+      SELECT lint_short(a.id) FROM act a
+       WHERE a.work_id = $1 AND a.resolved_actor_id = $1 || '/macbeth.cast/duncan'
+         AND precedes($1, a.pt, $1 || '/macbeth.cast/duncan.died') <> 'yes'
+       ORDER BY 1
+    rows: []
+
+  - name: duncan-death-window
+    why: >-
+      살해는 무대 밖이다. 맥베스가 2.1 끝(2.1.71-72)에 왕의 방으로 가고, 2.2.5 "He is about it" 동안 일어나며,
+      맥베스가 2.2.17 에 들어오기 전에 끝난다. 죽음 = 2.1 끝 이후, 2.2 의 deed_done 이전.
+    sql: |
+      SELECT precedes($1, $1 || '/macbeth.act2/2.1.end', $1 || '/macbeth.cast/duncan.died'),
+             precedes($1, $1 || '/macbeth.cast/duncan.died', $1 || '/macbeth.act2/2.2#deed_done')
+    rows: [["yes", "yes"]]
+
+  - name: macbeth-told-cawdor-by-ross
+    why: >-
+      로스가 왕의 말을 전한다: "He bade me, from him, call thee thane of Cawdor"(1.3.109).
+      맥베스가 holds(thane_of_cawdor, macbeth) 를 믿게 되는 출처 중 하나는 1.3 의 ross_news 비트다.
+    sql: |
+      SELECT DISTINCT lint_short(a.actor_id), lint_short(a.beat_id)
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/macbeth.cast/macbeth' AND b.value
+         AND b.prop_id = $1 || '/holds(' || $1 || '/macbeth.cast/thane_of_cawdor,' || $1 || '/macbeth.cast/macbeth)'
+         AND a.beat_id = $1 || '/macbeth.act1/1.3#ross_news'
+    rows: [["ross", "1.3#ross_news"]]
+
+  - name: lady-macbeth-told-duncan-comes
+    why: >-
+      덩컨의 방문은 맥베스 부인에게 두 번 전해진다: 전령(1.5.32 "The king comes here to-night")과
+      맥베스(1.5.65 "Duncan comes here to-night"). 전령은 먼저 달려온 동료에게서 들었다(1.5.37).
+    sql: |
+      SELECT lint_short(a.actor_id), lint_short(a.scene_id)
+        FROM believes b JOIN act a ON a.id = b.cause_act JOIN src s ON s.work_id = a.work_id AND s.id = a.src_id
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/macbeth.cast/lady_macbeth' AND b.value
+         AND b.prop_id = $1 || '/macbeth.cast/duncan_comes'
+       ORDER BY s.file, s.line
+    rows: [["messenger", "1.5"], ["macbeth", "1.5"]]
+
+  - name: malcolm-heard-of-execution
+    why: >-
+      맬컴은 코더의 처형을 직접 보지 않았다: "I have spoke / With one that saw him die"(1.4.4-5).
+      그래서 1.4.9 "he died" 의 출처는 무대 밖 처형 사건의 목격자다.
+    sql: |
+      SELECT lint_short(a.actor_id), lint_short(a.scene_id), a.verb
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/macbeth.cast/malcolm' AND b.value
+         AND b.prop_id = $1 || '/not alive(' || $1 || '/macbeth.cast/cawdor)'
+    rows: [["witness", "cawdor_execution", "tells"]]
+
+  - name: titles
+    why: >-
+      작위의 보유 구간. 코더: 덩컨의 선포(1.2.72-74) 전까지 옛 코더, 그 뒤 맥베스. 왕: 덩컨이 처음부터 죽을 때까지.
+      컴벌랜드 공: 1.4.44-45 에서 맬컴. (맥베스의 즉위 2.4 는 포팅 범위 밖이다.)
+    sql: |
+      SELECT lint_short(role_id), lint_short(entity_id), coalesce(lint_short(from_pt), ''), coalesce(lint_short(until_pt), '')
+        FROM role_span WHERE work_id = $1 AND role_id IN ($1 || '/macbeth.cast/thane_of_cawdor', $1 || '/macbeth.cast/king',
+                                                         $1 || '/macbeth.cast/prince_of_cumberland')
+       ORDER BY 1, 3
+    rows:
+      - ["king", "duncan", "start", "duncan.died"]
+      - ["prince_of_cumberland", "malcolm", "1.4#cumberland", ""]
+      - ["thane_of_cawdor", "cawdor", "", "1.2#decree"]
+      - ["thane_of_cawdor", "macbeth", "1.2#decree", ""]
+
+mutation_min_rate: 0.8
