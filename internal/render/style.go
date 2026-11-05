@@ -1,4 +1,4 @@
-package main
+package render
 
 import (
 	"encoding/json"
@@ -42,7 +42,7 @@ func LoadStyles(dir string) ([]StyleSample, error) {
 	sort.Strings(paths)
 	var out []StyleSample
 	for _, p := range paths {
-		s, err := loadStyle(p)
+		s, err := LoadStyle(p)
 		if err != nil {
 			return nil, err
 		}
@@ -51,8 +51,8 @@ func LoadStyles(dir string) ([]StyleSample, error) {
 	return out, nil
 }
 
-// loadStyle reads one style file and checks it is public domain (2026).
-func loadStyle(p string) (StyleSample, error) {
+// LoadStyle reads one style file and checks it is public domain (2026).
+func LoadStyle(p string) (StyleSample, error) {
 	var s StyleSample
 	b, err := os.ReadFile(p)
 	if err != nil {

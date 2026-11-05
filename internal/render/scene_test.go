@@ -1,4 +1,4 @@
-package main
+package render
 
 import (
 	"strings"
@@ -6,7 +6,7 @@ import (
 )
 
 func TestLoadSceneMinimal(t *testing.T) {
-	s, err := LoadScene("testdata/scenes/min.json")
+	s, err := LoadScene("testdata/min.json")
 	if err != nil {
 		t.Fatal(err)
 	}

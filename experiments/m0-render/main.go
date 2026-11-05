@@ -1,6 +1,8 @@
 package main
 
 import (
+	. "story-lang/internal/render"
+
 	"context"
 	"flag"
 	"fmt"
@@ -11,8 +13,8 @@ import (
 )
 
 func main() {
-	scenesDir := flag.String("scenes", "experiments/m0-render/testdata/scenes", "scene IR directory")
-	stylesDir := flag.String("styles", "experiments/m0-render/testdata/styles", "style sample directory")
+	scenesDir := flag.String("scenes", "internal/render/testdata/scenes", "scene IR directory")
+	stylesDir := flag.String("styles", "internal/render/testdata/styles", "style sample directory")
 	out := flag.String("out", "experiments/m0-render/out", "output directory")
 	variants := flag.String("variants", "a,b,c", "comma-separated variants")
 	langs := flag.String("langs", "ko,en", "comma-separated languages")

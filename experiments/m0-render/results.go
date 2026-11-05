@@ -1,6 +1,8 @@
 package main
 
 import (
+	. "story-lang/internal/render"
+
 	"encoding/json"
 	"fmt"
 	"os"

@@ -1,6 +1,8 @@
 package main
 
 import (
+	. "story-lang/internal/render"
+
 	"os"
 	"path/filepath"
 	"strings"
@@ -91,9 +93,9 @@ func TestWriteResultsMarksUnknown(t *testing.T) {
 func TestJobsCount(t *testing.T) {
 	var scenes []Scene
 	for _, n := range []string{"chibi-jianggan", "holmes-scandal-opening", "macbeth-1.3"} {
-		scenes = append(scenes, mustLoad(t, "testdata/scenes/"+n+".json"))
+		scenes = append(scenes, mustLoad(t, fixtures+"scenes/"+n+".json"))
 	}
-	styles := []StyleSample{mustStyle(t, "testdata/styles/doyle-redheaded.json"), mustStyle(t, "testdata/styles/hyunjingeon-unsu.json")}
+	styles := []StyleSample{mustStyle(t, fixtures+"styles/doyle-redheaded.json"), mustStyle(t, fixtures+"styles/hyunjingeon-unsu.json")}
 	vs := []Variant{VariantIROnly, VariantStyle, VariantStyleDirectives}
 	jobs, err := Jobs(scenes, styles, vs, []string{"ko", "en"})
 	if err != nil || len(jobs) != 18 {
