@@ -1,0 +1,203 @@
+{
+  "Imports": [
+    {
+      "Name": "macbeth.cast",
+      "_": "Import",
+      "pos": "3:1"
+    }
+  ],
+  "Items": [
+    {
+      "At": "camp@5:11",
+      "Body": [
+        {
+          "Op": "after",
+          "Ref": {
+            "Path": "start",
+            "_": "Tref",
+            "pos": "6:13"
+          },
+          "_": "When",
+          "pos": "6:1"
+        },
+        {
+          "IDs": [
+            "duncan@7:14",
+            "malcolm@7:22",
+            "lennox@7:31"
+          ],
+          "Op": "enter",
+          "_": "Presence",
+          "pos": "7:1"
+        },
+        {
+          "IDs": [
+            "captain@13:7"
+          ],
+          "Op": "enter",
+          "_": "Presence",
+          "pos": "13:1"
+        },
+        {
+          "Actor": "captain@14:1",
+          "Objects": [
+            "duncan@14:15"
+          ],
+          "Quote": "Macbeth unseamed Macdonwald",
+          "Verb": "tells",
+          "_": "Act",
+          "pos": "14:1"
+        },
+        {
+          "IDs": [
+            "ross@15:7",
+            "angus@15:13"
+          ],
+          "Op": "enter",
+          "_": "Presence",
+          "pos": "15:1"
+        },
+        {
+          "Actor": "ross@16:1",
+          "Objects": [
+            "duncan@16:12"
+          ],
+          "Prop": {
+            "Name": "cawdor_traitor",
+            "_": "Prop",
+            "pos": "16:20"
+          },
+          "Quote": "Assisted by that most disloyal traitor / The Thane of Cawdor",
+          "Verb": "tells",
+          "_": "Act",
+          "pos": "16:1"
+        },
+        {
+          "Body": [
+            {
+              "Actor": "duncan@18:3",
+              "Objects": [
+                "ross@18:17"
+              ],
+              "Prop": {
+                "Args": [
+                  {
+                    "Name": "cawdor",
+                    "_": "Prop",
+                    "pos": "18:33"
+                  }
+                ],
+                "Call": true,
+                "Name": "alive",
+                "Not": true,
+                "_": "Prop",
+                "pos": "18:23"
+              },
+              "Quote": "go pronounce his present death",
+              "Verb": "orders",
+              "_": "Act",
+              "pos": "18:3"
+            },
+            {
+              "Actor": "duncan@19:3",
+              "Prop": {
+                "Args": [
+                  {
+                    "Name": "thane_of_cawdor",
+                    "_": "Prop",
+                    "pos": "19:25"
+                  },
+                  {
+                    "Name": "macbeth",
+                    "_": "Prop",
+                    "pos": "19:42"
+                  }
+                ],
+                "Call": true,
+                "Name": "holds",
+                "_": "Prop",
+                "pos": "19:19"
+              },
+              "Quote": "with his former title greet Macbeth",
+              "Verb": "decrees",
+              "_": "Act",
+              "pos": "19:3"
+            },
+            {
+              "Actor": "duncan@20:3",
+              "Objects": [
+                "ross@20:16",
+                "angus@20:22"
+              ],
+              "To": [
+                "macbeth@20:31"
+              ],
+              "Verb": "sends",
+              "With": [
+                {
+                  "Args": [
+                    {
+                      "Name": "thane_of_cawdor",
+                      "_": "Prop",
+                      "pos": "20:50"
+                    },
+                    {
+                      "Name": "macbeth",
+                      "_": "Prop",
+                      "pos": "20:67"
+                    }
+                  ],
+                  "Call": true,
+                  "Name": "holds",
+                  "_": "Prop",
+                  "pos": "20:44"
+                }
+              ],
+              "_": "Act",
+              "pos": "20:3"
+            }
+          ],
+          "ID": "decree@17:6",
+          "_": "Beat",
+          "pos": "17:1"
+        },
+        {
+          "All": true,
+          "Op": "exit",
+          "_": "Presence",
+          "pos": "7:1"
+        }
+      ],
+      "ID": "1.2@4:9",
+      "_": "Scene",
+      "pos": "4:1"
+    }
+  ],
+  "Mode": "authored",
+  "Module": {
+    "Name": "macbeth.act1",
+    "_": "Module",
+    "pos": "2:1"
+  },
+  "Path": "macbeth-1.2.sl.md",
+  "Prose": [
+    {
+      "Text": "A bleeding soldier is carried into the camp near Forres and tells the king\nhow Macbeth carved his way through the rebels.",
+      "_": "Prose",
+      "pos": "23:1"
+    },
+    {
+      "Beat": "decree",
+      "_": "BeatAnchor",
+      "pos": "26:1"
+    },
+    {
+      "Text": "Duncan names the traitor's title for the victor.",
+      "_": "Prose",
+      "pos": "28:1"
+    }
+  ],
+  "Status": "draft",
+  "_": "File",
+  "pos": "1:1"
+}

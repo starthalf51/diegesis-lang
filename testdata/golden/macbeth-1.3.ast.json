@@ -1,0 +1,375 @@
+{
+  "Imports": [
+    {
+      "Name": "macbeth.cast",
+      "_": "Import",
+      "pos": "3:1"
+    }
+  ],
+  "Items": [
+    {
+      "At": "heath@5:11",
+      "Body": [
+        {
+          "Max": {
+            "N": 1,
+            "Unit": "d",
+            "_": "Dur",
+            "pos": "6:24"
+          },
+          "Min": {
+            "N": 0,
+            "Unit": "d",
+            "_": "Dur",
+            "pos": "6:20"
+          },
+          "Op": "after",
+          "Ref": {
+            "Path": "1.2",
+            "_": "Tref",
+            "pos": "6:13"
+          },
+          "_": "When",
+          "pos": "6:1"
+        },
+        {
+          "IDs": [
+            "macbeth@7:14",
+            "banquo@7:23"
+          ],
+          "Op": "enter",
+          "_": "Presence",
+          "pos": "7:1"
+        },
+        {
+          "IDs": [
+            "witches@17:7"
+          ],
+          "Op": "enter",
+          "_": "Presence",
+          "pos": "17:1"
+        },
+        {
+          "Body": [
+            {
+              "Actor": "witch1@19:3",
+              "Objects": [
+                "macbeth@19:16"
+              ],
+              "Prop": {
+                "Args": [
+                  {
+                    "Name": "thane_of_glamis",
+                    "_": "Prop",
+                    "pos": "19:31"
+                  },
+                  {
+                    "Name": "macbeth",
+                    "_": "Prop",
+                    "pos": "19:48"
+                  }
+                ],
+                "Call": true,
+                "Name": "holds",
+                "_": "Prop",
+                "pos": "19:25"
+              },
+              "Verb": "hails",
+              "_": "Act",
+              "pos": "19:3"
+            },
+            {
+              "Actor": "witch2@20:3",
+              "Objects": [
+                "macbeth@20:16"
+              ],
+              "Prop": {
+                "Args": [
+                  {
+                    "Name": "thane_of_cawdor",
+                    "_": "Prop",
+                    "pos": "20:31"
+                  },
+                  {
+                    "Name": "macbeth",
+                    "_": "Prop",
+                    "pos": "20:48"
+                  }
+                ],
+                "Call": true,
+                "Name": "holds",
+                "_": "Prop",
+                "pos": "20:25"
+              },
+              "Verb": "hails",
+              "_": "Act",
+              "pos": "20:3"
+            },
+            {
+              "Actor": "witch3@21:3",
+              "Objects": [
+                "macbeth@21:16"
+              ],
+              "Prop": {
+                "Name": "king_hereafter",
+                "_": "Prop",
+                "pos": "21:25"
+              },
+              "Quote": "that shalt be king hereafter",
+              "Verb": "hails",
+              "_": "Act",
+              "pos": "21:3"
+            },
+            {
+              "Actor": "witches@22:3",
+              "Objects": [
+                "banquo@22:17"
+              ],
+              "Prop": {
+                "Name": "banquo_line",
+                "_": "Prop",
+                "pos": "22:25"
+              },
+              "Quote": "Thou shalt get kings, though thou be none",
+              "Verb": "tells",
+              "_": "Act",
+              "pos": "22:3"
+            }
+          ],
+          "ID": "prophecy@18:6",
+          "_": "Beat",
+          "pos": "18:1"
+        },
+        {
+          "ID": "banquo_kings@23:7",
+          "Kind": "promise",
+          "Prop": {
+            "Name": "banquo_line",
+            "_": "Prop",
+            "pos": "23:29"
+          },
+          "_": "Setup",
+          "pos": "23:1"
+        },
+        {
+          "Reason": "학계에서 논쟁 중이다. 1.2에서 맥베스는 코더가 도운 노르웨이군과 싸웠다. 그런데도 1.3에서 그가 살아 있고 번창한다고 말한다. 앵거스는 코더의 반역이 '숨은 도움'이었다고 해명한다.",
+          "Rule": "belief-contradiction",
+          "_": "Pragma",
+          "pos": "32:1"
+        },
+        {
+          "Actor": "macbeth@33:1",
+          "Prop": {
+            "Args": [
+              {
+                "Name": "thane_of_cawdor",
+                "_": "Prop",
+                "pos": "33:21"
+              },
+              {
+                "Name": "cawdor",
+                "_": "Prop",
+                "pos": "33:38"
+              }
+            ],
+            "Call": true,
+            "Name": "holds",
+            "_": "Prop",
+            "pos": "33:15"
+          },
+          "Quote": "the Thane of Cawdor lives, / A prosperous gentleman",
+          "Verb": "says",
+          "_": "Act",
+          "pos": "33:1"
+        },
+        {
+          "IDs": [
+            "witches@34:6"
+          ],
+          "Op": "exit",
+          "_": "Presence",
+          "pos": "34:1"
+        },
+        {
+          "IDs": [
+            "ross@35:7",
+            "angus@35:13"
+          ],
+          "Op": "enter",
+          "_": "Presence",
+          "pos": "35:1"
+        },
+        {
+          "Body": [
+            {
+              "Actor": "ross@37:3",
+              "Objects": [
+                "macbeth@37:14",
+                "banquo@37:23"
+              ],
+              "Prop": {
+                "Args": [
+                  {
+                    "Name": "thane_of_cawdor",
+                    "_": "Prop",
+                    "pos": "37:37"
+                  },
+                  {
+                    "Name": "macbeth",
+                    "_": "Prop",
+                    "pos": "37:54"
+                  }
+                ],
+                "Call": true,
+                "Name": "holds",
+                "_": "Prop",
+                "pos": "37:31"
+              },
+              "Quote": "He bade me, from him, call thee Thane of Cawdor",
+              "Verb": "tells",
+              "_": "Act",
+              "pos": "37:3"
+            },
+            {
+              "Actor": "angus@38:3",
+              "Objects": [
+                "macbeth@38:15",
+                "banquo@38:24"
+              ],
+              "Prop": {
+                "Name": "cawdor_traitor",
+                "_": "Prop",
+                "pos": "38:32"
+              },
+              "Quote": "treasons capital, confess'd and proved",
+              "Verb": "tells",
+              "_": "Act",
+              "pos": "38:3"
+            }
+          ],
+          "ID": "ross_news@36:6",
+          "_": "Beat",
+          "pos": "36:1"
+        },
+        {
+          "Actor": "macbeth@39:1",
+          "Quote": "Two truths are told",
+          "Verb": "aside",
+          "_": "Act",
+          "pos": "39:1"
+        },
+        {
+          "Because": {
+            "At": true,
+            "Path": "1.3.ross_news",
+            "_": "Tref",
+            "pos": "40:41"
+          },
+          "Prop": {
+            "Name": "king_hereafter",
+            "_": "Prop",
+            "pos": "40:18"
+          },
+          "Verb": "believes",
+          "Who": "macbeth@40:1",
+          "_": "Belief",
+          "pos": "40:1"
+        },
+        {
+          "Actor": "macbeth@41:1",
+          "Quote": "why do I yield to that suggestion / Whose horrid image doth unfix my hair",
+          "Verb": "thinks",
+          "_": "Act",
+          "pos": "41:1"
+        },
+        {
+          "Actor": "banquo@42:1",
+          "Quote": "oftentimes, to win us to our harm, / The instruments of darkness tell us truths",
+          "Verb": "aside",
+          "_": "Act",
+          "pos": "42:1"
+        },
+        {
+          "Entries": [
+            {
+              "Key": "pov",
+              "Values": [
+                "macbeth",
+                "close"
+              ],
+              "_": "RenderEntry",
+              "pos": "8:1"
+            },
+            {
+              "Key": "pace",
+              "Values": [
+                "slow"
+              ],
+              "_": "RenderEntry",
+              "pos": "10:3"
+            },
+            {
+              "Key": "tension",
+              "Values": [
+                "0.8"
+              ],
+              "_": "RenderEntry",
+              "pos": "11:3"
+            },
+            {
+              "Key": "focus",
+              "Values": [
+                "witches",
+                "macbeth.face"
+              ],
+              "_": "RenderEntry",
+              "pos": "12:3"
+            }
+          ],
+          "_": "Render",
+          "pos": "8:1"
+        },
+        {
+          "All": true,
+          "Op": "exit",
+          "_": "Presence",
+          "pos": "7:1"
+        }
+      ],
+      "ID": "1.3@4:8",
+      "_": "Scene",
+      "pos": "4:1"
+    }
+  ],
+  "Mode": "authored",
+  "Module": {
+    "Name": "macbeth.act1",
+    "_": "Module",
+    "pos": "2:1"
+  },
+  "Path": "macbeth-1.3.sl.md",
+  "Prose": [
+    {
+      "Beat": "prophecy",
+      "_": "BeatAnchor",
+      "pos": "26:1"
+    },
+    {
+      "Text": "Upon the blasted heath the three shapes rose out of the fog and hailed him\nby names he had not yet earned.",
+      "_": "Prose",
+      "pos": "28:1"
+    },
+    {
+      "Beat": "ross_news",
+      "_": "BeatAnchor",
+      "pos": "45:1"
+    },
+    {
+      "Text": "Ross brings the king's word, and the second prophecy is true before the\nfirst one has cooled.",
+      "_": "Prose",
+      "pos": "47:1"
+    }
+  ],
+  "_": "File",
+  "pos": "1:1"
+}
