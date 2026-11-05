@@ -101,7 +101,9 @@ func runTest(dir string, seed int64, n int) (accept.Result, error) {
 		}
 		in.Diags = append(in.Diags, ds...)
 		in.Rows, in.QueryErrors = accept.RunQueries(ctx, pool, e.Work, e.Queries)
-		_, _ = seed, n // 변이 실행은 Task 8
+		if in.Mutants, err = accept.RunMutants(ctx, pool, w, ds, seed, n, os.Stderr); err != nil {
+			return accept.Result{}, err
+		}
 	}
 	r := accept.Judge(e, in)
 	out := filepath.Join("out", "accept", e.Work+".md")
