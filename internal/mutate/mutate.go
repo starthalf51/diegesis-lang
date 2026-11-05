@@ -2,8 +2,8 @@
 // 린터가 그 결함을 잡는지(Expect 규칙 중 하나가 새 warn 을 내는지)를 accept 가 판정한다.
 //
 // 대상 고르기는 IR 의 구문만 본다(누가 어떤 명제를 어떤 행위에서 쓰는가). 시간 풀이와 믿음 파생은
-// 하지 않는다(ADR-010). 그래서 "나중에 쓴다" 는 "다른 행위에서 쓴다" 로 넓게 잡는다 — 출처가 따로 있어
-// 탐지되지 않는 변이는 생존으로 남고 보고서에 그대로 나온다.
+// 하지 않는다(ADR-010). "나중에 쓴다" 와 move-before 의 출처는 Mutation.Pairs/Uses 로 넘기고
+// 하네스(accept.RunMutants)가 PG 로 판정·보충한다.
 package mutate
 
 import (
@@ -16,9 +16,16 @@ import (
 
 // Mutation: Op 연산자, Target 대상(행위 ID, `entity@scene`, `act prop`, setup ID, died 시점 ID),
 // Expect 이 중 하나라도 새 warn 으로 나오면 탐지.
+// Pairs = (정보를 받은 행위 시점, 그 정보를 쓰는 행위 시점) 후보. 하네스가 PG precedes 로 "쓰는 쪽이 뒤"인
+// 쌍이 하나라도 있는 변이만 돌린다(Go 는 시간을 판정하지 않는다). 비어 있으면 거르지 않는다.
+// Before = move-before 가 앞서야 할 출처 시점들. 하네스가 PG 의 believes 에서 채운다.
+// Uses = move-before 대상 행위가 쓰는 명제(정규형). 하네스가 그 출처를 찾을 때 쓴다.
 type Mutation struct {
 	Op, Target string
 	Expect     []string
+	Pairs      [][2]string
+	Uses       []string
+	Before     []string
 }
 
 // info-flow 와 그 동족. 셋은 같은 검사를 대상 행위 종류로 나눈 것이다(한 결함에 진단 하나, Task 6).
@@ -41,13 +48,15 @@ var ops = []string{"drop-tells", "drop-enter", "move-before", "drop-setup", "dro
 func Generate(w *ir.Work, seed int64, n int) []Mutation {
 	x := index(w)
 	var out []Mutation
-	add := func(op, target string) { out = append(out, Mutation{Op: op, Target: target, Expect: opExpect[op]}) }
+	add := func(op, target string, pairs [][2]string, uses []string) {
+		out = append(out, Mutation{Op: op, Target: target, Expect: opExpect[op], Pairs: pairs, Uses: uses})
+	}
 	for _, op := range ops {
 		switch op {
 		case "drop-tells":
 			for _, a := range w.Acts {
-				if telling[a.Verb] && x.heardAndUsed(a, false) {
-					add(op, a.ID)
+				if pairs := x.heardAndUsed(a, false); telling[a.Verb] && len(pairs) > 0 {
+					add(op, a.ID, pairs, nil)
 				}
 			}
 		case "drop-enter":
@@ -55,29 +64,41 @@ func Generate(w *ir.Work, seed int64, n int) []Mutation {
 				if x.exempt(k.entity) {
 					continue
 				}
+				var pairs [][2]string
 				for _, a := range w.Acts {
-					if a.SceneID == k.scene && slices.Contains(x.aud[a.ID], k.entity) && assertive[a.Verb] && x.usedElsewhere(k.entity, a) {
-						add(op, k.entity+"@"+k.scene)
-						break
+					if a.SceneID == k.scene && slices.Contains(x.aud[a.ID], k.entity) && assertive[a.Verb] {
+						pairs = append(pairs, x.usedElsewhere(k.entity, a)...)
 					}
+				}
+				if len(pairs) > 0 {
+					add(op, k.entity+"@"+k.scene, pairs, nil)
 				}
 			}
 		case "move-before":
 			for _, a := range w.Acts {
-				if !a.ActorIsRole && !x.exempt(a.ActorID) && slices.ContainsFunc(x.used(a), func(p string) bool { return !x.background(a.ActorID, p) }) {
-					add(op, a.ID)
+				if a.ActorIsRole || x.exempt(a.ActorID) {
+					continue
+				}
+				var uses []string
+				for _, p := range x.used(a) {
+					if !x.background(a.ActorID, p) && !slices.Contains(uses, p) {
+						uses = append(uses, p)
+					}
+				}
+				if len(uses) > 0 {
+					add(op, a.ID, nil, uses)
 				}
 			}
 		case "drop-setup", "drop-payoff":
 			for _, s := range w.Setups {
 				if (op == "drop-setup" || s.Kind == "promise") && slices.ContainsFunc(w.Payoffs, func(p ir.Payoff) bool { return p.SetupID == s.ID }) {
-					add(op, s.ID)
+					add(op, s.ID, nil, nil)
 				}
 			}
 		case "kill-early":
 			for _, p := range w.Points {
 				if p.Kind == "died" && x.lastAct(strings.TrimSuffix(p.ID, ".died")) != "" {
-					add(op, p.ID)
+					add(op, p.ID, nil, nil)
 				}
 			}
 		case "flip-perceived":
@@ -88,8 +109,8 @@ func Generate(w *ir.Work, seed int64, n int) []Mutation {
 				for _, p := range content(a) {
 					one := a
 					one.PropID, one.With = p, nil
-					if x.heardAndUsed(one, a.Verb == "sees") {
-						add(op, a.ID+" "+p)
+					if pairs := x.heardAndUsed(one, a.Verb == "sees"); len(pairs) > 0 {
+						add(op, a.ID+" "+p, pairs, nil)
 					}
 				}
 			}
@@ -208,32 +229,38 @@ func (x *idx) used(a ir.Act) []string {
 	return out
 }
 
-// usedElsewhere: e 가 a 의 내용 중 하나를 다른 행위에서 쓰고, 그 명제가 e 의 배경 지식이 아니다.
-func (x *idx) usedElsewhere(e string, a ir.Act) bool {
+// usedElsewhere: e 가 a 의 내용 중 배경 지식이 아닌 명제를 쓰는 다른 행위마다 (a 시점, 그 행위 시점) 쌍.
+// "뒤에 쓰는가" 는 여기서 판정하지 않는다(하네스가 PG precedes 로 거른다).
+func (x *idx) usedElsewhere(e string, a ir.Act) [][2]string {
+	var out [][2]string
 	for _, p := range content(a) {
 		c := x.canon(p)
 		if x.background(e, c) {
 			continue
 		}
 		for _, b := range x.w.Acts {
-			if b.ID != a.ID && b.ActorID == e && slices.Contains(x.used(b), c) {
-				return true
+			if b.ID != a.ID && b.ActorID == e && slices.Contains(x.used(b), c) && !slices.Contains(out, [2]string{a.Pt, b.Pt}) {
+				out = append(out, [2]string{a.Pt, b.Pt})
 			}
 		}
 	}
-	return false
+	return out
 }
 
-// heardAndUsed: a 의 내용을 받은 사람(self = 화자 자신이 지각한 경우, 아니면 청중) 중 면제가 아닌 누군가가
-// 그 내용을 다른 행위에서 쓴다.
-func (x *idx) heardAndUsed(a ir.Act, self bool) bool {
+// heardAndUsed: a 의 내용을 받은 사람(self = 화자 자신이 지각한 경우, 아니면 청중) 중 면제가 아닌 사람들의
+// usedElsewhere 쌍.
+func (x *idx) heardAndUsed(a ir.Act, self bool) [][2]string {
 	who := x.aud[a.ID]
 	if self {
 		who = []string{a.ActorID}
 	}
-	return slices.ContainsFunc(who, func(e string) bool {
-		return (self || e != a.ActorID) && !x.exempt(e) && x.usedElsewhere(e, a)
-	})
+	var out [][2]string
+	for _, e := range who {
+		if (self || e != a.ActorID) && !x.exempt(e) {
+			out = append(out, x.usedElsewhere(e, a)...)
+		}
+	}
+	return out
 }
 
 // lastAct 는 e 가 화자인 마지막 행위(IR 순서 = 원문 순서)의 시점. 없으면 "".

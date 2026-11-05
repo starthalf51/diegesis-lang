@@ -32,6 +32,7 @@ scene 1
   a tells b: p
   setup s promise: q
   a tells b: "nothing"
+  a sees: alive(d)
   exit all
 scene 2
   when after 1
@@ -126,5 +127,30 @@ func TestRunMutants(t *testing.T) {
 	var left int
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM work WHERE id LIKE $1`, w.Works[0].ID+"~m%").Scan(&left); err != nil || left != 0 {
 		t.Errorf("mutant works left behind: %d (%v)", left, err)
+	}
+}
+
+// "뒤에 쓰는가" 는 PG precedes 로 정한다: 받은 시점보다 앞선 사용만 있으면 해당 없음.
+func TestApplicableLaterUseOnly(t *testing.T) {
+	pool, ctx := open(t), context.Background()
+	w := compileFixture(t)
+	load(t, pool, w)
+	id := w.Works[0].ID
+	for name, c := range map[string]struct {
+		pair [2]string
+		want bool
+	}{
+		"later use":   {[2]string{id + "/t.s/1#a2", id + "/t.s/2#a1"}, true},
+		"earlier use": {[2]string{id + "/t.s/2#a1", id + "/t.s/1#a2"}, false},
+	} {
+		m := mutate.Mutation{Op: "drop-tells", Target: c.pair[0], Pairs: [][2]string{c.pair}}
+		ok, _, err := applicable(ctx, pool, id, w, &m)
+		if err != nil || ok != c.want {
+			t.Errorf("%s: applicable = %v (%v), want %v", name, ok, err, c.want)
+		}
+	}
+	m := mutate.Mutation{Op: "move-before", Target: id + "/t.s/2#a1", Uses: []string{id + "/t.s/p"}}
+	if ok, _, err := applicable(ctx, pool, id, w, &m); !ok || err != nil || len(m.Before) != 1 || m.Before[0] != id+"/t.s/1#a2" {
+		t.Errorf("move-before sources = %v (%v %v), want [1#a2] (b heard p there)", m.Before, ok, err)
 	}
 }

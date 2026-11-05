@@ -122,3 +122,13 @@ func TestParseRejectsUnknownKey(t *testing.T) {
 		t.Error("want an error for an unknown key")
 	}
 }
+
+// 억제된 warn 도 expect.yaml 에 선언돼야 한다(Review Focus 1: 억제가 진짜 오류를 조용히 덮지 않게).
+func TestAcceptUndeclaredWaiver(t *testing.T) {
+	in := passing()
+	in.Diags = append(in.Diags, diag("info-flow", "m/1.4#a2", "warn", true))
+	r := Judge(parse(t), in)
+	if r.Pass || len(r.Undeclared) != 1 {
+		t.Errorf("pass=%v undeclared=%v, want FAIL with 1 undeclared waiver", r.Pass, r.Undeclared)
+	}
+}

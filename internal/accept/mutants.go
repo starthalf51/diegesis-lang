@@ -17,9 +17,12 @@ import (
 )
 
 // RunMutants 는 변이마다 `<work>~m<i>` 로 적재하고 린트한 뒤 지운다. base 는 이미 적재·린트된 원본이고
-// baseDiags 는 그 진단이다. 탐지 = 원본에 없던 억제되지 않은 warn 중 Expect 규칙이 있다.
-// 적재·파생·린트가 실패하면 도구 사슬이 잡은 것(Caught)이다. 탐지되지 않았는데 파생 행이 원본과 같으면
-// 동등(Equivalent), 다르면 생존(Survived).
+// baseDiags 는 그 진단이다. 돌리기 전에 PG 로 변이를 확정한다(applicable): "받은 정보를 뒤에 쓰는" 쌍이
+// precedes = yes 인 것만 남기고, move-before 는 출처 시점을 채운다. 남지 않은 변이는 NotApplicable 로
+// 목록에만 남는다(비율에서 뺀다).
+// 탐지 = 원본에 없던 억제되지 않은 warn 중 Expect 규칙이 있다. 탐지되지 않았는데 파생 행이 원본과 같으면
+// 동등(Equivalent), 다르면 생존(Survived). 적재·린트·DB 오류는 변이 결과가 아니라 실행 실패다 — 오류를 돌려준다.
+// IR 변이는 컴파일을 거치지 않으므로 Caught(컴파일러가 잡음)는 여기서 나오지 않는다.
 func RunMutants(ctx context.Context, db *pgxpool.Pool, base *ir.Work, baseDiags []pg.Diagnostic, seed int64, n int,
 	log io.Writer) ([]Mutant, error) {
 	work := base.Works[0].ID
@@ -37,32 +40,91 @@ func RunMutants(ctx context.Context, db *pgxpool.Pool, base *ir.Work, baseDiags 
 	for i, m := range mutate.Generate(base, seed, n) {
 		id := fmt.Sprintf("%s~m%d", work, i+1)
 		res := Mutant{Mutation: m}
-		ds, err := loadLint(ctx, db, mutate.Rename(mutate.Apply(base, m), id))
+		ok, why, err := applicable(ctx, db, work, base, &res.Mutation)
 		if err != nil {
-			res.Outcome, res.Note = Caught, err.Error()
-		} else {
+			return nil, fmt.Errorf("m%d %s: %w", i+1, m.Op, err)
+		}
+		if !ok {
+			res.Outcome, res.Note = NotApplicable, why
+			fmt.Fprintf(log, "m%d %s %s → %s (%s)\n", i+1, m.Op, shortAll(work, m.Target), res.Outcome, why)
+			out = append(out, res)
+			continue
+		}
+		ds, err := loadLint(ctx, db, mutate.Rename(mutate.Apply(base, res.Mutation), id))
+		if err == nil {
 			for _, d := range ds {
 				if d.Severity == "warn" && !d.Waived && !before[d.Rule+" "+short(id, d.TargetID)] && !slices.Contains(res.Rules, d.Rule) {
 					res.Rules = append(res.Rules, d.Rule)
 				}
 			}
 			slices.Sort(res.Rules)
-			switch fp, err := fingerprint(ctx, db, id); {
+			var fp print
+			fp, err = fingerprint(ctx, db, id)
+			switch {
+			case err != nil:
 			case slices.ContainsFunc(res.Rules, func(r string) bool { return slices.Contains(m.Expect, r) }):
 				res.Outcome = Detected
-			case err != nil:
-				res.Outcome, res.Note = Survived, err.Error()
 			case fp.equal(basePrint):
 				res.Outcome, res.Note = Equivalent, "파생 행(believes·uses·role_span·공통 시점의 경계)이 원본과 같다"
 			default:
 				res.Outcome, res.Note = Survived, basePrint.diff(fp)
 			}
 		}
-		drop(ctx, db, id)
+		if derr := drop(ctx, db, id); err == nil {
+			err = derr
+		}
+		if err != nil {
+			return nil, fmt.Errorf("m%d %s %s: %w", i+1, m.Op, shortAll(work, m.Target), err)
+		}
 		fmt.Fprintf(log, "m%d %s %s → %s %v\n", i+1, m.Op, shortAll(work, m.Target), res.Outcome, res.Rules)
 		out = append(out, res)
 	}
 	return out, nil
+}
+
+// applicable 은 PG 로 변이를 확정한다. Pairs 가 있으면 precedes(받음, 씀) = yes 인 쌍이 하나라도 있어야 한다.
+// move-before 는 화자(와 그룹)가 쓰는 명제를 얻은 시점들(believes.from_pt, 자신의 decrees)을 Before 로 채운다.
+func applicable(ctx context.Context, db *pgxpool.Pool, work string, base *ir.Work, m *mutate.Mutation) (bool, string, error) {
+	if len(m.Pairs) > 0 {
+		var a, b []string
+		for _, p := range m.Pairs {
+			a, b = append(a, p[0]), append(b, p[1])
+		}
+		rows, err := strRows(ctx, db, `SELECT coalesce(bool_or(precedes($1, a, b) = 'yes'), false)::text
+		  FROM unnest($2::text[], $3::text[]) t(a, b)`, work, a, b)
+		if err != nil {
+			return false, "", err
+		}
+		if rows[0][0] != "true" {
+			return false, "받은 정보를 쓰는 행위가 모두 그 전이거나 순서가 정해지지 않았다", nil
+		}
+	}
+	if m.Op != "move-before" {
+		return true, "", nil
+	}
+	actor := ""
+	for _, a := range base.Acts {
+		if a.ID == m.Target {
+			actor = a.ActorID
+		}
+	}
+	rows, err := strRows(ctx, db, `
+	  SELECT DISTINCT b.from_pt FROM believes b JOIN lint_self_and_groups($1, $2) u ON u.id = b.entity_id
+	   WHERE b.work_id = $1 AND b.value AND b.from_pt IS NOT NULL AND b.from_pt <> $3 AND lint_canon($1, b.prop_id) = ANY ($4)
+	  UNION
+	  SELECT x.pt FROM act_content x JOIN lint_self_and_groups($1, $2) u ON u.id = x.actor_id
+	   WHERE x.work_id = $1 AND x.verb = 'decrees' AND x.pt <> $3 AND lint_canon($1, x.prop_id) = ANY ($4)
+	  ORDER BY 1`, work, actor, m.Target, m.Uses)
+	if err != nil {
+		return false, "", err
+	}
+	for _, r := range rows {
+		m.Before = append(m.Before, r[0])
+	}
+	if len(m.Before) == 0 {
+		return false, "쓰는 명제의 출처 시점이 없다(배경 지식뿐)", nil
+	}
+	return true, "", nil
 }
 
 func loadLint(ctx context.Context, db *pgxpool.Pool, w *ir.Work) ([]pg.Diagnostic, error) {
@@ -72,9 +134,15 @@ func loadLint(ctx context.Context, db *pgxpool.Pool, w *ir.Work) ([]pg.Diagnosti
 	return pg.Lint(ctx, db, w.Works[0].ID, rules.FS)
 }
 
-func drop(ctx context.Context, db *pgxpool.Pool, work string) {
-	db.Exec(ctx, `DELETE FROM public.work WHERE id = $1`, work)
-	db.Exec(ctx, `SELECT ag_catalog.drop_graph(name, true) FROM ag_catalog.ag_graph WHERE name = public.graph_name($1)`, work)
+func drop(ctx context.Context, db *pgxpool.Pool, work string) error {
+	if _, err := db.Exec(ctx, `DELETE FROM public.work WHERE id = $1`, work); err != nil {
+		return fmt.Errorf("drop %s: %w", work, err)
+	}
+	_, err := db.Exec(ctx, `SELECT ag_catalog.drop_graph(name, true) FROM ag_catalog.ag_graph WHERE name = public.graph_name($1)`, work)
+	if err != nil {
+		return fmt.Errorf("drop graph %s: %w", work, err)
+	}
+	return nil
 }
 
 // print 는 작품의 파생 행 지문(작품 ID 접두사를 뺀 문자열). rows = believes·uses·role_span 다중집합,

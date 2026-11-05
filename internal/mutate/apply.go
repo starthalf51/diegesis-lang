@@ -3,6 +3,7 @@ package mutate
 import (
 	"bytes"
 	"encoding/json"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -25,9 +26,16 @@ func Apply(w *ir.Work, m Mutation) *ir.Work {
 		c.Presence = slices.DeleteFunc(c.Presence, func(p ir.Presence) bool { return p.EntityID == e && p.SceneID == s })
 		c.Audience = slices.DeleteFunc(c.Audience, func(a ir.Audience) bool { return a.EntityID == e && inScene[a.ActID] })
 	case "move-before":
-		// 그 행위를 시간축의 맨 앞(원점과 같은 시각)으로 옮긴다. 배경 지식 말고는 어떤 출처보다도 앞이다.
+		// 그 행위를 그 정보의 출처 시점들(m.Before, 하네스가 PG 에서 찾는다)보다 1초 앞으로 옮긴다.
+		// 출처를 모르면 옮기지 않는다.
+		if len(m.Before) == 0 {
+			break
+		}
 		isolate(c, m.Target)
-		c.TimeEdges = append(c.TimeEdges, ir.TimeEdge{From: origin(c), To: m.Target, Min: i64(0), Max: i64(0)})
+		c.TimeEdges = append(c.TimeEdges, ir.TimeEdge{From: origin(c), To: m.Target, Min: i64(0)})
+		for _, s := range m.Before {
+			c.TimeEdges = append(c.TimeEdges, ir.TimeEdge{From: m.Target, To: s, Min: i64(1)})
+		}
 	case "drop-setup":
 		c.Setups = slices.DeleteFunc(c.Setups, func(s ir.Setup) bool { return s.ID == m.Target })
 	case "drop-payoff":
@@ -138,7 +146,8 @@ func Rename(w *ir.Work, id string) *ir.Work {
 	if err != nil {
 		panic(err)
 	}
-	b = bytes.ReplaceAll(b, []byte(`"`+old+`/`), []byte(`"`+id+`/`))
+	// ID 는 따옴표 바로 뒤에도, 복합 명제 안(`holds(w/…,w/…)`, `not w/…`)에도 있다.
+	b = regexp.MustCompile(`(["(, ])`+regexp.QuoteMeta(old)+`/`).ReplaceAll(b, []byte(`${1}`+id+`/`))
 	b = bytes.ReplaceAll(b, []byte(`"`+old+`"`), []byte(`"`+id+`"`))
 	var c ir.Work
 	if err := json.Unmarshal(b, &c); err != nil {

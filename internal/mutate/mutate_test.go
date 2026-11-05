@@ -30,6 +30,7 @@ group o "O"
 fact p "P" true
 fact q "Q" true
 fact r "R" true
+fact al = alive(a)
 b believes r
 scene 1
   enter a, b, c
@@ -104,6 +105,13 @@ func TestGenerateTargets(t *testing.T) {
 		if len(m.Expect) == 0 {
 			t.Errorf("%s %s: no expected rule", m.Op, m.Target)
 		}
+		// "뒤에 쓰는가" 는 하네스가 PG 로 판정할 쌍으로 넘긴다
+		if (m.Op == "drop-tells" || m.Op == "drop-enter" || m.Op == "flip-perceived") && len(m.Pairs) == 0 {
+			t.Errorf("%s %s: no (heard, used) pairs", m.Op, m.Target)
+		}
+		if m.Op == "move-before" && len(m.Uses) == 0 {
+			t.Errorf("%s %s: no used props", m.Op, m.Target)
+		}
 	}
 	if n := len(mutate.Generate(build(t, map[string]string{"t.sl": fixture}), 7, 3)); n != 3 {
 		t.Errorf("Generate(n=3) = %d mutations", n)
@@ -133,8 +141,28 @@ func TestApplyCopies(t *testing.T) {
 			t.Errorf("flip-perceived: with = %v, want the negation of p", a.With)
 		}
 	}
-	if r := mutate.Rename(w, "t~m1"); r.Works[0].ID != "t~m1" || !strings.HasPrefix(r.Acts[0].ID, "t~m1/") {
+	r := mutate.Rename(w, "t~m1")
+	if r.Works[0].ID != "t~m1" || !strings.HasPrefix(r.Acts[0].ID, "t~m1/") {
 		t.Errorf("Rename: %s %s", r.Works[0].ID, r.Acts[0].ID)
+	}
+	for _, f := range r.Facts {
+		if strings.Contains(f.ID, "t/") && !strings.Contains(f.ID, "t~m1/") || strings.Contains(strings.ReplaceAll(f.ID, "t~m1/", ""), "t/") {
+			t.Errorf("Rename left the old work prefix inside %q", f.ID)
+		}
+	}
+	// move-before: 출처(Before) 1초 앞으로. 원래 장면 사슬의 간선은 떼고 원점 간선만 남긴다.
+	mv := mutate.Apply(w, mutate.Mutation{Op: "move-before", Target: "t/t.s/2#a1", Before: []string{"t/t.s/1#a2"}})
+	var into, outof []string
+	for _, e := range mv.TimeEdges {
+		if e.To == "t/t.s/2#a1" {
+			into = append(into, e.From)
+		}
+		if e.From == "t/t.s/2#a1" {
+			outof = append(outof, fmt.Sprintf("%s>=%d", e.To, *e.Min))
+		}
+	}
+	if !slices.Equal(into, []string{"t/start"}) || !slices.Equal(outof, []string{"t/t.s/1#a2>=1"}) {
+		t.Errorf("move-before edges: into %v, out of %v", into, outof)
 	}
 }
 
