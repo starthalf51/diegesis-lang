@@ -1,0 +1,9 @@
+{
+  "id": "s1", "title": "t", "place": "hall", "previously": "",
+  "cast": [{"id":"macbeth","names":{"ko":["맥베스"],"en":["Macbeth"]}},{"id":"ross","names":{"en":["Ross"]}}],
+  "on_stage": ["macbeth","ross"],
+  "facts": [{"id":"f1","text":"The king is dead.","true":true}],
+  "beats": [{"id":"b1","acts":[{"verb":"exit","targets":["ross"]},{"actor":"ross","verb":"says","quote":"hi"}]}],
+  "directives": {"pov":"macbeth","pace":"slow","tension":0.5},
+  "pov_beliefs": [], "reader_knows": [], "withheld": []
+}
