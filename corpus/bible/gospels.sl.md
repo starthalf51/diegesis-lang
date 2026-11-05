@@ -75,7 +75,7 @@ account mark_denial of peter_denies by mark
   peter lies mark_maid: not peter_with_jesus "I neither know nor understand what you are saying." src mark.14.68
   peter sees: rooster_crows "He went out on the porch, and the rooster crowed." src mark.14.68
   mark_maid tells mark_bystanders: peter_disciple "This is one of them." src mark.14.69
-  peter lies mark_bystanders: not peter_with_jesus "But he again denied it." src mark.14.70
+  peter lies mark_bystanders: not peter_disciple "But he again denied it." src mark.14.70
   mark_bystanders tells peter: peter_disciple "You truly are one of them, for you are a Galilean, and your speech shows it." src mark.14.70
   peter lies mark_bystanders: not peter_knows_jesus "I don't know this man of whom you speak!" src mark.14.71
   peter sees: rooster_crows_twice "The rooster crowed the second time." src mark.14.72
@@ -89,7 +89,7 @@ account luke_denial of peter_denies by luke
   peter lies luke_maid: not peter_knows_jesus "Woman, I don't know him." src luke.22.57
   luke_man sees: peter_disciple "After a little while someone else saw him" src luke.22.58
   luke_man tells peter: peter_disciple "You also are one of them!" src luke.22.58
-  peter lies luke_man: not peter_with_jesus "Man, I am not!" src luke.22.58
+  peter lies luke_man: not peter_disciple "Man, I am not!" src luke.22.58
   luke_other sees: peter_with_jesus "for he is a Galilean" src luke.22.59
   luke_other tells peter: peter_with_jesus "Truly this man also was with him, for he is a Galilean!" src luke.22.59
   peter lies luke_other: not peter_with_jesus "Man, I don't know what you are talking about!" src luke.22.60
@@ -102,9 +102,9 @@ account luke_denial of peter_denies by luke
 account john_denial of peter_denies by john
   other_disciple does bring_in peter with doorkeeper_admits_peter "So the other disciple, who was known to the high priest, went out and spoke to her who kept the door, and brought in Peter." src john.18.16
   john_doorkeeper asks peter: peter_disciple "Are you also one of this man's disciples?" src john.18.17
-  peter lies john_doorkeeper: not peter_with_jesus "I am not." src john.18.17
+  peter lies john_doorkeeper: not peter_disciple "I am not." src john.18.17
   john_servants asks peter: peter_disciple "You aren't also one of his disciples, are you?" src john.18.25
-  peter lies john_servants: not peter_with_jesus "He denied it and said, I am not." src john.18.25
+  peter lies john_servants: not peter_disciple "He denied it and said, I am not." src john.18.25
   malchus_relative asks peter: peter_with_jesus "Didn't I see you in the garden with him?" src john.18.26
   peter lies malchus_relative: not peter_with_jesus "Peter therefore denied it again" src john.18.27
   peter sees: rooster_crows "and immediately the rooster crowed." src john.18.27

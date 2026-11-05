@@ -92,6 +92,8 @@ queries:
       조조의 commanders_traitors 믿음은 장간의 말(45.132-133 "produced the letter he had stolen")에서 왔고,
       장간의 믿음은 주유의 막사에서 서신을 읽은 데서(45.115 "He read it") 왔다. 그래프(TOLD·BELIEVES)를 따라가면
       조조 ← 장간(tells) ← 장간이 읽음(reads) 이다. 장간은 엿들은 말(45.124)로도 믿었지만 이 경로의 끝은 reads 다.
+      장간의 믿음은 말하는 시점(45.133)에 살아 있어야 한다: BELIEVES.until 이 없거나 그 시점 뒤(Task 11). 장간은 그 사이에
+      의심하지 않는다(45.129-133: 서신을 들고 돌아가 곧 조조에게 내민다).
     sql: |
       SELECT lint_short(btrim(x.told::text, '"')), lint_short(a.actor_id), a.verb, a.src_ref
         FROM cypher('g_chibi', $$
@@ -99,9 +101,11 @@ queries:
                 (c)-[cb:BELIEVES]->(f:Fact {id: 'chibi/chibi.cast/commanders_traitors'}),
                 (j)-[jb:BELIEVES]->(f)
           WHERE t.prop = f.id AND cb.cause = t.act AND jb.value = true
-          RETURN t.act, jb.cause $$) AS x(told agtype, cause agtype)
+          RETURN t.act, jb.cause, t.pt, jb.until $$) AS x(told agtype, cause agtype, pt agtype, until agtype)
         JOIN act a ON a.id = btrim(x.cause::text, '"')
        WHERE a.work_id = $1 AND a.verb = 'reads'
+         AND (x.until IS NULL OR x.until::text = 'null'
+              OR precedes($1, btrim(x.pt::text, '"'), btrim(x.until::text, '"')) = 'yes')
     rows: [["45.129#a3", "jiang_gan", "reads", "45.115"]]
 
   - name: chancellor-is-cao-cao

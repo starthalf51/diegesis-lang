@@ -6,7 +6,7 @@ compile_errors: 0
 
 expected:
   - rule: time-cycle
-    target: ""                         # derive 진단은 대상 ID 가 없다(간선 묶음). 위치는 genesis.sl.md 의 5:32 문장
+    target: "bible.cast/shem.born"     # 대상 = 순환 간선을 만든 문장(5:32 `born shem when …`, Task 11). 억제도 이 대상과 같아야 한다
     waived: true
     why: >-
       5:32 "Noah was five hundred years old, then Noah became the father of Shem, Ham, and Japheth" 를 셈에게 문자 그대로

@@ -113,10 +113,10 @@ func copies(w *ir.Work, id string) []table {
 		{"point", cols("id", "kind", "src_id"), each(w.Points, func(x ir.Point) []any {
 			return r(x.ID, x.Kind, sid(x.SrcID))
 		})},
-		{"time_edge", cols("ord", "from_pt", "to_pt", "min", "max", "waived", "waiver_rule", "waiver_reason", "src_id"),
+		{"time_edge", cols("ord", "from_pt", "to_pt", "min", "max", "waived", "waiver_rule", "waiver_reason", "src_id", "target_kind", "target_id"),
 			each(w.TimeEdges, func(x ir.TimeEdge) []any {
 				ord++
-				return r(ord, x.From, x.To, x.Min, x.Max, x.Waived, x.WaiverRule, x.WaiverReason, sid(x.SrcID))
+				return r(ord, x.From, x.To, x.Min, x.Max, x.Waived, x.WaiverRule, x.WaiverReason, sid(x.SrcID), x.TargetKind, x.TargetID)
 			})},
 		{"scene", cols("id", "module_id", "kind", "title", "place_id", "thread_id", "start_pt", "end_pt", "discourse_ord", "discourse_after", "shown", "src_id"),
 			each(w.Scenes, func(x ir.Scene) []any {

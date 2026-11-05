@@ -108,12 +108,14 @@ func applicable(ctx context.Context, db *pgxpool.Pool, work string, base *ir.Wor
 			actor = a.ActorID
 		}
 	}
+	// Uses 는 Go 의 한 단계 별칭 풀이다. PG 정규형(008: 부정 안의 별칭)으로 다시 맞춘다.
 	rows, err := strRows(ctx, db, `
+	  WITH c AS (SELECT lint_canon($1, u) AS c FROM unnest($4::text[]) u)
 	  SELECT DISTINCT b.from_pt FROM believes b JOIN lint_self_and_groups($1, $2) u ON u.id = b.entity_id
-	   WHERE b.work_id = $1 AND b.value AND b.from_pt IS NOT NULL AND b.from_pt <> $3 AND lint_canon($1, b.prop_id) = ANY ($4)
+	   WHERE b.work_id = $1 AND b.value AND b.from_pt IS NOT NULL AND b.from_pt <> $3 AND lint_canon($1, b.prop_id) IN (SELECT c FROM c)
 	  UNION
 	  SELECT x.pt FROM act_content x JOIN lint_self_and_groups($1, $2) u ON u.id = x.actor_id
-	   WHERE x.work_id = $1 AND x.verb = 'decrees' AND x.pt <> $3 AND lint_canon($1, x.prop_id) = ANY ($4)
+	   WHERE x.work_id = $1 AND x.verb = 'decrees' AND x.pt <> $3 AND lint_canon($1, x.prop_id) IN (SELECT c FROM c)
 	  ORDER BY 1`, work, actor, m.Target, m.Uses)
 	if err != nil {
 		return false, "", err

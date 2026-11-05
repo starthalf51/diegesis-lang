@@ -140,10 +140,23 @@ account acc2 of ev by b
 scene 2
   when after 1
 `,
-		want: []string{"/warn"}, // derive 진단은 대상 ID 가 없다(간선 묶음). src 는 가장 앞선 간선
+		want: []string{"t.s/1/warn"}, // 대상 = 순환 간선을 만든 첫 `when` 문장(Task 11). src 는 가장 앞선 간선
 		good: `scene 1
   when after 2
 scene 2
+`,
+	},
+	"inferred-deception": {
+		bad: `a believes np
+scene 1
+  enter a
+  a writes letter
+`,
+		want: []string{"t.s/1#a1/info"},
+		good: `scene 1
+  enter a, o
+  o tells a: p
+  a writes letter
 `,
 	},
 }
@@ -171,6 +184,7 @@ func TestRule_dead_actor(t *testing.T)           { checkRule(t, "dead-actor") }
 func TestRule_because_unbelieved(t *testing.T)   { checkRule(t, "because-unbelieved") }
 func TestRule_account_variance(t *testing.T)     { checkRule(t, "account-variance") }
 func TestRule_time_cycle(t *testing.T)           { checkRule(t, "time-cycle") }
+func TestRule_inferred_deception(t *testing.T)   { checkRule(t, "inferred-deception") }
 
 // 순서가 정해지지 않은 출처(형제 장면)는 warn 이 아니라 info(Review Focus 2).
 // writes / because 는 각자의 규칙이 맡고 info-flow 는 겹쳐 내지 않는다.

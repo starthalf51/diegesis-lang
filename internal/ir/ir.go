@@ -128,6 +128,9 @@ type TimeEdge struct {
 	WaiverRule   string `json:"waiver_rule"`
 	WaiverReason string `json:"waiver_reason"`
 	SrcID        int    `json:"src_id"`
+	// TargetKind/TargetID: waiver target of the statement whose own `when` made the edge ("" = order edge).
+	TargetKind string `json:"target_kind,omitempty"`
+	TargetID   string `json:"target_id,omitempty"`
 }
 
 // Scene is any container with start/end points: Kind scene (Shown),

@@ -225,6 +225,9 @@ func (b *builder) stmts(m *module, body []syntax.Node, handle func(syntax.Node) 
 		kind, id := handle(n)
 		own := b.whenEdges
 		b.pend, b.whenEdges = nil, nil
+		for _, i := range own {
+			m.out.TimeEdges[i].TargetKind, m.out.TimeEdges[i].TargetID = kind, id
+		}
 		for _, p := range cur {
 			// only time-cycle waives edges, and only the statement's own
 			// `when` edges: origin and statement-order edges stay in the solve
