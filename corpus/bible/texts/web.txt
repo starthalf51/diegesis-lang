@@ -1,0 +1,128 @@
+# World English Bible (WEB Classic), public domain. https://ebible.org/eng-web/
+# 변환: 장 HTML(아래 URL)에서 절 번호 span 으로 나누고 각주(notemark)를 지웠다. 한 줄 = "<book>.<장>.<절> 본문".
+# src 는 이 앞머리(book.chapter.verse)다. 내려받은 날: 2026-11-05.
+
+## https://ebible.org/eng-web/GEN05.htm
+gen.5.1 This is the book of the generations of Adam. In the day that God created man, he made him in God’s likeness.
+gen.5.2 He created them male and female, and blessed them. On the day they were created, he named them Adam.
+gen.5.3 Adam lived one hundred thirty years, and became the father of a son in his own likeness, after his image, and named him Seth.
+gen.5.4 The days of Adam after he became the father of Seth were eight hundred years, and he became the father of other sons and daughters.
+gen.5.5 All the days that Adam lived were nine hundred thirty years, then he died.
+gen.5.6 Seth lived one hundred five years, then became the father of Enosh.
+gen.5.7 Seth lived after he became the father of Enosh eight hundred seven years, and became the father of other sons and daughters.
+gen.5.8 All of the days of Seth were nine hundred twelve years, then he died.
+gen.5.9 Enosh lived ninety years, and became the father of Kenan.
+gen.5.10 Enosh lived after he became the father of Kenan eight hundred fifteen years, and became the father of other sons and daughters.
+gen.5.11 All of the days of Enosh were nine hundred five years, then he died.
+gen.5.12 Kenan lived seventy years, then became the father of Mahalalel.
+gen.5.13 Kenan lived after he became the father of Mahalalel eight hundred forty years, and became the father of other sons and daughters
+gen.5.14 and all of the days of Kenan were nine hundred ten years, then he died.
+gen.5.15 Mahalalel lived sixty-five years, then became the father of Jared.
+gen.5.16 Mahalalel lived after he became the father of Jared eight hundred thirty years, and became the father of other sons and daughters.
+gen.5.17 All of the days of Mahalalel were eight hundred ninety-five years, then he died.
+gen.5.18 Jared lived one hundred sixty-two years, then became the father of Enoch.
+gen.5.19 Jared lived after he became the father of Enoch eight hundred years, and became the father of other sons and daughters.
+gen.5.20 All of the days of Jared were nine hundred sixty-two years, then he died.
+gen.5.21 Enoch lived sixty-five years, then became the father of Methuselah.
+gen.5.22 After Methuselah’s birth, Enoch walked with God for three hundred years, and became the father of more sons and daughters.
+gen.5.23 All the days of Enoch were three hundred sixty-five years.
+gen.5.24 Enoch walked with God, and he was not found, for God took him.
+gen.5.25 Methuselah lived one hundred eighty-seven years, then became the father of Lamech.
+gen.5.26 Methuselah lived after he became the father of Lamech seven hundred eighty-two years, and became the father of other sons and daughters.
+gen.5.27 All the days of Methuselah were nine hundred sixty-nine years, then he died.
+gen.5.28 Lamech lived one hundred eighty-two years, then became the father of a son.
+gen.5.29 He named him Noah, saying, “This one will comfort us in our work and in the toil of our hands, caused by the ground which Yahweh has cursed.”
+gen.5.30 Lamech lived after he became the father of Noah five hundred ninety-five years, and became the father of other sons and daughters.
+gen.5.31 All the days of Lamech were seven hundred seventy-seven years, then he died.
+gen.5.32 Noah was five hundred years old, then Noah became the father of Shem, Ham, and Japheth.
+
+## https://ebible.org/eng-web/GEN07.htm
+gen.7.6 Noah was six hundred years old when the flood of waters came on the earth.
+gen.7.11 In the six hundredth year of Noah’s life, in the second month, on the seventeenth day of the month, on that day all the fountains of the great deep burst open, and the sky’s windows opened.
+
+## https://ebible.org/eng-web/GEN09.htm
+gen.9.28 Noah lived three hundred fifty years after the flood.
+gen.9.29 All the days of Noah were nine hundred fifty years, and then he died.
+
+## https://ebible.org/eng-web/GEN11.htm
+gen.11.10 This is the history of the generations of Shem: Shem was one hundred years old when he became the father of Arpachshad two years after the flood.
+gen.11.11 Shem lived five hundred years after he became the father of Arpachshad, and became the father of more sons and daughters.
+gen.11.12 Arpachshad lived thirty-five years and became the father of Shelah.
+gen.11.13 Arpachshad lived four hundred three years after he became the father of Shelah, and became the father of more sons and daughters.
+gen.11.14 Shelah lived thirty years, and became the father of Eber.
+gen.11.15 Shelah lived four hundred three years after he became the father of Eber, and became the father of more sons and daughters.
+gen.11.16 Eber lived thirty-four years, and became the father of Peleg.
+gen.11.17 Eber lived four hundred thirty years after he became the father of Peleg, and became the father of more sons and daughters.
+gen.11.18 Peleg lived thirty years, and became the father of Reu.
+gen.11.19 Peleg lived two hundred nine years after he became the father of Reu, and became the father of more sons and daughters.
+gen.11.20 Reu lived thirty-two years, and became the father of Serug.
+gen.11.21 Reu lived two hundred seven years after he became the father of Serug, and became the father of more sons and daughters.
+gen.11.22 Serug lived thirty years, and became the father of Nahor.
+gen.11.23 Serug lived two hundred years after he became the father of Nahor, and became the father of more sons and daughters.
+gen.11.24 Nahor lived twenty-nine years, and became the father of Terah.
+gen.11.25 Nahor lived one hundred nineteen years after he became the father of Terah, and became the father of more sons and daughters.
+gen.11.26 Terah lived seventy years, and became the father of Abram, Nahor, and Haran.
+
+## https://ebible.org/eng-web/MAT26.htm
+matt.26.31 Then Jesus said to them, “All of you will be made to stumble because of me tonight, for it is written, ‘I will strike the shepherd, and the sheep of the flock will be scattered.’
+matt.26.32 But after I am raised up, I will go before you into Galilee.”
+matt.26.33 But Peter answered him, “Even if all will be made to stumble because of you, I will never be made to stumble.”
+matt.26.34 Jesus said to him, “Most certainly I tell you that tonight, before the rooster crows, you will deny me three times.”
+matt.26.35 Peter said to him, “Even if I must die with you, I will not deny you.” All of the disciples also said likewise.
+matt.26.69 Now Peter was sitting outside in the court, and a maid came to him, saying, “You were also with Jesus, the Galilean!”
+matt.26.70 But he denied it before them all, saying, “I don’t know what you are talking about.”
+matt.26.71 When he had gone out onto the porch, someone else saw him and said to those who were there, “This man also was with Jesus of Nazareth.”
+matt.26.72 Again he denied it with an oath, “I don’t know the man.”
+matt.26.73 After a little while those who stood by came and said to Peter, “Surely you are also one of them, for your speech makes you known.”
+matt.26.74 Then he began to curse and to swear, “I don’t know the man!” Immediately the rooster crowed.
+matt.26.75 Peter remembered the word which Jesus had said to him, “Before the rooster crows, you will deny me three times.” Then he went out and wept bitterly.
+
+## https://ebible.org/eng-web/MRK14.htm
+mark.14.27 Jesus said to them, “All of you will be made to stumble because of me tonight, for it is written, ‘I will strike the shepherd, and the sheep will be scattered.’
+mark.14.28 However, after I am raised up, I will go before you into Galilee.”
+mark.14.29 But Peter said to him, “Although all will be offended, yet I will not.”
+mark.14.30 Jesus said to him, “Most certainly I tell you that you today, even this night, before the rooster crows twice, you will deny me three times.”
+mark.14.31 But he spoke all the more, “If I must die with you, I will not deny you.” They all said the same thing.
+mark.14.66 As Peter was in the courtyard below, one of the maids of the high priest came,
+mark.14.67 and seeing Peter warming himself, she looked at him and said, “You were also with the Nazarene, Jesus!”
+mark.14.68 But he denied it, saying, “I neither know nor understand what you are saying.” He went out on the porch, and the rooster crowed.
+mark.14.69 The maid saw him and began again to tell those who stood by, “This is one of them.”
+mark.14.70 But he again denied it. After a little while again those who stood by said to Peter, “You truly are one of them, for you are a Galilean, and your speech shows it.”
+mark.14.71 But he began to curse and to swear, “I don’t know this man of whom you speak!”
+mark.14.72 The rooster crowed the second time. Peter remembered the words that Jesus said to him, “Before the rooster crows twice, you will deny me three times.” When he thought about that, he wept.
+
+## https://ebible.org/eng-web/LUK22.htm
+luke.22.31 The Lord said, “Simon, Simon, behold, Satan asked to have all of you, that he might sift you as wheat,
+luke.22.32 but I prayed for you, that your faith wouldn’t fail. You, when once you have turned again, establish your brothers.”
+luke.22.33 He said to him, “Lord, I am ready to go with you both to prison and to death!”
+luke.22.34 He said, “I tell you, Peter, the rooster will by no means crow today until you deny that you know me three times.”
+luke.22.54 They seized him and led him away, and brought him into the high priest’s house. But Peter followed from a distance.
+luke.22.55 When they had kindled a fire in the middle of the courtyard and had sat down together, Peter sat among them.
+luke.22.56 A certain servant girl saw him as he sat in the light, and looking intently at him, said, “This man also was with him.”
+luke.22.57 He denied Jesus, saying, “Woman, I don’t know him.”
+luke.22.58 After a little while someone else saw him and said, “You also are one of them!” But Peter answered, “Man, I am not!”
+luke.22.59 After about one hour passed, another confidently affirmed, saying, “Truly this man also was with him, for he is a Galilean!”
+luke.22.60 But Peter said, “Man, I don’t know what you are talking about!” Immediately, while he was still speaking, a rooster crowed.
+luke.22.61 The Lord turned and looked at Peter. Then Peter remembered the Lord’s word, how he said to him, “Before the rooster crows you will deny me three times.”
+luke.22.62 He went out, and wept bitterly.
+
+## https://ebible.org/eng-web/JHN13.htm
+john.13.36 Simon Peter said to him, “Lord, where are you going?” Jesus answered, “Where I am going, you can’t follow now, but you will follow afterwards.”
+john.13.37 Peter said to him, “Lord, why can’t I follow you now? I will lay down my life for you.”
+john.13.38 Jesus answered him, “Will you lay down your life for me? Most certainly I tell you, the rooster won’t crow until you have denied me three times.
+
+## https://ebible.org/eng-web/JHN18.htm
+john.18.15 Simon Peter followed Jesus, as did another disciple. Now that disciple was known to the high priest, and entered in with Jesus into the court of the high priest;
+john.18.16 but Peter was standing at the door outside. So the other disciple, who was known to the high priest, went out and spoke to her who kept the door, and brought in Peter.
+john.18.17 Then the maid who kept the door said to Peter, “Are you also one of this man’s disciples?” He said, “I am not.”
+john.18.18 Now the servants and the officers were standing there, having made a fire of coals, for it was cold. They were warming themselves. Peter was with them, standing and warming himself.
+john.18.19 The high priest therefore asked Jesus about his disciples and about his teaching.
+john.18.20 Jesus answered him, “I spoke openly to the world. I always taught in synagogues and in the temple, where the Jews always meet. I said nothing in secret.
+john.18.21 Why do you ask me? Ask those who have heard me what I said to them. Behold, they know the things which I said.”
+john.18.22 When he had said this, one of the officers standing by slapped Jesus with his hand, saying, “Do you answer the high priest like that?”
+john.18.23 Jesus answered him, “If I have spoken evil, testify of the evil; but if well, why do you beat me?”
+john.18.24 Annas sent him bound to Caiaphas, the high priest.
+john.18.25 Now Simon Peter was standing and warming himself. They said therefore to him, “You aren’t also one of his disciples, are you?” He denied it and said, “I am not.”
+john.18.26 One of the servants of the high priest, being a relative of him whose ear Peter had cut off, said, “Didn’t I see you in the garden with him?”
+john.18.27 Peter therefore denied it again, and immediately the rooster crowed.
+

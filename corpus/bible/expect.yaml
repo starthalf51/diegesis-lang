@@ -1,0 +1,170 @@
+# 성경(창세기 5·11장 족보, 네 복음서의 베드로의 부인) 합격 기준. 기대값은 원문(texts/web.txt, World English Bible,
+# `<책>.<장>.<절>`)에서 왔다. 도구 출력에 맞춰 고치지 않는다. 고칠 때는 원문 근거를 why 와 보고서에 남긴다.
+# 연도: 1y = 365d = 31536000 초. 원점 = 아담이 지어진 해(Anno Mundi 0).
+work: bible
+compile_errors: 0
+
+expected:
+  - rule: time-cycle
+    target: ""                         # derive 진단은 대상 ID 가 없다(간선 묶음). 위치는 genesis.sl.md 의 5:32 문장
+    waived: true
+    why: >-
+      5:32 "Noah was five hundred years old, then Noah became the father of Shem, Ham, and Japheth" 를 셈에게 문자 그대로
+      적용하면 셈은 노아 500세(AM 1556)에 난다. 11:10 "Shem was one hundred years old when he became the father of
+      Arpachshad two years after the flood" 와 7:6(홍수 = 노아 600세)으로는 셈 100세 = 노아 602세 → 셈은 노아 502세에 났다.
+      두 제약이 함께 설 수 없다. 5:32 는 첫아들이 난 해로 읽는 것이 일반적이므로 사유를 달아 억제한다.
+
+  # 네 복음서의 차이. 보고서다(info).
+  - rule: account-variance
+    target: "bible.gospels/mark_denial#a9"
+    severity: info
+    why: >-
+      닭이 운 횟수. 마가만 두 번이다: 14:68 "the rooster crowed", 14:72 "The rooster crowed the second time"
+      (예언도 14:30 "before the rooster crows twice"). 마 26:74, 눅 22:60, 요 18:27 은 한 번.
+  - rule: account-variance
+    target: "bible.gospels/john_denial#a1"
+    severity: info
+    why: >-
+      처음 묻는 사람. 요한에서는 베드로를 들여보낸 문지기 여종이다(18:16 "spoke to her who kept the door, and brought in
+      Peter", 18:17 "the maid who kept the door said to Peter"). 공관복음의 여종은 뜰에 앉은 베드로에게 온다
+      (마 26:69 "a maid came to him", 막 14:66, 눅 22:56) — 문지기도, 들여보냄도 없다.
+  - rule: account-variance
+    target: "bible.gospels/luke_denial#a11"
+    severity: info
+    why: 누가만 22:61 "The Lord turned and looked at Peter" 를 적는다.
+  - rule: account-variance
+    target: "bible.gospels/matthew_denial#a10"
+    severity: info
+    why: >-
+      베드로의 기억. 마 26:75, 막 14:72, 눅 22:61 "Peter remembered" — 요한은 18:27 "immediately the rooster crowed" 에서
+      끝나고 기억을 적지 않는다(peter_will_deny 가 요한의 부인 기록에 없다).
+
+queries:
+  - name: methuselah-dies-am-1656
+    why: >-
+      므두셀라는 아담 130 + 셋 105 + 에노스 90 + 게난 70 + 마할랄렐 65 + 야렛 162 + 에녹 65 = AM 687 에 나서
+      (5:3-21) 969년을 살았다(5:27) → AM 1656. 모든 나이가 정확하므로 가장 이른 값 = 가장 늦은 값이다.
+    sql: |
+      SELECT earliest / 31536000, latest / 31536000, earliest % 31536000 = 0 AND earliest = latest
+        FROM point WHERE id = $1 || '/bible.cast/methuselah.died'
+    rows: [["1656", "1656", "true"]]
+
+  - name: methuselah-dies-in-the-flood-year
+    why: >-
+      노아는 AM 1056 에 나서(5:28) 600세에 홍수를 만났다(7:6) → AM 1656. 므두셀라가 죽은 해와 같다. 홍수의 끝도 9:28
+      "Noah lived three hundred fifty years after the flood" 와 9:29 수명 950 으로 같은 해다.
+    sql: |
+      SELECT m.earliest / 31536000, f.earliest / 31536000, e.latest / 31536000,
+             m.earliest / 31536000 = f.earliest / 31536000 AND m.latest / 31536000 = e.latest / 31536000
+        FROM point m, point f, point e
+       WHERE m.id = $1 || '/bible.cast/methuselah.died' AND f.id = $1 || '/bible.genesis/flood.start'
+         AND e.id = $1 || '/bible.genesis/flood.end'
+    rows: [["1656", "1656", "1656", "true"]]
+
+  - name: shem-born-at-noah-502-after-the-waiver
+    why: >-
+      억제한 5:32 간선을 빼면 셈의 출생은 11:10 만으로 정해진다: 아르박삿 = 홍수 + 2 = AM 1658, 셈 = 1658 − 100 = AM 1558
+      = 노아 502세. 11장의 나이를 더하면(11:12-26) 셀라 1693, 에벨 1723, 벨렉 1757, 르우 1787, 스룩 1819, 나홀 1849,
+      데라 1878, 아브람 1948(11:26 문자 그대로). 셈은 600세에 죽는다(11:10-11 100 + 500) → AM 2158.
+    sql: |
+      SELECT lint_short(id), earliest / 31536000, earliest = latest FROM point
+       WHERE id IN ($1 || '/bible.cast/shem.born', $1 || '/bible.cast/arpachshad.born', $1 || '/bible.cast/terah.born',
+                    $1 || '/bible.cast/abram.born', $1 || '/bible.cast/shem.died')
+       ORDER BY earliest
+    rows:
+      - ["shem.born", "1558", "true"]
+      - ["arpachshad.born", "1658", "true"]
+      - ["terah.born", "1878", "true"]
+      - ["abram.born", "1948", "true"]
+      - ["shem.died", "2158", "true"]
+
+  - name: adam-to-abram-twenty-generations
+    why: >-
+      5장: 아담, 셋, 에노스, 게난, 마할랄렐, 야렛, 에녹, 므두셀라, 라멕, 노아(10대). 11:10-26: 셈, 아르박삿, 셀라, 에벨,
+      벨렉, 르우, 스룩, 나홀, 데라, 아브람(10대). PARENT_OF 경로 하나, 사람 20명, 간선 19개.
+    sql: |
+      SELECT count(*), min(x.hops::text), min(x.people::text)
+        FROM cypher('g_bible', $$
+          MATCH p = (a:Entity {id: 'bible/bible.cast/adam'})-[:PARENT_OF*1..40]->(b:Entity {id: 'bible/bible.cast/abram'})
+          RETURN length(p), size(nodes(p)) $$) AS x(hops agtype, people agtype)
+       WHERE $1 = 'bible'                -- 실행기는 $1(작품)을 늘 넘긴다. 그래프 이름이 작품 상수다
+    rows: [["1", "19", "20"]]
+
+  - name: prediction-paid-off-in-every-account
+    why: >-
+      예수의 예언(마 26:34, 막 14:30, 눅 22:34, 요 13:38 "before the rooster crows, you will deny me three times")은
+      같은 복음서의 부인 기록에서 회수된다: 세 번 부인한 뒤 닭이 운다(마 26:74, 막 14:72, 눅 22:60, 요 18:27).
+      unpaid-promise 가 없어야 한다.
+    sql: |
+      SELECT lint_short(s.id), lint_short(s.scene_id), lint_short(p.scene_id), lint_short(a1.source_id), a1.source_id = a2.source_id,
+             (SELECT count(*) FROM diagnostic d WHERE d.work_id = $1 AND d.rule_id = 'unpaid-promise')
+        FROM setup s JOIN payoff p ON p.setup_id = s.id JOIN account a1 ON a1.id = s.scene_id JOIN account a2 ON a2.id = p.scene_id
+       WHERE s.work_id = $1 AND s.kind = 'promise' ORDER BY 1
+    rows:
+      - ["john_foretold", "john_foretells", "john_denial", "john", "true", "0"]
+      - ["luke_foretold", "luke_foretells", "luke_denial", "luke", "true", "0"]
+      - ["mark_foretold", "mark_foretells", "mark_denial", "mark", "true", "0"]
+      - ["matthew_foretold", "matthew_foretells", "matthew_denial", "matthew", "true", "0"]
+
+  - name: three-denials-in-every-account
+    why: >-
+      "you will deny me three times". 마태 26:70, 26:72, 26:74 / 마가 14:68, 14:70, 14:71 / 누가 22:57, 22:58, 22:60 /
+      요한 18:17, 18:25, 18:27. 모두 베드로가 아는 것(그는 예수와 함께 있었다, 마 26:33)을 부정하는 거짓말이다.
+    sql: |
+      SELECT lint_short(a.scene_id), count(*), count(*) FILTER (WHERE EXISTS (SELECT 1 FROM deception d WHERE d.act_id = a.id)),
+             string_agg(a.src_ref, ' ' ORDER BY a.ord)
+        FROM act a JOIN account ac ON ac.id = a.scene_id
+       WHERE a.work_id = $1 AND ac.event_id = $1 || '/bible.gospels/peter_denies' AND a.verb = 'lies'
+         AND a.resolved_actor_id = $1 || '/bible.cast/peter'
+       GROUP BY a.scene_id ORDER BY 1
+    rows:
+      - ["john_denial", "3", "3", "john.18.17 john.18.25 john.18.27"]
+      - ["luke_denial", "3", "3", "luke.22.57 luke.22.58 luke.22.60"]
+      - ["mark_denial", "3", "3", "mark.14.68 mark.14.70 mark.14.71"]
+      - ["matthew_denial", "3", "3", "matt.26.70 matt.26.72 matt.26.74"]
+
+  - name: rooster-crows-once-or-twice
+    why: 마가만 닭이 두 번 운다(14:68, 14:72 "the second time"). 나머지는 한 번(마 26:74, 눅 22:60, 요 18:27).
+    sql: |
+      SELECT lint_short(a.scene_id), count(*), string_agg(a.src_ref, ' ' ORDER BY a.ord)
+        FROM act_content c JOIN act a ON a.id = c.act_id
+       WHERE c.work_id = $1 AND c.verb = 'sees'
+         AND c.prop_id IN ($1 || '/bible.cast/rooster_crows', $1 || '/bible.cast/rooster_crows_twice')
+       GROUP BY a.scene_id ORDER BY 1
+    rows:
+      - ["john_denial", "1", "john.18.27"]
+      - ["luke_denial", "1", "luke.22.60"]
+      - ["mark_denial", "2", "mark.14.68 mark.14.72"]
+      - ["matthew_denial", "1", "matt.26.74"]
+
+  - name: peter-remembers-the-prediction
+    why: >-
+      닭이 울자 베드로는 예언을 기억한다(마 26:75 "Peter remembered the word which Jesus had said to him", 막 14:72,
+      눅 22:61). 그 순간 그는 예언을 확정적으로 믿는다(lint_known = 2). 요한에는 기억이 없다.
+    sql: |
+      SELECT a.src_ref, lint_known($1, $1 || '/bible.cast/peter', $1 || '/bible.cast/peter_will_deny', a.pt)
+        FROM act a WHERE a.work_id = $1 AND a.verb = 'thinks' AND a.resolved_actor_id = $1 || '/bible.cast/peter'
+       ORDER BY 1
+    rows:
+      - ["luke.22.61", "2"]
+      - ["mark.14.72", "2"]
+      - ["matt.26.75", "2"]
+
+  - name: peter-rejects-the-prediction
+    why: >-
+      마태·마가에서 베드로는 예언을 듣자 곧 부정한다(마 26:35 "Even if I must die with you, I will not deny you",
+      막 14:31) — 들은 예언을 믿지 않는다(doubts). 누가·요한에서는 장담(눅 22:33, 요 13:37)이 예언보다 앞서고
+      예언 뒤에 베드로의 대답이 없으므로 들은 믿음은 그대로다.
+    sql: |
+      SELECT a.src_ref, b.until_pt IS NOT NULL
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/bible.cast/peter' AND b.prop_id = $1 || '/bible.cast/peter_will_deny'
+         AND NOT b.declared
+       ORDER BY 1
+    rows:
+      - ["john.13.38", "false"]
+      - ["luke.22.34", "false"]
+      - ["mark.14.30", "true"]
+      - ["matt.26.34", "true"]
+
+mutation_min_rate: 0.8
