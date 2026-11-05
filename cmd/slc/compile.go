@@ -114,6 +114,6 @@ func cmdCompile(args []string) int {
 }
 
 func usage() int {
-	fmt.Fprintln(os.Stderr, "usage: slc db migrate | check <dir> [--json] | build <dir> -o ir.json | load | lint | test | render | render-check")
+	fmt.Fprintln(os.Stderr, "usage: slc db migrate | check <dir> [--json] | build <dir> -o ir.json | load <ir.json|dir> | lint | test | render | render-check")
 	return 2
 }

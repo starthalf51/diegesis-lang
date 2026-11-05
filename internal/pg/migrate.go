@@ -34,7 +34,7 @@ func Connect(ctx context.Context) (*pgxpool.Pool, error) {
 
 // Migrate 는 dir 의 *.sql 을 이름순으로 한 번씩, 파일당 트랜잭션 하나로 적용한다.
 func Migrate(ctx context.Context, db *pgxpool.Pool, dir fs.FS) (applied []string, err error) {
-	if _, err = db.Exec(ctx, `CREATE TABLE IF NOT EXISTS schema_migrations(
+	if _, err = db.Exec(ctx, `CREATE TABLE IF NOT EXISTS public.schema_migrations(
 		name text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now())`); err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func Migrate(ctx context.Context, db *pgxpool.Pool, dir fs.FS) (applied []string
 	sort.Strings(files)
 	for _, name := range files {
 		var done bool
-		if err = db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM schema_migrations WHERE name=$1)`, name).Scan(&done); err != nil {
+		if err = db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM public.schema_migrations WHERE name=$1)`, name).Scan(&done); err != nil {
 			return applied, err
 		}
 		if done {
@@ -72,7 +72,7 @@ func apply(ctx context.Context, db *pgxpool.Pool, name, sql string) error {
 	if _, err := tx.Exec(ctx, sql); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(ctx, `INSERT INTO schema_migrations(name) VALUES($1)`, name); err != nil {
+	if _, err := tx.Exec(ctx, `INSERT INTO public.schema_migrations(name) VALUES($1)`, name); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)
