@@ -1,0 +1,2732 @@
+{
+  "schema": 1,
+  "works": [
+    {
+      "id": "macbeth",
+      "title": "The Tragedy of Macbeth",
+      "unit": "day",
+      "start": "",
+      "src_id": 55
+    }
+  ],
+  "modules": [
+    {
+      "id": "macbeth/macbeth.act1",
+      "work_id": "macbeth",
+      "name": "macbeth.act1",
+      "paths": [
+        "macbeth-1.2.sl.md",
+        "macbeth-1.3.sl.md",
+        "macbeth-1.5.sl.md"
+      ],
+      "imports": [
+        "macbeth/macbeth.cast"
+      ]
+    },
+    {
+      "id": "macbeth/macbeth.cast",
+      "work_id": "macbeth",
+      "name": "macbeth.cast",
+      "paths": [
+        "macbeth-cast.sl.md"
+      ],
+      "imports": []
+    }
+  ],
+  "src": [
+    {
+      "id": 1,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 24,
+      "col": 11
+    },
+    {
+      "id": 2,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 24,
+      "col": 19
+    },
+    {
+      "id": 3,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 24,
+      "col": 27
+    },
+    {
+      "id": 4,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 4,
+      "col": 1
+    },
+    {
+      "id": 5,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 6,
+      "col": 1
+    },
+    {
+      "id": 6,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 7,
+      "col": 14
+    },
+    {
+      "id": 7,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 7,
+      "col": 22
+    },
+    {
+      "id": 8,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 7,
+      "col": 31
+    },
+    {
+      "id": 9,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 13,
+      "col": 7
+    },
+    {
+      "id": 10,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 14,
+      "col": 1
+    },
+    {
+      "id": 11,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 15,
+      "col": 7
+    },
+    {
+      "id": 12,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 15,
+      "col": 13
+    },
+    {
+      "id": 13,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 16,
+      "col": 1
+    },
+    {
+      "id": 14,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 17,
+      "col": 1
+    },
+    {
+      "id": 15,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 18,
+      "col": 23
+    },
+    {
+      "id": 16,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 18,
+      "col": 3
+    },
+    {
+      "id": 17,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 19,
+      "col": 19
+    },
+    {
+      "id": 18,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 19,
+      "col": 3
+    },
+    {
+      "id": 19,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.2.sl.md",
+      "line": 20,
+      "col": 3
+    },
+    {
+      "id": 20,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 4,
+      "col": 1
+    },
+    {
+      "id": 21,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 6,
+      "col": 1
+    },
+    {
+      "id": 22,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 7,
+      "col": 14
+    },
+    {
+      "id": 23,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 7,
+      "col": 23
+    },
+    {
+      "id": 24,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 17,
+      "col": 7
+    },
+    {
+      "id": 25,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 18,
+      "col": 1
+    },
+    {
+      "id": 26,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 19,
+      "col": 25
+    },
+    {
+      "id": 27,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 19,
+      "col": 3
+    },
+    {
+      "id": 28,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 20,
+      "col": 3
+    },
+    {
+      "id": 29,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 21,
+      "col": 3
+    },
+    {
+      "id": 30,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 22,
+      "col": 3
+    },
+    {
+      "id": 31,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 23,
+      "col": 1
+    },
+    {
+      "id": 32,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 33,
+      "col": 15
+    },
+    {
+      "id": 33,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 33,
+      "col": 1
+    },
+    {
+      "id": 34,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 32,
+      "col": 1
+    },
+    {
+      "id": 35,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 35,
+      "col": 7
+    },
+    {
+      "id": 36,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 35,
+      "col": 13
+    },
+    {
+      "id": 37,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 36,
+      "col": 1
+    },
+    {
+      "id": 38,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 37,
+      "col": 3
+    },
+    {
+      "id": 39,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 38,
+      "col": 3
+    },
+    {
+      "id": 40,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 39,
+      "col": 1
+    },
+    {
+      "id": 41,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 40,
+      "col": 1
+    },
+    {
+      "id": 42,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 41,
+      "col": 1
+    },
+    {
+      "id": 43,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 42,
+      "col": 1
+    },
+    {
+      "id": 44,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 8,
+      "col": 1
+    },
+    {
+      "id": 45,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 10,
+      "col": 3
+    },
+    {
+      "id": 46,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 11,
+      "col": 3
+    },
+    {
+      "id": 47,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.3.sl.md",
+      "line": 12,
+      "col": 3
+    },
+    {
+      "id": 48,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.5.sl.md",
+      "line": 4,
+      "col": 1
+    },
+    {
+      "id": 49,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.5.sl.md",
+      "line": 6,
+      "col": 1
+    },
+    {
+      "id": 50,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.5.sl.md",
+      "line": 7,
+      "col": 14
+    },
+    {
+      "id": 51,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.5.sl.md",
+      "line": 14,
+      "col": 1
+    },
+    {
+      "id": 52,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.5.sl.md",
+      "line": 15,
+      "col": 1
+    },
+    {
+      "id": 53,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.5.sl.md",
+      "line": 8,
+      "col": 1
+    },
+    {
+      "id": 54,
+      "module_id": "macbeth/macbeth.act1",
+      "file": "macbeth-1.5.sl.md",
+      "line": 9,
+      "col": 10
+    },
+    {
+      "id": 55,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 7,
+      "col": 1
+    },
+    {
+      "id": 56,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 10,
+      "col": 1
+    },
+    {
+      "id": 57,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 11,
+      "col": 1
+    },
+    {
+      "id": 58,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 12,
+      "col": 1
+    },
+    {
+      "id": 59,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 13,
+      "col": 1
+    },
+    {
+      "id": 60,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 14,
+      "col": 1
+    },
+    {
+      "id": 61,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 15,
+      "col": 1
+    },
+    {
+      "id": 62,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 16,
+      "col": 1
+    },
+    {
+      "id": 63,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 17,
+      "col": 1
+    },
+    {
+      "id": 64,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 18,
+      "col": 1
+    },
+    {
+      "id": 65,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 19,
+      "col": 1
+    },
+    {
+      "id": 66,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 20,
+      "col": 1
+    },
+    {
+      "id": 67,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 21,
+      "col": 1
+    },
+    {
+      "id": 68,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 22,
+      "col": 1
+    },
+    {
+      "id": 69,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 23,
+      "col": 1
+    },
+    {
+      "id": 70,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 27,
+      "col": 1
+    },
+    {
+      "id": 71,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 28,
+      "col": 1
+    },
+    {
+      "id": 72,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 29,
+      "col": 1
+    },
+    {
+      "id": 73,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 30,
+      "col": 1
+    },
+    {
+      "id": 74,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 31,
+      "col": 1
+    },
+    {
+      "id": 75,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 33,
+      "col": 1
+    },
+    {
+      "id": 76,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 34,
+      "col": 3
+    },
+    {
+      "id": 77,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 35,
+      "col": 1
+    },
+    {
+      "id": 78,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 36,
+      "col": 3
+    },
+    {
+      "id": 79,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 37,
+      "col": 3
+    },
+    {
+      "id": 80,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 38,
+      "col": 1
+    },
+    {
+      "id": 81,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 39,
+      "col": 3
+    },
+    {
+      "id": 82,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 41,
+      "col": 1
+    },
+    {
+      "id": 83,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 42,
+      "col": 1
+    },
+    {
+      "id": 84,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 42,
+      "col": 23
+    },
+    {
+      "id": 85,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 43,
+      "col": 1
+    },
+    {
+      "id": 86,
+      "module_id": "macbeth/macbeth.cast",
+      "file": "macbeth-cast.sl.md",
+      "line": 45,
+      "col": 1
+    }
+  ],
+  "entities": [
+    {
+      "id": "macbeth/macbeth.cast/macbeth",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "major",
+      "name": "Macbeth",
+      "knows": "",
+      "src_id": 56
+    },
+    {
+      "id": "macbeth/macbeth.cast/lady_macbeth",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "major",
+      "name": "Lady Macbeth",
+      "knows": "",
+      "src_id": 57
+    },
+    {
+      "id": "macbeth/macbeth.cast/banquo",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "major",
+      "name": "Banquo",
+      "knows": "",
+      "src_id": 58
+    },
+    {
+      "id": "macbeth/macbeth.cast/duncan",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "major",
+      "name": "Duncan",
+      "knows": "",
+      "src_id": 59
+    },
+    {
+      "id": "macbeth/macbeth.cast/ross",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "minor",
+      "name": "Ross",
+      "knows": "",
+      "src_id": 60
+    },
+    {
+      "id": "macbeth/macbeth.cast/angus",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "minor",
+      "name": "Angus",
+      "knows": "",
+      "src_id": 61
+    },
+    {
+      "id": "macbeth/macbeth.cast/malcolm",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "minor",
+      "name": "Malcolm",
+      "knows": "",
+      "src_id": 62
+    },
+    {
+      "id": "macbeth/macbeth.cast/lennox",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "extra",
+      "name": "Lennox",
+      "knows": "",
+      "src_id": 63
+    },
+    {
+      "id": "macbeth/macbeth.cast/captain",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "extra",
+      "name": "a bleeding Captain",
+      "knows": "",
+      "src_id": 64
+    },
+    {
+      "id": "macbeth/macbeth.cast/cawdor",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "minor",
+      "name": "the elder Thane of Cawdor",
+      "knows": "",
+      "src_id": 65
+    },
+    {
+      "id": "macbeth/macbeth.cast/witch1",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "extra",
+      "name": "First Witch",
+      "knows": "",
+      "src_id": 66
+    },
+    {
+      "id": "macbeth/macbeth.cast/witch2",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "extra",
+      "name": "Second Witch",
+      "knows": "",
+      "src_id": 67
+    },
+    {
+      "id": "macbeth/macbeth.cast/witch3",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "character",
+      "tier": "extra",
+      "name": "Third Witch",
+      "knows": "",
+      "src_id": 68
+    },
+    {
+      "id": "macbeth/macbeth.cast/witches",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "group",
+      "tier": "major",
+      "name": "the Weird Sisters",
+      "knows": "oracle",
+      "src_id": 69
+    },
+    {
+      "id": "macbeth/macbeth.cast/camp",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "place",
+      "tier": "",
+      "name": "a camp near Forres",
+      "knows": "",
+      "src_id": 70
+    },
+    {
+      "id": "macbeth/macbeth.cast/heath",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "place",
+      "tier": "",
+      "name": "a heath",
+      "knows": "",
+      "src_id": 71
+    },
+    {
+      "id": "macbeth/macbeth.cast/inverness",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "place",
+      "tier": "",
+      "name": "Macbeth's castle, Inverness",
+      "knows": "",
+      "src_id": 72
+    },
+    {
+      "id": "macbeth/macbeth.cast/cavern",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "kind": "place",
+      "tier": "",
+      "name": "a cavern, the witches' cauldron",
+      "knows": "",
+      "src_id": 73
+    }
+  ],
+  "group_members": [
+    {
+      "group_id": "macbeth/macbeth.cast/witches",
+      "member_id": "macbeth/macbeth.cast/witch1",
+      "src_id": 1
+    },
+    {
+      "group_id": "macbeth/macbeth.cast/witches",
+      "member_id": "macbeth/macbeth.cast/witch2",
+      "src_id": 2
+    },
+    {
+      "group_id": "macbeth/macbeth.cast/witches",
+      "member_id": "macbeth/macbeth.cast/witch3",
+      "src_id": 3
+    }
+  ],
+  "names": [
+    {
+      "owner_id": "macbeth/macbeth.cast/macbeth",
+      "lang": "",
+      "text": "Macbeth",
+      "ord": 0,
+      "src_id": 56
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/lady_macbeth",
+      "lang": "",
+      "text": "Lady Macbeth",
+      "ord": 0,
+      "src_id": 57
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/banquo",
+      "lang": "",
+      "text": "Banquo",
+      "ord": 0,
+      "src_id": 58
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/duncan",
+      "lang": "",
+      "text": "Duncan",
+      "ord": 0,
+      "src_id": 59
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/ross",
+      "lang": "",
+      "text": "Ross",
+      "ord": 0,
+      "src_id": 60
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/angus",
+      "lang": "",
+      "text": "Angus",
+      "ord": 0,
+      "src_id": 61
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/malcolm",
+      "lang": "",
+      "text": "Malcolm",
+      "ord": 0,
+      "src_id": 62
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/lennox",
+      "lang": "",
+      "text": "Lennox",
+      "ord": 0,
+      "src_id": 63
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/captain",
+      "lang": "",
+      "text": "a bleeding Captain",
+      "ord": 0,
+      "src_id": 64
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/cawdor",
+      "lang": "",
+      "text": "the elder Thane of Cawdor",
+      "ord": 0,
+      "src_id": 65
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/witch1",
+      "lang": "",
+      "text": "First Witch",
+      "ord": 0,
+      "src_id": 66
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/witch2",
+      "lang": "",
+      "text": "Second Witch",
+      "ord": 0,
+      "src_id": 67
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/witch3",
+      "lang": "",
+      "text": "Third Witch",
+      "ord": 0,
+      "src_id": 68
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/witches",
+      "lang": "",
+      "text": "the Weird Sisters",
+      "ord": 0,
+      "src_id": 69
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/camp",
+      "lang": "",
+      "text": "a camp near Forres",
+      "ord": 0,
+      "src_id": 70
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/heath",
+      "lang": "",
+      "text": "a heath",
+      "ord": 0,
+      "src_id": 71
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/inverness",
+      "lang": "",
+      "text": "Macbeth's castle, Inverness",
+      "ord": 0,
+      "src_id": 72
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/cavern",
+      "lang": "",
+      "text": "a cavern, the witches' cauldron",
+      "ord": 0,
+      "src_id": 73
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/thane_of_glamis",
+      "lang": "",
+      "text": "Thane of Glamis",
+      "ord": 0,
+      "src_id": 75
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/thane_of_glamis",
+      "lang": "",
+      "text": "Glamis",
+      "ord": 1,
+      "src_id": 75
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/thane_of_cawdor",
+      "lang": "",
+      "text": "Thane of Cawdor",
+      "ord": 0,
+      "src_id": 77
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/thane_of_cawdor",
+      "lang": "",
+      "text": "Cawdor",
+      "ord": 1,
+      "src_id": 77
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/king",
+      "lang": "",
+      "text": "the King",
+      "ord": 0,
+      "src_id": 80
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/king",
+      "lang": "",
+      "text": "Scotland",
+      "ord": 1,
+      "src_id": 80
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/cawdor_traitor",
+      "lang": "",
+      "text": "Cawdor aided Norway against Duncan",
+      "ord": 0,
+      "src_id": 82
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/banquo_line",
+      "lang": "",
+      "text": "Banquo's descendants shall be kings",
+      "ord": 0,
+      "src_id": 85
+    },
+    {
+      "owner_id": "macbeth/macbeth.cast/macbeth_letter",
+      "lang": "",
+      "text": "Macbeth's letter",
+      "ord": 0,
+      "src_id": 86
+    }
+  ],
+  "roles": [
+    {
+      "id": "macbeth/macbeth.cast/thane_of_glamis",
+      "work_id": "macbeth",
+      "names": [
+        "Thane of Glamis",
+        "Glamis"
+      ],
+      "shared": false,
+      "src_id": 75
+    },
+    {
+      "id": "macbeth/macbeth.cast/thane_of_cawdor",
+      "work_id": "macbeth",
+      "names": [
+        "Thane of Cawdor",
+        "Cawdor"
+      ],
+      "shared": false,
+      "src_id": 77
+    },
+    {
+      "id": "macbeth/macbeth.cast/king",
+      "work_id": "macbeth",
+      "names": [
+        "the King",
+        "Scotland"
+      ],
+      "shared": false,
+      "src_id": 80
+    }
+  ],
+  "role_holders": [
+    {
+      "role_id": "macbeth/macbeth.cast/thane_of_glamis",
+      "entity_id": "macbeth/macbeth.cast/macbeth",
+      "holder_is_role": false,
+      "from_tref": "start",
+      "until_tref": "",
+      "from_pt": "macbeth/start",
+      "until_pt": "",
+      "shared": false,
+      "src_id": 76
+    },
+    {
+      "role_id": "macbeth/macbeth.cast/thane_of_cawdor",
+      "entity_id": "macbeth/macbeth.cast/cawdor",
+      "holder_is_role": false,
+      "from_tref": "",
+      "until_tref": "@1.2.decree",
+      "from_pt": "",
+      "until_pt": "macbeth/macbeth.act1/1.2#decree",
+      "shared": false,
+      "src_id": 78
+    },
+    {
+      "role_id": "macbeth/macbeth.cast/thane_of_cawdor",
+      "entity_id": "macbeth/macbeth.cast/macbeth",
+      "holder_is_role": false,
+      "from_tref": "@1.2.decree",
+      "until_tref": "",
+      "from_pt": "macbeth/macbeth.act1/1.2#decree",
+      "until_pt": "",
+      "shared": false,
+      "src_id": 79
+    },
+    {
+      "role_id": "macbeth/macbeth.cast/king",
+      "entity_id": "macbeth/macbeth.cast/duncan",
+      "holder_is_role": false,
+      "from_tref": "start",
+      "until_tref": "",
+      "from_pt": "macbeth/start",
+      "until_pt": "",
+      "shared": false,
+      "src_id": 81
+    }
+  ],
+  "points": [
+    {
+      "id": "macbeth/start",
+      "work_id": "macbeth",
+      "kind": "origin",
+      "src_id": 55
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2.start",
+      "work_id": "macbeth",
+      "kind": "scene_start",
+      "src_id": 4
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2#a1",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 10
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2#a2",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 13
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2#decree",
+      "work_id": "macbeth",
+      "kind": "beat",
+      "src_id": 14
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2#a3",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 16
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2#a4",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 18
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2#a5",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 19
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2.end",
+      "work_id": "macbeth",
+      "kind": "scene_end",
+      "src_id": 4
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3.start",
+      "work_id": "macbeth",
+      "kind": "scene_start",
+      "src_id": 20
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#prophecy",
+      "work_id": "macbeth",
+      "kind": "beat",
+      "src_id": 25
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a1",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 27
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a2",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 28
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a3",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 29
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a4",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 30
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a5",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 33
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#ross_news",
+      "work_id": "macbeth",
+      "kind": "beat",
+      "src_id": 37
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a6",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 38
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a7",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 39
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a8",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 40
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a9",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 42
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a10",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 43
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3.end",
+      "work_id": "macbeth",
+      "kind": "scene_end",
+      "src_id": 20
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.5.start",
+      "work_id": "macbeth",
+      "kind": "scene_start",
+      "src_id": 48
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.5#a1",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 51
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.5#a2",
+      "work_id": "macbeth",
+      "kind": "act",
+      "src_id": 52
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.5.end",
+      "work_id": "macbeth",
+      "kind": "scene_end",
+      "src_id": 48
+    }
+  ],
+  "time_edges": [
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.2.start",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 4
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.2.start",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 5
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.2#a1",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 10
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.2.start",
+      "to": "macbeth/macbeth.act1/1.2#a1",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 10
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.2#a2",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 13
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.2#a1",
+      "to": "macbeth/macbeth.act1/1.2#a2",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 13
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.2#decree",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 14
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.2#a2",
+      "to": "macbeth/macbeth.act1/1.2#decree",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 14
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.2#a3",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 16
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.2#decree",
+      "to": "macbeth/macbeth.act1/1.2#a3",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 16
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.2#a4",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 18
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.2#a3",
+      "to": "macbeth/macbeth.act1/1.2#a4",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 18
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.2#a5",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 19
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.2#a4",
+      "to": "macbeth/macbeth.act1/1.2#a5",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 19
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.2.end",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 4
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.2#a5",
+      "to": "macbeth/macbeth.act1/1.2.end",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 4
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3.start",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 20
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.2.end",
+      "to": "macbeth/macbeth.act1/1.3.start",
+      "min": 0,
+      "max": 86400,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 21
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#prophecy",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 25
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3.start",
+      "to": "macbeth/macbeth.act1/1.3#prophecy",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 25
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#a1",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 27
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#prophecy",
+      "to": "macbeth/macbeth.act1/1.3#a1",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 27
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#a2",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 28
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#a1",
+      "to": "macbeth/macbeth.act1/1.3#a2",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 28
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#a3",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 29
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#a2",
+      "to": "macbeth/macbeth.act1/1.3#a3",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 29
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#a4",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 30
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#a3",
+      "to": "macbeth/macbeth.act1/1.3#a4",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 30
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#a5",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 33
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#a4",
+      "to": "macbeth/macbeth.act1/1.3#a5",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 33
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#ross_news",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 37
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#a5",
+      "to": "macbeth/macbeth.act1/1.3#ross_news",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 37
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#a6",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 38
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#ross_news",
+      "to": "macbeth/macbeth.act1/1.3#a6",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 38
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#a7",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 39
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#a6",
+      "to": "macbeth/macbeth.act1/1.3#a7",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 39
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#a8",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 40
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#a7",
+      "to": "macbeth/macbeth.act1/1.3#a8",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 40
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#a9",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 42
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#a8",
+      "to": "macbeth/macbeth.act1/1.3#a9",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 42
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3#a10",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 43
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#a9",
+      "to": "macbeth/macbeth.act1/1.3#a10",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 43
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.3.end",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 20
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3#a10",
+      "to": "macbeth/macbeth.act1/1.3.end",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 20
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.5.start",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 48
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.3.end",
+      "to": "macbeth/macbeth.act1/1.5.start",
+      "min": 86400,
+      "max": 259200,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 49
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.5#a1",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 51
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.5.start",
+      "to": "macbeth/macbeth.act1/1.5#a1",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 51
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.5#a2",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 52
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.5#a1",
+      "to": "macbeth/macbeth.act1/1.5#a2",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 52
+    },
+    {
+      "from": "macbeth/start",
+      "to": "macbeth/macbeth.act1/1.5.end",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 48
+    },
+    {
+      "from": "macbeth/macbeth.act1/1.5#a2",
+      "to": "macbeth/macbeth.act1/1.5.end",
+      "min": 0,
+      "max": null,
+      "waived": false,
+      "waiver_rule": "",
+      "waiver_reason": "",
+      "src_id": 48
+    }
+  ],
+  "scenes": [
+    {
+      "id": "macbeth/macbeth.act1/1.2",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.act1",
+      "kind": "scene",
+      "title": "",
+      "place_id": "macbeth/macbeth.cast/camp",
+      "thread_id": "",
+      "start_pt": "macbeth/macbeth.act1/1.2.start",
+      "end_pt": "macbeth/macbeth.act1/1.2.end",
+      "discourse_ord": 1,
+      "discourse_after": "",
+      "shown": true,
+      "src_id": 4
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.act1",
+      "kind": "scene",
+      "title": "",
+      "place_id": "macbeth/macbeth.cast/heath",
+      "thread_id": "",
+      "start_pt": "macbeth/macbeth.act1/1.3.start",
+      "end_pt": "macbeth/macbeth.act1/1.3.end",
+      "discourse_ord": 2,
+      "discourse_after": "",
+      "shown": true,
+      "src_id": 20
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.5",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.act1",
+      "kind": "scene",
+      "title": "",
+      "place_id": "macbeth/macbeth.cast/inverness",
+      "thread_id": "",
+      "start_pt": "macbeth/macbeth.act1/1.5.start",
+      "end_pt": "macbeth/macbeth.act1/1.5.end",
+      "discourse_ord": 3,
+      "discourse_after": "",
+      "shown": true,
+      "src_id": 48
+    }
+  ],
+  "presence": [
+    {
+      "entity_id": "macbeth/macbeth.cast/duncan",
+      "scene_id": "macbeth/macbeth.act1/1.2",
+      "place_id": "macbeth/macbeth.cast/camp",
+      "from_pt": "macbeth/macbeth.act1/1.2.start",
+      "to_pt": "macbeth/macbeth.act1/1.2.end",
+      "src_id": 6
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/malcolm",
+      "scene_id": "macbeth/macbeth.act1/1.2",
+      "place_id": "macbeth/macbeth.cast/camp",
+      "from_pt": "macbeth/macbeth.act1/1.2.start",
+      "to_pt": "macbeth/macbeth.act1/1.2.end",
+      "src_id": 7
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/lennox",
+      "scene_id": "macbeth/macbeth.act1/1.2",
+      "place_id": "macbeth/macbeth.cast/camp",
+      "from_pt": "macbeth/macbeth.act1/1.2.start",
+      "to_pt": "macbeth/macbeth.act1/1.2.end",
+      "src_id": 8
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/captain",
+      "scene_id": "macbeth/macbeth.act1/1.2",
+      "place_id": "macbeth/macbeth.cast/camp",
+      "from_pt": "macbeth/macbeth.act1/1.2.start",
+      "to_pt": "macbeth/macbeth.act1/1.2.end",
+      "src_id": 9
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/ross",
+      "scene_id": "macbeth/macbeth.act1/1.2",
+      "place_id": "macbeth/macbeth.cast/camp",
+      "from_pt": "macbeth/macbeth.act1/1.2#a1",
+      "to_pt": "macbeth/macbeth.act1/1.2.end",
+      "src_id": 11
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/angus",
+      "scene_id": "macbeth/macbeth.act1/1.2",
+      "place_id": "macbeth/macbeth.cast/camp",
+      "from_pt": "macbeth/macbeth.act1/1.2#a1",
+      "to_pt": "macbeth/macbeth.act1/1.2.end",
+      "src_id": 12
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/macbeth",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "place_id": "macbeth/macbeth.cast/heath",
+      "from_pt": "macbeth/macbeth.act1/1.3.start",
+      "to_pt": "macbeth/macbeth.act1/1.3.end",
+      "src_id": 22
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/banquo",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "place_id": "macbeth/macbeth.cast/heath",
+      "from_pt": "macbeth/macbeth.act1/1.3.start",
+      "to_pt": "macbeth/macbeth.act1/1.3.end",
+      "src_id": 23
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/witches",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "place_id": "macbeth/macbeth.cast/heath",
+      "from_pt": "macbeth/macbeth.act1/1.3.start",
+      "to_pt": "macbeth/macbeth.act1/1.3#ross_news",
+      "src_id": 24
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/witch1",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "place_id": "macbeth/macbeth.cast/heath",
+      "from_pt": "macbeth/macbeth.act1/1.3.start",
+      "to_pt": "macbeth/macbeth.act1/1.3#ross_news",
+      "src_id": 24
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/witch2",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "place_id": "macbeth/macbeth.cast/heath",
+      "from_pt": "macbeth/macbeth.act1/1.3.start",
+      "to_pt": "macbeth/macbeth.act1/1.3#ross_news",
+      "src_id": 24
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/witch3",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "place_id": "macbeth/macbeth.cast/heath",
+      "from_pt": "macbeth/macbeth.act1/1.3.start",
+      "to_pt": "macbeth/macbeth.act1/1.3#ross_news",
+      "src_id": 24
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/ross",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "place_id": "macbeth/macbeth.cast/heath",
+      "from_pt": "macbeth/macbeth.act1/1.3#a5",
+      "to_pt": "macbeth/macbeth.act1/1.3.end",
+      "src_id": 35
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/angus",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "place_id": "macbeth/macbeth.cast/heath",
+      "from_pt": "macbeth/macbeth.act1/1.3#a5",
+      "to_pt": "macbeth/macbeth.act1/1.3.end",
+      "src_id": 36
+    },
+    {
+      "entity_id": "macbeth/macbeth.cast/lady_macbeth",
+      "scene_id": "macbeth/macbeth.act1/1.5",
+      "place_id": "macbeth/macbeth.cast/inverness",
+      "from_pt": "macbeth/macbeth.act1/1.5.start",
+      "to_pt": "macbeth/macbeth.act1/1.5.end",
+      "src_id": 50
+    }
+  ],
+  "acts": [
+    {
+      "id": "macbeth/macbeth.act1/1.2#a1",
+      "scene_id": "macbeth/macbeth.act1/1.2",
+      "beat_id": "",
+      "ord": 1,
+      "pt": "macbeth/macbeth.act1/1.2#a1",
+      "actor_id": "macbeth/macbeth.cast/captain",
+      "actor_is_role": false,
+      "verb": "tells",
+      "action": "",
+      "objects": [
+        "macbeth/macbeth.cast/duncan"
+      ],
+      "to": [],
+      "with": [],
+      "prop_id": "",
+      "quote": "Macbeth unseamed Macdonwald",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 10
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2#a2",
+      "scene_id": "macbeth/macbeth.act1/1.2",
+      "beat_id": "",
+      "ord": 2,
+      "pt": "macbeth/macbeth.act1/1.2#a2",
+      "actor_id": "macbeth/macbeth.cast/ross",
+      "actor_is_role": false,
+      "verb": "tells",
+      "action": "",
+      "objects": [
+        "macbeth/macbeth.cast/duncan"
+      ],
+      "to": [],
+      "with": [],
+      "prop_id": "macbeth/macbeth.cast/cawdor_traitor",
+      "quote": "Assisted by that most disloyal traitor / The Thane of Cawdor",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 13
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2#a3",
+      "scene_id": "macbeth/macbeth.act1/1.2",
+      "beat_id": "macbeth/macbeth.act1/1.2#decree",
+      "ord": 3,
+      "pt": "macbeth/macbeth.act1/1.2#a3",
+      "actor_id": "macbeth/macbeth.cast/duncan",
+      "actor_is_role": false,
+      "verb": "orders",
+      "action": "",
+      "objects": [
+        "macbeth/macbeth.cast/ross"
+      ],
+      "to": [],
+      "with": [],
+      "prop_id": "macbeth/not alive(macbeth/macbeth.cast/cawdor)",
+      "quote": "go pronounce his present death",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 16
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2#a4",
+      "scene_id": "macbeth/macbeth.act1/1.2",
+      "beat_id": "macbeth/macbeth.act1/1.2#decree",
+      "ord": 4,
+      "pt": "macbeth/macbeth.act1/1.2#a4",
+      "actor_id": "macbeth/macbeth.cast/duncan",
+      "actor_is_role": false,
+      "verb": "decrees",
+      "action": "",
+      "objects": [],
+      "to": [],
+      "with": [],
+      "prop_id": "macbeth/holds(macbeth/macbeth.cast/thane_of_cawdor,macbeth/macbeth.cast/macbeth)",
+      "quote": "with his former title greet Macbeth",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 18
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.2#a5",
+      "scene_id": "macbeth/macbeth.act1/1.2",
+      "beat_id": "macbeth/macbeth.act1/1.2#decree",
+      "ord": 5,
+      "pt": "macbeth/macbeth.act1/1.2#a5",
+      "actor_id": "macbeth/macbeth.cast/duncan",
+      "actor_is_role": false,
+      "verb": "sends",
+      "action": "",
+      "objects": [
+        "macbeth/macbeth.cast/ross",
+        "macbeth/macbeth.cast/angus"
+      ],
+      "to": [
+        "macbeth/macbeth.cast/macbeth"
+      ],
+      "with": [
+        "macbeth/holds(macbeth/macbeth.cast/thane_of_cawdor,macbeth/macbeth.cast/macbeth)"
+      ],
+      "prop_id": "",
+      "quote": "",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 19
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a1",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "beat_id": "macbeth/macbeth.act1/1.3#prophecy",
+      "ord": 1,
+      "pt": "macbeth/macbeth.act1/1.3#a1",
+      "actor_id": "macbeth/macbeth.cast/witch1",
+      "actor_is_role": false,
+      "verb": "hails",
+      "action": "",
+      "objects": [
+        "macbeth/macbeth.cast/macbeth"
+      ],
+      "to": [],
+      "with": [],
+      "prop_id": "macbeth/holds(macbeth/macbeth.cast/thane_of_glamis,macbeth/macbeth.cast/macbeth)",
+      "quote": "",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 27
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a2",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "beat_id": "macbeth/macbeth.act1/1.3#prophecy",
+      "ord": 2,
+      "pt": "macbeth/macbeth.act1/1.3#a2",
+      "actor_id": "macbeth/macbeth.cast/witch2",
+      "actor_is_role": false,
+      "verb": "hails",
+      "action": "",
+      "objects": [
+        "macbeth/macbeth.cast/macbeth"
+      ],
+      "to": [],
+      "with": [],
+      "prop_id": "macbeth/holds(macbeth/macbeth.cast/thane_of_cawdor,macbeth/macbeth.cast/macbeth)",
+      "quote": "",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 28
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a3",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "beat_id": "macbeth/macbeth.act1/1.3#prophecy",
+      "ord": 3,
+      "pt": "macbeth/macbeth.act1/1.3#a3",
+      "actor_id": "macbeth/macbeth.cast/witch3",
+      "actor_is_role": false,
+      "verb": "hails",
+      "action": "",
+      "objects": [
+        "macbeth/macbeth.cast/macbeth"
+      ],
+      "to": [],
+      "with": [],
+      "prop_id": "macbeth/macbeth.cast/king_hereafter",
+      "quote": "that shalt be king hereafter",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 29
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a4",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "beat_id": "macbeth/macbeth.act1/1.3#prophecy",
+      "ord": 4,
+      "pt": "macbeth/macbeth.act1/1.3#a4",
+      "actor_id": "macbeth/macbeth.cast/witches",
+      "actor_is_role": false,
+      "verb": "tells",
+      "action": "",
+      "objects": [
+        "macbeth/macbeth.cast/banquo"
+      ],
+      "to": [],
+      "with": [],
+      "prop_id": "macbeth/macbeth.cast/banquo_line",
+      "quote": "Thou shalt get kings, though thou be none",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 30
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a5",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "beat_id": "",
+      "ord": 5,
+      "pt": "macbeth/macbeth.act1/1.3#a5",
+      "actor_id": "macbeth/macbeth.cast/macbeth",
+      "actor_is_role": false,
+      "verb": "says",
+      "action": "",
+      "objects": [],
+      "to": [],
+      "with": [],
+      "prop_id": "macbeth/holds(macbeth/macbeth.cast/thane_of_cawdor,macbeth/macbeth.cast/cawdor)",
+      "quote": "the Thane of Cawdor lives, / A prosperous gentleman",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 33
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a6",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "beat_id": "macbeth/macbeth.act1/1.3#ross_news",
+      "ord": 6,
+      "pt": "macbeth/macbeth.act1/1.3#a6",
+      "actor_id": "macbeth/macbeth.cast/ross",
+      "actor_is_role": false,
+      "verb": "tells",
+      "action": "",
+      "objects": [
+        "macbeth/macbeth.cast/macbeth",
+        "macbeth/macbeth.cast/banquo"
+      ],
+      "to": [],
+      "with": [],
+      "prop_id": "macbeth/holds(macbeth/macbeth.cast/thane_of_cawdor,macbeth/macbeth.cast/macbeth)",
+      "quote": "He bade me, from him, call thee Thane of Cawdor",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 38
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a7",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "beat_id": "macbeth/macbeth.act1/1.3#ross_news",
+      "ord": 7,
+      "pt": "macbeth/macbeth.act1/1.3#a7",
+      "actor_id": "macbeth/macbeth.cast/angus",
+      "actor_is_role": false,
+      "verb": "tells",
+      "action": "",
+      "objects": [
+        "macbeth/macbeth.cast/macbeth",
+        "macbeth/macbeth.cast/banquo"
+      ],
+      "to": [],
+      "with": [],
+      "prop_id": "macbeth/macbeth.cast/cawdor_traitor",
+      "quote": "treasons capital, confess'd and proved",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 39
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a8",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "beat_id": "",
+      "ord": 8,
+      "pt": "macbeth/macbeth.act1/1.3#a8",
+      "actor_id": "macbeth/macbeth.cast/macbeth",
+      "actor_is_role": false,
+      "verb": "aside",
+      "action": "",
+      "objects": [],
+      "to": [],
+      "with": [],
+      "prop_id": "",
+      "quote": "Two truths are told",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 40
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a9",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "beat_id": "",
+      "ord": 9,
+      "pt": "macbeth/macbeth.act1/1.3#a9",
+      "actor_id": "macbeth/macbeth.cast/macbeth",
+      "actor_is_role": false,
+      "verb": "thinks",
+      "action": "",
+      "objects": [],
+      "to": [],
+      "with": [],
+      "prop_id": "",
+      "quote": "why do I yield to that suggestion / Whose horrid image doth unfix my hair",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 42
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.3#a10",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "beat_id": "",
+      "ord": 10,
+      "pt": "macbeth/macbeth.act1/1.3#a10",
+      "actor_id": "macbeth/macbeth.cast/banquo",
+      "actor_is_role": false,
+      "verb": "aside",
+      "action": "",
+      "objects": [],
+      "to": [],
+      "with": [],
+      "prop_id": "",
+      "quote": "oftentimes, to win us to our harm, / The instruments of darkness tell us truths",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 43
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.5#a1",
+      "scene_id": "macbeth/macbeth.act1/1.5",
+      "beat_id": "",
+      "ord": 1,
+      "pt": "macbeth/macbeth.act1/1.5#a1",
+      "actor_id": "macbeth/macbeth.cast/lady_macbeth",
+      "actor_is_role": false,
+      "verb": "reads",
+      "action": "",
+      "objects": [
+        "macbeth/macbeth.cast/macbeth_letter"
+      ],
+      "to": [],
+      "with": [],
+      "prop_id": "",
+      "quote": "",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 51
+    },
+    {
+      "id": "macbeth/macbeth.act1/1.5#a2",
+      "scene_id": "macbeth/macbeth.act1/1.5",
+      "beat_id": "",
+      "ord": 2,
+      "pt": "macbeth/macbeth.act1/1.5#a2",
+      "actor_id": "macbeth/macbeth.cast/lady_macbeth",
+      "actor_is_role": false,
+      "verb": "thinks",
+      "action": "",
+      "objects": [],
+      "to": [],
+      "with": [],
+      "prop_id": "",
+      "quote": "Yet do I fear thy nature; / It is too full o' the milk of human kindness",
+      "because_id": "",
+      "src_ref": "",
+      "src_id": 52
+    }
+  ],
+  "audience": [
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a1",
+      "entity_id": "macbeth/macbeth.cast/duncan"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a1",
+      "entity_id": "macbeth/macbeth.cast/malcolm"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a1",
+      "entity_id": "macbeth/macbeth.cast/lennox"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a2",
+      "entity_id": "macbeth/macbeth.cast/duncan"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a2",
+      "entity_id": "macbeth/macbeth.cast/malcolm"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a2",
+      "entity_id": "macbeth/macbeth.cast/lennox"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a2",
+      "entity_id": "macbeth/macbeth.cast/captain"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a2",
+      "entity_id": "macbeth/macbeth.cast/angus"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a3",
+      "entity_id": "macbeth/macbeth.cast/malcolm"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a3",
+      "entity_id": "macbeth/macbeth.cast/lennox"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a3",
+      "entity_id": "macbeth/macbeth.cast/captain"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a3",
+      "entity_id": "macbeth/macbeth.cast/ross"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a3",
+      "entity_id": "macbeth/macbeth.cast/angus"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a4",
+      "entity_id": "macbeth/macbeth.cast/malcolm"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a4",
+      "entity_id": "macbeth/macbeth.cast/lennox"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a4",
+      "entity_id": "macbeth/macbeth.cast/captain"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a4",
+      "entity_id": "macbeth/macbeth.cast/ross"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a4",
+      "entity_id": "macbeth/macbeth.cast/angus"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a5",
+      "entity_id": "macbeth/macbeth.cast/malcolm"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a5",
+      "entity_id": "macbeth/macbeth.cast/lennox"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a5",
+      "entity_id": "macbeth/macbeth.cast/captain"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a5",
+      "entity_id": "macbeth/macbeth.cast/ross"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.2#a5",
+      "entity_id": "macbeth/macbeth.cast/angus"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a1",
+      "entity_id": "macbeth/macbeth.cast/macbeth"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a1",
+      "entity_id": "macbeth/macbeth.cast/banquo"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a1",
+      "entity_id": "macbeth/macbeth.cast/witch2"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a1",
+      "entity_id": "macbeth/macbeth.cast/witch3"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a2",
+      "entity_id": "macbeth/macbeth.cast/macbeth"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a2",
+      "entity_id": "macbeth/macbeth.cast/banquo"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a2",
+      "entity_id": "macbeth/macbeth.cast/witch1"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a2",
+      "entity_id": "macbeth/macbeth.cast/witch3"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a3",
+      "entity_id": "macbeth/macbeth.cast/macbeth"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a3",
+      "entity_id": "macbeth/macbeth.cast/banquo"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a3",
+      "entity_id": "macbeth/macbeth.cast/witch1"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a3",
+      "entity_id": "macbeth/macbeth.cast/witch2"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a4",
+      "entity_id": "macbeth/macbeth.cast/macbeth"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a4",
+      "entity_id": "macbeth/macbeth.cast/banquo"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a5",
+      "entity_id": "macbeth/macbeth.cast/banquo"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a5",
+      "entity_id": "macbeth/macbeth.cast/witches"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a5",
+      "entity_id": "macbeth/macbeth.cast/witch1"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a5",
+      "entity_id": "macbeth/macbeth.cast/witch2"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a5",
+      "entity_id": "macbeth/macbeth.cast/witch3"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a6",
+      "entity_id": "macbeth/macbeth.cast/macbeth"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a6",
+      "entity_id": "macbeth/macbeth.cast/banquo"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a6",
+      "entity_id": "macbeth/macbeth.cast/angus"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a7",
+      "entity_id": "macbeth/macbeth.cast/macbeth"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a7",
+      "entity_id": "macbeth/macbeth.cast/banquo"
+    },
+    {
+      "act_id": "macbeth/macbeth.act1/1.3#a7",
+      "entity_id": "macbeth/macbeth.cast/ross"
+    }
+  ],
+  "beliefs": [
+    {
+      "entity_id": "macbeth/macbeth.cast/macbeth",
+      "verb": "believes",
+      "prop_id": "macbeth/macbeth.cast/king_hereafter",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "at_pt": "macbeth/macbeth.act1/1.3#a8",
+      "because_pt": "macbeth/macbeth.act1/1.3#ross_news",
+      "src_id": 41
+    }
+  ],
+  "facts": [
+    {
+      "id": "macbeth/alive(macbeth/macbeth.cast/cawdor)",
+      "work_id": "macbeth",
+      "text": "alive(macbeth/macbeth.cast/cawdor)",
+      "truth": "derived",
+      "def": {
+        "pred": "alive",
+        "args": [
+          "macbeth/macbeth.cast/cawdor"
+        ]
+      },
+      "src_id": 15
+    },
+    {
+      "id": "macbeth/not alive(macbeth/macbeth.cast/cawdor)",
+      "work_id": "macbeth",
+      "text": "not alive(macbeth/macbeth.cast/cawdor)",
+      "truth": "derived",
+      "def": {
+        "not": "macbeth/alive(macbeth/macbeth.cast/cawdor)"
+      },
+      "src_id": 15
+    },
+    {
+      "id": "macbeth/holds(macbeth/macbeth.cast/thane_of_cawdor,macbeth/macbeth.cast/macbeth)",
+      "work_id": "macbeth",
+      "text": "holds(macbeth/macbeth.cast/thane_of_cawdor,macbeth/macbeth.cast/macbeth)",
+      "truth": "derived",
+      "def": {
+        "pred": "holds",
+        "args": [
+          "macbeth/macbeth.cast/thane_of_cawdor",
+          "macbeth/macbeth.cast/macbeth"
+        ]
+      },
+      "src_id": 17
+    },
+    {
+      "id": "macbeth/holds(macbeth/macbeth.cast/thane_of_glamis,macbeth/macbeth.cast/macbeth)",
+      "work_id": "macbeth",
+      "text": "holds(macbeth/macbeth.cast/thane_of_glamis,macbeth/macbeth.cast/macbeth)",
+      "truth": "derived",
+      "def": {
+        "pred": "holds",
+        "args": [
+          "macbeth/macbeth.cast/thane_of_glamis",
+          "macbeth/macbeth.cast/macbeth"
+        ]
+      },
+      "src_id": 26
+    },
+    {
+      "id": "macbeth/holds(macbeth/macbeth.cast/thane_of_cawdor,macbeth/macbeth.cast/cawdor)",
+      "work_id": "macbeth",
+      "text": "holds(macbeth/macbeth.cast/thane_of_cawdor,macbeth/macbeth.cast/cawdor)",
+      "truth": "derived",
+      "def": {
+        "pred": "holds",
+        "args": [
+          "macbeth/macbeth.cast/thane_of_cawdor",
+          "macbeth/macbeth.cast/cawdor"
+        ]
+      },
+      "src_id": 32
+    },
+    {
+      "id": "macbeth/holds(macbeth/macbeth.cast/king,macbeth/macbeth.cast/macbeth)",
+      "work_id": "macbeth",
+      "text": "holds(macbeth/macbeth.cast/king,macbeth/macbeth.cast/macbeth)",
+      "truth": "derived",
+      "def": {
+        "pred": "holds",
+        "args": [
+          "macbeth/macbeth.cast/king",
+          "macbeth/macbeth.cast/macbeth"
+        ]
+      },
+      "src_id": 84
+    },
+    {
+      "id": "macbeth/macbeth.cast/cawdor_traitor",
+      "work_id": "macbeth",
+      "text": "Cawdor aided Norway against Duncan",
+      "truth": "true",
+      "def": null,
+      "src_id": 82
+    },
+    {
+      "id": "macbeth/macbeth.cast/king_hereafter",
+      "work_id": "macbeth",
+      "text": "",
+      "truth": "derived",
+      "def": {
+        "alias": "macbeth/holds(macbeth/macbeth.cast/king,macbeth/macbeth.cast/macbeth)"
+      },
+      "src_id": 83
+    },
+    {
+      "id": "macbeth/macbeth.cast/banquo_line",
+      "work_id": "macbeth",
+      "text": "Banquo's descendants shall be kings",
+      "truth": "true",
+      "def": null,
+      "src_id": 85
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "macbeth/macbeth.cast/macbeth_letter",
+      "work_id": "macbeth",
+      "module_id": "macbeth/macbeth.cast",
+      "name": "Macbeth's letter",
+      "contains": [
+        "macbeth/holds(macbeth/macbeth.cast/thane_of_cawdor,macbeth/macbeth.cast/macbeth)",
+        "macbeth/macbeth.cast/king_hereafter"
+      ],
+      "text": [
+        "They met me in the day of success"
+      ],
+      "src_id": 86
+    }
+  ],
+  "setups": [
+    {
+      "id": "macbeth/macbeth.act1/banquo_kings",
+      "kind": "promise",
+      "prop_id": "macbeth/macbeth.cast/banquo_line",
+      "text": "",
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "at_pt": "macbeth/macbeth.act1/1.3#a4",
+      "src_id": 31
+    }
+  ],
+  "payoffs": [],
+  "accounts": [],
+  "parents": [],
+  "distances": [
+    {
+      "place_a": "macbeth/macbeth.cast/camp",
+      "place_b": "macbeth/macbeth.cast/heath",
+      "min": 0,
+      "max": 86400,
+      "src_id": 74
+    }
+  ],
+  "reveals": [],
+  "withholds": [],
+  "directives": [
+    {
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "key": "pov",
+      "values": [
+        "macbeth",
+        "close"
+      ],
+      "src_id": 44
+    },
+    {
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "key": "pace",
+      "values": [
+        "slow"
+      ],
+      "src_id": 45
+    },
+    {
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "key": "tension",
+      "values": [
+        "0.8"
+      ],
+      "src_id": 46
+    },
+    {
+      "scene_id": "macbeth/macbeth.act1/1.3",
+      "key": "focus",
+      "values": [
+        "witches",
+        "macbeth.face"
+      ],
+      "src_id": 47
+    },
+    {
+      "scene_id": "macbeth/macbeth.act1/1.5",
+      "key": "pov",
+      "values": [
+        "lady_macbeth",
+        "close"
+      ],
+      "src_id": 53
+    },
+    {
+      "scene_id": "macbeth/macbeth.act1/1.5",
+      "key": "omit",
+      "values": [
+        "letter.full_text"
+      ],
+      "src_id": 54
+    }
+  ],
+  "waivers": [
+    {
+      "rule": "belief-contradiction",
+      "target_kind": "act",
+      "target_id": "macbeth/macbeth.act1/1.3#a5",
+      "reason": "학계에서 논쟁 중이다. 1.2에서 맥베스는 코더가 도운 노르웨이군과 싸웠다. 그런데도 1.3에서 그가 살아 있고 번창한다고 말한다. 앵거스는 코더의 반역이 '숨은 도움'이었다고 해명한다.",
+      "src_id": 34
+    }
+  ]
+}

@@ -9,16 +9,26 @@ import (
 )
 
 // Diag is one diagnostic. Rule ids: syntax, indent, dup-decl, yaml-anchor,
-// unknown-key, unterminated-fence.
+// unknown-key, unterminated-fence. sema adds undefined-ref, import-cycle,
+// arg-kind, waiver-reason, waiver-target, role-unknown (errors) and
+// offstage-speaker, offstage-exit (warn, waivable: Waived keeps the diag).
 type Diag struct {
-	File           string
-	Line, Col      int
-	Severity, Rule string
-	Msg            string
+	File     string `json:"file"`
+	Line     int    `json:"line"`
+	Col      int    `json:"col"`
+	Severity string `json:"severity"`
+	Rule     string `json:"rule"`
+	Msg      string `json:"msg"`
+	Waived   bool   `json:"waived"`
 }
 
+// String is the CLI form: file:line:col: severity rule: msg.
 func (d Diag) String() string {
-	return fmt.Sprintf("%s:%d:%d: %s [%s] %s", d.File, d.Line, d.Col, d.Severity, d.Rule, d.Msg)
+	s := fmt.Sprintf("%s:%d:%d: %s %s: %s", d.File, d.Line, d.Col, d.Severity, d.Rule, d.Msg)
+	if d.Waived {
+		s += " (waived)"
+	}
+	return s
 }
 
 // Pos is a 1-based source position (column counted in runes).

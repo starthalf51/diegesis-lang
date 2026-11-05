@@ -1,0 +1,405 @@
+{
+  "Items": [
+    {
+      "Attrs": [
+        {
+          "Unit": "day",
+          "_": "Unit",
+          "pos": "8:3"
+        }
+      ],
+      "ID": "macbeth@7:6",
+      "Title": "The Tragedy of Macbeth",
+      "_": "Work",
+      "pos": "7:1"
+    },
+    {
+      "ID": "macbeth@10:11",
+      "Kind": "character",
+      "Names": [
+        "Macbeth"
+      ],
+      "Tier": "major",
+      "_": "Decl",
+      "pos": "10:1"
+    },
+    {
+      "ID": "lady_macbeth@11:11",
+      "Kind": "character",
+      "Names": [
+        "Lady Macbeth"
+      ],
+      "Tier": "major",
+      "_": "Decl",
+      "pos": "11:1"
+    },
+    {
+      "ID": "banquo@12:11",
+      "Kind": "character",
+      "Names": [
+        "Banquo"
+      ],
+      "Tier": "major",
+      "_": "Decl",
+      "pos": "12:1"
+    },
+    {
+      "ID": "duncan@13:11",
+      "Kind": "character",
+      "Names": [
+        "Duncan"
+      ],
+      "Tier": "major",
+      "_": "Decl",
+      "pos": "13:1"
+    },
+    {
+      "ID": "ross@14:11",
+      "Kind": "character",
+      "Names": [
+        "Ross"
+      ],
+      "Tier": "minor",
+      "_": "Decl",
+      "pos": "14:1"
+    },
+    {
+      "ID": "angus@15:11",
+      "Kind": "character",
+      "Names": [
+        "Angus"
+      ],
+      "Tier": "minor",
+      "_": "Decl",
+      "pos": "15:1"
+    },
+    {
+      "ID": "malcolm@16:11",
+      "Kind": "character",
+      "Names": [
+        "Malcolm"
+      ],
+      "Tier": "minor",
+      "_": "Decl",
+      "pos": "16:1"
+    },
+    {
+      "ID": "lennox@17:11",
+      "Kind": "character",
+      "Names": [
+        "Lennox"
+      ],
+      "Tier": "extra",
+      "_": "Decl",
+      "pos": "17:1"
+    },
+    {
+      "ID": "captain@18:11",
+      "Kind": "character",
+      "Names": [
+        "a bleeding Captain"
+      ],
+      "Tier": "extra",
+      "_": "Decl",
+      "pos": "18:1"
+    },
+    {
+      "ID": "cawdor@19:11",
+      "Kind": "character",
+      "Names": [
+        "the elder Thane of Cawdor"
+      ],
+      "Tier": "minor",
+      "_": "Decl",
+      "pos": "19:1"
+    },
+    {
+      "ID": "witch1@20:11",
+      "Kind": "character",
+      "Names": [
+        "First Witch"
+      ],
+      "Tier": "extra",
+      "_": "Decl",
+      "pos": "20:1"
+    },
+    {
+      "ID": "witch2@21:11",
+      "Kind": "character",
+      "Names": [
+        "Second Witch"
+      ],
+      "Tier": "extra",
+      "_": "Decl",
+      "pos": "21:1"
+    },
+    {
+      "ID": "witch3@22:11",
+      "Kind": "character",
+      "Names": [
+        "Third Witch"
+      ],
+      "Tier": "extra",
+      "_": "Decl",
+      "pos": "22:1"
+    },
+    {
+      "Attrs": [
+        {
+          "IDs": [
+            "witch1@24:11",
+            "witch2@24:19",
+            "witch3@24:27"
+          ],
+          "_": "Members",
+          "pos": "24:3"
+        },
+        {
+          "Source": "oracle",
+          "_": "Knows",
+          "pos": "25:3"
+        }
+      ],
+      "ID": "witches@23:7",
+      "Kind": "group",
+      "Names": [
+        "the Weird Sisters"
+      ],
+      "Tier": "major",
+      "_": "Decl",
+      "pos": "23:1"
+    },
+    {
+      "ID": "camp@27:7",
+      "Kind": "place",
+      "Names": [
+        "a camp near Forres"
+      ],
+      "_": "Decl",
+      "pos": "27:1"
+    },
+    {
+      "ID": "heath@28:7",
+      "Kind": "place",
+      "Names": [
+        "a heath"
+      ],
+      "_": "Decl",
+      "pos": "28:1"
+    },
+    {
+      "ID": "inverness@29:7",
+      "Kind": "place",
+      "Names": [
+        "Macbeth's castle, Inverness"
+      ],
+      "_": "Decl",
+      "pos": "29:1"
+    },
+    {
+      "ID": "cavern@30:7",
+      "Kind": "place",
+      "Names": [
+        "a cavern, the witches' cauldron"
+      ],
+      "_": "Decl",
+      "pos": "30:1"
+    },
+    {
+      "A": "camp@31:10",
+      "B": "heath@31:15",
+      "Max": {
+        "N": 1,
+        "Sec": 86400,
+        "Unit": "d",
+        "_": "Dur",
+        "pos": "31:25"
+      },
+      "Min": {
+        "N": 0,
+        "Sec": 0,
+        "Unit": "d",
+        "_": "Dur",
+        "pos": "31:21"
+      },
+      "_": "Distance",
+      "pos": "31:1"
+    },
+    {
+      "Attrs": [
+        {
+          "From": {
+            "Path": "start",
+            "_": "Tref",
+            "pos": "34:21"
+          },
+          "Holder": "macbeth@34:8",
+          "_": "Held",
+          "pos": "34:3"
+        }
+      ],
+      "ID": "thane_of_glamis@33:6",
+      "Kind": "role",
+      "Names": [
+        "Thane of Glamis",
+        "Glamis"
+      ],
+      "_": "Decl",
+      "pos": "33:1"
+    },
+    {
+      "Attrs": [
+        {
+          "Holder": "cawdor@36:8",
+          "Until": {
+            "At": true,
+            "Path": "1.2.decree",
+            "_": "Tref",
+            "pos": "36:21"
+          },
+          "_": "Held",
+          "pos": "36:3"
+        },
+        {
+          "From": {
+            "At": true,
+            "Path": "1.2.decree",
+            "_": "Tref",
+            "pos": "37:21"
+          },
+          "Holder": "macbeth@37:8",
+          "_": "Held",
+          "pos": "37:3"
+        }
+      ],
+      "ID": "thane_of_cawdor@35:6",
+      "Kind": "role",
+      "Names": [
+        "Thane of Cawdor",
+        "Cawdor"
+      ],
+      "_": "Decl",
+      "pos": "35:1"
+    },
+    {
+      "Attrs": [
+        {
+          "From": {
+            "Path": "start",
+            "_": "Tref",
+            "pos": "39:20"
+          },
+          "Holder": "duncan@39:8",
+          "_": "Held",
+          "pos": "39:3"
+        }
+      ],
+      "ID": "king@38:6",
+      "Kind": "role",
+      "Names": [
+        "the King",
+        "Scotland"
+      ],
+      "_": "Decl",
+      "pos": "38:1"
+    },
+    {
+      "ID": "cawdor_traitor@41:6",
+      "Kind": "fact",
+      "Names": [
+        "Cawdor aided Norway against Duncan"
+      ],
+      "Value": "true",
+      "_": "Decl",
+      "pos": "41:1"
+    },
+    {
+      "Def": {
+        "Args": [
+          {
+            "Name": "king",
+            "_": "Prop",
+            "pos": "42:29"
+          },
+          {
+            "Name": "macbeth",
+            "_": "Prop",
+            "pos": "42:35"
+          }
+        ],
+        "Call": true,
+        "Name": "holds",
+        "_": "Prop",
+        "pos": "42:23"
+      },
+      "ID": "king_hereafter@42:6",
+      "Kind": "fact",
+      "_": "Decl",
+      "pos": "42:1"
+    },
+    {
+      "ID": "banquo_line@43:6",
+      "Kind": "fact",
+      "Names": [
+        "Banquo's descendants shall be kings"
+      ],
+      "Value": "true",
+      "_": "Decl",
+      "pos": "43:1"
+    },
+    {
+      "Attrs": [
+        {
+          "Props": [
+            {
+              "Args": [
+                {
+                  "Name": "thane_of_cawdor",
+                  "_": "Prop",
+                  "pos": "46:18"
+                },
+                {
+                  "Name": "macbeth",
+                  "_": "Prop",
+                  "pos": "46:35"
+                }
+              ],
+              "Call": true,
+              "Name": "holds",
+              "_": "Prop",
+              "pos": "46:12"
+            },
+            {
+              "Name": "king_hereafter",
+              "_": "Prop",
+              "pos": "46:45"
+            }
+          ],
+          "_": "Contains",
+          "pos": "46:3"
+        },
+        {
+          "Text": "They met me in the day of success",
+          "_": "Text",
+          "pos": "47:3"
+        }
+      ],
+      "ID": "macbeth_letter@45:10",
+      "Kind": "artifact",
+      "Names": [
+        "Macbeth's letter"
+      ],
+      "_": "Decl",
+      "pos": "45:1"
+    }
+  ],
+  "Mode": "authored",
+  "Module": {
+    "Name": "macbeth.cast",
+    "_": "Module",
+    "pos": "2:1"
+  },
+  "Path": "macbeth-cast.sl.md",
+  "_": "File",
+  "pos": "1:1"
+}

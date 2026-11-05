@@ -21,8 +21,10 @@ func main() {
 		return
 	}
 	if len(args) == 0 {
-		fmt.Fprintln(os.Stderr, "usage: slc db migrate | check | build | load | lint | test | render | render-check")
-		os.Exit(2)
+		os.Exit(usage())
+	}
+	if args[0] == "check" || args[0] == "build" {
+		os.Exit(cmdCompile(args))
 	}
 	fmt.Fprintf(os.Stderr, "slc %s: not implemented\n", args[0])
 	os.Exit(2)
