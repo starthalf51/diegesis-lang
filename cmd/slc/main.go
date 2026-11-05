@@ -29,6 +29,9 @@ func main() {
 	if args[0] == "check" || args[0] == "build" {
 		os.Exit(cmdCompile(args))
 	}
+	if args[0] == "test" {
+		os.Exit(cmdTest(args[1:]))
+	}
 	if args[0] == "lint" {
 		os.Exit(cmdLint(args[1:]))
 	}
