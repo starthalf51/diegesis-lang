@@ -1,0 +1,165 @@
+# 오디세이(13·14·16·19·21·22·23권, 정체 알아보기) 합격 기준. 기대값은 원문(texts/butler-odyssey.txt, Samuel Butler 역
+# 1900, `<권>.<단락>`)에서 왔다. 도구 출력에 맞춰 고치지 않는다. 고칠 때는 원문 근거를 why 와 보고서에 남긴다.
+work: odyssey
+compile_errors: 0
+
+# 기대 진단 없음: 억제(waiver)도 없다. 특히 19권 흉터 장면의 페넬로페는 억제가 아니라 지각·청중으로 다룬다.
+expected: []
+
+queries:
+  - name: believers-after-the-scar
+    why: >-
+      19권 흉터 장면이 끝난 시점(19.33 "hid the scar under his rags")에 늙은 거지가 오디세우스임을 아는 사람은
+      오디세우스 자신(13.37 변장), 아테나(변장시킨 이, 13.37), 텔레마코스(16.19-22 "it is I"), 에우리클레이아
+      (19.29 흉터)뿐이다. 페넬로페는 같은 자리에 있었지만 아테나가 눈길을 돌렸다(19.30). 에우마이오스는 14권에서
+      크레타 이야기만 들었고 16권의 밝힘 때는 성에 가 있었다(16.15-41). 구혼자들은 22권에서야 안다.
+    sql: |
+      SELECT lint_short(e.id) FROM entity e, act a
+       WHERE e.work_id = $1 AND e.kind IN ('character', 'group') AND a.work_id = $1 AND a.src_ref = '19.33'
+         AND lint_known($1, e.id, $1 || '/odyssey.cast/beggar_is_odysseus', a.pt) = 2
+       ORDER BY 1
+    rows: [["athena"], ["eurycleia"], ["odysseus"], ["telemachus"]]
+
+  - name: penelope-present-but-unaware-in-19
+    why: >-
+      페넬로페는 19.8 에 내려와 흉터 장면 내내 같은 회랑에 있다(19.22 그녀가 에우리클레이아를 부른다, 19.30 에우리클레이아가
+      그녀를 돌아본다, 19.34 다시 말을 건다). 그러나 "Minerva had diverted her attention"(19.30) — 그녀는 아무것도 받지
+      않는다. 19권에서 생긴 그녀의 beggar_is_odysseus 믿음은 0, 19.33 의 앎도 0, 19권 행위에 대한 정보 흐름 진단도 0 이다.
+    sql: |
+      SELECT EXISTS (SELECT 1 FROM presence p WHERE p.work_id = $1 AND p.entity_id = $1 || '/odyssey.cast/penelope'
+                        AND p.scene_id = $1 || '/odyssey.b19/19.1'),
+             (SELECT count(*) FROM believes b JOIN act c ON c.id = b.cause_act
+               WHERE b.work_id = $1 AND b.entity_id = $1 || '/odyssey.cast/penelope'
+                 AND b.prop_id = $1 || '/odyssey.cast/beggar_is_odysseus' AND c.scene_id = $1 || '/odyssey.b19/19.1'),
+             lint_known($1, $1 || '/odyssey.cast/penelope', $1 || '/odyssey.cast/beggar_is_odysseus', a.pt),
+             (SELECT count(*) FROM diagnostic d JOIN act c ON c.id = d.target_id
+               WHERE d.work_id = $1 AND d.rule_id IN ('info-flow', 'because-unbelieved', 'letter-unknown-info')
+                 AND c.scene_id = $1 || '/odyssey.b19/19.1')
+        FROM act a WHERE a.work_id = $1 AND a.src_ref = '19.33'
+    rows: [["true", "0", "0", "0"]]
+
+  - name: penelope-believes-by-the-bed
+    why: >-
+      23권에서 페넬로페는 세 번 듣는다: 에우리클레이아(23.3 "He was the stranger", 23.7 흉터)와 텔레마코스(23.10 "my
+      father"). 그때마다 믿지 않는다(23.6 "what you tell me cannot be really true", 23.8, 23.11 "if he really is Ulysses")
+      — 들은 믿음은 의심으로 거둔다. 남는 것은 침대의 비밀(23.18)에서 온 믿음 하나다: 23.19 "Now, however, that you have
+      convinced me by showing that you know all about our bed … I can mistrust no longer".
+    sql: |
+      SELECT a.src_ref, lint_short(a.resolved_actor_id), a.verb, b.until_pt IS NOT NULL
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/odyssey.cast/penelope' AND b.value
+         AND b.prop_id = $1 || '/odyssey.cast/beggar_is_odysseus'
+       ORDER BY 1
+    rows:
+      - ["23.10", "telemachus", "tells", "true"]
+      - ["23.18", "odysseus", "tells", "false"]
+      - ["23.3", "eurycleia", "tells", "true"]
+      - ["23.7", "eurycleia", "tells", "true"]
+
+  - name: penelope-embraces-only-after-the-bed
+    why: >-
+      23.11 에서 그녀는 아직 모른다("if he really is Ulysses"), 23.17 의 침대 명령은 시험이다("She said this to try him").
+      23.19 의 포옹과 고백은 침대의 비밀 뒤다. 포옹(because beggar_is_odysseus)에 because-unbelieved 가 없다.
+    sql: |
+      SELECT a.src_ref, a.verb, lint_known($1, $1 || '/odyssey.cast/penelope', $1 || '/odyssey.cast/beggar_is_odysseus', a.pt),
+             (SELECT count(*) FROM diagnostic d WHERE d.work_id = $1 AND d.rule_id = 'because-unbelieved' AND d.target_id = a.id)
+        FROM act a WHERE a.work_id = $1 AND a.resolved_actor_id = $1 || '/odyssey.cast/penelope'
+         AND a.scene_id = $1 || '/odyssey.b23/23.9'
+       ORDER BY 1, 2
+    rows:
+      - ["23.11", "says", "0", "0"]
+      - ["23.17", "orders", "0", "0"]
+      - ["23.19", "does", "2", "0"]
+      - ["23.19", "tells", "2", "0"]
+
+  - name: eumaeus-learns-in-21
+    why: >-
+      에우마이오스는 14권 내내 거지를 크레타 사람으로 알고(14.12), 16권의 밝힘 때는 없었고(16.15 성으로 떠남, 16.41 아테나가
+      그가 돌아오기 전에 다시 늙은이로 바꿈), 21권 성문 밖에서 듣고 흉터를 본다(21.19 "It is I, Ulysses", 21.20 "when they
+      had examined it thoroughly"). 14.21·16.43·21.18 에는 모르고 21.21 에는 안다.
+    sql: |
+      SELECT a.src_ref, lint_known($1, $1 || '/odyssey.cast/eumaeus', $1 || '/odyssey.cast/beggar_is_odysseus', a.pt),
+             (SELECT string_agg(c.src_ref || ' ' || c.verb, ', ' ORDER BY c.src_ref, c.verb) FROM believes b JOIN act c ON c.id = b.cause_act
+               WHERE b.work_id = $1 AND b.entity_id = $1 || '/odyssey.cast/eumaeus' AND b.value
+                 AND b.prop_id = $1 || '/odyssey.cast/beggar_is_odysseus' AND precedes($1, c.pt, a.pt) = 'yes')
+        FROM act a WHERE a.work_id = $1 AND a.src_ref IN ('14.21', '16.43', '21.18', '21.21')
+       ORDER BY 1
+    rows:
+      - ["14.21", "0", ""]
+      - ["16.43", "0", ""]
+      - ["21.18", "0", ""]
+      - ["21.21", "2", "21.19 shows, 21.19 tells, 21.20 sees"]
+
+  - name: suitors-learn-in-22
+    why: >-
+      구혼자들은 안티노오스가 쓰러진 뒤에도 그를 "Stranger" 라 부르고 실수로 쏜 줄 안다(22.2-3). 22.4 "Dogs, did you think
+      that I should not come back from Troy?" 로 안다 — 22.6 에우리마코스 "If you are Ulysses". 안티노오스는 그 전에 죽었다(22.2).
+    sql: |
+      SELECT lint_short(b.entity_id), a.src_ref, a.verb FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.value AND b.prop_id = $1 || '/odyssey.cast/beggar_is_odysseus'
+         AND b.entity_id IN ($1 || '/odyssey.cast/suitors', $1 || '/odyssey.cast/eurymachus', $1 || '/odyssey.cast/antinous')
+      UNION ALL
+      SELECT 'at ' || a.src_ref, lint_known($1, $1 || '/odyssey.cast/suitors', $1 || '/odyssey.cast/beggar_is_odysseus', a.pt)::text, a.verb
+        FROM act a WHERE a.work_id = $1 AND a.src_ref IN ('22.2', '22.6') AND a.verb = 'says'
+       ORDER BY 1
+    rows:
+      - ["at 22.2", "0", "says"]
+      - ["at 22.6", "2", "says"]
+      - ["eurymachus", "22.4", "tells"]
+      - ["suitors", "22.4", "tells"]
+
+  - name: telemachus-doubts-then-believes
+    why: >-
+      16.19 "I am your father" 에 텔레마코스는 믿지 않는다(16.20 "could not yet believe", 16.21 "You are not my father").
+      16.22 의 설명("At one moment she makes me like a beggar") 뒤 그를 껴안는다(16.23). 그 뒤 22.4, 23.18, 23.19(페넬로페의
+      고백 — 텔레마코스는 23.9-13 부터 같은 회랑에 있다)에도 그 자리에서 듣는다.
+    sql: |
+      SELECT a.src_ref, b.until_pt IS NOT NULL FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/odyssey.cast/telemachus' AND b.value
+         AND b.prop_id = $1 || '/odyssey.cast/beggar_is_odysseus'
+       ORDER BY 1
+    rows:
+      - ["16.19", "true"]
+      - ["16.22", "false"]
+      - ["22.4", "false"]
+      - ["23.18", "false"]
+      - ["23.19", "false"]
+
+  - name: the-cretan-tales-are-lies
+    why: >-
+      오디세우스의 크레타 이야기는 세 번이다: 아테나에게(13.24 "he did not speak the truth, and made up a lying story",
+      13.25 이도메네우스의 아들을 죽이고 도망친 사람), 에우마이오스에게(14.12 카스토르의 아들), 페넬로페에게(19.15
+      데우칼리온의 아들 아이톤, 19.16 "Many a plausible tale"). 모두 거짓말(deception)이다. 아테나는 속지 않는다(13.26).
+    sql: |
+      SELECT a.src_ref, lint_short(au.entity_id),
+             lint_known($1, au.entity_id, $1 || '/odyssey.cast/stranger_is_cretan', (SELECT max(x.pt) FROM act x WHERE x.scene_id = a.scene_id))
+        FROM deception d JOIN act a ON a.id = d.act_id JOIN audience au ON au.act_id = a.id
+       WHERE d.work_id = $1 AND d.prop_id = $1 || '/odyssey.cast/stranger_is_cretan'
+       ORDER BY 1
+    rows:
+      - ["13.25", "athena", "0"]
+      - ["14.12", "eumaeus", "2"]
+      - ["19.15", "penelope", "2"]
+
+  - name: the-news-of-return-is-doubted
+    why: >-
+      "Ulysses will return"(14.9, 14.17, 19.19)를 에우마이오스는 믿지 않는다(14.10 "nor will Ulysses ever come home", 14.19
+      "you will never get me to believe it"), 페넬로페도(19.20 "Ulysses will not return"). 23권의 에우리클레이아의 말(23.1,
+      23.5)도 거둔다(23.2, 23.6). 페넬로페에게는 침대의 비밀(23.18)만 남는다. 에우마이오스는 21.19 "I am come back to my own
+      country" 와 22.4 "did you think that I should not come back from Troy?"(그는 22.1 부터 회랑에 있다)로 믿는다.
+    sql: |
+      SELECT lint_short(b.entity_id), a.src_ref, b.until_pt IS NOT NULL FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.value AND b.prop_id = $1 || '/odyssey.cast/odysseus_home'
+         AND b.entity_id IN ($1 || '/odyssey.cast/eumaeus', $1 || '/odyssey.cast/penelope')
+       ORDER BY 1, 2
+    rows:
+      - ["eumaeus", "14.17", "true"]
+      - ["eumaeus", "14.9", "true"]
+      - ["eumaeus", "21.19", "false"]
+      - ["eumaeus", "22.4", "false"]
+      - ["penelope", "19.19", "true"]
+      - ["penelope", "23.1", "true"]
+      - ["penelope", "23.18", "false"]
+      - ["penelope", "23.5", "true"]
+
+mutation_min_rate: 0.8

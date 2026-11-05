@@ -228,3 +228,52 @@ func corpus(t *testing.T, dir string) *ir.Work {
 	}
 	return build(t, files)
 }
+
+// Task 11: 페넬로페의 포옹(23.19, because beggar_is_odysseus)을 19권(19.34 앞)으로 옮기면 그녀는 아직 모른다 —
+// 19.30 아테나가 눈길을 돌렸고 그녀가 믿게 되는 것은 23.18 침대의 비밀이다. because-unbelieved 로 잡혀야 한다.
+func TestOdysseyEmbraceInto19Detected(t *testing.T) {
+	if os.Getenv("SL_PG_DSN") == "" {
+		t.Fatal("SL_PG_DSN 이 필요하다")
+	}
+	w := corpus(t, "../../corpus/odyssey")
+	var embrace, in19 string
+	for _, a := range w.Acts {
+		switch {
+		case a.SrcRef == "23.19" && a.Verb == "does":
+			embrace = a.ID
+		case a.SrcRef == "19.34":
+			in19 = a.Pt
+		}
+	}
+	if embrace == "" || in19 == "" {
+		t.Fatalf("embrace %q, 19.34 %q not found", embrace, in19)
+	}
+	ctx := context.Background()
+	pool, err := pg.Connect(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(pool.Close)
+	id := fmt.Sprintf("odyssey~t%d", rand.Int63())
+	t.Cleanup(func() {
+		pool.Exec(ctx, `DELETE FROM work WHERE id=$1`, id)
+		pool.Exec(ctx, `SELECT drop_graph(name, true) FROM ag_graph WHERE name = graph_name($1)`, id)
+	})
+	m := mutate.Mutation{Op: "move-before", Target: embrace, Before: []string{in19}}
+	if err := pg.Load(ctx, pool, mutate.Rename(mutate.Apply(w, m), id)); err != nil {
+		t.Fatal(err)
+	}
+	ds, err := pg.Lint(ctx, pool, id, os.DirFS("../../rules"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, d := range ds {
+		if d.Severity == "warn" && !d.Waived {
+			got = append(got, d.Rule+" "+strings.TrimPrefix(d.TargetID, id+"/"))
+		}
+	}
+	if !slices.Contains(got, "because-unbelieved odyssey.b23/23.9#a8") {
+		t.Errorf("warns = %v, want because-unbelieved on the embrace (23.9#a8)", got)
+	}
+}
