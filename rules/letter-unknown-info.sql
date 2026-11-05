@@ -5,13 +5,15 @@
 -- summary: 쓴 사람이 쓰기 전에 믿지 않은 명제가 문서에 담겼다
 --
 -- 대상: `X writes art` 마다 art 에 담긴 명제 P 하나씩(uses(X, P, 쓴 시점)).
+-- 제외: 쓴 사람이 ¬P 를 알고 쓴 명제(deception 행, 007 — 위조·거짓 서신은 글로 한 거짓말이다).
 -- 면제·판정은 info-flow 와 같다: lint_exempt, lint_known(X, 정규 P, 쓴 시점) → 2 정상, 1 info, 0 warn.
 WITH graded AS (
   SELECT DISTINCT u.act_id, u.entity_id, u.prop_id, art.id AS artifact,
          lint_known($1, u.entity_id, lint_canon($1, u.prop_id), u.at_pt) AS g
     FROM uses u JOIN act a ON a.id = u.act_id
     JOIN artifact art ON art.id = ANY (a.objects) AND u.prop_id = ANY (art.contains)
-   WHERE u.work_id = $1 AND a.verb = 'writes' AND NOT lint_exempt($1, u.entity_id))
+   WHERE u.work_id = $1 AND a.verb = 'writes' AND NOT lint_exempt($1, u.entity_id)
+     AND NOT EXISTS (SELECT 1 FROM deception d WHERE d.act_id = u.act_id AND d.prop_id = u.prop_id))
 SELECT 'act' AS target_kind, act_id AS target_id,
        CASE g WHEN 1 THEN 'info' ELSE 'warn' END AS severity,
        format(CASE g WHEN 1 THEN '%s writes %s into %s; the only source may come after the writing (order not determined)'
