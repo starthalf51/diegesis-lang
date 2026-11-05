@@ -73,3 +73,22 @@ func TestBuildPromptKoreanNames(t *testing.T) {
 		t.Error("ko names expected in cast, en names forbidden")
 	}
 }
+
+func TestBuildPromptNarrationAndReportedSpeech(t *testing.T) {
+	h := mustLoad(t, "testdata/scenes/holmes-scandal-opening.json")
+	c := mustLoad(t, "testdata/scenes/chibi-jianggan.json")
+	st := mustStyle(t, "testdata/styles/doyle-redheaded.json")
+	for _, v := range []Variant{VariantIROnly, VariantStyle, VariantStyleDirectives} {
+		sys, u, err := BuildPrompt(h, v, "en", &st)
+		if err != nil || !strings.Contains(u, "Narration: first person, as Watson") {
+			t.Errorf("%s: %v\n%s", v, err, u)
+		}
+		if !strings.Contains(sys, "Speech acts without a quote are reported speech; never invent quoted dialogue.") || strings.Contains(sys, "read aloud to") {
+			t.Errorf("%s: system prompt rules", v)
+		}
+	}
+	_, u, _ := BuildPrompt(c, VariantIROnly, "en", nil)
+	if strings.Contains(u, "Narration:") {
+		t.Error("third person is the default; no narration line")
+	}
+}

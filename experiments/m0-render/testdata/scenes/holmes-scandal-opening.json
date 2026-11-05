@@ -13,33 +13,31 @@
     {"id":"watson_servant","text":"Watson has a clumsy and careless servant girl.","true":true},
     {"id":"watson_practice","text":"Watson has resumed his medical practice.","true":true},
     {"id":"note_announces","text":"A note on Bohemian paper announces that a visitor will call at a quarter to eight, masked, and begs to be received.","true":true},
+    {"id":"holmes_hands_note","text":"Holmes tosses Watson a note that came by the last post and asks him to read it aloud.","true":true},
     {"id":"visitor_name","text":"The visitor calls himself Count Von Kramm, a Bohemian nobleman.","true":true},
     {"id":"visitor_is_king","text":"The masked visitor is really the hereditary King of Bohemia.","true":true}
   ],
   "beats": [
     {"id":"call","acts":[
       {"verb":"enter","targets":["watson","holmes"]},
-      {"actor":"holmes","verb":"hails","targets":["watson"]},
-      {"actor":"watson","verb":"sees","targets":["holmes"]}
+      {"actor":"holmes","verb":"hails","targets":["watson"],"quote":"Come in, Watson."}
     ]},
     {"id":"deductions","acts":[
       {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_married"},
       {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_wet"},
       {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_servant"},
-      {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_practice"},
-      {"actor":"watson","verb":"aside"}
+      {"actor":"holmes","verb":"tells","targets":["watson"],"fact":"watson_practice"}
     ]},
     {"id":"the_note","acts":[
-      {"actor":"holmes","verb":"does","targets":["watson"]},
-      {"actor":"watson","verb":"reads"},
-      {"actor":"holmes","verb":"says","fact":"note_announces","quote":"read aloud to Watson"}
+      {"actor":"holmes","verb":"does","targets":["watson"],"fact":"holmes_hands_note"},
+      {"actor":"watson","verb":"reads","fact":"note_announces"}
     ]},
     {"id":"visitor_enters","acts":[
       {"verb":"enter","targets":["visitor"]},
-      {"actor":"visitor","verb":"tells","targets":["holmes","watson"],"fact":"visitor_name"},
-      {"actor":"watson","verb":"sees","targets":["visitor"]}
+      {"actor":"visitor","verb":"tells","targets":["holmes","watson"],"fact":"visitor_name"}
     ]}
   ],
+  "narration": "first-person",
   "directives": {"pov":"watson","pace":"brisk","tension":0.5,"focus":["Holmes's deductions"]},
   "pov_beliefs": ["watson_married","watson_wet","watson_servant","watson_practice","note_announces","visitor_name"],
   "reader_knows": [],

@@ -73,3 +73,19 @@ func TestDiffKeysAndFailClosed(t *testing.T) {
 		t.Fatalf("%+v", r)
 	}
 }
+
+func TestDiffMissingIsMultiset(t *testing.T) {
+	s := mustLoad(t, "testdata/scenes/chibi-jianggan.json")
+	e := extractedFromScene(s)
+	var acts []ExtractedAct
+	for _, a := range e.Acts {
+		if !(a.Actor == "jiang_gan" && a.Verb == "tells" && a.Fact == "commanders_traitors") {
+			acts = append(acts, a)
+		}
+	}
+	e.Acts = acts // the aside with the same key remains
+	r := Diff(s, e)
+	if !reflect.DeepEqual(r.Missing, []string{"jiang_gan|assert|commanders_traitors"}) {
+		t.Fatalf("%+v", r)
+	}
+}

@@ -37,3 +37,17 @@ func TestExtractPromptHidesAnswers(t *testing.T) {
 		}
 	}
 }
+
+func TestExtractPromptScopesNewEventsAndIgnoresWorldKnowledge(t *testing.T) {
+	s := mustLoad(t, "testdata/scenes/chibi-jianggan.json")
+	sys, _ := BuildExtractPrompt(s, "en", "x")
+	for _, w := range []string{
+		"plot events only",
+		"Ignore description, gesture, setting, and manner.",
+		"ignore your knowledge of any original work",
+	} {
+		if !strings.Contains(sys, w) {
+			t.Errorf("extract system missing %q", w)
+		}
+	}
+}

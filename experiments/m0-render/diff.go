@@ -31,7 +31,7 @@ func actKey(actor, verb, fact string) string { return actor + "|" + VerbClass(ve
 
 // Diff compares original scene to re-extracted IR by actor|class|fact keys only.
 func Diff(s Scene, e Extracted) Report {
-	got := map[string]bool{}
+	got := map[string]int{}
 	hall, leak := set{}, set{}
 	withheld := map[string]bool{}
 	for _, id := range s.Withheld {
@@ -49,7 +49,7 @@ func Diff(s Scene, e Extracted) Report {
 		}
 	}
 	for _, a := range e.Acts {
-		got[actKey(a.Actor, a.Verb, a.Fact)] = true
+		got[actKey(a.Actor, a.Verb, a.Fact)]++
 		check(a.Fact)
 	}
 	for _, id := range e.FactsStated {
@@ -58,18 +58,24 @@ func Diff(s Scene, e Extracted) Report {
 	for _, n := range e.NewEvents {
 		hall[n] = true
 	}
-	miss := set{}
+	want := map[string]int{}
 	for _, b := range s.Beats {
 		for _, a := range b.Acts {
 			if a.Fact == "" || VerbClass(a.Verb) == "presence" {
 				continue
 			}
-			if k := actKey(a.Actor, a.Verb, a.Fact); !got[k] {
-				miss[k] = true
-			}
+			want[actKey(a.Actor, a.Verb, a.Fact)]++
 		}
 	}
-	return Report{Missing: miss.sorted(), Hallucinated: hall.sorted(), Leaked: leak.sorted()}
+	// multiset: one Missing entry per shortfall, so same-key acts cannot mask each other
+	miss := []string{}
+	for k, n := range want {
+		for i := got[k]; i < n; i++ {
+			miss = append(miss, k)
+		}
+	}
+	sort.Strings(miss)
+	return Report{Missing: miss, Hallucinated: hall.sorted(), Leaked: leak.sorted()}
 }
 
 type set map[string]bool

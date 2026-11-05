@@ -43,3 +43,16 @@ func TestExitThenSpeakIsOffstage(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+func TestEveryActCarriesContent(t *testing.T) {
+	for _, n := range []string{"chibi-jianggan", "holmes-scandal-opening", "macbeth-1.3"} {
+		s := mustLoad(t, "testdata/scenes/"+n+".json")
+		for bi, b := range s.Beats {
+			for ai, a := range b.Acts {
+				if VerbClass(a.Verb) != "presence" && a.Fact == "" && a.Quote == "" {
+					t.Errorf("%s beats[%d].acts[%d] %s %s: no fact and no quote", n, bi, ai, a.Actor, a.Verb)
+				}
+			}
+		}
+	}
+}

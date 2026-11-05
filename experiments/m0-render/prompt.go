@@ -40,7 +40,7 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	fmt.Fprintf(&sb, "You are a fiction writer. You will receive a scene specification (places, characters, an ordered list of story acts, and facts). Write the scene as continuous prose in %s.\n\n", ln)
 	sb.WriteString("Rules:\n")
 	sb.WriteString("- Narrate every act, in the given order. Do not omit any act and do not add events, actions, or facts that are not in the specification.\n")
-	sb.WriteString("- Dialogue may only use the provided `quote` strings. A quote that reads like a stage direction (e.g. \"read aloud to Watson\") is a cue for what the act conveys, not dialogue to print; render it as narration.\n")
+	sb.WriteString("- Dialogue may only use the provided `quote` strings. Speech acts without a quote are reported speech; never invent quoted dialogue.\n")
 	sb.WriteString("- Never state or imply any fact listed under \"Must not state or imply\", not even as a hint, a foreshadowing, or a character's guess.\n")
 	sb.WriteString("- Stay in the stated point of view. Use the people's names in the scene's language.\n")
 	fmt.Fprintf(&sb, "- Output only the prose, written in %s. No title, headings, notes, or commentary.\n", ln)
@@ -108,6 +108,9 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	}
 	if s.Directives.POV != "" {
 		fmt.Fprintf(&sb, "\n## Point of view\nNarrate from %s's point of view.\n", name(s.Directives.POV))
+		if s.Narration == "first-person" {
+			fmt.Fprintf(&sb, "Narration: first person, as %s\n", name(s.Directives.POV))
+		}
 	}
 	factList("The point-of-view character believes", s.POVBeliefs)
 	factList("The reader already knows", s.ReaderKnows)

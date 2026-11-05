@@ -15,21 +15,24 @@
     {"id":"drunk","text":"Zhou Yu is too drunk to go on talking about the war.","true":false},
     {"id":"letter_content","text":"A letter signed by Cai Mao and Zhang Yun, Cao Cao's naval commanders, promises to betray Cao Cao and deliver his fleet.","true":true},
     {"id":"commanders_traitors","text":"Cai Mao and Zhang Yun are plotting to betray Cao Cao.","true":false},
+    {"id":"zhou_yu_shares_bed","text":"Zhou Yu lies down in the same bed as Jiang Gan and falls asleep at once.","true":true},
+    {"id":"jiang_gan_steals_letter","text":"Jiang Gan secretly takes the letter and hides it in his sleeve.","true":true},
+    {"id":"jiang_gan_crosses_river","text":"Before dawn Jiang Gan slips out of the camp and crosses back over the river.","true":true},
     {"id":"letter_forged","text":"The letter was forged and left on the desk by Zhou Yu on purpose.","true":true}
   ],
   "beats": [
     {"id":"feast_and_bed","acts":[
       {"verb":"enter","targets":["jiang_gan","zhou_yu"]},
-      {"actor":"jiang_gan","verb":"says","fact":"classmate_visit"},
+      {"actor":"jiang_gan","verb":"lies","fact":"classmate_visit"},
       {"actor":"zhou_yu","verb":"says","fact":"feast"},
       {"actor":"zhou_yu","verb":"says","fact":"drunk"},
-      {"actor":"zhou_yu","verb":"does","targets":["jiang_gan"]}
+      {"actor":"zhou_yu","verb":"does","targets":["jiang_gan"],"fact":"zhou_yu_shares_bed"}
     ]},
     {"id":"the_letter","acts":[
-      {"actor":"jiang_gan","verb":"sees"},
       {"actor":"jiang_gan","verb":"reads","fact":"letter_content"},
       {"actor":"jiang_gan","verb":"aside","fact":"commanders_traitors"},
-      {"actor":"jiang_gan","verb":"does"}
+      {"actor":"jiang_gan","verb":"does","fact":"jiang_gan_steals_letter"},
+      {"actor":"jiang_gan","verb":"does","fact":"jiang_gan_crosses_river"}
     ]},
     {"id":"escape","acts":[
       {"verb":"exit","targets":["jiang_gan"]},
@@ -38,7 +41,7 @@
     ]}
   ],
   "directives": {"pov":"jiang_gan","pace":"measured","tension":0.7,"focus":["the letter on the desk"]},
-  "pov_beliefs": ["classmate_visit","drunk","letter_content","commanders_traitors"],
+  "pov_beliefs": ["drunk","letter_content","commanders_traitors"],
   "reader_knows": ["feast"],
   "withheld": ["letter_forged"]
 }

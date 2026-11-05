@@ -52,6 +52,7 @@ type Scene struct {
 	POVBeliefs  []string   `json:"pov_beliefs"`
 	ReaderKnows []string   `json:"reader_knows"`
 	Withheld    []string   `json:"withheld"`
+	Narration   string     `json:"narration"` // "first-person" | "third-person" (default)
 }
 
 var verbs = map[string]bool{
@@ -114,6 +115,9 @@ func (s Scene) Validate() error {
 		}
 	}
 
+	if s.Narration != "" && s.Narration != "first-person" && s.Narration != "third-person" {
+		bad("narration %q: want first-person or third-person", s.Narration)
+	}
 	if s.Directives.POV != "" {
 		inCast("directives.pov", s.Directives.POV)
 	}
