@@ -92,3 +92,17 @@ func TestBuildPromptNarrationAndReportedSpeech(t *testing.T) {
 		t.Error("third person is the default; no narration line")
 	}
 }
+
+// 지각 액트는 행위자가 보거나 듣는다고 써야 하고, 사실이 붙은 액트는 그 사실을 전해야 한다(live 판정: "닭이 울더라" 만
+// 쓰고 베드로가 들었다는 것을 빼 재추출이 지각을 잃었다).
+func TestBuildPromptMakesPerceptionAndFactsExplicit(t *testing.T) {
+	sys, _, err := BuildPrompt(mustLoad(t, "testdata/min.json"), VariantIROnly, "ko", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"For a `sees` act, say that its actor sees or hears", "must make that fact clear"} {
+		if !strings.Contains(sys, want) {
+			t.Errorf("system prompt lacks %q", want)
+		}
+	}
+}

@@ -61,3 +61,11 @@ func TestExtractPromptCoversPerceptionAndImplication(t *testing.T) {
 		}
 	}
 }
+
+// 남이 한 말을 듣는 것은 말한 사람의 액트다: 듣는 쪽에 sees 를 덧붙이지 않는다(live 판정: 맥베스가 들은 말마다 sees 가 붙어 Jaccard 하락).
+func TestExtractPromptHearingSpeechIsNotPerception(t *testing.T) {
+	sys, _ := BuildExtractPrompt(Scene{}, "en", "")
+	if !strings.Contains(sys, "Hearing what another character says is part of that speaker's act") {
+		t.Error("extract prompt lacks the hearing-speech rule")
+	}
+}

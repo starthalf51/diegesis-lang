@@ -116,7 +116,7 @@ role prince_of_cumberland "the Prince of Cumberland"
   held malcolm from @1.4.cumberland
 
 fact cawdor_traitor "Cawdor aided Norway against Duncan" true
-fact cawdor_in_favour = not cawdor_traitor            # "the thane of Cawdor lives, / A prosperous gentleman"
+fact cawdor_in_favour "the Thane of Cawdor is a prosperous gentleman, no traitor" = not cawdor_traitor   # "the thane of Cawdor lives, / A prosperous gentleman"
 fact king_hereafter = holds(king, macbeth)
 fact banquo_line "Banquo's descendants shall be kings" true
 fact macdonwald_slain "Macbeth killed the rebel Macdonwald" true
