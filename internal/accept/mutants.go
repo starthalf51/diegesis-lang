@@ -90,13 +90,17 @@ func applicable(ctx context.Context, db *pgxpool.Pool, work string, base *ir.Wor
 		for _, p := range m.Pairs {
 			a, b = append(a, p[0]), append(b, p[1])
 		}
-		rows, err := strRows(ctx, db, `SELECT coalesce(bool_or(precedes($1, a, b) = 'yes'), false)::text
+		// 쓰는 사람이 받은 믿음(그 행위에서 온 행)을 쓰기 전에 모두 의심으로 거뒀으면 그 쌍은 결함을 못 만든다(006).
+		rows, err := strRows(ctx, db, `SELECT coalesce(bool_or(precedes($1, a, b) = 'yes' AND NOT coalesce((
+		    SELECT bool_and(bl.until_pt IS NOT NULL AND bl.until_pt <> b AND precedes($1, bl.until_pt, b) = 'yes')
+		      FROM believes bl JOIN act u ON u.id = b
+		     WHERE bl.work_id = $1 AND bl.cause_act = a AND bl.entity_id = u.resolved_actor_id AND bl.value), false)), false)::text
 		  FROM unnest($2::text[], $3::text[]) t(a, b)`, work, a, b)
 		if err != nil {
 			return false, "", err
 		}
 		if rows[0][0] != "true" {
-			return false, "받은 정보를 쓰는 행위가 모두 그 전이거나 순서가 정해지지 않았다", nil
+			return false, "받은 정보를 쓰는 행위가 모두 그 전이거나 순서가 정해지지 않았거나, 쓰기 전에 의심으로 거뒀다", nil
 		}
 	}
 	if m.Op != "move-before" {

@@ -154,3 +154,39 @@ func TestApplicableLaterUseOnly(t *testing.T) {
 		t.Errorf("move-before sources = %v (%v %v), want [1#a2] (b heard p there)", m.Before, ok, err)
 	}
 }
+
+// Task 11(오디세이): 들은 사람이 쓰기 전에 의심으로 거둔 믿음은 지워도 결함이 생기지 않는다(n/a).
+// 의심 뒤 다시 들은 것으로 쓰므로 원래 들은 행위는 쓰는 시점에 출처가 아니다(lint_known 의 거둠과 같다).
+func TestApplicableSkipsWithdrawnHearsay(t *testing.T) {
+	pool, ctx := open(t), context.Background()
+	id := fmt.Sprintf("t_%d", rand.Int63())
+	src := strings.ReplaceAll(`module t.s
+work WK "T"
+character a "A"
+character b "B"
+character o "O"
+fact p "P" true
+scene 1
+  enter a, b, o
+  o tells a: p
+  a doubts p
+  o tells a: p
+  a tells b: p
+`, "WK", id)
+	f, _ := syntax.ParseFile("t.sl", []byte(src))
+	w, _ := sema.Build([]*syntax.File{f})
+	load(t, pool, w)
+	for name, c := range map[string]struct {
+		pair [2]string
+		want bool
+	}{
+		"withdrawn before the use": {[2]string{id + "/t.s/1#a1", id + "/t.s/1#a3"}, false},
+		"live at the use":          {[2]string{id + "/t.s/1#a2", id + "/t.s/1#a3"}, true},
+	} {
+		m := mutate.Mutation{Op: "drop-tells", Target: c.pair[0], Pairs: [][2]string{c.pair}}
+		ok, _, err := applicable(ctx, pool, id, w, &m)
+		if err != nil || ok != c.want {
+			t.Errorf("%s: applicable = %v (%v), want %v", name, ok, err, c.want)
+		}
+	}
+}
