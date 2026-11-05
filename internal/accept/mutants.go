@@ -154,7 +154,7 @@ type print struct {
 
 const fingerprintSQL = `
 WITH r(x) AS (
-  SELECT concat_ws('|', 'believes', entity_id, prop_id, value, from_pt, cause_act, declared) FROM believes WHERE work_id = $1
+  SELECT concat_ws('|', 'believes', entity_id, prop_id, value, from_pt, cause_act, declared, until_pt) FROM believes WHERE work_id = $1
   UNION ALL SELECT concat_ws('|', 'uses', entity_id, prop_id, at_pt, act_id) FROM uses WHERE work_id = $1
   UNION ALL SELECT concat_ws('|', 'role_span', role_id, entity_id, from_pt, until_pt, span, shared) FROM role_span WHERE work_id = $1
   UNION ALL SELECT concat_ws('|', 'point', id, coalesce(earliest::text, '-'), coalesce(latest::text, '-')) FROM point WHERE work_id = $1)

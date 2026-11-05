@@ -88,6 +88,23 @@ queries:
       - ["doubts", "holds(thane_of_cawdor,macbeth)", "yes", "no"]
       - ["doubts", "king_hereafter", "yes", "no"]
 
+  - name: macbeth-hail-belief-withdrawn
+    why: >-
+      1.3.75-77 의 불신("Stands not within the prospect of belief, / No more than to be Cawdor")은 마녀의 두 인사
+      (1.3.51 thane of Cawdor, 1.3.52 king hereafter)에서 들은 믿음을 거둔다(006: doubts 가 앞선 들은 믿음을 거둔다).
+      맥베스가 코더 작위를 다시 믿는 것은 로스의 소식(1.3.109)부터다. 셋째 마녀가 뱅쿼에게 한 banquo_line(1.3.69)은
+      맥베스도 들었고(1.3.88 "Your children shall be kings") 의심하지 않았다. 글래미스는 이미 아는 사실이다(1.3.73).
+    sql: |
+      SELECT lint_short(a.actor_id), lint_short(b.prop_id), b.until_pt IS NOT NULL
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/macbeth.cast/macbeth' AND b.value AND a.verb = 'hails'
+       ORDER BY 1, 2
+    rows:
+      - ["witch1", "holds(thane_of_glamis,macbeth)", "false"]
+      - ["witch2", "holds(thane_of_cawdor,macbeth)", "true"]
+      - ["witch3", "banquo_line", "false"]
+      - ["witch3", "king_hereafter", "true"]
+
   - name: lady-macbeth-hears-the-deed
     why: >-
       맥베스 부인은 살해 현장에 없었다(2.2.5 "He is about it", 2.2.14 "I laid their daggers ready").

@@ -23,8 +23,10 @@ event cawdor_execution "Cawdor is executed"
   witness sees: not alive(cawdor) src 1.4.5
   witness tells malcolm: not alive(cawdor) "That very frankly he confess'd his treasons" src 1.4.6
 
+# 1.5.1-10 "They met me in the day of success … came missives from the king, who all-hailed me 'Thane of
+# Cawdor'": 편지는 로스의 소식(1.3.109)까지 듣고 난 뒤다. 1.3.75-77 에서 마녀의 인사는 의심했으므로 출처는 로스다
 event macbeth_writes "Macbeth writes to his wife"
-  when after 1.3.ross_news
+  when after 1.3
   when before 1.5
   macbeth writes macbeth_letter src 1.5.1
 
