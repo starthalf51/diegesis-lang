@@ -1,0 +1,16 @@
+services:
+  pg:
+    build: ./postgres
+    image: story-lang-pg:age1.8.0-pgvector0.8.7
+    environment:
+      POSTGRES_USER: sl
+      POSTGRES_PASSWORD: sl
+      POSTGRES_DB: sl
+    ports: ["55432:5432"]
+    volumes: ["sl_pgdata:/var/lib/postgresql"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sl -d sl"]
+      interval: 3s
+      retries: 20
+volumes:
+  sl_pgdata:
