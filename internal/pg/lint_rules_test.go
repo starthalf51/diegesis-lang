@@ -2,6 +2,7 @@ package pg_test
 
 import (
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -217,5 +218,35 @@ scene 2
 		if got := of(ds, rule, id); !slices.Equal(got, want) {
 			t.Errorf("%s = %v, want %v", rule, got, want)
 		}
+	}
+}
+
+// 기록이 셋 이상이면 같은 행위·명제가 빠진 기록마다 따로 나오지 않고 한 건으로 모인다(Task 10).
+// 빠진 기록과 반대로 적은 기록은 따로 센다(종류가 다르다).
+func TestAccountVarianceOnePerProp(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, `event ev "E"
+account acc1 of ev by a
+  a tells b: p
+account acc2 of ev by b
+  b tells a: "x"
+account acc3 of ev by b
+  b tells a: "x"
+account acc4 of ev by b
+  b tells a: np
+`)
+	ds := lint(t, pool, id)
+	want := []string{"t.s/acc1#a1/info", "t.s/acc1#a1/info", "t.s/acc4#a1/info", "t.s/acc4#a1/info"}
+	if got := of(ds, "account-variance", id); !slices.Equal(got, want) {
+		t.Errorf("account-variance = %v, want %v", got, want)
+	}
+	var msg string
+	for _, d := range ds {
+		if d.Rule == "account-variance" && d.TargetID == id+"/t.s/acc1#a1" && strings.Contains(d.Message, "absent") {
+			msg = d.Message
+		}
+	}
+	if !strings.Contains(msg, "acc2") || !strings.Contains(msg, "acc3") {
+		t.Errorf("collapsed message should name every account lacking p: %q", msg)
 	}
 }
