@@ -114,7 +114,10 @@ func withReport(r Record, rep Report) Record { r.Report = rep; return r }
 
 func writeOutputs(c Completer, j Job, rec Record, outDir string) error {
 	model := "unknown"
-	if cl, ok := c.(*Claude); ok {
+	switch cl := c.(type) {
+	case *Claude:
+		model = cl.Model
+	case *ClaudeCLI:
 		model = cl.Model
 	}
 	md := fmt.Sprintf("---\nscene: %s\nvariant: %s\nlang: %s\nmodel: %s\nstop_reason: %s\nmode: rendered\n---\n\n%s\n",

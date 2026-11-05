@@ -18,14 +18,24 @@ func main() {
 	langs := flag.String("langs", "ko,en", "comma-separated languages")
 	force := flag.Bool("force", false, "re-run jobs that already have output")
 	only := flag.String("only", "", "run only jobs whose key contains this substring")
+	backend := flag.String("backend", "cli", "cli (claude -p, subscription) or api")
 	flag.Parse()
-	if err := run(*scenesDir, *stylesDir, *out, *variants, *langs, *only, *force); err != nil {
+	if err := run(*scenesDir, *stylesDir, *out, *variants, *langs, *only, *backend, *force); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func run(scenesDir, stylesDir, out, variants, langs, only string, force bool) error {
+func run(scenesDir, stylesDir, out, variants, langs, only, backend string, force bool) error {
+	var c Completer
+	switch backend {
+	case "cli":
+		c = NewClaudeCLI()
+	case "api":
+		c = NewClaude()
+	default:
+		return fmt.Errorf("unknown -backend %q (want cli or api)", backend)
+	}
 	paths, err := filepath.Glob(filepath.Join(scenesDir, "*.json"))
 	if err != nil {
 		return err
@@ -58,7 +68,6 @@ func run(scenesDir, stylesDir, out, variants, langs, only string, force bool) er
 	if err := os.MkdirAll(out, 0o755); err != nil {
 		return err
 	}
-	c := NewClaude()
 	failedMsgs := map[string]string{}
 	for _, j := range jobs {
 		if !strings.Contains(j.Key(), only) {
