@@ -62,7 +62,7 @@ func golden(t *testing.T) (*ir.Work, string) {
 var tables = []string{"module", "src", "entity", "group_member", "name", "role", "role_holder",
 	"point", "time_edge", "scene", "presence", "act", "audience", "belief", "fact", "artifact",
 	"setup", "payoff", "account", "parent", "distance", "reveal", "withhold", "directive", "waiver",
-	"believes", "uses", "deception", "role_span", "diagnostic"}
+	"believes", "uses", "deception", "role_span", "diagnostic", "point_dist"}
 
 func counts(t *testing.T, pool *pgxpool.Pool, work string) map[string]int {
 	t.Helper()

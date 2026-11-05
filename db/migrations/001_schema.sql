@@ -142,9 +142,11 @@ CREATE TABLE waiver (
 -- ── 파생 (derive 가 채운다) ──
 
 -- value=false 는 ¬P 를 믿는다(거짓말한 화자). from_pt = 그 행위의 시점.
+-- declared = 작가가 쓴 `believes` 문장(belief 테이블)에서 온 행. src_id 는 그 문장 또는 원인 행위의 위치.
 CREATE TABLE believes (
   work_id text NOT NULL REFERENCES work(id) ON DELETE CASCADE,
-  entity_id text NOT NULL, prop_id text NOT NULL, value bool NOT NULL, from_pt text, cause_act text);
+  entity_id text NOT NULL, prop_id text NOT NULL, value bool NOT NULL, from_pt text, cause_act text,
+  declared bool NOT NULL, src_id int, FOREIGN KEY (work_id, src_id) REFERENCES src);
 
 CREATE TABLE uses (
   work_id text NOT NULL REFERENCES work(id) ON DELETE CASCADE,

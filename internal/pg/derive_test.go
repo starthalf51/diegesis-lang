@@ -208,8 +208,9 @@ func TestTimeCycle(t *testing.T) {
 		if len(got) != 1 || !slices.Equal(got[0].Src, []int{s1, s2}) {
 			t.Fatalf("diags = %+v, want src [%d %d]", got, s1, s2)
 		}
-		if e, l := bounds(t, pool, b); e != nil || l != nil {
-			t.Errorf("unsolvable STN: B = [%s,%s], want NULL", show(e), show(l))
+		// 순환 간선은 풀이에서 빠진다(리뷰 1회차). B 는 원점 뒤라는 것만 남는다.
+		if e, l := bounds(t, pool, b); show(e) != "0" || l != nil {
+			t.Errorf("B = [%s,%s], want [0,NULL] (cycle edges left out)", show(e), show(l))
 		}
 	})
 	t.Run("waived", func(t *testing.T) {

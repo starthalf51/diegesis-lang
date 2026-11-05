@@ -43,9 +43,9 @@ BEGIN
        SELECT c.actor_id AS a, au.entity_id AS b, c.act_id AS act, c.prop_id AS prop, c.pt
          FROM act_content c JOIN audience au ON au.act_id = c.act_id
         WHERE c.work_id = w AND assertive(c.verb) AND c.actor_id IS NOT NULL AND au.entity_id <> c.actor_id) x));
-  PERFORM graph_rows(g, 'MATCH (a:Entity {id: r.a}), (b:Fact {id: r.b}) CREATE (a)-[:BELIEVES {from: r.from_pt, cause: r.cause, value: r.value}]->(b)',
+  PERFORM graph_rows(g, 'MATCH (a:Entity {id: r.a}), (b:Fact {id: r.b}) CREATE (a)-[:BELIEVES {from: r.from_pt, cause: r.cause, value: r.value, declared: r.declared}]->(b)',
     (SELECT jsonb_agg(to_jsonb(x)) FROM (
-       SELECT entity_id AS a, prop_id AS b, from_pt, cause_act AS cause, value FROM believes WHERE work_id = w) x));
+       SELECT entity_id AS a, prop_id AS b, from_pt, cause_act AS cause, value, declared FROM believes WHERE work_id = w) x));
   PERFORM graph_rows(g, 'MATCH (a:Entity {id: r.a}), (b:Point {id: r.b}) CREATE (a)-[:PRESENT_AT {scene: r.scene, from: r.f, to: r.t}]->(b)',
     (SELECT jsonb_agg(to_jsonb(x)) FROM (
        SELECT p.entity_id AS a, s.start_pt AS b, p.scene_id AS scene, p.from_pt AS f, p.to_pt AS t
