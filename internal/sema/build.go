@@ -10,7 +10,6 @@ import (
 	"slices"
 	"sort"
 	"strings"
-	"time"
 
 	"story-lang/internal/ir"
 	"story-lang/internal/syntax"
@@ -45,7 +44,7 @@ type srcKey struct {
 
 type builder struct {
 	work, origin string
-	epoch        time.Time
+	epoch        int64 // origin day on the no-leap calendar
 	hasEpoch     bool
 	mods         map[string]*module
 	order        []*module
@@ -60,13 +59,14 @@ type builder struct {
 	cur          *module
 	file         string
 	pend         []*syntax.Pragma // waivers of the statement being handled
+	whenEdges    []int            // edges made by the current statement's own `when`
 }
 
 // Build turns parsed files (one work) into IR. Modules with errors emit no
 // rows; diagnostics are still collected for every module.
 func Build(files []*syntax.File) (*ir.Work, []syntax.Diag) {
 	files = slices.Clone(files)
-	sort.SliceStable(files, func(i, j int) bool { return files[i].Path < files[j].Path })
+	sort.SliceStable(files, func(i, j int) bool { return naturalLess(files[i].Path, files[j].Path) })
 	b := &builder{mods: map[string]*module{}, kinds: map[string]string{}, members: map[string][]string{},
 		lives: map[string]bool{}, dord: map[*syntax.Scene]int{}, facts: map[string]bool{}, src: map[srcKey]int{}}
 	for _, f := range files {
@@ -82,8 +82,8 @@ func Build(files []*syntax.File) (*ir.Work, []syntax.Diag) {
 		}
 		m.files = append(m.files, f)
 	}
-	sort.Slice(b.order, func(i, j int) bool { return b.order[i].name < b.order[j].name })
-	b.findWork()
+	sort.Slice(b.order, func(i, j int) bool { return naturalLess(b.order[i].name, b.order[j].name) })
+	b.findWork(files)
 	for _, m := range b.order {
 		m.id = b.work + "/" + m.name
 	}
@@ -127,9 +127,10 @@ func merge(dst, src *ir.Work) {
 	}
 }
 
-// findWork picks the work id from the first `work` declaration; without one
-// the first module name segment stands in.
-func (b *builder) findWork() {
+// findWork picks the work id from the first `work` declaration. Without
+// one there is no origin point: error no-work at the first file (the first
+// module name segment stands in so diagnostics still carry ids).
+func (b *builder) findWork(files []*syntax.File) {
 	for _, m := range b.order {
 		for _, f := range m.files {
 			for _, it := range f.Items {
@@ -141,6 +142,13 @@ func (b *builder) findWork() {
 	}
 	if b.work == "" && len(b.order) > 0 {
 		b.work, _, _ = strings.Cut(b.order[0].name, ".")
+		for _, f := range files {
+			if f.Module != nil {
+				b.cur, b.file = b.mods[f.Module.Name], f.Path
+				b.errf(syntax.Pos{Line: 1, Col: 1}, "no-work", "no `work` declaration in this build (it defines the time origin)")
+				break
+			}
+		}
 	}
 	b.origin = b.work + "/start"
 }
@@ -211,16 +219,19 @@ func (b *builder) stmts(m *module, body []syntax.Node, handle func(syntax.Node) 
 		cur := pend
 		pend = nil
 		b.pend = cur
-		e0 := len(m.out.TimeEdges)
 		_, isWhen := n.(*syntax.When)
 		_, isLife := n.(*syntax.Life)
+		b.whenEdges = nil
 		kind, id := handle(n)
-		b.pend = nil
+		own := b.whenEdges
+		b.pend, b.whenEdges = nil, nil
 		for _, p := range cur {
-			if !b.waiver(m, p, kind, id) || !(isWhen || isLife) {
+			// only time-cycle waives edges, and only the statement's own
+			// `when` edges: origin and statement-order edges stay in the solve
+			if !b.waiver(m, p, kind, id) || p.Rule != "time-cycle" || !(isWhen || isLife) {
 				continue
 			}
-			for i := e0; i < len(m.out.TimeEdges); i++ {
+			for _, i := range own {
 				e := &m.out.TimeEdges[i]
 				e.Waived, e.WaiverRule, e.WaiverReason = true, p.Rule, p.Reason
 			}
@@ -243,4 +254,36 @@ func (b *builder) waiver(m *module, p *syntax.Pragma, kind, id string) bool {
 	m.out.Waivers = append(m.out.Waivers, ir.Waiver{Rule: p.Rule, TargetKind: kind, TargetID: id,
 		Reason: p.Reason, SrcID: b.srcID(p.Pos)})
 	return true
+}
+
+// naturalLess orders strings with digit runs compared as numbers, so
+// book-2 < book-10 and 1.2 < 1.10 (file order is discourse order).
+func naturalLess(a, b string) bool {
+	for a != "" && b != "" {
+		da, db := digits(a), digits(b)
+		if da > 0 && db > 0 {
+			na, nb := strings.TrimLeft(a[:da], "0"), strings.TrimLeft(b[:db], "0")
+			if len(na) != len(nb) {
+				return len(na) < len(nb)
+			}
+			if na != nb {
+				return na < nb
+			}
+			a, b = a[da:], b[db:]
+			continue
+		}
+		if a[0] != b[0] {
+			return a[0] < b[0]
+		}
+		a, b = a[1:], b[1:]
+	}
+	return len(a) < len(b)
+}
+
+func digits(s string) int {
+	n := 0
+	for n < len(s) && s[n] >= '0' && s[n] <= '9' {
+		n++
+	}
+	return n
 }

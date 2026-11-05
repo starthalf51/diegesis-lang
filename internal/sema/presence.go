@@ -18,9 +18,24 @@ type stage struct {
 
 func newStage() *stage { return &stage{on: map[string]bool{}, open: map[string]int{}} }
 
-// expand returns the entity followed by its members (groups).
+// expand returns the entity followed by its members, depth first through
+// nested groups (visited set: a membership cycle cannot loop).
 func (b *builder) expand(id string) []string {
-	return append([]string{id}, b.members[id]...)
+	var out []string
+	seen := map[string]bool{}
+	var walk func(string)
+	walk = func(e string) {
+		if seen[e] {
+			return
+		}
+		seen[e] = true
+		out = append(out, e)
+		for _, mem := range b.members[e] {
+			walk(mem)
+		}
+	}
+	walk(id)
+	return out
 }
 
 func (w *walker) presence(p *syntax.Presence) {
@@ -106,39 +121,39 @@ var speech = map[string]bool{"tells": true, "says": true, "hails": true, "lies":
 // stage: the named recipients); whispers only the named recipients;
 // aside, thinks, sees, reads, writes, does reach nobody in the story.
 func (w *walker) audience(a ir.Act) []string {
-	targets := append(slices.Clone(a.Objects), a.To...)
-	switch {
-	case a.Verb == "whispers":
-		return dedup(targets)
-	case !speech[a.Verb]:
-		return nil
-	case w.stage == nil:
-		return dedup(targets)
-	}
-	self := map[string]bool{a.ActorID: true}
-	for _, e := range w.b.members[a.ActorID] {
+	self := map[string]bool{}
+	for _, e := range w.b.expand(a.ActorID) {
 		self[e] = true
 	}
-	for g, ms := range w.b.members {
-		if slices.Contains(ms, a.ActorID) {
+	for g := range w.b.members {
+		if g != a.ActorID && slices.Contains(w.b.expand(g), a.ActorID) {
 			self[g] = true
 		}
 	}
-	var out []string
+	keep := func(ids []string) []string {
+		var out []string
+		for _, e := range ids {
+			if !self[e] && !slices.Contains(out, e) {
+				out = append(out, e)
+			}
+		}
+		return out
+	}
+	if a.Verb == "whispers" || speech[a.Verb] && w.stage == nil {
+		var targets []string
+		for _, t := range append(slices.Clone(a.Objects), a.To...) {
+			targets = append(targets, w.b.expand(t)...)
+		}
+		return keep(targets)
+	}
+	if !speech[a.Verb] {
+		return nil
+	}
+	var on []string
 	for _, e := range w.stage.order {
-		if w.stage.on[e] && !self[e] {
-			out = append(out, e)
+		if w.stage.on[e] {
+			on = append(on, e)
 		}
 	}
-	return out
-}
-
-func dedup(ids []string) []string {
-	var out []string
-	for _, id := range ids {
-		if !slices.Contains(out, id) {
-			out = append(out, id)
-		}
-	}
-	return out
+	return keep(on)
 }

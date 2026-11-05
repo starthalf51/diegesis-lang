@@ -311,7 +311,7 @@ born a when after X
 		{"Y#b1", "Y#a1", 0, -1, false},
 		{"Y#a1", "Y.end", 0, -1, false},
 		{"Z.end", "Y.start", 0, -1, true},
-		{"t/start", "Z.start", 31 * 86400, 59 * 86400, false},
+		{"t/start", "Z.start", 31 * 86400, 59*86400 - 1, false},
 		{"X.start", "Z.start", 0, -1, false},
 		{"Z.end", "X.end", 0, -1, false},
 		{"Z.start", "Z.end", 0, -1, false},

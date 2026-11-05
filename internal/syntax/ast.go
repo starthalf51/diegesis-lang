@@ -10,7 +10,7 @@ import (
 
 // Diag is one diagnostic. Rule ids: syntax, indent, dup-decl, yaml-anchor,
 // unknown-key, unterminated-fence. sema adds undefined-ref, import-cycle,
-// arg-kind, waiver-reason, waiver-target, role-unknown (errors) and
+// arg-kind, waiver-reason, waiver-target, role-unknown, no-work (errors) and
 // offstage-speaker, offstage-exit (warn, waivable: Waived keeps the diag).
 type Diag struct {
 	File     string `json:"file"`
