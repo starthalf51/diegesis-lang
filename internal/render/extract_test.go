@@ -69,3 +69,11 @@ func TestExtractPromptHearingSpeechIsNotPerception(t *testing.T) {
 		t.Error("extract prompt lacks the hearing-speech rule")
 	}
 }
+
+// 한 액트가 사실 여럿을 전하면 사실마다 한 번씩 적는다(live 판정: 같은 대사를 백엔드마다 다른 사실 하나로 골라 갈라졌다).
+func TestExtractPromptOneEntryPerFact(t *testing.T) {
+	sys, _ := BuildExtractPrompt(Scene{}, "en", "")
+	if !strings.Contains(sys, "list that act once per fact") {
+		t.Error("extract prompt lacks the one-entry-per-fact rule")
+	}
+}

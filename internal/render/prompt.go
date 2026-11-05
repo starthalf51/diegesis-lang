@@ -40,6 +40,7 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	fmt.Fprintf(&sb, "You are a fiction writer. You will receive a scene specification (places, characters, an ordered list of story acts, and facts). Write the scene as continuous prose in %s.\n\n", ln)
 	sb.WriteString("Rules:\n")
 	sb.WriteString("- Narrate every act, in the given order. Do not omit any act and do not add events, actions, or facts that are not in the specification.\n")
+	sb.WriteString("- Do not add any speech, even reported speech, that is not an act in the specification, and do not draw on any known version of this story.\n")
 	sb.WriteString("- An act with a fact (after the colon) must make that fact clear to the reader through that act and its actor. For a `sees` act, say that its actor sees or hears the thing, not only that it happens.\n")
 	sb.WriteString("- Dialogue may only use the provided `quote` strings. Speech acts without a quote are reported speech; never invent quoted dialogue.\n")
 	sb.WriteString("- Never state or imply any fact listed under \"Must not state or imply\", not even as a hint, a foreshadowing, or a character's guess.\n")

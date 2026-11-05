@@ -106,3 +106,11 @@ func TestBuildPromptMakesPerceptionAndFactsExplicit(t *testing.T) {
 		}
 	}
 }
+
+// 산문은 명세의 액트만 쓴다: 원작의 다른 대사를 간접화법으로 끼워 넣지 않는다(live 판정: "borrowed robes" 가 끼어들었다).
+func TestBuildPromptForbidsSourceLines(t *testing.T) {
+	sys, _, _ := BuildPrompt(mustLoad(t, "testdata/min.json"), VariantIROnly, "en", nil)
+	if !strings.Contains(sys, "Do not add any speech, even reported speech, that is not an act") {
+		t.Error("system prompt lacks the no-extra-speech rule")
+	}
+}
