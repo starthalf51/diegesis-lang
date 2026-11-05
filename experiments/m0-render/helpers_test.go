@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"context"
+	"errors"
+	"testing"
+)
 
 func mustLoad(t *testing.T, path string) Scene {
 	t.Helper()
@@ -42,4 +46,30 @@ func extractedFromScene(s Scene) Extracted {
 		}
 	}
 	return e
+}
+
+const validJSON = `{"acts":[],"facts_stated":[],"new_events":[]}`
+
+var ctx = context.Background()
+
+type fakeCompleter struct {
+	replies []Result
+	err     error
+	calls   int
+}
+
+func (f *fakeCompleter) Complete(_ context.Context, _, _ string) (Result, error) {
+	f.calls++
+	if f.err != nil {
+		return Result{}, f.err
+	}
+	if f.calls > len(f.replies) {
+		return Result{}, errors.New("fakeCompleter: out of replies")
+	}
+	return f.replies[f.calls-1], nil
+}
+
+func testJob(t *testing.T) Job {
+	t.Helper()
+	return Job{Scene: mustLoad(t, "testdata/scenes/min.json"), Variant: VariantIROnly, Lang: "en"}
 }

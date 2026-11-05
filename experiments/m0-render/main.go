@@ -1,0 +1,85 @@
+package main
+
+import (
+	"context"
+	"flag"
+	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+)
+
+func main() {
+	scenesDir := flag.String("scenes", "experiments/m0-render/testdata/scenes", "scene IR directory")
+	stylesDir := flag.String("styles", "experiments/m0-render/testdata/styles", "style sample directory")
+	out := flag.String("out", "experiments/m0-render/out", "output directory")
+	variants := flag.String("variants", "a,b,c", "comma-separated variants")
+	langs := flag.String("langs", "ko,en", "comma-separated languages")
+	force := flag.Bool("force", false, "re-run jobs that already have output")
+	only := flag.String("only", "", "run only jobs whose key contains this substring")
+	flag.Parse()
+	if err := run(*scenesDir, *stylesDir, *out, *variants, *langs, *only, *force); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func run(scenesDir, stylesDir, out, variants, langs, only string, force bool) error {
+	paths, err := filepath.Glob(filepath.Join(scenesDir, "*.json"))
+	if err != nil {
+		return err
+	}
+	sort.Strings(paths)
+	var scenes []Scene
+	for _, p := range paths {
+		s, err := LoadScene(p)
+		if err != nil {
+			return err
+		}
+		scenes = append(scenes, s)
+	}
+	styles, err := LoadStyles(stylesDir)
+	if err != nil {
+		return err
+	}
+	var vs []Variant
+	for _, v := range strings.Split(variants, ",") {
+		vs = append(vs, Variant(strings.TrimSpace(v)))
+	}
+	jobs, err := Jobs(scenes, styles, vs, strings.Split(langs, ","))
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(out, 0o755); err != nil {
+		return err
+	}
+	c := NewClaude()
+	var recs []Record
+	failed := 0
+	for _, j := range jobs {
+		if !strings.Contains(j.Key(), only) {
+			continue
+		}
+		r, err := RunJob(context.Background(), c, j, out, force)
+		if err != nil {
+			fmt.Printf("%s ERROR %v\n", j.Key(), err)
+			failed++
+			continue
+		}
+		recs = append(recs, r)
+		note := fmt.Sprintf("cost=$%.4f", r.RenderCost+r.ExtractCost)
+		if r.Skipped {
+			note = "skipped"
+		}
+		fmt.Printf("%s %s stop=%s missing=%d halluc=%d leaked=%d err=%q\n", r.Key, note, r.StopReason,
+			len(r.Report.Missing), len(r.Report.Hallucinated), len(r.Report.Leaked), r.Report.ExtractError)
+	}
+	if err := WriteResults(recs, filepath.Join(out, "results.md")); err != nil {
+		return err
+	}
+	if failed > 0 {
+		return fmt.Errorf("%d job(s) failed", failed)
+	}
+	return nil
+}
