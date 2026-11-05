@@ -56,26 +56,49 @@ queries:
        ORDER BY 1
     rows: []
 
-  - name: duncan-death-window
+  - name: macbeth-first-told-cawdor-by-ross
     why: >-
-      살해는 무대 밖이다. 맥베스가 2.1 끝(2.1.71-72)에 왕의 방으로 가고, 2.2.5 "He is about it" 동안 일어나며,
-      맥베스가 2.2.17 에 들어오기 전에 끝난다. 죽음 = 2.1 끝 이후, 2.2 의 deed_done 이전.
+      맥베스가 holds(thane_of_cawdor, macbeth) 를 들은 출처 중 마녀(oracle)가 아닌 사람의 행위 가운데 가장 이른 것은
+      로스의 "He bade me, from him, call thee thane of Cawdor"(1.3.109)다. 뱅쿼의 "To you they have show'd some truth"
+      (2.1.25)는 그 뒤다. 비트 이름으로 거르지 않고 시간 순서(precedes)로 가장 이른 출처를 고른다.
     sql: |
-      SELECT precedes($1, $1 || '/macbeth.act2/2.1.end', $1 || '/macbeth.cast/duncan.died'),
-             precedes($1, $1 || '/macbeth.cast/duncan.died', $1 || '/macbeth.act2/2.2#deed_done')
-    rows: [["yes", "yes"]]
-
-  - name: macbeth-told-cawdor-by-ross
-    why: >-
-      로스가 왕의 말을 전한다: "He bade me, from him, call thee thane of Cawdor"(1.3.109).
-      맥베스가 holds(thane_of_cawdor, macbeth) 를 믿게 되는 출처 중 하나는 1.3 의 ross_news 비트다.
-    sql: |
-      SELECT DISTINCT lint_short(a.actor_id), lint_short(a.beat_id)
-        FROM believes b JOIN act a ON a.id = b.cause_act
-       WHERE b.work_id = $1 AND b.entity_id = $1 || '/macbeth.cast/macbeth' AND b.value
-         AND b.prop_id = $1 || '/holds(' || $1 || '/macbeth.cast/thane_of_cawdor,' || $1 || '/macbeth.cast/macbeth)'
-         AND a.beat_id = $1 || '/macbeth.act1/1.3#ross_news'
+      WITH c AS (
+        SELECT DISTINCT a.id, a.pt, a.actor_id, a.beat_id
+          FROM believes b JOIN act a ON a.id = b.cause_act
+         WHERE b.work_id = $1 AND b.entity_id = $1 || '/macbeth.cast/macbeth' AND b.value
+           AND b.prop_id = $1 || '/holds(' || $1 || '/macbeth.cast/thane_of_cawdor,' || $1 || '/macbeth.cast/macbeth)'
+           AND NOT lint_exempt($1, a.actor_id))
+      SELECT lint_short(c.actor_id), lint_short(c.beat_id) FROM c
+       WHERE NOT EXISTS (SELECT 1 FROM c d WHERE d.id <> c.id AND precedes($1, c.pt, d.pt) <> 'yes')
     rows: [["ross", "1.3#ross_news"]]
+
+  - name: macbeth-doubts-the-hail
+    why: >-
+      마녀의 인사 직후 맥베스는 믿지 않는다: "to be king / Stands not within the prospect of belief, / No more than to be
+      Cawdor"(1.3.75-77). 두 의심은 로스의 소식(ross_news)보다 앞이고, 왕이 된다는 믿음은 그 소식 뒤에 생긴다
+      ("Two truths are told", 1.3.137).
+    sql: |
+      SELECT b.verb, lint_short(b.prop_id),
+             precedes($1, b.at_pt, $1 || '/macbeth.act1/1.3#ross_news'), precedes($1, $1 || '/macbeth.act1/1.3#ross_news', b.at_pt)
+        FROM belief b
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/macbeth.cast/macbeth' AND b.scene_id = $1 || '/macbeth.act1/1.3'
+       ORDER BY 1, 2
+    rows:
+      - ["believes", "king_hereafter", "no", "yes"]
+      - ["doubts", "holds(thane_of_cawdor,macbeth)", "yes", "no"]
+      - ["doubts", "king_hereafter", "yes", "no"]
+
+  - name: lady-macbeth-hears-the-deed
+    why: >-
+      맥베스 부인은 살해 현장에 없었다(2.2.5 "He is about it", 2.2.14 "I laid their daggers ready").
+      덩컨이 죽었다는 것은 2.2.18 맥베스의 "I have done the deed" 로 안다.
+    sql: |
+      SELECT lint_short(a.actor_id), a.verb, lint_short(a.scene_id)
+        FROM believes b JOIN act a ON a.id = b.cause_act JOIN src s ON s.work_id = a.work_id AND s.id = a.src_id
+       WHERE b.work_id = $1 AND b.entity_id = $1 || '/macbeth.cast/lady_macbeth' AND b.value
+         AND b.prop_id = $1 || '/not alive(' || $1 || '/macbeth.cast/duncan)'
+       ORDER BY s.line LIMIT 1
+    rows: [["macbeth", "tells", "2.2"]]
 
   - name: lady-macbeth-told-duncan-comes
     why: >-
@@ -100,19 +123,17 @@ queries:
          AND b.prop_id = $1 || '/not alive(' || $1 || '/macbeth.cast/cawdor)'
     rows: [["witness", "cawdor_execution", "tells"]]
 
-  - name: titles
+  - name: witches-hail-is-true
     why: >-
-      작위의 보유 구간. 코더: 덩컨의 선포(1.2.72-74) 전까지 옛 코더, 그 뒤 맥베스. 왕: 덩컨이 처음부터 죽을 때까지.
-      컴벌랜드 공: 1.4.44-45 에서 맬컴. (맥베스의 즉위 2.4 는 포팅 범위 밖이다.)
+      둘째 마녀의 "hail to thee, thane of Cawdor!"(1.3.51)는 그 순간 이미 참이다. 덩컨이 1.2.72-74 에서 작위를
+      맥베스에게 주었고 1.3 은 1.2 뒤다. 맥베스는 1.3.109 에서야 안다(그래서 1.3.74 의 말은 거짓 믿음이다).
+      작위 선언(held … from @1.2.decree)과 장면 순서를 시간 풀이가 합쳐야 나오는 값이다.
     sql: |
-      SELECT lint_short(role_id), lint_short(entity_id), coalesce(lint_short(from_pt), ''), coalesce(lint_short(until_pt), '')
-        FROM role_span WHERE work_id = $1 AND role_id IN ($1 || '/macbeth.cast/thane_of_cawdor', $1 || '/macbeth.cast/king',
-                                                         $1 || '/macbeth.cast/prince_of_cumberland')
-       ORDER BY 1, 3
-    rows:
-      - ["king", "duncan", "start", "duncan.died"]
-      - ["prince_of_cumberland", "malcolm", "1.4#cumberland", ""]
-      - ["thane_of_cawdor", "cawdor", "", "1.2#decree"]
-      - ["thane_of_cawdor", "macbeth", "1.2#decree", ""]
+      SELECT lint_short(s.entity_id) FROM role_span s, act a
+       WHERE s.work_id = $1 AND s.role_id = $1 || '/macbeth.cast/thane_of_cawdor'
+         AND a.id = $1 || '/macbeth.act1/1.3#a5' AND a.verb = 'hails'
+         AND (s.from_pt IS NULL OR precedes($1, s.from_pt, a.pt) = 'yes')
+         AND (s.until_pt IS NULL OR (precedes($1, a.pt, s.until_pt) = 'yes' AND precedes($1, s.until_pt, a.pt) <> 'yes'))
+    rows: [["macbeth"]]
 
 mutation_min_rate: 0.8

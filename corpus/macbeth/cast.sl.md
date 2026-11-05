@@ -44,6 +44,7 @@ character ross "Ross" minor
 character angus "Angus" minor
   name ko "앵거스"
   name en "Angus"
+  believes alive(cawdor)                     # 1.3.115 "Who was the thane lives yet": 1.2 에서 떠날 때 코더는 살아 있었다
 character lennox "Lennox" extra
   name ko "레녹스"
   name en "Lennox"
