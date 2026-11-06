@@ -9,7 +9,7 @@ import (
 
 var verbs = map[string]bool{"tells": true, "says": true, "hails": true, "asks": true, "lies": true,
 	"whispers": true, "aside": true, "thinks": true, "sees": true, "shows": true, "reads": true,
-	"writes": true, "sends": true, "orders": true, "decrees": true, "does": true}
+	"writes": true, "sends": true, "orders": true, "decrees": true, "does": true, "enacts": true}
 
 var rkeys = map[string]bool{"pov": true, "pace": true, "tension": true, "focus": true, "omit": true, "show": true}
 

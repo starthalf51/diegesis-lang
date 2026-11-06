@@ -62,7 +62,7 @@ var verbs = map[string]bool{
 	"enter": true, "exit": true, "tells": true, "says": true, "hails": true, "lies": true,
 	"whispers": true, "sees": true, "reads": true, "does": true, "aside": true,
 	// 컴파일러 IR 의 나머지 동사(render_scene 이 그대로 넘긴다)
-	"asks": true, "orders": true, "shows": true, "decrees": true, "sends": true, "writes": true, "thinks": true,
+	"asks": true, "orders": true, "shows": true, "decrees": true, "sends": true, "writes": true, "thinks": true, "enacts": true,
 }
 
 func LoadScene(path string) (Scene, error) {

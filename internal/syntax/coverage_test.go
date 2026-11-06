@@ -72,6 +72,7 @@ scene 45.1 at camp in wei
   duncan sends ross, angus to macbeth with holds(thane_of_cawdor, macbeth), king_hereafter
   duncan orders ross: not alive(cawdor) "go pronounce his present death"
   duncan decrees: holds(thane_of_cawdor, macbeth)
+  hamlet enacts claudius: claudius_murdered "He poisons him" src 3.2.256
   曹操 believes commanders_traitors
   曹操 doubts letter_genuine because @45.1.theft
   setup forged_hint hint: letter_forged
@@ -270,6 +271,7 @@ func TestParseCoverage(t *testing.T) {
 		"sends":        {actor: "duncan", objects: "ross,angus", to: "macbeth", with: "holds(thane_of_cawdor, macbeth); king_hereafter"},
 		"orders":       {actor: "duncan", objects: "ross", prop: "not alive(cawdor)", quote: "go pronounce his present death"},
 		"decrees":      {actor: "duncan", prop: "holds(thane_of_cawdor, macbeth)"},
+		"enacts":       {actor: "hamlet", objects: "claudius", prop: "claudius_murdered", quote: "He poisons him", src: "3.2.256"},
 		"account asks": {actor: "maid", objects: "peter", prop: "knows(peter, jesus)"},
 		"account says": {actor: "peter", prop: "not knows(peter, jesus)", quote: "I know not this man"},
 	} {
@@ -277,8 +279,8 @@ func TestParseCoverage(t *testing.T) {
 			t.Errorf("act %s = %+v, want %+v", verb, got, want)
 		}
 	}
-	if len(verbs) != 16 {
-		t.Errorf("verb table has %d verbs, want 16", len(verbs))
+	if len(verbs) != 17 {
+		t.Errorf("verb table has %d verbs, want 17", len(verbs))
 	}
 	for v := range verbs {
 		if _, ok := acts[v]; !ok && v != "asks" {

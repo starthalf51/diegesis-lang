@@ -416,3 +416,38 @@ scene 1
 		t.Errorf("confirmation to someone who never heard the prophecy counted: %v", got)
 	}
 }
+
+// enacts(공연·재연): 무대 위 모두가 청중이지만 단언이 아니라 믿음을 만들지 않는다.
+// 장면 2 의 재연을 본 b 는 장면 3 에서도 p 를 모른다 → 두 장면 모두 아이러니(engaged = enacts 의 청중).
+func TestEnactsIsNotBelief(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, `scene 1
+  enter a, b
+  a aside: p
+scene 2
+  when after 1
+  enter a, b
+  a enacts: p
+scene 3
+  when after 2
+  enter a, b
+  a asks b: p
+`)
+	var n, aud int
+	if err := pool.QueryRow(context.Background(), `SELECT
+	    (SELECT count(*) FROM believes WHERE work_id = $1 AND entity_id = $1 || '/t.s/b'),
+	    (SELECT count(*) FROM audience au JOIN act a ON a.id = au.act_id WHERE a.work_id = $1 AND a.verb = 'enacts' AND au.entity_id = $1 || '/t.s/b')`,
+		id).Scan(&n, &aud); err != nil {
+		t.Fatal(err)
+	}
+	if n != 0 || aud != 1 {
+		t.Errorf("b believes rows = %d (want 0), enacts audience b = %d (want 1)", n, aud)
+	}
+	ms, err := pg.Patterns(context.Background(), pool, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := matches(ms, "dramatic-irony", id), []string{"t.s/2/2-2", "t.s/3/3-3"}; !slices.Equal(got, want) {
+		t.Errorf("dramatic-irony = %v, want %v", got, want)
+	}
+}

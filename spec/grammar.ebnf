@@ -13,7 +13,7 @@
    - 구두점: ":" "," "(" ")" "=" ".." 그리고 프라그마 "#!".
    - 키워드는 문장 첫 단어와 둘째 단어로 고른다. 다만 다음 단어는 선언 id(decl 의 ident)로 쓸 수 없다
      (syntax "reserved word used as id"): when lasts enter exit mention beat render reveal withhold setup payoff
-     discourse parent born dies all not to with because src major minor extra
+     discourse parent born dies all not to with because src major minor extra enacts
 
    표기: NL = 줄 끝, BLOCK(x) = NL INDENT { x NL } DEDENT, [ BLOCK(x) ] = 빈 몸체 허용. *)
 
@@ -68,7 +68,9 @@ act         = actor verb [ ident ] [ idlist ] [ "to" idlist ] [ "with" proplist 
                  idlist 는 to/with/because/src 에서 멈춘다 *)
 actor       = ident | "role" ":" ident ;                             (* role:chancellor — 그 시점의 보유자 *)
 verb        = "tells" | "says" | "hails" | "asks" | "lies" | "whispers" | "aside" | "thinks"
-            | "sees" | "shows" | "reads" | "writes" | "sends" | "orders" | "decrees" | "does" ;
+            | "sees" | "shows" | "reads" | "writes" | "sends" | "orders" | "decrees" | "does" | "enacts" ;
+              (* enacts = 공연·재연: 내용을 무대 위 모두(청중)에게 보이지만 단언이 아니다(assertive 아님 → 믿음 파생 없음,
+                 독자 모델에도 안 든다). 청중은 패턴의 engaged(그 사실에 닿은 인물)로 센다. 예: 햄릿 3.2 의 극중극 *)
 belief      = ident ("believes" | "doubts") prop [ "because" tref ] ;
 attribute   = "attr" word "=" ( number | string | ident ) [ "src" (word | string) ] ;
               (* word = <entity>.<key>: 마지막 "." 앞이 엔티티(character group place thing faction thread), 뒤가 키.

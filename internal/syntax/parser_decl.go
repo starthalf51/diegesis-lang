@@ -40,7 +40,7 @@ var reserved = map[string]bool{}
 
 func init() {
 	for _, w := range strings.Fields("when lasts enter exit mention beat render reveal withhold setup payoff discourse " +
-		"parent born dies all not to with because src major minor extra") {
+		"parent born dies all not to with because src major minor extra enacts") {
 		reserved[w] = true
 	}
 }
