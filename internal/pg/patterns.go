@@ -76,14 +76,15 @@ func readPatterns(dir fs.FS) ([]Pattern, error) {
 	return out, err
 }
 
-// evalPatterns 는 작품의 pattern_match 를 지우고 패턴을 돌려 다시 채운다. only 가 nil 이 아니면 그 ID 만 돌린다.
+// evalPatterns 는 작품의 pattern_match 중 같은 종류의 실행(run 의 접두어 lint- | patterns-) 행을 지우고 패턴을 돌려 다시 채운다.
+// only 가 nil 이 아니면 그 ID 만 돌린다(lint). lint 의 부분 실행은 전체 실행(pattern_result 뷰)을 덮지 않는다.
 // 패턴 SQL 을 부분 질의로 감싸 PG 안에서 바로 INSERT 한다(열 이름이 다르면 패턴 파일 오류다).
 func evalPatterns(ctx context.Context, tx pgx.Tx, work, run string, only map[string]bool) error {
 	ps, err := PatternDefs()
 	if err != nil {
 		return err
 	}
-	if _, err := tx.Exec(ctx, `DELETE FROM pattern_match WHERE work_id = $1`, work); err != nil {
+	if _, err := tx.Exec(ctx, `DELETE FROM pattern_match WHERE work_id = $1 AND split_part(run_id, '-', 1) = split_part($2, '-', 1)`, work, run); err != nil {
 		return err
 	}
 	for _, p := range ps {
@@ -130,15 +131,16 @@ func Patterns(ctx context.Context, db *pgxpool.Pool, work string) ([]Match, erro
 	if _, err := tx.Exec(ctx, `SET LOCAL search_path = public, ag_catalog`); err != nil {
 		return nil, err
 	}
-	if err := evalPatterns(ctx, tx, work, fmt.Sprintf("patterns-%d", time.Now().UnixNano()), nil); err != nil {
+	run := fmt.Sprintf("patterns-%d", time.Now().UnixNano())
+	if err := evalPatterns(ctx, tx, work, run, nil); err != nil {
 		return nil, err
 	}
 	rows, err := tx.Query(ctx, `
 SELECT m.pattern_id, m.target_kind, m.target_id, m.span_from, m.span_to, coalesce(m.data, 'null'),
        EXISTS (SELECT 1 FROM pattern_decl d WHERE d.work_id = $1 AND d.pattern_id = m.pattern_id
                   AND pattern_covers($1, d.scene_id, m.target_id, m.span_from, m.span_to))
-  FROM pattern_match m WHERE m.work_id = $1
- ORDER BY m.pattern_id, m.span_from NULLS LAST, m.target_id`, work)
+  FROM pattern_match m WHERE m.work_id = $1 AND m.run_id = $2
+ ORDER BY m.pattern_id, m.span_from NULLS LAST, m.target_id`, work, run)
 	if err != nil {
 		return nil, err
 	}

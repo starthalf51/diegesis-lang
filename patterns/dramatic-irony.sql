@@ -4,8 +4,9 @@
 --
 -- 보이는 장면 s 마다: 독자가 s 앞(서술 위치 < s)까지 믿게 된 (b, v) 중 s 의 시작에 참인 것(truth_at = v),
 -- 그 사실이 s 에서 다뤄지고(s 의 행위가 전하거나 묻거나, s 안의 믿음·의심 문장이 그 사실이다 — 무관한 사실은 세지 않는다),
--- s 에 등장하는(presence) 인물 중 s 의 시작에 그것을 확실히 알지 못하는(char_knows = no | opp: 출처가 없거나 반대로 믿는다.
--- 순서가 정해지지 않은 출처만 있으면(maybe) 세지 않는다) 사람이 있다.
+-- s 에 등장하는(presence) 인물 중 s 의 시작에 그것을 반대로 믿거나(char_knows = opp), 출처가 없는데(no) 그 장면에서
+-- 그 사실에 닿은(그 사실을 전하는 행위의 행위자·청중이거나 그 사실의 믿음·의심 문장의 주어) 사람이 있다.
+-- 순서가 정해지지 않은 출처만 있으면(maybe) 세지 않는다. 기록이 없을 뿐 사실과 무관한 인물은 세지 않는다(잡음).
 -- 예언자·전지(lint_exempt)는 빼고, 그 사실을 앞서 말하거나 생각한 인물은 안다(char_knows 의 출처).
 -- 대상 = 장면. span = 그 장면 한 칸. data.irony = (인물, 사실, 값, 인물의 앎).
 WITH kn AS (SELECT * FROM reader_knows($1)),
@@ -20,14 +21,22 @@ inplay AS (
   UNION
   SELECT b.scene_id, z.base FROM belief b CROSS JOIN LATERAL prop_norm($1, b.prop_id) z
    WHERE b.work_id = $1 AND b.scene_id IS NOT NULL AND b.prop_id IS NOT NULL),
+engaged AS (  -- 그 장면에서 그 사실에 닿은 인물: 그 사실을 전하는 행위의 행위자·청중, 그 사실의 믿음·의심 문장의 주어
+  SELECT a.scene_id, a.base, a.actor_id AS entity_id FROM act_props($1) a
+  UNION
+  SELECT a.scene_id, a.base, au.entity_id FROM act_props($1) a JOIN audience au ON au.act_id = a.act_id
+  UNION
+  SELECT b.scene_id, z.base, b.entity_id FROM belief b CROSS JOIN LATERAL prop_norm($1, b.prop_id) z
+   WHERE b.work_id = $1 AND b.scene_id IS NOT NULL AND b.prop_id IS NOT NULL),
 ir AS (
   SELECT k.scene_id, k.ord, k.fact_id, k.value, p.entity_id,
-         char_knows($1, p.entity_id, k.fact_id, k.value, k.start_pt) AS knows
+         char_knows($1, p.entity_id, k.fact_id, k.value, k.start_pt) AS knows,
+         EXISTS (SELECT 1 FROM engaged g WHERE g.scene_id = k.scene_id AND g.base = k.fact_id AND g.entity_id = p.entity_id) AS eng
     FROM k JOIN inplay i ON i.scene_id = k.scene_id AND i.base = k.fact_id
     JOIN (SELECT DISTINCT entity_id, scene_id FROM presence WHERE work_id = $1) p ON p.scene_id = k.scene_id
    WHERE NOT lint_exempt($1, p.entity_id))
 SELECT 'scene' AS target_kind, scene_id AS target_id, ord AS span_from, ord AS span_to,
        jsonb_build_object('irony', jsonb_agg(jsonb_build_object('character', entity_id, 'fact', fact_id, 'value', value,
                                                                 'character_knows', knows) ORDER BY entity_id, fact_id)) AS data
-  FROM ir WHERE knows IN ('no', 'opp')
+  FROM ir WHERE knows = 'opp' OR (knows = 'no' AND eng)
  GROUP BY scene_id, ord

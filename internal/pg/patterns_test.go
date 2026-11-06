@@ -2,6 +2,7 @@ package pg_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"slices"
 	"strings"
@@ -338,5 +339,80 @@ scene 3
 `)
 	if got, want := matches(ms, "dramatic-irony", w), []string{"t.s/2/2-2", "t.s/3/3-3"}; !slices.Equal(got, want) {
 		t.Errorf("dramatic-irony = %v, want %v", got, want)
+	}
+}
+
+// 수정 1회차: lint 의 부분 실행(선언된 패턴만)이 전체 결과(pattern_result 뷰)를 덮지 않는다.
+func TestPatternResultSurvivesLint(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, `fact q "Q" false
+pattern chekhov-gun
+scene 1
+  enter a, b
+  setup gun promise: p
+  a tells b: q
+scene 2
+  enter a, b
+  payoff gun
+  b tells a: not q
+`)
+	ms, err := pg.Patterns(context.Background(), pool, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lint(t, pool, id)
+	var n int
+	if err := pool.QueryRow(context.Background(), `SELECT count(*) FROM pattern_result WHERE work_id = $1`, id).Scan(&n); err != nil {
+		t.Fatal(err)
+	}
+	if len(ms) < 2 || n != len(ms) {
+		t.Errorf("pattern_result after lint = %d rows, want the full run's %d (≥ 2)", n, len(ms))
+	}
+}
+
+// 수정 1회차: 기록이 없을 뿐 그 사실에 닿지 않은 인물은 아이러니에 세지 않는다(c 는 귓속말을 듣지 못했다).
+func TestIronyOnlyEngagedCharacters(t *testing.T) {
+	ms, w := runPatterns(t, `scene 1
+  enter a, b
+  a aside: p
+scene 2
+  when after 1
+  enter a, b, c
+  a whispers b: p
+`)
+	var who []string
+	for _, m := range ms {
+		if m.Pattern == "dramatic-irony" {
+			var d struct {
+				Irony []struct{ Character string } `json:"irony"`
+			}
+			if err := json.Unmarshal(m.Data, &d); err != nil {
+				t.Fatal(err)
+			}
+			for _, x := range d.Irony {
+				who = append(who, strings.TrimPrefix(x.Character, w+"/"))
+			}
+		}
+	}
+	if want := []string{"t.s/b"}; !slices.Equal(who, want) {
+		t.Errorf("irony characters = %v, want %v", who, want)
+	}
+}
+
+// 수정 1회차: 확인은 예언을 들은 사람에게 해야 한다. 예언과 무관한 사람들 사이에서 참을 밝히는 것은 실현이 아니다.
+func TestProphecyConfirmationNeedsTheHearer(t *testing.T) {
+	ms, w := runPatterns(t, `role chief "Chief"
+  held a from start
+fact a_chief = holds(chief, a)
+b believes a_chief
+scene 1
+  enter o, a
+  o tells a: a_chief
+  exit o, a
+  enter b, c
+  b tells c: a_chief
+`)
+	if got := matches(ms, "prophecy-fulfilled", w); len(got) != 0 {
+		t.Errorf("confirmation to someone who never heard the prophecy counted: %v", got)
 	}
 }

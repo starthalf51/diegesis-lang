@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -120,5 +121,64 @@ scene 3
 	}
 	if got, want := readerState(t, pool, id, 1), []string{"q=true"}; !slices.Equal(got, want) {
 		t.Errorf("reader_state(1) = %v, want %v", got, want)
+	}
+}
+
+// 수정 1회차: 독자는 이미 거짓인 줄 아는 기만을 믿지 않는다.
+//   맥베스형: 방백으로 p 를 안 뒤의 거짓말 np 는 독자 믿음을 바꾸지 않는다.
+//   오셀로형: 거짓말한 사람이 생각으로 ¬q 를 먼저 알렸으면, 거짓말도, 그 거짓말에만 속은 사람의 말도 믿지 않는다.
+//   대조: 앞선 공개가 없으면 독자는 들은 대로 믿는다.
+func TestReaderSeesThroughLies(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, `scene 1
+  enter a, b
+  a aside: p
+scene 2
+  when after 1
+  enter a, b
+  a lies b: np
+`)
+	if got, want := readerRows(t, pool, id, "p"), []string{"1=true"}; !slices.Equal(got, want) {
+		t.Errorf("macbeth-style: reader_knows(p) = %v, want %v", got, want)
+	}
+	othello := `fact q "Q" false
+scene 1
+  enter a
+  a thinks: not q
+scene 2
+  when after 1
+  enter a, b
+  a lies b: q
+scene 3
+  when after 2
+  enter b, c
+  b tells c: q
+`
+	id = compileLoad(t, pool, othello)
+	if got, want := readerRows(t, pool, id, "q"), []string{"1=false"}; !slices.Equal(got, want) {
+		t.Errorf("othello-style: reader_knows(q) = %v, want %v", got, want)
+	}
+	id = compileLoad(t, pool, strings.Replace(othello, "  a thinks: not q\n", "", 1))
+	if got, want := readerRows(t, pool, id, "q"), []string{"2=true"}; !slices.Equal(got, want) {
+		t.Errorf("no earlier disclosure: reader_knows(q) = %v, want %v", got, want)
+	}
+	// 위조 문서(쓴 사람이 거짓인 줄 알고 쓴 문서 — 007 의 추론된 기만)를 읽는 것도 기만 공개다
+	id = compileLoad(t, pool, `fact q "Q" false
+artifact forged "F"
+  contains q
+scene 1
+  enter a, b
+  a sees: not q
+event e "forgery"
+  when after 1
+  when before 2
+  a writes forged
+scene 2
+  when after 1
+  enter b
+  b reads forged
+`)
+	if got, want := readerRows(t, pool, id, "q"), []string{"1=false"}; !slices.Equal(got, want) {
+		t.Errorf("forged document: reader_knows(q) = %v, want %v", got, want)
 	}
 }
