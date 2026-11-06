@@ -1,0 +1,10 @@
+{
+  "missing": [],
+  "hallucinated": [
+    "extra-act:daon|read|jeongsuk_absent",
+    "extra-act:sua|read|jeongsuk_absent",
+    "다온이 셋째 항아리 바닥에서 아무도 손대지 않은 봉해진 속봉투를 찾아낸다."
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

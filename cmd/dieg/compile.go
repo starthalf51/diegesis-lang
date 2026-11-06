@@ -114,6 +114,6 @@ func cmdCompile(args []string) int {
 }
 
 func usage() int {
-	fmt.Fprintln(os.Stderr, "usage: dieg db migrate | check <dir> [--json] | build <dir> -o ir.json | load <ir.json|dir> | lint <work|dir|ir.json> [--json] | patterns <work|dir> [--json] | stats <work> [--metric name] [--json] | test <corpus-dir> [--seed N] [--mutants N] | render <work|dir> <scene> --backend <id> [-o file] | render-check <corpus...> [--force | --force-extract] [--only <work>/<scene>.<backend>]...")
+	fmt.Fprintln(os.Stderr, "usage: dieg db migrate | check <dir> [--json] | build <dir> -o ir.json | load <ir.json|dir> | lint <work|dir|ir.json> [--json] | patterns <work|dir> [--json] | stats <work> [--metric name] [--json] | test <corpus-dir> [--seed N] [--mutants N] | render <work|dir> <scene> --backend <id> [--verify] [--retries N] [-o file] | render-check <corpus...> [--force | --force-extract] [--only <work>/<scene>.<backend>]... | write <idea.txt|\"idea\"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir]")
 	return 2
 }

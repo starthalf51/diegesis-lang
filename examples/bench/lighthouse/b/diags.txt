@@ -1,0 +1,2 @@
+scenes/s7.dieg.md:19:1: info info-flow: sunrye says light_turned; the only source may come after this act (order not determined)
+scenes/s7.dieg.md:20:1: info info-flow: jaehee says gwangho_caught; the only source may come after this act (order not determined)

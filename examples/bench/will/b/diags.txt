@@ -1,0 +1,4 @@
+scenes/s2.dieg.md:20:1: info info-flow: malsun says grandma_wrote; the only source may come after this act (order not determined)
+scenes/s2.dieg.md:23:1: info info-flow: malsun says jar_hint; the only source may come after this act (order not determined)
+scenes/s6.dieg.md:21:1: info info-flow: jeongsuk says ring_for_daon; the only source may come after this act (order not determined)
+scenes/s6.dieg.md:23:1: info payoff-without-setup: payoff of ring_home may come before its setup (order not determined)

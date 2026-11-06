@@ -1,0 +1,8 @@
+s1: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+s2: attempts=1 pass=true missing=[hwang|assert|yeongho_with_chulsu] hallucinated=[] leaked=[] 
+s3: attempts=3 pass=false missing=[] hallucinated=[extra-act:chulsu|assert|four_trapped extra-act:chulsu|perceive|cavein extra-act:dongsu|perceive|four_trapped 오만길의 다리가 무너진 돌에 깔렸다.] leaked=[] 
+s4: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+s5: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+write: rounds=2 clean=true scenes=5 failed=1[s3] calls=20 tokens in=40 out=94767 cache_read=18342 cache_write=74518 → examples\bench\mine\b
+exit status 3
+bench: dieg write exit 1

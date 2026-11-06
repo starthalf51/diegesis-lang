@@ -1,0 +1,335 @@
+=== FILE: cast.dieg.md ===
+---
+module: thirdjar.cast
+mode: authored
+---
+
+# 셋째 항아리: 등장인물과 선언
+
+할머니 최순례의 사십구재 전날, 시골집에 모인 세 남매와 큰고모 정숙. 장독대 셋째 항아리에 든 편지 한 통.
+
+```sl
+work thirdjar "셋째 항아리"
+  unit day
+  start 2026-09-13
+  name ko "셋째 항아리"
+
+character daon "김다온" major
+  name ko "김다온"
+  believes grandma_died
+character dohyun "김도현" major
+  name ko "김도현"
+  believes grandma_died
+  believes sell_house
+character sua "김수아" major
+  name ko "김수아"
+  believes grandma_died
+character jeongsuk "김정숙" major
+  name ko "김정숙"
+  believes grandma_died
+  believes jeongsuk_absent
+  believes ring_taken
+  believes daon_birth
+  believes raised_by_jeongho
+  believes not ring_entrusted
+character malsun "윤말순" minor
+  name ko "윤말순"
+  believes grandma_died
+character haewon "혜원 스님" minor
+  name ko "혜원 스님"
+  believes grandma_died
+character sunrye "최순례" minor
+  name ko "최순례"
+  believes jeongsuk_absent
+  believes letter_date
+  believes ring_for_daon
+  believes open_together
+  believes daon_birth
+  believes raised_by_jeongho
+  believes jar_hint
+  believes grandma_wrote
+
+attr daon.age = 29
+attr dohyun.age = 41
+attr sua.age = 36
+attr jeongsuk.age = 63
+attr malsun.age = 78
+attr sunrye.age = 86
+attr daon.relation = "세 남매의 막내"
+attr dohyun.relation = "세 남매의 맏이"
+attr sua.relation = "세 남매의 둘째"
+attr jeongsuk.relation = "세 남매의 큰고모, 순례의 맏딸"
+attr malsun.relation = "순례의 옆집 이웃"
+
+place yard "마당"
+  name ko "시골집 마당"
+place kitchen "부엌"
+  name ko "시골집 부엌"
+place jangdok "장독대"
+  name ko "뒤꼍 장독대"
+place anbang "안방"
+  name ko "시골집 안방"
+place maru "대청마루"
+  name ko "시골집 대청마루"
+place temple "청련사 법당"
+  name ko "청련사 법당"
+
+thing ring "옥가락지"
+  name ko "할머니의 옥가락지"
+thing jar "셋째 항아리"
+  name ko "장독대 셋째 항아리"
+
+attr ring.material = "옥"
+attr jar.at = jangdok
+attr jar.order = "왼쪽에서 셋째"
+
+fact grandma_died "할머니 최순례는 구월 열나흘 새벽에 돌아가셨다" true
+fact ring_entrusted "할머니는 돌아가시기 전날 큰고모 정숙에게 옥가락지를 맡겼다" false
+fact jeongsuk_absent "할머니가 돌아가시기 전날인 구월 열사흘, 정숙은 서울에 있었다" true
+fact letter_date "셋째 항아리에 든 편지의 날짜는 구월 열사흘이다" true
+fact ring_for_daon "할머니는 옥가락지를 다온에게 물려주려 했다" true
+fact open_together "속봉투는 정숙이 다온 앞에서 열어야 한다" true
+fact daon_birth "다온은 정숙이 낳은 딸이다" true
+fact raised_by_jeongho "다온은 정숙의 동생 정호 부부의 딸로 호적에 올라 자랐다" true
+fact ring_taken "정숙은 할머니가 돌아가신 다음 날 장롱 서랍에서 옥가락지를 꺼내 갔다" true
+fact jar_hint "할머니는 셋째 항아리를 사십구재 전날에 열어 보라고 일렀다" true
+fact grandma_wrote "할머니는 돌아가시기 전날 마루에 앉아 편지를 쓰고 있었다" true
+fact sell_house "도현은 사십구재가 끝나면 시골집을 내놓을 생각이다" true
+
+artifact grandma_letter "할머니의 편지"
+  name ko "할머니의 편지"
+  contains letter_date, jeongsuk_absent, ring_for_daon, open_together
+  "구월 열사흘. 오늘 정숙이는 서울 가고 집에 나 혼자다."
+artifact inner_letter "속봉투"
+  name ko "정숙에게 쓴 속봉투"
+  contains daon_birth, raised_by_jeongho
+  "정숙아, 이제는 네 입으로 말해 주어라."
+```
+=== FILE: scenes/offstage.dieg.md ===
+---
+module: thirdjar.scenes
+import: thirdjar.cast
+mode: authored
+---
+
+# 무대 밖 사건
+
+```sl
+event letter_day "할머니가 편지를 쓴 날"
+  when at 2026-09-13 noon
+  attr jeongsuk.whereabouts = "서울"
+  sunrye writes grandma_letter
+  sunrye writes inner_letter
+  malsun sees grandma_wrote
+  sunrye tells malsun: jar_hint "셋째 항아리는 사십구재 전날에나 열어 보라고 애들한테 꼭 일러 주게."
+
+event grandma_death "할머니가 돌아가신 새벽"
+  when at 2026-09-14 dawn
+  dies sunrye
+
+event ring_taken_day "정숙이 반지를 꺼낸 날"
+  when at 2026-09-15 morning
+  jeongsuk does take ring
+```
+=== FILE: scenes/s1.dieg.md ===
+---
+module: thirdjar.scenes
+import: thirdjar.cast
+scene: s1
+location: yard
+date: 2026-10-31
+time: evening
+pov: daon
+render:
+  pace: slow
+  tension: 0.4
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+withhold daon_birth until s5
+withhold raised_by_jeongho until s5
+enter jeongsuk
+enter dohyun, sua, daon
+jeongsuk says daon, sua, dohyun: "먼 길 왔다. 내일이 벌써 칠칠재구나."
+dohyun says sua: sell_house "재 끝나면 이 집은 내놓을 거다."
+sua asks jeongsuk: "할머니 반지는 어디 갔어요? 장롱 서랍이 비어 있던데요."
+jeongsuk shows ring
+jeongsuk lies daon, sua, dohyun: ring_entrusted "어머니가 돌아가시기 전날, 이걸 나한테 맡기셨다."
+daon believes ring_entrusted
+daon says jeongsuk: ring_entrusted "할머니가 고모한테 맡기셨으면 그게 맞겠죠."
+sua doubts ring_entrusted
+sua thinks: "고모 목소리가 너무 매끄럽다. 꼭 외워 둔 말 같다."
+setup ring_home promise: ring_for_daon
+jeongsuk thinks: "이 반지만은 내 손으로 지켜야 한다."
+exit all
+```
+=== FILE: scenes/s2.dieg.md ===
+---
+module: thirdjar.scenes
+import: thirdjar.cast
+scene: s2
+location: kitchen
+when: after s1 by 0m..30m
+pov: daon
+render:
+  pace: medium
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter daon, sua
+mention sunrye
+enter malsun
+malsun says daon, sua: "내일 재에 쓰라고 시루떡 좀 쪘다."
+malsun tells daon, sua: grandma_wrote "돌아가시기 전날 오후에 네 할머니가 마루에 앉아서 뭘 한참 쓰시더라."
+daon asks malsun: "그날 고모도 같이 계셨어요?"
+malsun says daon: "글쎄, 나는 해 지기 전에 건너왔으니 그 뒤는 모르지."
+malsun tells daon, sua: jar_hint "그리고 셋째 항아리는 사십구재 전날에나 열어 보라고 너희한테 꼭 전하라셨다."
+setup jar_letter promise: jar_hint
+malsun says daon: "순례 언니가 다온이 너를 제일 애틋해했다."
+exit malsun
+sua says daon: "항아리 안에 뭐가 있다는 거야. 된장밖에 더 있겠어."
+daon thinks: "할머니는 왜 하필 오늘을 고르셨을까."
+daon says sua: "나 오늘 밤에 열어 볼래."
+exit all
+```
+=== FILE: scenes/s3.dieg.md ===
+---
+module: thirdjar.scenes
+import: thirdjar.cast
+scene: s3
+location: jangdok
+when: after s2 by 1h..3h
+pov: daon
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter daon
+daon sees jar
+daon does open jar
+payoff thirdjar.scenes/jar_letter
+daon reads grandma_letter
+daon thinks: letter_date "구월 열사흘. 돌아가시기 바로 전날이다."
+daon thinks: jeongsuk_absent "그날 고모는 서울에 있었다고, 할머니 글씨로 적혀 있다."
+daon doubts ring_entrusted
+reveal letter_date
+reveal jeongsuk_absent
+reveal ring_for_daon
+daon does find_sealed_envelope
+daon thinks: open_together "속봉투는 고모가 내 앞에서 열게 하라고 쓰셨다."
+setup inner_envelope promise: open_together
+enter sua
+sua asks daon: "뭐가 들었어?"
+sua reads grandma_letter
+sua says daon: jeongsuk_absent "고모, 그날 여기 없었네."
+exit all
+```
+=== FILE: scenes/s4.dieg.md ===
+---
+module: thirdjar.scenes
+import: thirdjar.cast
+scene: s4
+location: anbang
+when: after s3 by 10m..40m
+pov: jeongsuk
+render:
+  pace: medium
+  tension: 0.85
+mode: authored
+---
+
+```sl
+lasts 30m..60m
+enter jeongsuk
+enter daon, sua
+daon shows grandma_letter
+daon says jeongsuk: letter_date "이 편지, 구월 열사흘에 쓰신 거예요."
+daon says jeongsuk: jeongsuk_absent "그날 고모는 서울에 계셨다고 할머니가 쓰셨어요."
+jeongsuk thinks: "어머니가 그날 일을 다 적어 두셨구나."
+jeongsuk lies daon: ring_entrusted "전화로 맡기신 거다. 날짜 하나로 뭘 따지니."
+sua says jeongsuk: "고모, 이제 그만하세요."
+enter dohyun
+dohyun asks jeongsuk: "고모, 그 반지 어디서 나셨어요?"
+jeongsuk tells daon, sua, dohyun: ring_taken "장례 다음 날, 어머니 장롱 서랍에서 내가 꺼냈다."
+jeongsuk says daon: not ring_entrusted "맡기신 적은 없다. 내가 지어낸 말이다."
+reveal ring_taken
+daon asks jeongsuk: "왜 그러셨어요?"
+jeongsuk says daon: "속봉투를 가지고 마루로 나와라. 거기서 말하마."
+exit all
+```
+=== FILE: scenes/s5.dieg.md ===
+---
+module: thirdjar.scenes
+import: thirdjar.cast
+scene: s5
+location: maru
+when: after s4 by 10m..30m
+pov: daon
+render:
+  pace: slow
+  tension: 0.95
+mode: authored
+---
+
+```sl
+lasts 40m..80m
+enter jeongsuk
+enter daon
+daon says jeongsuk: open_together "할머니가 이 봉투는 고모가 제 앞에서 열라고 하셨어요."
+jeongsuk reads grandma_letter
+jeongsuk does open inner_letter
+jeongsuk reads inner_letter
+payoff thirdjar.scenes/inner_envelope
+jeongsuk says daon: "어머니가 끝내 내 입으로 말하게 하시는구나."
+jeongsuk tells daon: daon_birth "다온아, 너는 내가 낳은 아이다."
+jeongsuk tells daon: raised_by_jeongho "정호네가 너를 제 딸로 올려 키웠다. 어머니가 그렇게 정하셨지."
+reveal daon_birth
+reveal raised_by_jeongho
+daon reads inner_letter
+daon thinks: "스물아홉 해 동안, 나는 이 사람을 고모라고 불렀다."
+jeongsuk says daon: "반지를 쥐고 있으면 너를 쥐고 있는 것 같았다."
+daon says jeongsuk: "내일 재에서, 할머니께 같이 인사드려요."
+exit all
+```
+=== FILE: scenes/s6.dieg.md ===
+---
+module: thirdjar.scenes
+import: thirdjar.cast
+scene: s6
+location: temple
+date: 2026-11-01
+time: morning
+pov: daon
+render:
+  pace: slow
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 60m..120m
+enter haewon
+enter dohyun, sua, daon, jeongsuk
+haewon says dohyun, sua, daon, jeongsuk: "오늘로 칠칠일, 순례 보살님께서 이승의 걸음을 마치십니다."
+haewon does chant
+jeongsuk says daon: ring_for_daon "어머니 뜻대로, 이건 네 거다."
+jeongsuk does give ring to daon
+payoff thirdjar.scenes/ring_home
+daon thinks: daon_birth "나는 이 사람이 낳은 딸이다. 할머니는 그걸 알려 주고 가셨다."
+sua asks daon: "어젯밤에 고모랑 무슨 얘기 했어?"
+daon says sua: "할머니 얘기. 나중에 다 말해 줄게."
+sua thinks: "반지를 끼는 다온이 손이 고모 손을 꼭 닮았다."
+dohyun says sua: "집은 좀 더 두자. 장독대도 그대로 두고."
+haewon says dohyun, sua, daon, jeongsuk: "가시는 길, 가볍게 하십시오."
+exit all
+```
+=== END ===

@@ -1,0 +1,11 @@
+{
+  "missing": [],
+  "hallucinated": [
+    "extra-act:chulsu|assert|four_trapped",
+    "extra-act:chulsu|perceive|cavein",
+    "extra-act:dongsu|perceive|four_trapped",
+    "오만길의 다리가 무너진 돌에 깔렸다."
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

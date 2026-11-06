@@ -1,0 +1,10 @@
+{
+  "missing": [],
+  "hallucinated": [
+    "Eunsol hides her father's log inside the front of her jacket.",
+    "extra-act:eunsol|perceive|motor_works",
+    "extra-act:eunsol|read|last_page"
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

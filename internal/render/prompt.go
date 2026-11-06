@@ -45,6 +45,7 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	sb.WriteString("- An act with a fact (after the colon) must make that fact clear to the reader through that act and its actor. For a `sees` act, say that its actor sees or hears the thing, not only that it happens.\n")
 	sb.WriteString("- Dialogue may only use the provided `quote` strings. Speech acts without a quote are reported speech; never invent quoted dialogue.\n")
 	sb.WriteString("- Never state or imply any fact listed under \"Must not state or imply\", not even as a hint, a foreshadowing, or a character's guess.\n")
+	sb.WriteString("- A fact marked false is only what a character says, believes or pretends. Never state it in the narrator's own voice as what happened.\n")
 	sb.WriteString("- Stay in the stated point of view. Use the people's names in the scene's language.\n")
 	fmt.Fprintf(&sb, "- Output only the prose, written in %s. No title, headings, notes, or commentary.\n", ln)
 	if style != nil {
@@ -105,6 +106,9 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 			if a.Fact != "" {
 				f, _ := s.FactByID(a.Fact)
 				line += ": " + f.Text
+				if !f.True {
+					line += " (false — the speaker believes or claims it; the narrator must not assert it)"
+				}
 			}
 			if a.Quote != "" {
 				line += fmt.Sprintf(" quote: %q", a.Quote)

@@ -1,0 +1,9 @@
+s1: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s2: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+s3: attempts=3 pass=false missing=[] hallucinated=[extra-act:daon|read|jeongsuk_absent extra-act:sua|read|jeongsuk_absent 다온이 셋째 항아리 바닥에서 아무도 손대지 않은 봉해진 속봉투를 찾아낸다.] leaked=[] 
+s4: attempts=3 pass=true missing=[] hallucinated=[] leaked=[] 
+s5: attempts=3 pass=false missing=[] hallucinated=[extra-act:daon|assert|raised_by_jeongho extra-act:daon|assert|raised_by_jeongho extra-act:daon|perceive|daon_birth extra-act:jeongsuk|act|open_together extra-act:jeongsuk|assert|daon_birth] leaked=[] 
+s6: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+write: rounds=2 clean=true scenes=6 failed=2[s3 s5] calls=28 tokens in=56 out=82464 cache_read=26494 cache_write=89976 → examples\bench\will\b
+exit status 3
+bench: dieg write exit 1

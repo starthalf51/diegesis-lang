@@ -1,0 +1,413 @@
+=== FILE: cast.dieg.md ===
+---
+module: beacon.cast
+mode: authored
+---
+
+# 등대 일지 — 등장인물과 선언
+
+태풍으로 뱃길이 끊긴 사흘 동안 외딴섬 등대에서 벌어지는 이야기다.
+삼촌의 거짓말("아홉 시 순찰 중 추락")은 은솔과 서미경 선생만 믿는다. 방순례 할머니는 그 밤 불빛을 보았기에 처음부터 믿지 않는다.
+진실: 아버지는 18시 20분에 일지 마지막 쪽을 쓰고, 18시 40분 전망대에서 삼촌에게 밀려 떨어졌다. 그 밤 불은 한 번도 돌지 않았다.
+
+```sl
+work beacon "등대 일지"
+  name ko "등대 일지"
+
+character eunsol "한은솔" major
+  name ko "한은솔"
+  attr eunsol.age = 14
+  attr eunsol.relation = "등대지기 한정우의 외동딸"
+  believes father_logs_daily
+  believes patrol_flashlight
+character jeongwoo "한정우" major
+  name ko "한정우"
+  attr jeongwoo.age = 44
+  attr jeongwoo.relation = "등대지기, 은솔의 아버지"
+  believes boxes_hidden
+  believes boxes_found
+character jeongseok "한정석" major
+  name ko "한정석"
+  attr jeongseok.age = 38
+  attr jeongseok.relation = "정우의 동생, 은솔의 삼촌, 등대 보조원"
+  believes road_cut
+  believes smuggling
+  believes boxes_hidden
+  believes dark_signal
+  believes motor_works
+character sunrye "방순례" minor
+  name ko "방순례"
+  attr sunrye.age = 71
+  attr sunrye.relation = "등대 맞은편 언덕에 사는 해녀 출신 할머니"
+  believes father_never_missed
+character mikyung "서미경" minor
+  name ko "서미경"
+  attr mikyung.age = 29
+  attr mikyung.relation = "섬 분교 선생님, 은솔의 담임"
+character jaehee "윤재희" minor
+  name ko "윤재희"
+  attr jaehee.age = 35
+  attr jaehee.relation = "해양경찰 경사"
+character gwangho "박광호" minor
+  name ko "박광호"
+  attr gwangho.age = 52
+  attr gwangho.relation = "어선 선장, 삼촌의 밀수 동업자"
+  believes smuggling
+  believes boxes_hidden
+  believes dark_signal
+
+parent jeongwoo of eunsol
+
+place keeper_house "관사"
+  name ko "등대 관사"
+place lamp_room "등롱실"
+  name ko "등롱실"
+place gallery "전망대 난간"
+  name ko "전망대 난간"
+place storeroom "기름 창고"
+  name ko "기름 창고"
+place sunrye_house "순례 할머니 집"
+  name ko "순례 할머니 집"
+place pier "선착장"
+  name ko "선착장"
+
+thing flashlight "아버지의 손전등"
+  name ko "아버지의 손전등"
+  attr flashlight.at = keeper_house
+thing motor "회전 모터"
+  name ko "등명기 회전 모터"
+  attr motor.at = lamp_room
+thing boxes "상자들"
+  name ko "기름통 뒤의 상자들"
+  attr boxes.at = storeroom
+thing radio "무전기"
+  name ko "관사 무전기"
+  attr radio.at = keeper_house
+
+fact road_cut "태풍으로 뱃길이 사흘 동안 끊겼다" true
+fact father_lost "아버지는 태풍 첫날 밤 바다에 떨어져 돌아오지 않았다" true
+fact fell_at_nine "아버지는 밤 아홉 시 순찰 중에 바다에 떨어졌다" false
+fact pushed "삼촌이 그날 저녁 여섯 시 사십 분, 전망대 난간에서 아버지를 밀었다" true
+fact light_dark "그날 밤 등대 불빛은 한 번도 돌지 않았다" true
+fact light_turned "사흘째 밤, 등대 불빛이 다시 돌았다" true
+fact father_never_missed "정우는 이십 년 동안 불을 거른 밤이 하루도 없었다" true
+fact father_logs_daily "아버지는 하루도 빠짐없이 등대 일지를 적었다" true
+fact flashlight_left "아버지의 손전등이 관사 못에 그대로 걸려 있다" true
+fact patrol_flashlight "아버지는 아홉 시 순찰 때마다 그 손전등을 들고 나갔다" true
+fact spare_flashlight "아버지는 그날 밤 예비 손전등을 들고 나갔다" false
+fact motor_broken "태풍에 등대 회전 모터가 고장 났다" false
+fact motor_works "등대 회전 모터는 멀쩡히 돈다" true
+fact uncle_alibi "삼촌은 그날 저녁 내내 관사에서 밥을 짓고 있었다" false
+fact radio_broken "관사 무전기가 태풍에 고장 났다" false
+fact radio_works "관사 무전기는 퓨즈만 빠져 있을 뿐 멀쩡하다" true
+fact last_page "일지의 마지막 기록은 그날 18시 20분이고, 점등과 아홉 시 순찰 기록이 없다" true
+fact boxes_found "아버지는 기름 창고에서 낯선 상자를 찾아내 삼촌에게 따지려 했다" true
+fact boxes_hidden "기름 창고 기름통 뒤에 밀수품 상자가 숨겨져 있다" true
+fact smuggling "삼촌은 박광호 선장과 밀수를 한다" true
+fact dark_signal "등대 불을 꺼 두는 것은 박 선장의 배에 보내는 신호였다" true
+fact gwangho_caught "박광호의 배가 바람이 잦아든 새벽 항구를 나서다 해경에 붙잡혔다" true
+
+artifact logbook "등대 일지"
+  name ko "등대 일지"
+  contains boxes_found
+  "18:20 기름 창고 기름통 뒤, 처음 보는 상자 여섯. 정석에게 묻겠다."
+```
+=== FILE: scenes/offstage.dieg.md ===
+---
+module: beacon.scenes
+import: [beacon.cast]
+mode: authored
+---
+
+# 무대 밖 사건
+
+```sl
+event ev_hide "상자를 숨기다"
+  when before @jeongwoo.died by 1d..10d
+  jeongseok does hide with boxes_hidden
+  gwangho does unload with smuggling
+
+event ev_lastpage "일지의 마지막 쪽"
+  when before @jeongwoo.died by 20m..20m
+  lasts 5m..10m
+  jeongwoo writes logbook
+  attr jeongwoo.last_entry = "18시 20분"
+
+event ev_fall "전망대 난간에서"
+  when before s1 by 12h..13h
+  jeongwoo asks jeongseok: boxes_hidden "기름통 뒤에 숨긴 상자, 네 거냐."
+  jeongseok does push jeongwoo with pushed
+  dies jeongwoo
+  attr jeongwoo.fell_time = "18시 40분"
+  jeongseok believes pushed
+  jeongseok believes father_lost
+  jeongseok does pull_fuse
+  jeongseok believes radio_works
+  jeongseok does keep_dark with dark_signal
+
+event ev_watch "창가에서 지샌 밤"
+  when after @jeongwoo.died by 0m..30m
+  lasts 10h..12h
+  sunrye sees light_dark
+  jeongseok believes light_dark
+  attr lamp_room.light_night1 = "돌지 않음"
+
+event ev_call "해경을 부르다"
+  when during s6
+  mikyung tells jaehee: smuggling
+  mikyung tells jaehee: boxes_hidden
+
+event ev_relight "다시 켠 불"
+  when after s6 by 10m..1h
+  jeongseok does relight with light_turned
+  sunrye sees light_turned
+  attr lamp_room.light_night3 = "돌았음"
+
+event ev_catch "새벽 항구"
+  when after s6 by 2h..7h
+  jaehee does arrest gwangho
+  jaehee sees gwangho_caught
+```
+=== FILE: scenes/s1.dieg.md ===
+---
+module: beacon.scenes
+import: [beacon.cast]
+scene: s1
+location: keeper_house
+pov: eunsol close
+render:
+  pace: slow
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+withhold pushed until s6
+withhold smuggling until s5
+enter eunsol, jeongseok
+mention jeongwoo
+jeongseok tells eunsol: father_lost "은솔아, 네 아버지가 어젯밤 바다에 떨어졌다. 돌아오지 않았어."
+jeongseok lies eunsol: fell_at_nine "아홉 시 순찰을 돌다가 난간에서 미끄러졌어."
+eunsol believes fell_at_nine
+eunsol asks jeongseok: "해경은요? 배는요? 누가 찾으러 와요?"
+jeongseok says eunsol: road_cut "태풍 때문에 뱃길이 끊겼다. 사흘은 아무도 못 와."
+jeongseok lies eunsol: radio_broken "무전기도 바람에 나갔어."
+setup sp_radio promise: "무전기가 정말 고장 났는지는 아직 아무도 확인하지 않았다"
+eunsol sees flashlight, flashlight_left
+setup sp_flashlight hint: flashlight_left
+eunsol thinks: father_logs_daily "아빠는 하루도 빠짐없이 일지를 썼는데."
+setup sp_logbook promise: "아버지의 등대 일지는 등롱실 책상 위에 그대로 있다"
+enter mikyung
+mikyung asks jeongseok: "정우 씨는 아직 소식이 없나요?"
+jeongseok lies mikyung: fell_at_nine "아홉 시 순찰 중에 바다로 떨어졌습니다."
+mikyung believes fell_at_nine
+mikyung says eunsol: "은솔아, 선생님이 곁에 있을게."
+exit all
+```
+=== FILE: scenes/s2.dieg.md ===
+---
+module: beacon.scenes
+import: [beacon.cast]
+scene: s2
+location: sunrye_house
+when: after s1 by 5h..7h
+pov: eunsol close
+render:
+  pace: slow
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter eunsol, sunrye
+sunrye says eunsol: "이 바람 속을 여기까지 왔니."
+eunsol says sunrye: fell_at_nine "삼촌이 그러는데, 아빠가 아홉 시 순찰 때 떨어졌대요."
+sunrye tells eunsol: light_dark "그날 밤 등대 불빛은 한 번도 돌지 않았다. 내가 밤새 창가에 있었어."
+eunsol believes light_dark
+reveal light_dark
+setup sp_darklight promise: light_dark
+sunrye says eunsol: father_never_missed "네 아버지는 이십 년 동안 불을 거른 밤이 하루도 없었다."
+sunrye doubts fell_at_nine
+eunsol asks sunrye: "그럼 아빠는 그때 어디에…"
+sunrye says eunsol: "바다는 거짓말을 안 한다. 사람이 하지."
+sunrye thinks: "정석이 녀석, 무얼 감추고 있는 걸까."
+eunsol thinks: "그럼 그날 밤, 아빠는 어디에 있었던 걸까."
+sunrye says eunsol: "삼촌한테 물어보렴. 눈을 똑바로 보고."
+exit all
+```
+=== FILE: scenes/s3.dieg.md ===
+---
+module: beacon.scenes
+import: [beacon.cast]
+scene: s3
+location: keeper_house
+when: after s2 by 5h..7h
+pov: eunsol close
+render:
+  pace: medium
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter eunsol, jeongseok
+eunsol asks jeongseok: light_dark "할머니가 그날 밤 불이 한 번도 안 돌았대요. 왜요?"
+jeongseok lies eunsol: motor_broken "태풍에 회전 모터가 고장 났어."
+jeongseok lies eunsol: uncle_alibi "나는 그날 저녁 내내 여기서 밥을 하고 있었다."
+eunsol believes motor_broken
+eunsol sees flashlight, flashlight_left
+payoff beacon.scenes/sp_flashlight
+eunsol thinks: patrol_flashlight "아빠는 아홉 시 순찰 때 늘 저 손전등을 들고 나갔어."
+eunsol doubts fell_at_nine
+eunsol asks jeongseok: flashlight_left "아빠 손전등이 왜 저 못에 그대로 걸려 있어요?"
+jeongseok lies eunsol: spare_flashlight "형은 예비 손전등을 들고 나갔어."
+jeongseok thinks: "바람이 잘 때까지만 버티면 된다."
+jeongseok says eunsol: "그만 자라. 내일 일은 내일 생각해."
+eunsol thinks: "아빠 일지. 날이 새면 등롱실에 올라가 보자."
+exit all
+```
+=== FILE: scenes/s4.dieg.md ===
+---
+module: beacon.scenes
+import: [beacon.cast]
+scene: s4
+location: lamp_room
+when: after s3 by 6h..9h
+pov: eunsol close
+render:
+  pace: slow
+  tension: 0.75
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter eunsol
+eunsol does climb
+eunsol reads logbook
+payoff beacon.scenes/sp_logbook
+eunsol sees last_page
+eunsol thinks: last_page "여섯 시 이십 분에서 끝났어. 불을 켰다는 말도, 아홉 시 순찰도 안 적혀 있어."
+reveal last_page
+eunsol thinks: boxes_found "기름 창고에 낯선 상자가 있다고, 삼촌에게 따지겠다고 썼어."
+eunsol does switch_on motor
+eunsol sees motor, motor_works
+eunsol thinks: motor_works "모터는 멀쩡히 돈다."
+eunsol believes motor_works
+eunsol doubts motor_broken
+reveal motor_works
+eunsol thinks: "삼촌이 거짓말을 했어."
+eunsol does tuck logbook
+setup sp_evidence promise: "은솔은 일지를 품에 안고 내려가 바다 건너 어른에게 보이겠다"
+exit eunsol
+```
+=== FILE: scenes/s5.dieg.md ===
+---
+module: beacon.scenes
+import: [beacon.cast]
+scene: s5
+location: storeroom
+when: after s4 by 3h..6h
+pov: eunsol close
+render:
+  pace: fast
+  tension: 0.85
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter eunsol, mikyung
+eunsol tells mikyung: boxes_found "아빠가 일지에 창고 상자 얘기를 써 놨어요. 삼촌한테 따지겠다고요."
+eunsol tells mikyung: light_dark "그날 밤 불은 한 번도 안 돌았대요."
+mikyung doubts fell_at_nine
+eunsol sees boxes, boxes_hidden
+mikyung sees boxes, boxes_hidden
+mikyung whispers eunsol: "누가 온다. 기름통 뒤로 숨어."
+enter jeongseok
+mention gwangho
+beat overhear:
+  jeongseok says: boxes_hidden "박 선장, 물건은 창고 기름통 뒤에 그대로 있어."
+  jeongseok says: dark_signal "불은 계속 꺼 둘 테니까, 바람 자면 와서 실어 가."
+jeongseok thinks: "형만 아니었으면…"
+exit jeongseok
+eunsol believes smuggling because @s5.overhear
+mikyung believes smuggling because @s5.overhear
+mikyung whispers eunsol: smuggling "밀수야. 네 삼촌이 박 선장이랑."
+eunsol thinks: dark_signal "불을 끈 건 고장이 아니라 신호였어."
+payoff beacon.scenes/sp_darklight
+reveal smuggling
+reveal dark_signal
+exit all
+```
+=== FILE: scenes/s6.dieg.md ===
+---
+module: beacon.scenes
+import: [beacon.cast]
+scene: s6
+location: keeper_house
+when: after s5 by 8h..12h
+pov: eunsol close
+render:
+  pace: fast
+  tension: 0.95
+mode: authored
+---
+
+```sl
+lasts 40m..1h
+enter eunsol, mikyung
+mikyung sees radio, radio_works
+mikyung tells eunsol: radio_works "퓨즈만 빼 놨어. 무전기는 멀쩡해."
+payoff beacon.scenes/sp_radio
+mikyung does call radio
+mikyung says: "여기는 등대섬, 해경 응답하라. 해경 응답하라."
+enter jeongseok
+jeongseok asks eunsol: "너희 지금 뭐 하는 거냐."
+eunsol says jeongseok: last_page "아빠 일지는 여섯 시 이십 분에서 끝나요. 불을 켰다는 말도, 아홉 시 순찰도 없어요."
+eunsol says jeongseok: flashlight_left "아빠 손전등은 저 못에 그대로 걸려 있었고요."
+eunsol says jeongseok: motor_works "모터도 멀쩡히 돌았어요."
+jeongseok says eunsol: pushed "형이 상자를 바다에 버리겠다고 했다. 붙잡다가… 내가 밀었다. 여섯 시 사십 분이었어."
+reveal pushed
+eunsol believes pushed
+mikyung believes pushed
+jeongseok says eunsol: "불은… 오늘 밤엔 내가 켜마."
+exit all
+```
+=== FILE: scenes/s7.dieg.md ===
+---
+module: beacon.scenes
+import: [beacon.cast]
+scene: s7
+location: pier
+when: after s6 by 9h..12h
+pov: eunsol close
+render:
+  pace: slow
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter eunsol, mikyung, sunrye
+enter jaehee
+mention gwangho
+sunrye says eunsol: light_turned "어젯밤엔 불이 돌더구나. 사흘 만에."
+jaehee says eunsol: gwangho_caught "박광호의 배는 새벽에 항구를 나서다 붙잡혔다."
+eunsol shows logbook
+jaehee reads logbook
+payoff beacon.scenes/sp_evidence
+jaehee says eunsol: "아버지가 마지막까지 적어 두셨구나."
+sunrye tells jaehee: light_dark "그날 밤 불은 한 번도 안 돌았어요. 내가 밤새 봤어요."
+enter jeongseok
+jeongseok tells jaehee: pushed "제가 형을 밀었습니다. 아홉 시가 아니라 저녁 여섯 시 사십 분이었습니다."
+jaehee says jeongseok: "한정석 씨, 같이 가시죠."
+eunsol says jeongseok: "삼촌, 이제 불은 제가 지킬게요."
+eunsol thinks: "아빠, 오늘 밤엔 내가 불을 돌릴게."
+exit all
+```
+=== END ===
