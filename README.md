@@ -35,6 +35,34 @@ dieg render-check corpus/macbeth   # 장면을 산문으로 렌더하고 다시 
 
 `dieg test` 는 변이 탐지율을 전체·move-before 제외·린트만(질의 탐지 제외, 보고용) 으로 찍는다.
 
+## 아이템에서 소설까지: `dieg write`
+
+```sh
+dieg write idea.txt -o out/story1 [--rounds N] [--backend id] [--scenes N] [--no-render] [--styles dir]
+dieg write "아이템 한 문장" -o out/story1
+```
+
+아이템(파일 또는 문장) → AI 가 Diegesis 코드를 쓴다 → `check`·`lint` 진단을 되먹임(최대 `--rounds`) → 깨끗해지면 장면마다 검증 렌더(렌더 + 재추출, 최대 3회 시도).
+구독 `claude` CLI 만 쓴다(API 키 없음).
+
+| 플래그 | 뜻 |
+|---|---|
+| `-o <dir>` | 출력 폴더(필수) |
+| `--rounds N` | 코드 되먹임 최대 라운드 |
+| `--backend id` | 렌더 문체 |
+| `--scenes N` | 앞 N개 보이는 장면만 렌더(호출 예산용) |
+| `--no-render` | 코드만 쓰고 렌더하지 않는다 |
+| `--styles dir` | 문체 폴더(기본 `styles`) |
+
+출력: `story/`(Diegesis 코드), `novel/`(장면별 산문), `novel.md`(합친 소설), `calls.jsonl`(호출마다 토큰 기록), `diags.txt`(남은 진단).
+
+종료 코드: `0` 코드가 깨끗하고 모든 장면이 검증 통과(`--no-render` 면 코드만 깨끗), `1` 라운드가 끝나도 오류가 남음(렌더하지 않음) 또는 입력·실행 오류, `3` 렌더한 장면 중 검증 실패가 있음(마지막 렌더는 소설에 들어간다).
+
+## 측정 결과
+
+직접 쓰기(A) 대 `dieg write`(B)는 [`examples/bench/README.md`](examples/bench/README.md) 에 있다.
+짧은 아이템에서 B 는 캐시 가중 input 토큰이 A 의 2.7–2.8배라 "더 싸다"는 지지되지 않고, 일관성(오류 수)은 3:1 과 2:2 로 섞여 있다. 아이템 3개·판정 1회라 통계가 아니라 사례다.
+
 ## 대시보드(Grafana)
 
 `deploy/.env` 에 두 비밀번호를 둔다(커밋하지 않는다):
@@ -73,9 +101,10 @@ go vet ./...
 
 ## 버전
 
-[SemVer](https://semver.org/lang/ko/)(`MAJOR.MINOR.PATCH`)를 따른다. 1.0 전(0.x)에는 문법과 IR 이 MINOR 판에서 바뀔 수 있다. 판은 git 태그(`v0.2.0`)로 붙이고 `dieg version` 이 출력한다.
+[SemVer](https://semver.org/lang/ko/)(`MAJOR.MINOR.PATCH`)를 따른다. 1.0 전(0.x)에는 문법과 IR 이 MINOR 판에서 바뀔 수 있다. 판은 git 태그(`v0.3.0`)로 붙이고 `dieg version` 이 출력한다.
 
 | 판 | 내용 |
 |---|---|
 | v0.1.0 | 플랜 1: 컴파일러, PG 판정, 린트, 렌더러 4종, 4편 합격 |
 | v0.2.0 | 플랜 2: 정답 셋 3편, 시간 변이, 속성, 독자 모델, 패턴 9종, 지표, Grafana 대시보드 |
+| v0.3.0 | 플랜 3: 거짓 사실 표시, 검증 렌더, 호출 계량(Meter), 사물 위치·거짓 공개 린트, `dieg write`, 직접 쓰기 대 Diegesis 측정 |
