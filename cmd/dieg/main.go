@@ -45,6 +45,9 @@ func main() {
 	if args[0] == "render-check" {
 		os.Exit(cmdRenderCheck(args[1:]))
 	}
+	if args[0] == "write" {
+		os.Exit(cmdWrite(args[1:]))
+	}
 	if args[0] == "lint" {
 		os.Exit(cmdLint(args[1:]))
 	}
