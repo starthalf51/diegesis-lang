@@ -112,6 +112,12 @@ func (w *walker) stmt(n syntax.Node) (string, string) {
 		return "parent", b.parent(m, n)
 	case *syntax.Life:
 		return "life", b.life(m, n, w)
+	case *syntax.Attribute:
+		acc := ""
+		if c.kind == "account" {
+			acc = c.id
+		}
+		return "attribute", b.attribute(m, n, c.id, w.last, acc)
 	}
 	return "", ""
 }

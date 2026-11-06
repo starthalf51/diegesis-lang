@@ -4,7 +4,7 @@
 package ir
 
 // Schema is bumped whenever a table or field changes.
-const Schema = 1
+const Schema = 2
 
 type Work struct {
 	Schema       int           `json:"schema"`
@@ -34,6 +34,7 @@ type Work struct {
 	Withholds    []Withhold    `json:"withholds"`
 	Directives   []Directive   `json:"directives"`
 	Waivers      []Waiver      `json:"waivers"`
+	Attributes   []Attribute   `json:"attributes"`
 }
 
 type WorkRow struct {
@@ -297,4 +298,20 @@ type Waiver struct {
 	TargetID   string `json:"target_id"`
 	Reason     string `json:"reason"`
 	SrcID      int    `json:"src_id"`
+}
+
+// Attribute is one `attr <entity>.<key> = <value>` assertion. Kind int|str|id
+// (id values are resolved decl ids, or the bare word when undeclared). AtPt ""
+// = true from the start (top level or a declaration block). AccountID is the
+// account the statement sits in ("" = not inside an account).
+type Attribute struct {
+	ID        string `json:"id"`
+	EntityID  string `json:"entity_id"`
+	Key       string `json:"key"`
+	Value     string `json:"value"`
+	Kind      string `json:"kind"`
+	AtPt      string `json:"at_pt"`
+	AccountID string `json:"account_id"`
+	SrcRef    string `json:"src_ref"`
+	SrcID     int    `json:"src_id"`
 }

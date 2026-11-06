@@ -1,6 +1,8 @@
 package sema
 
 import (
+	"fmt"
+
 	"diegesis/internal/ir"
 	"diegesis/internal/syntax"
 )
@@ -52,6 +54,8 @@ func (b *builder) top(m *module, n syntax.Node) (string, string) {
 		who := b.want(m, n.Who, "believer", "character", "group")
 		b.belief(m, n, who, "", "")
 		return "belief", who
+	case *syntax.Attribute:
+		return "attribute", b.attribute(m, n, m.id, "", "")
 	}
 	return "", ""
 }
@@ -163,6 +167,8 @@ func (b *builder) declItem(m *module, d *syntax.Decl) (string, string) {
 				continue
 			}
 			b.belief(m, a, id, "", "")
+		case *syntax.Attribute:
+			b.attribute(m, a, m.id, "", "")
 		case *syntax.Pragma:
 			b.waiver(m, a, waiverKind(d.Kind), id)
 		}
@@ -239,4 +245,23 @@ func (b *builder) life(m *module, l *syntax.Life, w *walker) string {
 		b.when(m, l.When, pt, pt)
 	}
 	return pt
+}
+
+// attribute emits one `attr` row and returns its id (<prefix>#attr<n>, the waiver target).
+// at "" = true from the start. id values resolve to their declaration when there is one
+// (aliases are resolved in PG by lint_canon); an undeclared id is kept as a bare symbol.
+func (b *builder) attribute(m *module, a *syntax.Attribute, prefix, at, account string) string {
+	who := b.want(m, a.Entity, "attribute subject", "character", "group", "place", "thing", "faction", "thread")
+	if who == "" {
+		return ""
+	}
+	b.nattr[prefix]++
+	id := fmt.Sprintf("%s#attr%d", prefix, b.nattr[prefix])
+	v := a.Value
+	if d, ok := b.lookup(m, v); ok && a.Kind == "id" {
+		v = d.id
+	}
+	m.out.Attributes = append(m.out.Attributes, ir.Attribute{ID: id, EntityID: who, Key: a.Key, Value: v, Kind: a.Kind,
+		AtPt: at, AccountID: account, SrcRef: a.Src, SrcID: b.srcID(a.Pos)})
+	return id
 }

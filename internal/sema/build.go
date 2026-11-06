@@ -60,6 +60,7 @@ type builder struct {
 	file         string
 	pend         []*syntax.Pragma // waivers of the statement being handled
 	whenEdges    []int            // edges made by the current statement's own `when`
+	nattr        map[string]int   // attr count per container/module (attribute ids)
 }
 
 // Build turns parsed files (one work) into IR. Modules with errors emit no
@@ -68,7 +69,7 @@ func Build(files []*syntax.File) (*ir.Work, []syntax.Diag) {
 	files = slices.Clone(files)
 	sort.SliceStable(files, func(i, j int) bool { return naturalLess(files[i].Path, files[j].Path) })
 	b := &builder{mods: map[string]*module{}, kinds: map[string]string{}, members: map[string][]string{},
-		lives: map[string]bool{}, dord: map[*syntax.Scene]int{}, facts: map[string]bool{}, src: map[srcKey]int{}}
+		lives: map[string]bool{}, dord: map[*syntax.Scene]int{}, facts: map[string]bool{}, src: map[srcKey]int{}, nattr: map[string]int{}}
 	for _, f := range files {
 		if f.Module == nil {
 			continue

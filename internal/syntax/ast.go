@@ -129,6 +129,17 @@ type Text struct {
 	Text string
 }
 
+// Attribute is `attr <entity>.<key> = <value> [src ref]`: top level or a
+// declaration block = true from the start; inside a container = asserted there.
+type Attribute struct {
+	Pos
+	Entity Ident
+	Key    string
+	Kind   string // int | str | id
+	Value  string
+	Src    string
+}
+
 type Distance struct {
 	Pos
 	A, B     Ident

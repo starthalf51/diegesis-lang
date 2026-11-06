@@ -174,5 +174,9 @@ func copies(w *ir.Work, id string) []table {
 		{"waiver", cols("rule", "target_kind", "target_id", "reason", "src_id"), each(w.Waivers, func(x ir.Waiver) []any {
 			return r(x.Rule, x.TargetKind, nz(x.TargetID), x.Reason, sid(x.SrcID))
 		})},
+		{"attribute", cols("id", "entity_id", "key", "value", "kind", "at_pt", "account_id", "src_ref", "src_id"),
+			each(w.Attributes, func(x ir.Attribute) []any {
+				return r(x.ID, x.EntityID, x.Key, x.Value, x.Kind, nz(x.AtPt), nz(x.AccountID), x.SrcRef, sid(x.SrcID))
+			})},
 	}
 }

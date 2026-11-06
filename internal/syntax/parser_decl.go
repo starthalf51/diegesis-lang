@@ -1,6 +1,9 @@
 package syntax
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 // work ident [string] [BLOCK(wattr)]
 func (c *cur) work() Node {
@@ -79,6 +82,9 @@ func (c *cur) attr() Node {
 	t := c.peek()
 	if t.Kind == tPragma {
 		return c.pragma()
+	}
+	if c.isAttribute() {
+		return c.attribute()
 	}
 	if s, ok := c.str(); ok {
 		c.end()
@@ -168,4 +174,45 @@ func (c *cur) life() Node {
 	}
 	c.end()
 	return n
+}
+
+// isAttribute: "attr" starts an attribute unless it is an actor or believer named attr (attr tells b …).
+func (c *cur) isAttribute() bool {
+	if !c.is("attr") {
+		return false
+	}
+	n := c.peekN(1)
+	return n == nil || n.Kind != tWord || !verbs[n.Val] && n.Val != "believes" && n.Val != "doubts"
+}
+
+// attr <entity>.<key> = <int | string | id> [src (word | string)]
+func (c *cur) attribute() Node {
+	a := &Attribute{Pos: c.peek().Pos}
+	c.k++
+	t := c.word("<entity>.<key>")
+	i := strings.LastIndex(t.Val, ".")
+	if i <= 0 || i == len(t.Val)-1 {
+		c.k--
+		c.fail("expected <entity>.<key>, found %q", t.Val)
+	}
+	a.Entity, a.Key = Ident{t.Pos, t.Val[:i]}, t.Val[i+1:]
+	c.expect("=")
+	if s, ok := c.str(); ok {
+		a.Kind, a.Value = "str", s
+	} else {
+		v := c.word("value (integer, string or id)").Val
+		a.Kind, a.Value = "id", v
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil {
+			a.Kind, a.Value = "int", strconv.FormatInt(n, 10) // 07 ≡ 7
+		}
+	}
+	if c.accept("src") {
+		if s, ok := c.str(); ok {
+			a.Src = s
+		} else {
+			a.Src = c.word("source reference").Val
+		}
+	}
+	c.end()
+	return a
 }

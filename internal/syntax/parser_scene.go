@@ -87,6 +87,9 @@ func (c *cur) stmt() Node {
 	if t.Kind != tWord {
 		c.fail("expected a statement, found %s", describe(t))
 	}
+	if c.isAttribute() {
+		return c.attribute()
+	}
 	var n Node
 	switch t.Val {
 	case "when":

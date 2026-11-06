@@ -19,7 +19,8 @@
 
 file        = header { top } ;
 header      = "module" qname NL { "import" qname NL } ;             (* module 두 번 → dup-decl, 같은 import 두 번 → dup-decl *)
-top         = work | decl | scene | event | account | setup | distance | parent | life | belief | pragma ;
+top         = work | decl | scene | event | account | setup | distance | parent | life | belief | attribute | pragma ;
+              (* 최상위 attribute = 처음부터 참(IR at_pt "") *)
               (* 최상위 belief = 배경 지식: 시점 없이 처음부터 믿는다(IR at_pt "") *)
 
 (* 선언 *)
@@ -36,6 +37,7 @@ attr        = name
             | "shared"                                               (* 공동 보유 역할: 배타 제약 제외 *)
             | "contains" proplist
             | ("believes" | "doubts") prop                            (* character/group 만: 그 인물의 배경 지식 *)
+            | attribute                                              (* 처음부터 참 *)
             | string                                                 (* artifact 본문 발췌 *)
             | pragma ;
 name        = "name" ident string ;                                  (* 언어별 이름: name ko "맥베스" *)
@@ -49,7 +51,7 @@ event       = "event" ident [string] [ BLOCK(stmt) ] ;               (* 무대 �
 account     = "account" ident "of" qname "by" ident [ BLOCK(stmt) ] ; (* 같은 사건에 대한 기록 하나 *)
 
 stmt        = when | presence | beat | act | belief | reader | render | setup | payoff
-            | discourse | parent | life | pragma ;
+            | discourse | parent | life | attribute | pragma ;
 when        = "when" ( ("after" | "before") tref [ "by" dur ".." dur ]
                      | "at" date [ident]                             (* 시각: dawn 등 *)
                      | "during" tref ) ;
@@ -64,6 +66,12 @@ actor       = ident | "role" ":" ident ;                             (* role:cha
 verb        = "tells" | "says" | "hails" | "asks" | "lies" | "whispers" | "aside" | "thinks"
             | "sees" | "shows" | "reads" | "writes" | "sends" | "orders" | "decrees" | "does" ;
 belief      = ident ("believes" | "doubts") prop [ "because" tref ] ;
+attribute   = "attr" word "=" ( number | string | ident ) [ "src" (word | string) ] ;
+              (* word = <entity>.<key>: 마지막 "." 앞이 엔티티(character group place thing faction thread), 뒤가 키.
+                 장면·사건·기록 안이면 그 시점(바로 앞 시점)의 값을 단언한다. account 안의 단언은 그 기록의 것이다.
+                 값: 10진 정수(int, 07 ≡ 7) | 문자열(str) | ident(id: 선언된 이름이면 그 선언, 아니면 그대로의 기호).
+                 "attr" 는 예약어가 아니다: 다음 단어가 동사나 believes·doubts 면 attr 라는 이름의 행위·믿음이다.
+                 나이처럼 시간에 따라 변하는 값은 시점에 묶는다(attr hamlet.age = 30). 판정은 attribute-conflict 규칙. *)
 reader      = "reveal" prop [ "at" tref ] | "withhold" prop "until" tref ;
 setup       = "setup" ident ("promise" | "hint" | "symbol") ":" ( prop | string ) ;
 payoff      = "payoff" qname ;                                       (* 모듈/복선: macbeth.act1/banquo_kings *)
