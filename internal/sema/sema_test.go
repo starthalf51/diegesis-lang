@@ -374,3 +374,26 @@ dies a when at 1000-03
 		t.Errorf("holders = %+v", w.RoleHolders)
 	}
 }
+
+// lasts: 장면·사건의 start→end 간선에 min/max 를 준다. 그 문장의 간선이라 time-cycle 억제가 붙는다.
+func TestLastsEdges(t *testing.T) {
+	w, diags := build(t, `module t.s
+import t.cast
+scene X at room
+  lasts 0d..1d
+event E "e"
+  #! allow time-cycle: "elastic"
+  lasts 2d..3d
+`)
+	noErrors(t, diags)
+	got := edges(w)
+	want := []edge{
+		{"X.start", "X.end", 0, 86400, false},
+		{"X.start", "X.end", 0, -1, false},
+		{"E.start", "E.end", 2 * 86400, 3 * 86400, true},
+		{"E.start", "E.end", 0, -1, false},
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("edges:\n got %v\nwant %v", got, want)
+	}
+}

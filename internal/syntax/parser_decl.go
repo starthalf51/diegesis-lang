@@ -39,7 +39,7 @@ func (c *cur) work() Node {
 var reserved = map[string]bool{}
 
 func init() {
-	for _, w := range strings.Fields("when enter exit mention beat render reveal withhold setup payoff discourse " +
+	for _, w := range strings.Fields("when lasts enter exit mention beat render reveal withhold setup payoff discourse " +
 		"parent born dies all not to with because src major minor extra") {
 		reserved[w] = true
 	}

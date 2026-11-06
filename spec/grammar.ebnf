@@ -12,7 +12,7 @@
      ref(macbeth.act1/banquo_kings) 를 모두 덮는다. 뜻은 자리(문맥)로 정한다.
    - 구두점: ":" "," "(" ")" "=" ".." 그리고 프라그마 "#!".
    - 키워드는 문장 첫 단어와 둘째 단어로 고른다. 다만 다음 단어는 선언 id(decl 의 ident)로 쓸 수 없다
-     (syntax "reserved word used as id"): when enter exit mention beat render reveal withhold setup payoff
+     (syntax "reserved word used as id"): when lasts enter exit mention beat render reveal withhold setup payoff
      discourse parent born dies all not to with because src major minor extra
 
    표기: NL = 줄 끝, BLOCK(x) = NL INDENT { x NL } DEDENT, [ BLOCK(x) ] = 빈 몸체 허용. *)
@@ -50,11 +50,14 @@ scene       = "scene" sid [ "at" ident ] [ "in" ident ] [ BLOCK(stmt) ] ;
 event       = "event" ident [string] [ BLOCK(stmt) ] ;               (* 무대 밖 사건 *)
 account     = "account" ident "of" qname "by" ident [ BLOCK(stmt) ] ; (* 같은 사건에 대한 기록 하나 *)
 
-stmt        = when | presence | beat | act | belief | reader | render | setup | payoff
+stmt        = when | lasts | presence | beat | act | belief | reader | render | setup | payoff
             | discourse | parent | life | attribute | pragma ;
 when        = "when" ( ("after" | "before") tref [ "by" dur ".." dur ]
                      | "at" date [ident]                             (* 시각: dawn 등 *)
                      | "during" tref ) ;
+lasts       = "lasts" dur ".." dur ;                                 (* 장면·사건·기록의 길이: start→end 간선 [min, max].
+                                                                        AST When{Op: "lasts"}. 프론트매터 when 과 함께 써도 된다(시각이 아니다).
+                                                                        없으면 길이는 [0, 무한]이라 날짜 없는 장면 사이 경과의 상한이 생기지 않는다 *)
 presence    = "enter" idlist | "exit" "all" | "exit" idlist | "mention" idlist ;
 beat        = "beat" ident ":" [ BLOCK(stmt) ] ;
 act         = actor verb [ ident ] [ idlist ] [ "to" idlist ] [ "with" proplist ]

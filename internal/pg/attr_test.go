@@ -122,3 +122,26 @@ scene 6
 		t.Errorf("attribute-conflict = %v, want %v", got, want)
 	}
 }
+
+// lasts 로 장면 길이에 상한을 주면 날짜 없는 두 장면 사이에도 hi 가 생긴다(Task 4, 햄릿).
+// 1 → 2 사이 ≤ 1d + 30d + 1d → 20 → 30 은 충돌. lasts 가 없는 3 → 4 는 상한이 없어 0건.
+func TestAttributeAgeLasts(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, `scene 1
+  lasts 0d..1d
+  attr a.age = 20
+scene 2
+  when after 1 by 0d..30d
+  lasts 0d..1d
+  attr a.age = 30
+scene 3
+  attr b.age = 20
+scene 4
+  when after 3 by 0d..30d
+  attr b.age = 30
+`)
+	want := []string{"t.s/2#attr1/warn"}
+	if got := of(lint(t, pool, id), "attribute-conflict", id); !slices.Equal(got, want) {
+		t.Errorf("attribute-conflict = %v, want %v", got, want)
+	}
+}

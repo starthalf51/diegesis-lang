@@ -94,6 +94,12 @@ func (c *cur) stmt() Node {
 	switch t.Val {
 	case "when":
 		n = c.when()
+	case "lasts": // 장면·사건의 길이: start→end 간선 하나(AST 는 When{Op: "lasts"})
+		c.k++
+		w := &When{Pos: t.Pos, Op: "lasts"}
+		lo, hi := c.durRange()
+		w.Min, w.Max = &lo, &hi
+		n = w
 	case "enter", "exit", "mention":
 		c.k++
 		pr := &Presence{Pos: t.Pos, Op: t.Val}

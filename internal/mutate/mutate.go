@@ -137,7 +137,9 @@ func Generate(w *ir.Work, seed int64, n int) []Mutation {
 					continue
 				}
 				// swap-order: 같은 사람의 born→died, 또는 `before`(문장 자신의 시점이 간선의 시작인 것)
-				if op == "swap-order" && !(lifespan(e) || e.From == e.TargetID || strings.HasPrefix(e.From, e.TargetID+".")) {
+				// lasts(그 장면의 start→end)는 뒤집어도 같은 간선이라 뺀다
+				if op == "swap-order" && (!(lifespan(e) || e.From == e.TargetID || strings.HasPrefix(e.From, e.TargetID+".")) ||
+					e.From == e.TargetID+".start" && e.To == e.TargetID+".end") {
 					continue
 				}
 				add(op, e.From+" "+e.To, append(x.around(e.From, e.To), e.TargetID), nil, nil)
