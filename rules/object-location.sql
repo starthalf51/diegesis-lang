@@ -8,6 +8,7 @@
 -- 대상: 행위의 목적어(does 의 동작 대상 포함) X 가 thing·artifact 이고 장면에 장소가 있는 행위.
 -- 시점에 유효한 값: account 밖의 X.at 단언 중 행위보다 반드시 앞서고(precedes = yes; 배경은 origin),
 --   그 뒤에 또 다른 X.at 단언이 행위 전에 끼지 않은 것(attribute-conflict 와 같은 "바로 앞" 규칙).
+-- 유효한 값이 여럿(순서가 정해지지 않은 단언)이면 모두 후보다: 장면 장소와 같은 것이 하나라도 있으면 조용하다.
 -- 위반: 유효한 값이 있고 그중 장면 장소와 같은 것이 하나도 없다. 유효한 값이 없으면 내지 않는다.
 WITH origin AS (SELECT id FROM point WHERE work_id = $1 AND kind = 'origin' ORDER BY id LIMIT 1),
 loc AS (
