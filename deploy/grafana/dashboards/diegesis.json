@@ -61,7 +61,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT ord, lint_short(entity) AS entity, sum(acts)::int AS acts FROM metric_presence('$work') GROUP BY 1, 2 ORDER BY 1, 2"
+     "rawSql": "SELECT ord, lint_short(entity) AS entity, sum(acts)::int AS acts FROM metric_presence(${work:sqlstring}) GROUP BY 1, 2 ORDER BY 1, 2"
     }
    ],
    "transformations": [
@@ -143,7 +143,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT ord, lint_short(entity) AS entity, n FROM metric_asymmetry('$work') ORDER BY 1, 2"
+     "rawSql": "SELECT ord, lint_short(entity) AS entity, n FROM metric_asymmetry(${work:sqlstring}) ORDER BY 1, 2"
     }
    ],
    "options": {
@@ -235,7 +235,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT ord, n AS \"열린 setup\" FROM metric_open_setups('$work') ORDER BY 1"
+     "rawSql": "SELECT ord, n AS \"열린 setup\" FROM metric_open_setups(${work:sqlstring}) ORDER BY 1"
     }
    ],
    "options": {
@@ -300,7 +300,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT ord, n AS \"활성 기만\" FROM metric_active_deceptions('$work') ORDER BY 1"
+     "rawSql": "SELECT ord, n AS \"활성 기만\" FROM metric_active_deceptions(${work:sqlstring}) ORDER BY 1"
     }
    ],
    "options": {
@@ -365,7 +365,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT ord, value AS \"긴장도\" FROM metric_tension('$work') ORDER BY 1"
+     "rawSql": "SELECT ord, value AS \"긴장도\" FROM metric_tension(${work:sqlstring}) ORDER BY 1"
     }
    ],
    "options": {
@@ -430,7 +430,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT ord, story_t FROM metric_anachrony('$work') ORDER BY 1"
+     "rawSql": "SELECT ord, story_t FROM metric_anachrony(${work:sqlstring}) ORDER BY 1"
     }
    ],
    "options": {
@@ -498,7 +498,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT scene, ord, span_s, acts FROM metric_pace('$work') ORDER BY 2, 1"
+     "rawSql": "SELECT scene, ord, span_s, acts FROM metric_pace(${work:sqlstring}) ORDER BY 2, 1"
     }
    ],
    "options": {
@@ -534,7 +534,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT id, title, \"mainStat\" FROM graph_nodes('$work')"
+     "rawSql": "SELECT id, title, \"mainStat\" FROM graph_nodes(${work:sqlstring})"
     },
     {
      "refId": "B",
@@ -545,7 +545,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT id, source, target, \"mainStat\" FROM graph_edges('$work')"
+     "rawSql": "SELECT id, source, target, \"mainStat\" FROM graph_edges(${work:sqlstring})"
     }
    ],
    "options": {
@@ -581,7 +581,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT pattern_id, target_kind, target_id, span_from, span_to FROM pattern_result WHERE work_id = '$work' ORDER BY pattern_id, span_from, target_id"
+     "rawSql": "SELECT pattern_id, target_kind, target_id, span_from, span_to FROM pattern_result WHERE work_id = ${work:sqlstring} ORDER BY pattern_id, span_from, target_id"
     }
    ],
    "options": {
@@ -617,7 +617,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT d.rule_id, d.severity, coalesce(s.file || ':' || s.line, '') AS \"file:line\", d.waived, d.message FROM diagnostic d LEFT JOIN src s ON s.work_id = d.work_id AND s.id = d.src_id WHERE d.work_id = '$work' ORDER BY d.severity, d.rule_id, 3"
+     "rawSql": "SELECT d.rule_id, d.severity, coalesce(s.file || ':' || s.line, '') AS \"file:line\", d.waived, d.message FROM diagnostic d LEFT JOIN src s ON s.work_id = d.work_id AND s.id = d.src_id WHERE d.work_id = ${work:sqlstring} ORDER BY d.severity, d.rule_id, 3"
     }
    ],
    "options": {
