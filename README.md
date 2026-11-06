@@ -51,6 +51,7 @@ cd deploy && docker compose up -d   # ro-init 이 sl_ro 에 비밀번호를 걸�
 ```
 
 - Grafana 는 `127.0.0.1:3000` 에만 묶인다(익명 Viewer 가 켜져 있으므로 밖에 열지 않는다).
+- Rancher Desktop(Windows)에서는 127.0.0.1 publish 가 호스트에서 닿지 않는다. 대신 `go run ./tools/dockerfwd deploy-grafana-1 3000 3300` 을 띄우고 http://127.0.0.1:3300/d/diegesis/diegesis 로 연다. 이 도구는 `docker exec` 로 연결을 이어 주므로 포트를 LAN 에 열지 않는다.
 - 데이터소스는 `sl_ro` 로 붙는다. sl_ro 는 테이블 SELECT 와 대시보드 함수 목록(016)의 EXECUTE 만 가진다.
   SECURITY DEFINER 함수는 없다. 권한 검사는 `go test ./internal/dash/`(TestReadOnlyRole).
 
