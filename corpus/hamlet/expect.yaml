@@ -1,0 +1,87 @@
+# 햄릿 합격 기준(정답 셋). 기대값은 원작(texts/hamlet-mit.txt, MIT 판 막.장.줄)과 학계 해석에서 왔다.
+# 이 코퍼스는 알려진 원작 모순을 도구가 **찾아야** 합격이다. 그 진단은 억제하지 않는다(waived: false).
+# 도구 출력에 맞춰 고치지 않는다. 고칠 때는 원문 근거를 why 와 보고서에 남긴다.
+work: hamlet
+compile_errors: 0
+
+expected:
+  - rule: attribute-conflict
+    target: "hamlet.act5/5.1#attr1"    # 5.1 의 attr hamlet.age = 30 (5.1.142-160). 시간상 나중 단언이 대상이다
+    waived: false
+    why: >-
+      햄릿의 나이 문제(학계의 오래된 논쟁). 1.2.114-121 에서 햄릿은 비텐베르크 대학으로 "돌아가려는" 학생이다(포팅 해석:
+      통상의 대학생 나이 20, 판결 R2 — 원문에 숫자는 없다). 5.1.142-160 에서 무덤 파는 사람은 햄릿이 태어난 날 일을 시작해
+      "man and boy, thirty years" 일했다고 한다 → 30세(5.1.170 요릭의 "three and twenty years" 도 같은 쪽).
+      그런데 1.2 → 5.1 의 이야기 시간은 몇 달이다: 1.2.140 "But two months dead", 3.2.126 "twice two months",
+      그 뒤 하룻밤의 출항(4.1.30), "two days old at sea"(4.6.14), 편지와 "To-morrow"(4.7.47).
+      해적 뒤 상륙까지는 원문에 길이가 없어 느슨한 상한 1년을 뒀다. 그래도 경과 상한은 2년 아래라 10년의 나이 차를 메울 수 없다.
+
+queries:
+  - name: sexton-day-is-hamlets-birth
+    why: >-
+      5.1.142-147: 무덤 파는 사람이 일을 시작한 날 = 선왕이 포틴브라스를 이긴 날 = 햄릿이 태어난 날. 두 사건이 모두 출생 뒤
+      하루 안에 시작해 하루 안에 끝나고("that day"), 5.1 은 그 근무 시작에서 30년 남짓 뒤다(5.1.159-160 "thirty years").
+      그래서 5.1 은 햄릿의 출생에서 30년 이상, 32년 이하 뒤다.
+    sql: |
+      SELECT lint_short(s.id),
+             (SELECT d FROM point_dist WHERE work_id = $1 AND src = $1 || '/hamlet.cast/hamlet.born' AND dst = s.end_pt) <= 2 * 86400,
+             (SELECT -d FROM point_dist WHERE work_id = $1 AND src = $1 || '/hamlet.act5/5.1.start' AND dst = $1 || '/hamlet.cast/hamlet.born') >= 30 * 31536000,
+             (SELECT d FROM point_dist WHERE work_id = $1 AND src = $1 || '/hamlet.cast/hamlet.born' AND dst = $1 || '/hamlet.act5/5.1.start') <= 32 * 31536000
+        FROM scene s WHERE s.work_id = $1 AND s.id IN ($1 || '/hamlet.act5/fortinbras_overcome', $1 || '/hamlet.act5/sexton_begins')
+       ORDER BY 1
+    rows:
+      - ["fortinbras_overcome", "true", "true", "true"]
+      - ["sexton_begins", "true", "true", "true"]
+
+  - name: story-time-1.2-to-5.1-is-months
+    why: >-
+      1.2 의 시작에서 5.1 의 끝까지: 하한은 3.2.126 "twice two months"(넉 달, ±30일)와 1.2.140 "not two"(두 달 이하)에서 30일 이상,
+      상한은 원문 단서의 합(넉 달 남짓 + 이틀 항해 + 느슨한 상륙 상한 1년 + 며칠)이라 2년 아래다. 9년(나이 차 10 − 허용 1)보다
+      훨씬 짧아서 attribute-conflict 가 나온다.
+    sql: |
+      SELECT (SELECT d FROM point_dist WHERE work_id = $1 AND src = $1 || '/hamlet.act1/1.2.start' AND dst = $1 || '/hamlet.act5/5.1.end') < 2 * 31536000,
+             (SELECT -d FROM point_dist WHERE work_id = $1 AND src = $1 || '/hamlet.act5/5.1.end' AND dst = $1 || '/hamlet.act1/1.2.start') >= 30 * 86400
+    rows: [["true", "true"]]
+
+  - name: ghost-is-hamlets-first-source
+    why: >-
+      햄릿이 선왕 살해를 처음 아는 출처는 1.5.44 유령의 고발("The serpent that did sting thy father's life / Now wears his crown")이다.
+      그 전(1.2)에는 의심뿐이다("O my prophetic soul!", 1.5.46 이 그것을 확인한다).
+    sql: |
+      WITH c AS (
+        SELECT DISTINCT a.id, a.pt, a.actor_id, a.src_ref
+          FROM believes b JOIN act a ON a.id = b.cause_act
+         WHERE b.work_id = $1 AND b.value AND b.entity_id = $1 || '/hamlet.cast/hamlet'
+           AND b.prop_id = $1 || '/hamlet.cast/claudius_murdered')
+      SELECT lint_short(c.actor_id), c.src_ref FROM c
+       WHERE NOT EXISTS (SELECT 1 FROM c d WHERE d.id <> c.id AND precedes($1, c.pt, d.pt) <> 'yes')
+    rows: [["ghost", "1.5.44"]]
+
+  - name: horatio-learns-the-murder-from-hamlet
+    why: >-
+      호레이쇼는 1.5 에서 유령의 말을 듣지 못했다(1.5.121-131 햄릿은 털어놓지 않는다). 3.2.78 "Which I have told thee of my
+      father's death"(과거형)가 그 사이 어느 때, 3.2 전에 들었음을 말한다. 출처는 햄릿의 말뿐이다: 털어놓기(confides)와
+      3.2 의 두 마디(3.2.77 "told thee", 3.2.81 "Observe mine uncle"). 털어놓기는 3.2 의 시작보다 앞이다.
+    sql: |
+      SELECT DISTINCT lint_short(a.actor_id), lint_short(a.scene_id), precedes($1, a.pt, $1 || '/hamlet.act3/3.2.start')
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.value AND b.entity_id = $1 || '/hamlet.cast/horatio'
+         AND b.prop_id = $1 || '/hamlet.cast/claudius_murdered'
+       ORDER BY 2
+    rows: [["hamlet", "3.2", "no"], ["hamlet", "confides", "yes"]]
+
+  - name: king-learns-return-by-letter
+    why: >-
+      왕은 4.7.46 의 편지("I am set naked on your kingdom")로 햄릿의 귀국을 처음 안다. 5.1.260 "This is I, Hamlet the Dane" 는 그 뒤다.
+    sql: |
+      WITH c AS (
+        SELECT DISTINCT a.id, a.pt, a.verb, a.scene_id
+          FROM believes b JOIN act a ON a.id = b.cause_act
+         WHERE b.work_id = $1 AND b.value AND b.entity_id = $1 || '/hamlet.cast/claudius'
+           AND b.prop_id = $1 || '/hamlet.cast/hamlet_returned')
+      SELECT c.verb, lint_short(c.scene_id) FROM c
+       WHERE NOT EXISTS (SELECT 1 FROM c d WHERE d.id <> c.id AND precedes($1, c.pt, d.pt) <> 'yes')
+    rows: [["reads", "4.7"]]
+
+mutation_min_rate: 0.8
+mutation_min_rate_wo_move_before: 0.7   # ADR-014
