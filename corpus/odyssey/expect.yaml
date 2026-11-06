@@ -163,6 +163,34 @@ queries:
       - ["penelope", "23.5", "true"]
 
 mutation_min_rate: 0.8
+mutation_min_rate_wo_move_before: 0.7   # ADR-014: move-before 를 뺀 나머지 연산자의 탐지율 기준
 
-# slc render-check 가 모든 문체 백엔드로 렌더해 내용 동일·어투 상이를 판정하는 장면(ADR-012). 대사가 많은 중간 크기 장면.
+# dieg render-check 가 모든 문체 백엔드로 렌더해 내용 동일·어투 상이를 판정하는 장면(ADR-012). 대사가 많은 중간 크기 장면.
 render_scene: "19.1"
+
+# 서사 패턴(Task 7). 대상까지 같아야 한다(Review Focus 1). 근거는 Butler 판 [권.단락].
+patterns:
+  - pattern: recognition
+    target: "odyssey.cast/beggar_is_odysseus"
+    span_from: 1
+    why: >-
+      거지가 오디세우스라는 정체 사실(tag identity)을 아는 사람이 한 단계씩 는다: 아테나·오디세우스(13.37 변장), 텔레마코스
+      (16.19 "I am your father"), 에우리클레이아(19.29 흉터를 만져 알아본다 — 지각), 에우마이오스·필로이티오스(21.20 흉터를 보고 운다 —
+      지각), 구혼자들(22.4 "Dogs, did you think that I should not come back from Troy?"), 페넬로페(23.19 침대의 비밀로 확신한다).
+  - pattern: dramatic-irony
+    target: "odyssey.b19/19.1"
+    why: >-
+      19권: 페넬로페는 눈앞의 거지에게 "Stranger, I shall first ask you who and whence are you?"(19.12)라고 묻고, 거짓 크레타
+      이야기와 "Ulysses will return in this self same year"(19.19)를 듣고도 "Ulysses will not return"(19.20)이라 한다. 관객은
+      13.37 부터 그가 오디세우스임을 안다. 같은 장면에서 유모는 흉터로 알아보지만(19.29) 아테나가 페넬로페의 눈을 돌린다(19.30).
+  - pattern: dramatic-irony
+    target: "odyssey.b14/14.1"
+    why: >-
+      에우마이오스는 주인 앞에서 "the wolves and birds of prey have long since torn Ulysses to pieces"(14.8)라 하고, 오디세우스가
+      돌아온다는 맹세(14.9)도 믿지 않는다(14.10). 관객은 13.23·13.29 에서 그가 이타카에 돌아왔음을 안다.
+  - pattern: counter-deception
+    target: "odyssey.b13/13.21#a3"     # odysseus lies athena: stranger_is_cretan
+    span_from: 1
+    why: >-
+      오디세우스의 크레타 거짓말(13.25)에 아테나는 속지 않는다: "Minerva smiled and caressed him … He must be indeed a
+      shifty lying fellow … unwearying in deceit"(13.26).

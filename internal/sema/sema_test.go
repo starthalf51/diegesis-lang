@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 const goldenDir = "../../testdata/golden"
@@ -49,7 +49,7 @@ func parse(t *testing.T, srcs map[string]string) []*syntax.File {
 
 func build(t *testing.T, scene string) (*ir.Work, []syntax.Diag) {
 	t.Helper()
-	w, diags := Build(parse(t, map[string]string{"cast.sl": cast, "s.sl": scene}))
+	w, diags := Build(parse(t, map[string]string{"cast.dieg": cast, "s.dieg": scene}))
 	if w == nil {
 		t.Fatal("Build returned nil IR")
 	}
@@ -67,7 +67,7 @@ func noErrors(t *testing.T, diags []syntax.Diag) {
 
 // SL_UPDATE_GOLDEN=1 rewrites macbeth.ir.json.
 func TestBuildMacbethGolden(t *testing.T) {
-	paths, _ := filepath.Glob(filepath.Join(goldenDir, "macbeth-*.sl.md"))
+	paths, _ := filepath.Glob(filepath.Join(goldenDir, "macbeth-*.dieg.md"))
 	if len(paths) != 4 {
 		t.Fatalf("want 4 macbeth inputs (3 scenes + cast), got %v", paths)
 	}
@@ -190,8 +190,8 @@ scene 1 at room
 	}
 	var got []pos
 	for _, d := range diags {
-		if d.File != "s.sl" || d.Severity != "error" {
-			t.Errorf("want error in s.sl: %s", d)
+		if d.File != "s.dieg" || d.Severity != "error" {
+			t.Errorf("want error in s.dieg: %s", d)
 		}
 		got = append(got, pos{d.Rule, d.Line, d.Col})
 	}
@@ -203,10 +203,10 @@ scene 1 at room
 
 func TestErrorsKindsAndImports(t *testing.T) {
 	w, diags := Build(parse(t, map[string]string{
-		"cast.sl": cast,
-		"x.sl":    "module t.x\nimport t.y\n",
-		"y.sl":    "module t.y\nimport t.x\n",
-		"s.sl": `module t.s
+		"cast.dieg": cast,
+		"x.dieg":    "module t.x\nimport t.y\n",
+		"y.dieg":    "module t.y\nimport t.x\n",
+		"s.dieg": `module t.s
 import t.cast
 scene 1 at a
   enter room
@@ -219,7 +219,7 @@ scene 1 at a
 			got = append(got, d.File+":"+d.Rule)
 		}
 	}
-	want := []string{"s.sl:arg-kind", "s.sl:arg-kind", "s.sl:role-unknown", "s.sl:arg-kind", "y.sl:import-cycle"}
+	want := []string{"s.dieg:arg-kind", "s.dieg:arg-kind", "s.dieg:role-unknown", "s.dieg:arg-kind", "y.dieg:import-cycle"}
 	if !slices.Equal(got, want) {
 		t.Errorf("diags = %v, want %v", got, want)
 	}
@@ -329,8 +329,8 @@ born a when after X
 
 func TestEventAccountPayoffRole(t *testing.T) {
 	w, diags := Build(parse(t, map[string]string{
-		"cast.sl": cast + "role chief \"Chief\"\n  held a from start\nartifact letter \"L\"\n  contains p\n",
-		"s.sl": `module t.s
+		"cast.dieg": cast + "role chief \"Chief\"\n  held a from start\nartifact letter \"L\"\n  contains p\n",
+		"s.dieg": `module t.s
 import t.cast
 event e "off stage"
   when after 1
@@ -372,5 +372,28 @@ dies a when at 1000-03
 	}
 	if len(w.RoleHolders) != 1 || w.RoleHolders[0].FromPt != "t/start" {
 		t.Errorf("holders = %+v", w.RoleHolders)
+	}
+}
+
+// lasts: 장면·사건의 start→end 간선에 min/max 를 준다. 그 문장의 간선이라 time-cycle 억제가 붙는다.
+func TestLastsEdges(t *testing.T) {
+	w, diags := build(t, `module t.s
+import t.cast
+scene X at room
+  lasts 0d..1d
+event E "e"
+  #! allow time-cycle: "elastic"
+  lasts 2d..3d
+`)
+	noErrors(t, diags)
+	got := edges(w)
+	want := []edge{
+		{"X.start", "X.end", 0, 86400, false},
+		{"X.start", "X.end", 0, -1, false},
+		{"E.start", "E.end", 2 * 86400, 3 * 86400, true},
+		{"E.start", "E.end", 0, -1, false},
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("edges:\n got %v\nwant %v", got, want)
 	}
 }

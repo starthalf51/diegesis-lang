@@ -11,9 +11,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"story-lang/internal/pg"
-	"story-lang/internal/sema"
-	"story-lang/internal/syntax"
+	"diegesis/internal/pg"
+	"diegesis/internal/sema"
+	"diegesis/internal/syntax"
 )
 
 // cast 는 규칙 픽스처의 공통 선언. WK 는 고유한 작품 ID 로 바뀐다.
@@ -35,7 +35,7 @@ artifact letter "L"
 func compileLoad(t *testing.T, pool *pgxpool.Pool, body string) string {
 	t.Helper()
 	id := fmt.Sprintf("t_%d", rand.Int63())
-	f, diags := syntax.ParseFile("t.sl", []byte(strings.ReplaceAll(cast+body, "WK", id)))
+	f, diags := syntax.ParseFile("t.dieg", []byte(strings.ReplaceAll(cast+body, "WK", id)))
 	w, ds := sema.Build([]*syntax.File{f})
 	for _, d := range append(diags, ds...) {
 		if d.Severity == "error" {
@@ -87,8 +87,8 @@ func TestRules(t *testing.T) {
 		}
 	}
 	slices.Sort(ids)
-	want := []string{"account-variance", "because-unbelieved", "belief-contradiction", "dead-actor", "inferred-deception", "info-flow",
-		"letter-unknown-info", "payoff-without-setup", "time-cycle", "unpaid-promise", "undelivered-message"}
+	want := []string{"account-variance", "attribute-conflict", "because-unbelieved", "belief-contradiction", "dead-actor", "inferred-deception", "info-flow",
+		"letter-unknown-info", "pattern-missing", "payoff-without-setup", "time-cycle", "unpaid-promise", "undelivered-message"}
 	slices.Sort(want)
 	if !slices.Equal(ids, want) {
 		t.Errorf("rules = %v, want %v", ids, want)

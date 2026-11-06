@@ -154,6 +154,14 @@ func Lint(ctx context.Context, db *pgxpool.Pool, work string, rulesDir fs.FS) ([
 	if _, err := tx.Exec(ctx, `DELETE FROM diagnostic WHERE work_id = $1 AND run_id <> 'derive'`, work); err != nil {
 		return nil, err
 	}
+	// 선언된 패턴만 먼저 돌린다: 규칙 pattern-missing 이 pattern_match 를 읽는다
+	only, err := declaredPatterns(ctx, tx, work)
+	if err != nil {
+		return nil, err
+	}
+	if err := evalPatterns(ctx, tx, work, run, only); err != nil {
+		return nil, err
+	}
 	for _, r := range rules {
 		if r.Layer != "lint" {
 			continue // derive 층(time-cycle 등)은 적재 때 이미 diagnostic 에 있다

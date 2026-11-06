@@ -1,0 +1,1725 @@
+# The Sign of the Four — Arthur Conan Doyle (1890). Public domain.
+# Source: Project Gutenberg eBook #2097, https://www.gutenberg.org/cache/epub/2097/pg2097.txt (retrieved 2026-11-06).
+# Chapters I, II, XI, XII verbatim. Each paragraph is prefixed [<chapter>.<paragraph>], counted from 1 per chapter.
+
+
+## Chapter I
+## The Science of Deduction
+
+
+[1.1] Sherlock Holmes took his bottle from the corner of the mantel-piece and
+his hypodermic syringe from its neat morocco case. With his long,
+white, nervous fingers he adjusted the delicate needle, and rolled back
+his left shirt-cuff. For some little time his eyes rested thoughtfully
+upon the sinewy forearm and wrist all dotted and scarred with
+innumerable puncture-marks. Finally he thrust the sharp point home,
+pressed down the tiny piston, and sank back into the velvet-lined
+arm-chair with a long sigh of satisfaction.
+
+[1.2] Three times a day for many months I had witnessed this performance, but
+custom had not reconciled my mind to it. On the contrary, from day to
+day I had become more irritable at the sight, and my conscience swelled
+nightly within me at the thought that I had lacked the courage to
+protest. Again and again I had registered a vow that I should deliver
+my soul upon the subject, but there was that in the cool, nonchalant
+air of my companion which made him the last man with whom one would
+care to take anything approaching to a liberty. His great powers, his
+masterly manner, and the experience which I had had of his many
+extraordinary qualities, all made me diffident and backward in crossing
+him.
+
+[1.3] Yet upon that afternoon, whether it was the Beaune which I had taken
+with my lunch, or the additional exasperation produced by the extreme
+deliberation of his manner, I suddenly felt that I could hold out no
+longer.
+
+[1.4] “Which is it to-day?” I asked,—“morphine or cocaine?”
+
+[1.5] He raised his eyes languidly from the old black-letter volume which he
+had opened. “It is cocaine,” he said,—“a seven-per-cent. solution.
+Would you care to try it?”
+
+[1.6] “No, indeed,” I answered, brusquely. “My constitution has not got over
+the Afghan campaign yet. I cannot afford to throw any extra strain upon
+it.”
+
+[1.7] He smiled at my vehemence. “Perhaps you are right, Watson,” he said. “I
+suppose that its influence is physically a bad one. I find it, however,
+so transcendently stimulating and clarifying to the mind that its
+secondary action is a matter of small moment.”
+
+[1.8] “But consider!” I said, earnestly. “Count the cost! Your brain may, as
+you say, be roused and excited, but it is a pathological and morbid
+process, which involves increased tissue-change and may at last leave a
+permanent weakness. You know, too, what a black reaction comes upon
+you. Surely the game is hardly worth the candle. Why should you, for a
+mere passing pleasure, risk the loss of those great powers with which
+you have been endowed? Remember that I speak not only as one comrade to
+another, but as a medical man to one for whose constitution he is to
+some extent answerable.”
+
+[1.9] He did not seem offended. On the contrary, he put his finger-tips
+together and leaned his elbows on the arms of his chair, like one who
+has a relish for conversation.
+
+[1.10] “My mind,” he said, “rebels at stagnation. Give me problems, give me
+work, give me the most abstruse cryptogram or the most intricate
+analysis, and I am in my own proper atmosphere. I can dispense then
+with artificial stimulants. But I abhor the dull routine of existence.
+I crave for mental exaltation. That is why I have chosen my own
+particular profession,—or rather created it, for I am the only one in
+the world.”
+
+[1.11] “The only unofficial detective?” I said, raising my eyebrows.
+
+[1.12] “The only unofficial consulting detective,” he answered. “I am the last
+and highest court of appeal in detection. When Gregson or Lestrade or
+Athelney Jones are out of their depths—which, by the way, is their
+normal state—the matter is laid before me. I examine the data, as an
+expert, and pronounce a specialist’s opinion. I claim no credit in such
+cases. My name figures in no newspaper. The work itself, the pleasure
+of finding a field for my peculiar powers, is my highest reward. But
+you have yourself had some experience of my methods of work in the
+Jefferson Hope case.”
+
+[1.13] “Yes, indeed,” said I, cordially. “I was never so struck by anything in
+my life. I even embodied it in a small brochure with the somewhat
+fantastic title of ‘A Study in Scarlet.’”
+
+[1.14] He shook his head sadly. “I glanced over it,” said he. “Honestly, I
+cannot congratulate you upon it. Detection is, or ought to be, an exact
+science, and should be treated in the same cold and unemotional manner.
+You have attempted to tinge it with romanticism, which produces much
+the same effect as if you worked a love-story or an elopement into the
+fifth proposition of Euclid.”
+
+[1.15] “But the romance was there,” I remonstrated. “I could not tamper with
+the facts.”
+
+[1.16] “Some facts should be suppressed, or at least a just sense of
+proportion should be observed in treating them. The only point in the
+case which deserved mention was the curious analytical reasoning from
+effects to causes by which I succeeded in unraveling it.”
+
+[1.17] I was annoyed at this criticism of a work which had been specially
+designed to please him. I confess, too, that I was irritated by the
+egotism which seemed to demand that every line of my pamphlet should be
+devoted to his own special doings. More than once during the years that
+I had lived with him in Baker Street I had observed that a small vanity
+underlay my companion’s quiet and didactic manner. I made no remark,
+however, but sat nursing my wounded leg. I had a Jezail bullet through
+it some time before, and, though it did not prevent me from walking, it
+ached wearily at every change of the weather.
+
+[1.18] “My practice has extended recently to the Continent,” said Holmes,
+after a while, filling up his old brier-root pipe. “I was consulted
+last week by François Le Villard, who, as you probably know, has come
+rather to the front lately in the French detective service. He has all
+the Celtic power of quick intuition, but he is deficient in the wide
+range of exact knowledge which is essential to the higher developments
+of his art. The case was concerned with a will, and possessed some
+features of interest. I was able to refer him to two parallel cases,
+the one at Riga in 1857, and the other at St. Louis in 1871, which have
+suggested to him the true solution. Here is the letter which I had this
+morning acknowledging my assistance.” He tossed over, as he spoke, a
+crumpled sheet of foreign notepaper. I glanced my eyes down it,
+catching a profusion of notes of admiration, with stray “magnifiques,”
+“coup-de-maîtres,” and “tours-de-force,” all testifying to the ardent
+admiration of the Frenchman.
+
+[1.19] “He speaks as a pupil to his master,” said I.
+
+[1.20] “Oh, he rates my assistance too highly,” said Sherlock Holmes, lightly.
+“He has considerable gifts himself. He possesses two out of the three
+qualities necessary for the ideal detective. He has the power of
+observation and that of deduction. He is only wanting in knowledge; and
+that may come in time. He is now translating my small works into
+French.”
+
+[1.21] “Your works?”
+
+[1.22] “Oh, didn’t you know?” he cried, laughing. “Yes, I have been guilty of
+several monographs. They are all upon technical subjects. Here, for
+example, is one ‘Upon the Distinction between the Ashes of the Various
+Tobaccoes.’ In it I enumerate a hundred and forty forms of cigar-,
+cigarette-, and pipe-tobacco, with coloured plates illustrating the
+difference in the ash. It is a point which is continually turning up in
+criminal trials, and which is sometimes of supreme importance as a
+clue. If you can say definitely, for example, that some murder has been
+done by a man who was smoking an Indian lunkah, it obviously narrows
+your field of search. To the trained eye there is as much difference
+between the black ash of a Trichinopoly and the white fluff of
+bird’s-eye as there is between a cabbage and a potato.”
+
+[1.23] “You have an extraordinary genius for minutiæ,” I remarked.
+
+[1.24] “I appreciate their importance. Here is my monograph upon the tracing
+of footsteps, with some remarks upon the uses of plaster of Paris as a
+preserver of impresses. Here, too, is a curious little work upon the
+influence of a trade upon the form of the hand, with lithotypes of the
+hands of slaters, sailors, corkcutters, compositors, weavers, and
+diamond-polishers. That is a matter of great practical interest to the
+scientific detective,—especially in cases of unclaimed bodies, or in
+discovering the antecedents of criminals. But I weary you with my
+hobby.”
+
+[1.25] “Not at all,” I answered, earnestly. “It is of the greatest interest to
+me, especially since I have had the opportunity of observing your
+practical application of it. But you spoke just now of observation and
+deduction. Surely the one to some extent implies the other.”
+
+[1.26] “Why, hardly,” he answered, leaning back luxuriously in his arm-chair,
+and sending up thick blue wreaths from his pipe. “For example,
+observation shows me that you have been to the Wigmore Street
+Post-Office this morning, but deduction lets me know that when there
+you dispatched a telegram.”
+
+[1.27] “Right!” said I. “Right on both points! But I confess that I don’t see
+how you arrived at it. It was a sudden impulse upon my part, and I have
+mentioned it to no one.”
+
+[1.28] “It is simplicity itself,” he remarked, chuckling at my surprise,—“so
+absurdly simple that an explanation is superfluous; and yet it may
+serve to define the limits of observation and of deduction. Observation
+tells me that you have a little reddish mould adhering to your instep.
+Just opposite the Wigmore Street Office they have taken up the pavement
+and thrown up some earth which lies in such a way that it is difficult
+to avoid treading in it in entering. The earth is of this peculiar
+reddish tint which is found, as far as I know, nowhere else in the
+neighbourhood. So much is observation. The rest is deduction.”
+
+[1.29] “How, then, did you deduce the telegram?”
+
+[1.30] “Why, of course I knew that you had not written a letter, since I sat
+opposite to you all morning. I see also in your open desk there that
+you have a sheet of stamps and a thick bundle of post-cards. What could
+you go into the post-office for, then, but to send a wire? Eliminate
+all other factors, and the one which remains must be the truth.”
+
+[1.31] “In this case it certainly is so,” I replied, after a little thought.
+“The thing, however, is, as you say, of the simplest. Would you think
+me impertinent if I were to put your theories to a more severe test?”
+
+[1.32] “On the contrary,” he answered, “it would prevent me from taking a
+second dose of cocaine. I should be delighted to look into any problem
+which you might submit to me.”
+
+[1.33] “I have heard you say that it is difficult for a man to have any object
+in daily use without leaving the impress of his individuality upon it
+in such a way that a trained observer might read it. Now, I have here a
+watch which has recently come into my possession. Would you have the
+kindness to let me have an opinion upon the character or habits of the
+late owner?”
+
+[1.34] I handed him over the watch with some slight feeling of amusement in my
+heart, for the test was, as I thought, an impossible one, and I
+intended it as a lesson against the somewhat dogmatic tone which he
+occasionally assumed. He balanced the watch in his hand, gazed hard at
+the dial, opened the back, and examined the works, first with his naked
+eyes and then with a powerful convex lens. I could hardly keep from
+smiling at his crestfallen face when he finally snapped the case to and
+handed it back.
+
+[1.35] “There are hardly any data,” he remarked. “The watch has been recently
+cleaned, which robs me of my most suggestive facts.”
+
+[1.36] “You are right,” I answered. “It was cleaned before being sent to me.”
+In my heart I accused my companion of putting forward a most lame and
+impotent excuse to cover his failure. What data could he expect from an
+uncleaned watch?
+
+[1.37] “Though unsatisfactory, my research has not been entirely barren,” he
+observed, staring up at the ceiling with dreamy, lack-lustre eyes.
+“Subject to your correction, I should judge that the watch belonged to
+your elder brother, who inherited it from your father.”
+
+[1.38] “That you gather, no doubt, from the H. W. upon the back?”
+
+[1.39] “Quite so. The W. suggests your own name. The date of the watch is
+nearly fifty years back, and the initials are as old as the watch: so
+it was made for the last generation. Jewelry usually descends to the
+eldest son, and he is most likely to have the same name as the father.
+Your father has, if I remember right, been dead many years. It has,
+therefore, been in the hands of your eldest brother.”
+
+[1.40] “Right, so far,” said I. “Anything else?”
+
+[1.41] “He was a man of untidy habits,—very untidy and careless. He was left
+with good prospects, but he threw away his chances, lived for some time
+in poverty with occasional short intervals of prosperity, and finally,
+taking to drink, he died. That is all I can gather.”
+
+[1.42] I sprang from my chair and limped impatiently about the room with
+considerable bitterness in my heart.
+
+[1.43] “This is unworthy of you, Holmes,” I said. “I could not have believed
+that you would have descended to this. You have made inquires into the
+history of my unhappy brother, and you now pretend to deduce this
+knowledge in some fanciful way. You cannot expect me to believe that
+you have read all this from his old watch! It is unkind, and, to speak
+plainly, has a touch of charlatanism in it.”
+
+[1.44] “My dear doctor,” said he, kindly, “pray accept my apologies. Viewing
+the matter as an abstract problem, I had forgotten how personal and
+painful a thing it might be to you. I assure you, however, that I never
+even knew that you had a brother until you handed me the watch.”
+
+[1.45] “Then how in the name of all that is wonderful did you get these facts?
+They are absolutely correct in every particular.”
+
+[1.46] “Ah, that is good luck. I could only say what was the balance of
+probability. I did not at all expect to be so accurate.”
+
+[1.47] “But it was not mere guess-work?”
+
+[1.48] “No, no: I never guess. It is a shocking habit,—destructive to the
+logical faculty. What seems strange to you is only so because you do
+not follow my train of thought or observe the small facts upon which
+large inferences may depend. For example, I began by stating that your
+brother was careless. When you observe the lower part of that
+watch-case you notice that it is not only dinted in two places, but it
+is cut and marked all over from the habit of keeping other hard
+objects, such as coins or keys, in the same pocket. Surely it is no
+great feat to assume that a man who treats a fifty-guinea watch so
+cavalierly must be a careless man. Neither is it a very far-fetched
+inference that a man who inherits one article of such value is pretty
+well provided for in other respects.”
+
+[1.49] I nodded, to show that I followed his reasoning.
+
+[1.50] “It is very customary for pawnbrokers in England, when they take a
+watch, to scratch the number of the ticket with a pin-point upon the
+inside of the case. It is more handy than a label, as there is no risk
+of the number being lost or transposed. There are no less than four
+such numbers visible to my lens on the inside of this case.
+Inference,—that your brother was often at low water. Secondary
+inference,—that he had occasional bursts of prosperity, or he could not
+have redeemed the pledge. Finally, I ask you to look at the inner
+plate, which contains the key-hole. Look at the thousands of scratches
+all round the hole,—marks where the key has slipped. What sober man’s
+key could have scored those grooves? But you will never see a
+drunkard’s watch without them. He winds it at night, and he leaves
+these traces of his unsteady hand. Where is the mystery in all this?”
+
+[1.51] “It is as clear as daylight,” I answered. “I regret the injustice which
+I did you. I should have had more faith in your marvellous faculty. May
+I ask whether you have any professional inquiry on foot at present?”
+
+[1.52] “None. Hence the cocaine. I cannot live without brain-work. What else
+is there to live for? Stand at the window here. Was ever such a dreary,
+dismal, unprofitable world? See how the yellow fog swirls down the
+street and drifts across the dun-coloured houses. What could be more
+hopelessly prosaic and material? What is the use of having powers,
+doctor, when one has no field upon which to exert them? Crime is
+commonplace, existence is commonplace, and no qualities save those
+which are commonplace have any function upon earth.”
+
+[1.53] I had opened my mouth to reply to this tirade, when with a crisp knock
+our landlady entered, bearing a card upon the brass salver.
+
+[1.54] “A young lady for you, sir,” she said, addressing my companion.
+
+[1.55] “Miss Mary Morstan,” he read. “Hum! I have no recollection of the name.
+Ask the young lady to step up, Mrs. Hudson. Don’t go, doctor. I should
+prefer that you remain.”
+
+
+
+
+
+## Chapter II
+## The Statement of the Case
+
+
+[2.1] Miss Morstan entered the room with a firm step and an outward composure
+of manner. She was a blonde young lady, small, dainty, well gloved, and
+dressed in the most perfect taste. There was, however, a plainness and
+simplicity about her costume which bore with it a suggestion of limited
+means. The dress was a sombre greyish beige, untrimmed and unbraided,
+and she wore a small turban of the same dull hue, relieved only by a
+suspicion of white feather in the side. Her face had neither regularity
+of feature nor beauty of complexion, but her expression was sweet and
+amiable, and her large blue eyes were singularly spiritual and
+sympathetic. In an experience of women which extends over many nations
+and three separate continents, I have never looked upon a face which
+gave a clearer promise of a refined and sensitive nature. I could not
+but observe that as she took the seat which Sherlock Holmes placed for
+her, her lip trembled, her hand quivered, and she showed every sign of
+intense inward agitation.
+
+[2.2] “I have come to you, Mr. Holmes,” she said, “because you once enabled
+my employer, Mrs. Cecil Forrester, to unravel a little domestic
+complication. She was much impressed by your kindness and skill.”
+
+[2.3] “Mrs. Cecil Forrester,” he repeated thoughtfully. “I believe that I was
+of some slight service to her. The case, however, as I remember it, was
+a very simple one.”
+
+[2.4] “She did not think so. But at least you cannot say the same of mine. I
+can hardly imagine anything more strange, more utterly inexplicable,
+than the situation in which I find myself.”
+
+[2.5] Holmes rubbed his hands, and his eyes glistened. He leaned forward in
+his chair with an expression of extraordinary concentration upon his
+clear-cut, hawklike features. “State your case,” said he, in brisk,
+business tones.
+
+[2.6] I felt that my position was an embarrassing one. “You will, I am sure,
+excuse me,” I said, rising from my chair.
+
+[2.7] To my surprise, the young lady held up her gloved hand to detain me.
+“If your friend,” she said, “would be good enough to stop, he might be
+of inestimable service to me.”
+
+[2.8] I relapsed into my chair.
+
+[2.9] “Briefly,” she continued, “the facts are these. My father was an
+officer in an Indian regiment who sent me home when I was quite a
+child. My mother was dead, and I had no relative in England. I was
+placed, however, in a comfortable boarding establishment at Edinburgh,
+and there I remained until I was seventeen years of age. In the year
+1878 my father, who was senior captain of his regiment, obtained twelve
+months’ leave and came home. He telegraphed to me from London that he
+had arrived all safe, and directed me to come down at once, giving the
+Langham Hotel as his address. His message, as I remember, was full of
+kindness and love. On reaching London I drove to the Langham, and was
+informed that Captain Morstan was staying there, but that he had gone
+out the night before and had not yet returned. I waited all day without
+news of him. That night, on the advice of the manager of the hotel, I
+communicated with the police, and next morning we advertised in all the
+papers. Our inquiries led to no result; and from that day to this no
+word has ever been heard of my unfortunate father. He came home with
+his heart full of hope, to find some peace, some comfort, and instead—”
+She put her hand to her throat, and a choking sob cut short the
+sentence.
+
+[2.10] “The date?” asked Holmes, opening his note-book.
+
+[2.11] “He disappeared upon the 3rd of December, 1878,—nearly ten years ago.”
+
+[2.12] “His luggage?”
+
+[2.13] “Remained at the hotel. There was nothing in it to suggest a clue,—some
+clothes, some books, and a considerable number of curiosities from the
+Andaman Islands. He had been one of the officers in charge of the
+convict-guard there.”
+
+[2.14] “Had he any friends in town?”
+
+[2.15] “Only one that we know of,—Major Sholto, of his own regiment, the 34th
+Bombay Infantry. The major had retired some little time before, and
+lived at Upper Norwood. We communicated with him, of course, but he did
+not even know that his brother officer was in England.”
+
+[2.16] “A singular case,” remarked Holmes.
+
+[2.17] “I have not yet described to you the most singular part. About six
+years ago—to be exact, upon the 4th of May, 1882—an advertisement
+appeared in the _Times_ asking for the address of Miss Mary Morstan and
+stating that it would be to her advantage to come forward. There was no
+name or address appended. I had at that time just entered the family of
+Mrs. Cecil Forrester in the capacity of governess. By her advice I
+published my address in the advertisement column. The same day there
+arrived through the post a small card-board box addressed to me, which
+I found to contain a very large and lustrous pearl. No word of writing
+was enclosed. Since then every year upon the same date there has always
+appeared a similar box, containing a similar pearl, without any clue as
+to the sender. They have been pronounced by an expert to be of a rare
+variety and of considerable value. You can see for yourselves that they
+are very handsome.” She opened a flat box as she spoke, and showed me
+six of the finest pearls that I had ever seen.
+
+[2.18] “Your statement is most interesting,” said Sherlock Holmes. “Has
+anything else occurred to you?”
+
+[2.19] “Yes, and no later than to-day. That is why I have come to you. This
+morning I received this letter, which you will perhaps read for
+yourself.”
+
+[2.20] “Thank you,” said Holmes. “The envelope too, please. Postmark, London,
+S.W. Date, July 7. Hum! Man’s thumb-mark on corner,—probably postman.
+Best quality paper. Envelopes at sixpence a packet. Particular man in
+his stationery. No address. ‘Be at the third pillar from the left
+outside the Lyceum Theatre to-night at seven o’clock. If you are
+distrustful, bring two friends. You are a wronged woman, and shall have
+justice. Do not bring police. If you do, all will be in vain. Your
+unknown friend.’ Well, really, this is a very pretty little mystery.
+What do you intend to do, Miss Morstan?”
+
+[2.21] “That is exactly what I want to ask you.”
+
+[2.22] “Then we shall most certainly go. You and I and—yes, why, Dr. Watson is
+the very man. Your correspondent says two friends. He and I have worked
+together before.”
+
+[2.23] “But would he come?” she asked, with something appealing in her voice
+and expression.
+
+[2.24] “I should be proud and happy,” said I, fervently, “if I can be of any
+service.”
+
+[2.25] “You are both very kind,” she answered. “I have led a retired life, and
+have no friends whom I could appeal to. If I am here at six it will do,
+I suppose?”
+
+[2.26] “You must not be later,” said Holmes. “There is one other point,
+however. Is this handwriting the same as that upon the pearl-box
+addresses?”
+
+[2.27] “I have them here,” she answered, producing half a dozen pieces of
+paper.
+
+[2.28] “You are certainly a model client. You have the correct intuition. Let
+us see, now.” He spread out the papers upon the table, and gave little
+darting glances from one to the other. “They are disguised hands,
+except the letter,” he said, presently, “but there can be no question
+as to the authorship. See how the irrepressible Greek _e_ will break
+out, and see the twirl of the final _s_. They are undoubtedly by the
+same person. I should not like to suggest false hopes, Miss Morstan,
+but is there any resemblance between this hand and that of your
+father?”
+
+[2.29] “Nothing could be more unlike.”
+
+[2.30] “I expected to hear you say so. We shall look out for you, then, at
+six. Pray allow me to keep the papers. I may look into the matter
+before then. It is only half-past three. _Au revoir_, then.”
+
+[2.31] “_Au revoir_,” said our visitor, and, with a bright, kindly glance from
+one to the other of us, she replaced her pearl-box in her bosom and
+hurried away. Standing at the window, I watched her walking briskly
+down the street, until the grey turban and white feather were but a
+speck in the sombre crowd.
+
+[2.32] “What a very attractive woman!” I exclaimed, turning to my companion.
+
+[2.33] He had lit his pipe again, and was leaning back with drooping eyelids.
+“Is she?” he said, languidly. “I did not observe.”
+
+[2.34] “You really are an automaton,—a calculating-machine!” I cried. “There
+is something positively inhuman in you at times.”
+
+[2.35] He smiled gently. “It is of the first importance,” he said, “not to
+allow your judgment to be biased by personal qualities. A client is to
+me a mere unit,—a factor in a problem. The emotional qualities are
+antagonistic to clear reasoning. I assure you that the most winning
+woman I ever knew was hanged for poisoning three little children for
+their insurance-money, and the most repellant man of my acquaintance is
+a philanthropist who has spent nearly a quarter of a million upon the
+London poor.”
+
+[2.36] “In this case, however—”
+
+[2.37] “I never make exceptions. An exception disproves the rule. Have you
+ever had occasion to study character in handwriting? What do you make
+of this fellow’s scribble?”
+
+[2.38] “It is legible and regular,” I answered. “A man of business habits and
+some force of character.”
+
+[2.39] Holmes shook his head. “Look at his long letters,” he said. “They
+hardly rise above the common herd. That _d_ might be an _a_, and that
+_l_ an _e_. Men of character always differentiate their long letters,
+however illegibly they may write. There is vacillation in his _k_’s and
+self-esteem in his capitals. I am going out now. I have some few
+references to make. Let me recommend this book,—one of the most
+remarkable ever penned. It is Winwood Reade’s ‘Martyrdom of Man.’ I
+shall be back in an hour.”
+
+[2.40] I sat in the window with the volume in my hand, but my thoughts were
+far from the daring speculations of the writer. My mind ran upon our
+late visitor,—her smiles, the deep rich tones of her voice, the strange
+mystery which overhung her life. If she were seventeen at the time of
+her father’s disappearance she must be seven-and-twenty now,—a sweet
+age, when youth has lost its self-consciousness and become a little
+sobered by experience. So I sat and mused, until such dangerous
+thoughts came into my head that I hurried away to my desk and plunged
+furiously into the latest treatise upon pathology. What was I, an army
+surgeon with a weak leg and a weaker banking-account, that I should
+dare to think of such things? She was a unit, a factor,—nothing more.
+If my future were black, it was better surely to face it like a man
+than to attempt to brighten it by mere will-o’-the-wisps of the
+imagination.
+
+
+
+
+
+
+## Chapter XI
+## The Great Agra Treasure
+
+
+[11.1] Our captive sat in the cabin opposite to the iron box which he had done
+so much and waited so long to gain. He was a sunburned, reckless-eyed
+fellow, with a network of lines and wrinkles all over his mahogany
+features, which told of a hard, open-air life. There was a singular
+prominence about his bearded chin which marked a man who was not to be
+easily turned from his purpose. His age may have been fifty or
+thereabouts, for his black, curly hair was thickly shot with grey. His
+face in repose was not an unpleasing one, though his heavy brows and
+aggressive chin gave him, as I had lately seen, a terrible expression
+when moved to anger. He sat now with his handcuffed hands upon his lap,
+and his head sunk upon his breast, while he looked with his keen,
+twinkling eyes at the box which had been the cause of his ill-doings.
+It seemed to me that there was more sorrow than anger in his rigid and
+contained countenance. Once he looked up at me with a gleam of
+something like humour in his eyes.
+
+[11.2] “Well, Jonathan Small,” said Holmes, lighting a cigar, “I am sorry that
+it has come to this.”
+
+[11.3] “And so am I, sir,” he answered, frankly. “I don’t believe that I can
+swing over the job. I give you my word on the book that I never raised
+hand against Mr. Sholto. It was that little hell-hound Tonga who shot
+one of his cursed darts into him. I had no part in it, sir. I was as
+grieved as if it had been my blood-relation. I welted the little devil
+with the slack end of the rope for it, but it was done, and I could not
+undo it again.”
+
+[11.4] “Have a cigar,” said Holmes; “and you had best take a pull out of my
+flask, for you are very wet. How could you expect so small and weak a
+man as this black fellow to overpower Mr. Sholto and hold him while you
+were climbing the rope?”
+
+[11.5] “You seem to know as much about it as if you were there, sir. The truth
+is that I hoped to find the room clear. I knew the habits of the house
+pretty well, and it was the time when Mr. Sholto usually went down to
+his supper. I shall make no secret of the business. The best defence
+that I can make is just the simple truth. Now, if it had been the old
+major I would have swung for him with a light heart. I would have
+thought no more of knifing him than of smoking this cigar. But it’s
+cursed hard that I should be lagged over this young Sholto, with whom I
+had no quarrel whatever.”
+
+[11.6] “You are under the charge of Mr. Athelney Jones, of Scotland Yard. He
+is going to bring you up to my rooms, and I shall ask you for a true
+account of the matter. You must make a clean breast of it, for if you
+do I hope that I may be of use to you. I think I can prove that the
+poison acts so quickly that the man was dead before ever you reached
+the room.”
+
+[11.7] “That he was, sir. I never got such a turn in my life as when I saw him
+grinning at me with his head on his shoulder as I climbed through the
+window. It fairly shook me, sir. I’d have half killed Tonga for it if
+he had not scrambled off. That was how he came to leave his club, and
+some of his darts too, as he tells me, which I dare say helped to put
+you on our track; though how you kept on it is more than I can tell. I
+don’t feel no malice against you for it. But it does seem a queer
+thing,” he added, with a bitter smile, “that I who have a fair claim to
+nigh upon half a million of money should spend the first half of my
+life building a breakwater in the Andamans, and am like to spend the
+other half digging drains at Dartmoor. It was an evil day for me when
+first I clapped eyes upon the merchant Achmet and had to do with the
+Agra treasure, which never brought anything but a curse yet upon the
+man who owned it. To him it brought murder, to Major Sholto it brought
+fear and guilt, to me it has meant slavery for life.”
+
+[11.8] At this moment Athelney Jones thrust his broad face and heavy shoulders
+into the tiny cabin. “Quite a family party,” he remarked. “I think I
+shall have a pull at that flask, Holmes. Well, I think we may all
+congratulate each other. Pity we didn’t take the other alive; but there
+was no choice. I say, Holmes, you must confess that you cut it rather
+fine. It was all we could do to overhaul her.”
+
+[11.9] “All is well that ends well,” said Holmes. “But I certainly did not
+know that the _Aurora_ was such a clipper.”
+
+[11.10] “Smith says she is one of the fastest launches on the river, and that
+if he had had another man to help him with the engines we should never
+have caught her. He swears he knew nothing of this Norwood business.”
+
+[11.11] “Neither he did,” cried our prisoner,—“not a word. I chose his launch
+because I heard that she was a flier. We told him nothing, but we paid
+him well, and he was to get something handsome if we reached our
+vessel, the _Esmeralda_, at Gravesend, outward bound for the Brazils.”
+
+[11.12] “Well, if he has done no wrong we shall see that no wrong comes to him.
+If we are pretty quick in catching our men, we are not so quick in
+condemning them.” It was amusing to notice how the consequential Jones
+was already beginning to give himself airs on the strength of the
+capture. From the slight smile which played over Sherlock Holmes’s
+face, I could see that the speech had not been lost upon him.
+
+[11.13] “We will be at Vauxhall Bridge presently,” said Jones, “and shall land
+you, Dr. Watson, with the treasure-box. I need hardly tell you that I
+am taking a very grave responsibility upon myself in doing this. It is
+most irregular; but of course an agreement is an agreement. I must,
+however, as a matter of duty, send an inspector with you, since you
+have so valuable a charge. You will drive, no doubt?”
+
+[11.14] “Yes, I shall drive.”
+
+[11.15] “It is a pity there is no key, that we may make an inventory first. You
+will have to break it open. Where is the key, my man?”
+
+[11.16] “At the bottom of the river,” said Small, shortly.
+
+[11.17] “Hum! There was no use your giving this unnecessary trouble. We have
+had work enough already through you. However, doctor, I need not warn
+you to be careful. Bring the box back with you to the Baker Street
+rooms. You will find us there, on our way to the station.”
+
+[11.18] They landed me at Vauxhall, with my heavy iron box, and with a bluff,
+genial inspector as my companion. A quarter of an hour’s drive brought
+us to Mrs. Cecil Forrester’s. The servant seemed surprised at so late a
+visitor. Mrs. Cecil Forrester was out for the evening, she explained,
+and likely to be very late. Miss Morstan, however, was in the
+drawing-room: so to the drawing-room I went, box in hand, leaving the
+obliging inspector in the cab.
+
+[11.19] She was seated by the open window, dressed in some sort of white
+diaphanous material, with a little touch of scarlet at the neck and
+waist. The soft light of a shaded lamp fell upon her as she leaned back
+in the basket chair, playing over her sweet, grave face, and tinting
+with a dull, metallic sparkle the rich coils of her luxuriant hair. One
+white arm and hand drooped over the side of the chair, and her whole
+pose and figure spoke of an absorbing melancholy. At the sound of my
+foot-fall she sprang to her feet, however, and a bright flush of
+surprise and of pleasure coloured her pale cheeks.
+
+[11.20] “I heard a cab drive up,” she said. “I thought that Mrs. Forrester had
+come back very early, but I never dreamed that it might be you. What
+news have you brought me?”
+
+[11.21] “I have brought something better than news,” said I, putting down the
+box upon the table and speaking jovially and boisterously, though my
+heart was heavy within me. “I have brought you something which is worth
+all the news in the world. I have brought you a fortune.”
+
+[11.22] She glanced at the iron box. “Is that the treasure, then?” she asked,
+coolly enough.
+
+[11.23] “Yes, this is the great Agra treasure. Half of it is yours and half is
+Thaddeus Sholto’s. You will have a couple of hundred thousand each.
+Think of that! An annuity of ten thousand pounds. There will be few
+richer young ladies in England. Is it not glorious?”
+
+[11.24] I think that I must have been rather overacting my delight, and that
+she detected a hollow ring in my congratulations, for I saw her
+eyebrows rise a little, and she glanced at me curiously.
+
+[11.25] “If I have it,” said she, “I owe it to you.”
+
+[11.26] “No, no,” I answered, “not to me, but to my friend Sherlock Holmes.
+With all the will in the world, I could never have followed up a clue
+which has taxed even his analytical genius. As it was, we very nearly
+lost it at the last moment.”
+
+[11.27] “Pray sit down and tell me all about it, Dr. Watson,” said she.
+
+[11.28] I narrated briefly what had occurred since I had seen her
+last,—Holmes’s new method of search, the discovery of the _Aurora_, the
+appearance of Athelney Jones, our expedition in the evening, and the
+wild chase down the Thames. She listened with parted lips and shining
+eyes to my recital of our adventures. When I spoke of the dart which
+had so narrowly missed us, she turned so white that I feared that she
+was about to faint.
+
+[11.29] “It is nothing,” she said, as I hastened to pour her out some water. “I
+am all right again. It was a shock to me to hear that I had placed my
+friends in such horrible peril.”
+
+[11.30] “That is all over,” I answered. “It was nothing. I will tell you no
+more gloomy details. Let us turn to something brighter. There is the
+treasure. What could be brighter than that? I got leave to bring it
+with me, thinking that it would interest you to be the first to see
+it.”
+
+[11.31] “It would be of the greatest interest to me,” she said. There was no
+eagerness in her voice, however. It had struck her, doubtless, that it
+might seem ungracious upon her part to be indifferent to a prize which
+had cost so much to win.
+
+[11.32] “What a pretty box!” she said, stooping over it. “This is Indian work,
+I suppose?”
+
+[11.33] “Yes; it is Benares metal-work.”
+
+[11.34] “And so heavy!” she exclaimed, trying to raise it. “The box alone must
+be of some value. Where is the key?”
+
+[11.35] “Small threw it into the Thames,” I answered. “I must borrow Mrs.
+Forrester’s poker.” There was in the front a thick and broad hasp,
+wrought in the image of a sitting Buddha. Under this I thrust the end
+of the poker and twisted it outward as a lever. The hasp sprang open
+with a loud snap. With trembling fingers I flung back the lid. We both
+stood gazing in astonishment. The box was empty!
+
+[11.36] No wonder that it was heavy. The iron-work was two-thirds of an inch
+thick all round. It was massive, well made, and solid, like a chest
+constructed to carry things of great price, but not one shred or crumb
+of metal or jewelry lay within it. It was absolutely and completely
+empty.
+
+[11.37] “The treasure is lost,” said Miss Morstan, calmly.
+
+[11.38] As I listened to the words and realised what they meant, a great shadow
+seemed to pass from my soul. I did not know how this Agra treasure had
+weighed me down, until now that it was finally removed. It was selfish,
+no doubt, disloyal, wrong, but I could realise nothing save that the
+golden barrier was gone from between us. “Thank God!” I ejaculated from
+my very heart.
+
+[11.39] She looked at me with a quick, questioning smile. “Why do you say
+that?” she asked.
+
+[11.40] “Because you are within my reach again,” I said, taking her hand. She
+did not withdraw it. “Because I love you, Mary, as truly as ever a man
+loved a woman. Because this treasure, these riches, sealed my lips. Now
+that they are gone I can tell you how I love you. That is why I said,
+‘Thank God.’”
+
+[11.41] “Then I say, ‘Thank God,’ too,” she whispered, as I drew her to my
+side. Whoever had lost a treasure, I knew that night that I had gained
+one.
+
+
+
+
+
+## Chapter XII
+## The Strange Story of Jonathan Small
+
+
+[12.1] A very patient man was that inspector in the cab, for it was a weary
+time before I rejoined him. His face clouded over when I showed him the
+empty box.
+
+[12.2] “There goes the reward!” said he, gloomily. “Where there is no money
+there is no pay. This night’s work would have been worth a tenner each
+to Sam Brown and me if the treasure had been there.”
+
+[12.3] “Mr. Thaddeus Sholto is a rich man,” I said. “He will see that you are
+rewarded, treasure or no.”
+
+[12.4] The inspector shook his head despondently, however. “It’s a bad job,”
+he repeated; “and so Mr. Athelney Jones will think.”
+
+[12.5] His forecast proved to be correct, for the detective looked blank
+enough when I got to Baker Street and showed him the empty box. They
+had only just arrived, Holmes, the prisoner, and he, for they had
+changed their plans so far as to report themselves at a station upon
+the way. My companion lounged in his arm-chair with his usual listless
+expression, while Small sat stolidly opposite to him with his wooden
+leg cocked over his sound one. As I exhibited the empty box he leaned
+back in his chair and laughed aloud.
+
+[12.6] “This is your doing, Small,” said Athelney Jones, angrily.
+
+[12.7] “Yes, I have put it away where you shall never lay hand upon it,” he
+cried, exultantly. “It is my treasure; and if I can’t have the loot
+I’ll take darned good care that no one else does. I tell you that no
+living man has any right to it, unless it is three men who are in the
+Andaman convict-barracks and myself. I know now that I cannot have the
+use of it, and I know that they cannot. I have acted all through for
+them as much as for myself. It’s been the sign of four with us always.
+Well I know that they would have had me do just what I have done, and
+throw the treasure into the Thames rather than let it go to kith or kin
+of Sholto or of Morstan. It was not to make them rich that we did for
+Achmet. You’ll find the treasure where the key is, and where little
+Tonga is. When I saw that your launch must catch us, I put the loot
+away in a safe place. There are no rupees for you this journey.”
+
+[12.8] “You are deceiving us, Small,” said Athelney Jones, sternly. “If you
+had wished to throw the treasure into the Thames it would have been
+easier for you to have thrown box and all.”
+
+[12.9] “Easier for me to throw, and easier for you to recover,” he answered,
+with a shrewd, sidelong look. “The man that was clever enough to hunt
+me down is clever enough to pick an iron box from the bottom of a
+river. Now that they are scattered over five miles or so, it may be a
+harder job. It went to my heart to do it, though. I was half mad when
+you came up with us. However, there’s no good grieving over it. I’ve
+had ups in my life, and I’ve had downs, but I’ve learned not to cry
+over spilled milk.”
+
+[12.10] “This is a very serious matter, Small,” said the detective. “If you had
+helped justice, instead of thwarting it in this way, you would have had
+a better chance at your trial.”
+
+[12.11] “Justice!” snarled the ex-convict. “A pretty justice! Whose loot is
+this, if it is not ours? Where is the justice that I should give it up
+to those who have never earned it? Look how I have earned it! Twenty
+long years in that fever-ridden swamp, all day at work under the
+mangrove-tree, all night chained up in the filthy convict-huts, bitten
+by mosquitoes, racked with ague, bullied by every cursed black-faced
+policeman who loved to take it out of a white man. That was how I
+earned the Agra treasure; and you talk to me of justice because I
+cannot bear to feel that I have paid this price only that another may
+enjoy it! I would rather swing a score of times, or have one of Tonga’s
+darts in my hide, than live in a convict’s cell and feel that another
+man is at his ease in a palace with the money that should be mine.”
+Small had dropped his mask of stoicism, and all this came out in a wild
+whirl of words, while his eyes blazed, and the handcuffs clanked
+together with the impassioned movement of his hands. I could
+understand, as I saw the fury and the passion of the man, that it was
+no groundless or unnatural terror which had possessed Major Sholto when
+he first learned that the injured convict was upon his track.
+
+[12.12] “You forget that we know nothing of all this,” said Holmes quietly. “We
+have not heard your story, and we cannot tell how far justice may
+originally have been on your side.”
+
+[12.13] “Well, sir, you have been very fair-spoken to me, though I can see that
+I have you to thank that I have these bracelets upon my wrists. Still,
+I bear no grudge for that. It is all fair and above-board. If you want
+to hear my story I have no wish to hold it back. What I say to you is
+God’s truth, every word of it. Thank you; you can put the glass beside
+me here, and I’ll put my lips to it if I am dry.
+
+[12.14] “I am a Worcestershire man myself,—born near Pershore. I dare say you
+would find a heap of Smalls living there now if you were to look. I
+have often thought of taking a look round there, but the truth is that
+I was never much of a credit to the family, and I doubt if they would
+be so very glad to see me. They were all steady, chapel-going folk,
+small farmers, well-known and respected over the country-side, while I
+was always a bit of a rover. At last, however, when I was about
+eighteen, I gave them no more trouble, for I got into a mess over a
+girl, and could only get out of it again by taking the Queen’s shilling
+and joining the 3rd Buffs, which was just starting for India.
+
+[12.15] “I wasn’t destined to do much soldiering, however. I had just got past
+the goose-step, and learned to handle my musket, when I was fool enough
+to go swimming in the Ganges. Luckily for me, my company sergeant, John
+Holder, was in the water at the same time, and he was one of the finest
+swimmers in the service. A crocodile took me, just as I was half-way
+across, and nipped off my right leg as clean as a surgeon could have
+done it, just above the knee. What with the shock and the loss of
+blood, I fainted, and should have drowned if Holder had not caught hold
+of me and paddled for the bank. I was five months in hospital over it,
+and when at last I was able to limp out of it with this timber toe
+strapped to my stump I found myself invalided out of the army and
+unfitted for any active occupation.
+
+[12.16] “I was, as you can imagine, pretty down on my luck at this time, for I
+was a useless cripple though not yet in my twentieth year. However, my
+misfortune soon proved to be a blessing in disguise. A man named Abel
+White, who had come out there as an indigo-planter, wanted an overseer
+to look after his coolies and keep them up to their work. He happened
+to be a friend of our colonel’s, who had taken an interest in me since
+the accident. To make a long story short, the colonel recommended me
+strongly for the post and, as the work was mostly to be done on
+horseback, my leg was no great obstacle, for I had enough knee left to
+keep good grip on the saddle. What I had to do was to ride over the
+plantation, to keep an eye on the men as they worked, and to report the
+idlers. The pay was fair, I had comfortable quarters, and altogether I
+was content to spend the remainder of my life in indigo-planting. Mr.
+Abel White was a kind man, and he would often drop into my little
+shanty and smoke a pipe with me, for white folk out there feel their
+hearts warm to each other as they never do here at home.
+
+[12.17] “Well, I was never in luck’s way long. Suddenly, without a note of
+warning, the great mutiny broke upon us. One month India lay as still
+and peaceful, to all appearance, as Surrey or Kent; the next there were
+two hundred thousand black devils let loose, and the country was a
+perfect hell. Of course you know all about it, gentlemen,—a deal more
+than I do, very like, since reading is not in my line. I only know what
+I saw with my own eyes. Our plantation was at a place called Muttra,
+near the border of the Northwest Provinces. Night after night the whole
+sky was alight with the burning bungalows, and day after day we had
+small companies of Europeans passing through our estate with their
+wives and children, on their way to Agra, where were the nearest
+troops. Mr. Abel White was an obstinate man. He had it in his head that
+the affair had been exaggerated, and that it would blow over as
+suddenly as it had sprung up. There he sat on his veranda, drinking
+whiskey-pegs and smoking cheroots, while the country was in a blaze
+about him. Of course we stuck by him, I and Dawson, who, with his wife,
+used to do the book-work and the managing. Well, one fine day the crash
+came. I had been away on a distant plantation, and was riding slowly
+home in the evening, when my eye fell upon something all huddled
+together at the bottom of a steep nullah. I rode down to see what it
+was, and the cold struck through my heart when I found it was Dawson’s
+wife, all cut into ribbons, and half eaten by jackals and native dogs.
+A little further up the road Dawson himself was lying on his face,
+quite dead, with an empty revolver in his hand and four Sepoys lying
+across each other in front of him. I reined up my horse, wondering
+which way I should turn, but at that moment I saw thick smoke curling
+up from Abel White’s bungalow and the flames beginning to burst through
+the roof. I knew then that I could do my employer no good, but would
+only throw my own life away if I meddled in the matter. From where I
+stood I could see hundreds of the black fiends, with their red coats
+still on their backs, dancing and howling round the burning house. Some
+of them pointed at me, and a couple of bullets sang past my head; so I
+broke away across the paddy-fields, and found myself late at night safe
+within the walls at Agra.
+
+[12.18] “As it proved, however, there was no great safety there, either. The
+whole country was up like a swarm of bees. Wherever the English could
+collect in little bands they held just the ground that their guns
+commanded. Everywhere else they were helpless fugitives. It was a fight
+of the millions against the hundreds; and the cruellest part of it was
+that these men that we fought against, foot, horse, and gunners, were
+our own picked troops, whom we had taught and trained, handling our own
+weapons, and blowing our own bugle-calls. At Agra there were the 3rd
+Bengal Fusiliers, some Sikhs, two troops of horse, and a battery of
+artillery. A volunteer corps of clerks and merchants had been formed,
+and this I joined, wooden leg and all. We went out to meet the rebels
+at Shahgunge early in July, and we beat them back for a time, but our
+powder gave out, and we had to fall back upon the city.
+
+[12.19] “Nothing but the worst news came to us from every side,—which is not to
+be wondered at, for if you look at the map you will see that we were
+right in the heart of it. Lucknow is rather better than a hundred miles
+to the east, and Cawnpore about as far to the south. From every point
+on the compass there was nothing but torture and murder and outrage.
+
+[12.20] “The city of Agra is a great place, swarming with fanatics and fierce
+devil-worshippers of all sorts. Our handful of men were lost among the
+narrow, winding streets. Our leader moved across the river, therefore,
+and took up his position in the old fort at Agra. I don’t know if any
+of you gentlemen have ever read or heard anything of that old fort. It
+is a very queer place,—the queerest that ever I was in, and I have been
+in some rum corners, too. First of all, it is enormous in size. I
+should think that the enclosure must be acres and acres. There is a
+modern part, which took all our garrison, women, children, stores, and
+everything else, with plenty of room over. But the modern part is
+nothing like the size of the old quarter, where nobody goes, and which
+is given over to the scorpions and the centipedes. It is all full of
+great deserted halls, and winding passages, and long corridors twisting
+in and out, so that it is easy enough for folk to get lost in it. For
+this reason it was seldom that any one went into it, though now and
+again a party with torches might go exploring.
+
+[12.21] “The river washes along the front of the old fort, and so protects it,
+but on the sides and behind there are many doors, and these had to be
+guarded, of course, in the old quarter as well as in that which was
+actually held by our troops. We were short-handed, with hardly men
+enough to man the angles of the building and to serve the guns. It was
+impossible for us, therefore, to station a strong guard at every one of
+the innumerable gates. What we did was to organise a central
+guard-house in the middle of the fort, and to leave each gate under the
+charge of one white man and two or three natives. I was selected to
+take charge during certain hours of the night of a small isolated door
+upon the southwest side of the building. Two Sikh troopers were placed
+under my command, and I was instructed if anything went wrong to fire
+my musket, when I might rely upon help coming at once from the central
+guard. As the guard was a good two hundred paces away, however, and as
+the space between was cut up into a labyrinth of passages and
+corridors, I had great doubts as to whether they could arrive in time
+to be of any use in case of an actual attack.
+
+[12.22] “Well, I was pretty proud at having this small command given me, since
+I was a raw recruit, and a game-legged one at that. For two nights I
+kept the watch with my Punjaubees. They were tall, fierce-looking
+chaps, Mahomet Singh and Abdullah Khan by name, both old fighting-men
+who had borne arms against us at Chilian-wallah. They could talk
+English pretty well, but I could get little out of them. They preferred
+to stand together and jabber all night in their queer Sikh lingo. For
+myself, I used to stand outside the gateway, looking down on the broad,
+winding river and on the twinkling lights of the great city. The
+beating of drums, the rattle of tomtoms, and the yells and howls of the
+rebels, drunk with opium and with bang, were enough to remind us all
+night of our dangerous neighbours across the stream. Every two hours
+the officer of the night used to come round to all the posts, to make
+sure that all was well.
+
+[12.23] “The third night of my watch was dark and dirty, with a small, driving
+rain. It was dreary work standing in the gateway hour after hour in
+such weather. I tried again and again to make my Sikhs talk, but
+without much success. At two in the morning the rounds passed, and
+broke for a moment the weariness of the night. Finding that my
+companions would not be led into conversation, I took out my pipe, and
+laid down my musket to strike the match. In an instant the two Sikhs
+were upon me. One of them snatched my firelock up and levelled it at my
+head, while the other held a great knife to my throat and swore between
+his teeth that he would plunge it into me if I moved a step.
+
+[12.24] “My first thought was that these fellows were in league with the
+rebels, and that this was the beginning of an assault. If our door were
+in the hands of the Sepoys the place must fall, and the women and
+children be treated as they were in Cawnpore. Maybe you gentlemen think
+that I am just making out a case for myself, but I give you my word
+that when I thought of that, though I felt the point of the knife at my
+throat, I opened my mouth with the intention of giving a scream, if it
+was my last one, which might alarm the main guard. The man who held me
+seemed to know my thoughts; for, even as I braced myself to it, he
+whispered, ‘Don’t make a noise. The fort is safe enough. There are no
+rebel dogs on this side of the river.’ There was the ring of truth in
+what he said, and I knew that if I raised my voice I was a dead man. I
+could read it in the fellow’s brown eyes. I waited, therefore, in
+silence, to see what it was that they wanted from me.
+
+[12.25] “‘Listen to me, Sahib,’ said the taller and fiercer of the pair, the
+one whom they called Abdullah Khan. ‘You must either be with us now or
+you must be silenced forever. The thing is too great a one for us to
+hesitate. Either you are heart and soul with us on your oath on the
+cross of the Christians, or your body this night shall be thrown into
+the ditch and we shall pass over to our brothers in the rebel army.
+There is no middle way. Which is it to be, death or life? We can only
+give you three minutes to decide, for the time is passing, and all must
+be done before the rounds come again.’
+
+[12.26] “‘How can I decide?’ said I. ‘You have not told me what you want of me.
+But I tell you now that if it is anything against the safety of the
+fort I will have no truck with it, so you can drive home your knife and
+welcome.’
+
+[12.27] “‘It is nothing against the fort,’ said he. ‘We only ask you to do that
+which your countrymen come to this land for. We ask you to be rich. If
+you will be one of us this night, we will swear to you upon the naked
+knife, and by the threefold oath which no Sikh was ever known to break,
+that you shall have your fair share of the loot. A quarter of the
+treasure shall be yours. We can say no fairer.’
+
+[12.28] “‘But what is the treasure, then?’ I asked. ‘I am as ready to be rich
+as you can be, if you will but show me how it can be done.’
+
+[12.29] “‘You will swear, then,’ said he, ‘by the bones of your father, by the
+honour of your mother, by the cross of your faith, to raise no hand and
+speak no word against us, either now or afterwards?’
+
+[12.30] “‘I will swear it,’ I answered, ‘provided that the fort is not
+endangered.’
+
+[12.31] “‘Then my comrade and I will swear that you shall have a quarter of the
+treasure which shall be equally divided among the four of us.’
+
+[12.32] “‘There are but three,’ said I.
+
+[12.33] “‘No; Dost Akbar must have his share. We can tell the tale to you while
+we await them. Do you stand at the gate, Mahomet Singh, and give notice
+of their coming. The thing stands thus, Sahib, and I tell it to you
+because I know that an oath is binding upon a Feringhee, and that we
+may trust you. Had you been a lying Hindoo, though you had sworn by all
+the gods in their false temples, your blood would have been upon the
+knife, and your body in the water. But the Sikh knows the Englishman,
+and the Englishman knows the Sikh. Hearken, then, to what I have to
+say.
+
+[12.34] “‘There is a rajah in the northern provinces who has much wealth,
+though his lands are small. Much has come to him from his father, and
+more still he has set by himself, for he is of a low nature and hoards
+his gold rather than spend it. When the troubles broke out he would be
+friends both with the lion and the tiger,—with the Sepoy and with the
+Company’s Raj. Soon, however, it seemed to him that the white men’s day
+was come, for through all the land he could hear of nothing but of
+their death and their overthrow. Yet, being a careful man, he made such
+plans that, come what might, half at least of his treasure should be
+left to him. That which was in gold and silver he kept by him in the
+vaults of his palace, but the most precious stones and the choicest
+pearls that he had he put in an iron box, and sent it by a trusty
+servant who, under the guise of a merchant, should take it to the fort
+at Agra, there to lie until the land is at peace. Thus, if the rebels
+won he would have his money, but if the Company conquered his jewels
+would be saved to him. Having thus divided his hoard, he threw himself
+into the cause of the Sepoys, since they were strong upon his borders.
+By doing this, mark you, Sahib, his property becomes the due of those
+who have been true to their salt.
+
+[12.35] “‘This pretended merchant, who travels under the name of Achmet, is now
+in the city of Agra, and desires to gain his way into the fort. He has
+with him as travelling-companion my foster-brother Dost Akbar, who
+knows his secret. Dost Akbar has promised this night to lead him to a
+side-postern of the fort, and has chosen this one for his purpose. Here
+he will come presently, and here he will find Mahomet Singh and myself
+awaiting him. The place is lonely, and none shall know of his coming.
+The world shall know of the merchant Achmet no more, but the great
+treasure of the rajah shall be divided among us. What say you to it,
+Sahib?’
+
+[12.36] “In Worcestershire the life of a man seems a great and a sacred thing;
+but it is very different when there is fire and blood all round you and
+you have been used to meeting death at every turn. Whether Achmet the
+merchant lived or died was a thing as light as air to me, but at the
+talk about the treasure my heart turned to it, and I thought of what I
+might do in the old country with it, and how my folk would stare when
+they saw their ne’er-do-well coming back with his pockets full of gold
+moidores. I had, therefore, already made up my mind. Abdullah Khan,
+however, thinking that I hesitated, pressed the matter more closely.
+
+[12.37] “‘Consider, Sahib,’ said he, ‘that if this man is taken by the
+commandant he will be hung or shot, and his jewels taken by the
+government, so that no man will be a rupee the better for them. Now,
+since we do the taking of him, why should we not do the rest as well?
+The jewels will be as well with us as in the Company’s coffers. There
+will be enough to make every one of us rich men and great chiefs. No
+one can know about the matter, for here we are cut off from all men.
+What could be better for the purpose? Say again, then, Sahib, whether
+you are with us, or if we must look upon you as an enemy.’
+
+[12.38] “‘I am with you heart and soul,’ said I.
+
+[12.39] “‘It is well,’ he answered, handing me back my firelock. ‘You see that
+we trust you, for your word, like ours, is not to be broken. We have
+now only to wait for my brother and the merchant.’
+
+[12.40] “‘Does your brother know, then, of what you will do?’ I asked.
+
+[12.41] “‘The plan is his. He has devised it. We will go to the gate and share
+the watch with Mahomet Singh.’
+
+[12.42] “The rain was still falling steadily, for it was just the beginning of
+the wet season. Brown, heavy clouds were drifting across the sky, and
+it was hard to see more than a stone-cast. A deep moat lay in front of
+our door, but the water was in places nearly dried up, and it could
+easily be crossed. It was strange to me to be standing there with those
+two wild Punjaubees waiting for the man who was coming to his death.
+
+[12.43] “Suddenly my eye caught the glint of a shaded lantern at the other side
+of the moat. It vanished among the mound-heaps, and then appeared again
+coming slowly in our direction.
+
+[12.44] “‘Here they are!’ I exclaimed.
+
+[12.45] “‘You will challenge him, Sahib, as usual,’ whispered Abdullah. ‘Give
+him no cause for fear. Send us in with him, and we shall do the rest
+while you stay here on guard. Have the lantern ready to uncover, that
+we may be sure that it is indeed the man.’
+
+[12.46] “The light had flickered onwards, now stopping and now advancing, until
+I could see two dark figures upon the other side of the moat. I let
+them scramble down the sloping bank, splash through the mire, and climb
+half-way up to the gate, before I challenged them.
+
+[12.47] “‘Who goes there?’ said I, in a subdued voice.
+
+[12.48] “‘Friends,’ came the answer. I uncovered my lantern and threw a flood
+of light upon them. The first was an enormous Sikh, with a black beard
+which swept nearly down to his cummerbund. Outside of a show I have
+never seen so tall a man. The other was a little, fat, round fellow,
+with a great yellow turban, and a bundle in his hand, done up in a
+shawl. He seemed to be all in a quiver with fear, for his hands
+twitched as if he had the ague, and his head kept turning to left and
+right with two bright little twinkling eyes, like a mouse when he
+ventures out from his hole. It gave me the chills to think of killing
+him, but I thought of the treasure, and my heart set as hard as a flint
+within me. When he saw my white face he gave a little chirrup of joy
+and came running up towards me.
+
+[12.49] “‘Your protection, Sahib,’ he panted,—‘your protection for the unhappy
+merchant Achmet. I have travelled across Rajpootana that I might seek
+the shelter of the fort at Agra. I have been robbed and beaten and
+abused because I have been the friend of the Company. It is a blessed
+night this when I am once more in safety,—I and my poor possessions.’
+
+[12.50] “‘What have you in the bundle?’ I asked.
+
+[12.51] “‘An iron box,’ he answered, ‘which contains one or two little family
+matters which are of no value to others, but which I should be sorry to
+lose. Yet I am not a beggar; and I shall reward you, young Sahib, and
+your governor also, if he will give me the shelter I ask.’
+
+[12.52] “I could not trust myself to speak longer with the man. The more I
+looked at his fat, frightened face, the harder did it seem that we
+should slay him in cold blood. It was best to get it over.
+
+[12.53] “‘Take him to the main guard,’ said I. The two Sikhs closed in upon him
+on each side, and the giant walked behind, while they marched in
+through the dark gateway. Never was a man so compassed round with
+death. I remained at the gateway with the lantern.
+
+[12.54] “I could hear the measured tramp of their footsteps sounding through
+the lonely corridors. Suddenly it ceased, and I heard voices, and a
+scuffle, with the sound of blows. A moment later there came, to my
+horror, a rush of footsteps coming in my direction, with the loud
+breathing of a running man. I turned my lantern down the long, straight
+passage, and there was the fat man, running like the wind, with a smear
+of blood across his face, and close at his heels, bounding like a
+tiger, the great black-bearded Sikh, with a knife flashing in his hand.
+I have never seen a man run so fast as that little merchant. He was
+gaining on the Sikh, and I could see that if he once passed me and got
+to the open air he would save himself yet. My heart softened to him,
+but again the thought of his treasure turned me hard and bitter. I cast
+my firelock between his legs as he raced past, and he rolled twice over
+like a shot rabbit. Ere he could stagger to his feet the Sikh was upon
+him, and buried his knife twice in his side. The man never uttered moan
+nor moved muscle, but lay were he had fallen. I think myself that he
+may have broken his neck with the fall. You see, gentlemen, that I am
+keeping my promise. I am telling you every work of the business just
+exactly as it happened, whether it is in my favour or not.”
+
+[12.55] He stopped, and held out his manacled hands for the whiskey-and-water
+which Holmes had brewed for him. For myself, I confess that I had now
+conceived the utmost horror of the man, not only for this cold-blooded
+business in which he had been concerned, but even more for the somewhat
+flippant and careless way in which he narrated it. Whatever punishment
+was in store for him, I felt that he might expect no sympathy from me.
+Sherlock Holmes and Jones sat with their hands upon their knees, deeply
+interested in the story, but with the same disgust written upon their
+faces. He may have observed it, for there was a touch of defiance in
+his voice and manner as he proceeded.
+
+[12.56] “It was all very bad, no doubt,” said he. “I should like to know how
+many fellows in my shoes would have refused a share of this loot when
+they knew that they would have their throats cut for their pains.
+Besides, it was my life or his when once he was in the fort. If he had
+got out, the whole business would come to light, and I should have been
+court-martialled and shot as likely as not; for people were not very
+lenient at a time like that.”
+
+[12.57] “Go on with your story,” said Holmes, shortly.
+
+[12.58] “Well, we carried him in, Abdullah, Akbar, and I. A fine weight he was,
+too, for all that he was so short. Mahomet Singh was left to guard the
+door. We took him to a place which the Sikhs had already prepared. It
+was some distance off, where a winding passage leads to a great empty
+hall, the brick walls of which were all crumbling to pieces. The earth
+floor had sunk in at one place, making a natural grave, so we left
+Achmet the merchant there, having first covered him over with loose
+bricks. This done, we all went back to the treasure.
+
+[12.59] “It lay where he had dropped it when he was first attacked. The box was
+the same which now lies open upon your table. A key was hung by a
+silken cord to that carved handle upon the top. We opened it, and the
+light of the lantern gleamed upon a collection of gems such as I have
+read of and thought about when I was a little lad at Pershore. It was
+blinding to look upon them. When we had feasted our eyes we took them
+all out and made a list of them. There were one hundred and forty-three
+diamonds of the first water, including one which has been called, I
+believe, ‘the Great Mogul’ and is said to be the second largest stone
+in existence. Then there were ninety-seven very fine emeralds, and one
+hundred and seventy rubies, some of which, however, were small. There
+were forty carbuncles, two hundred and ten sapphires, sixty-one agates,
+and a great quantity of beryls, onyxes, cats’-eyes, turquoises, and
+other stones, the very names of which I did not know at the time,
+though I have become more familiar with them since. Besides this, there
+were nearly three hundred very fine pearls, twelve of which were set in
+a gold coronet. By the way, these last had been taken out of the chest
+and were not there when I recovered it.
+
+[12.60] “After we had counted our treasures we put them back into the chest and
+carried them to the gateway to show them to Mahomet Singh. Then we
+solemnly renewed our oath to stand by each other and be true to our
+secret. We agreed to conceal our loot in a safe place until the country
+should be at peace again, and then to divide it equally among
+ourselves. There was no use dividing it at present, for if gems of such
+value were found upon us it would cause suspicion, and there was no
+privacy in the fort nor any place where we could keep them. We carried
+the box, therefore, into the same hall where we had buried the body,
+and there, under certain bricks in the best-preserved wall, we made a
+hollow and put our treasure. We made careful note of the place, and
+next day I drew four plans, one for each of us, and put the sign of the
+four of us at the bottom, for we had sworn that we should each always
+act for all, so that none might take advantage. That is an oath that I
+can put my hand to my heart and swear that I have never broken.
+
+[12.61] “Well, there’s no use my telling you gentlemen what came of the Indian
+mutiny. After Wilson took Delhi and Sir Colin relieved Lucknow the back
+of the business was broken. Fresh troops came pouring in, and Nana
+Sahib made himself scarce over the frontier. A flying column under
+Colonel Greathed came round to Agra and cleared the Pandies away from
+it. Peace seemed to be settling upon the country, and we four were
+beginning to hope that the time was at hand when we might safely go off
+with our shares of the plunder. In a moment, however, our hopes were
+shattered by our being arrested as the murderers of Achmet.
+
+[12.62] “It came about in this way. When the rajah put his jewels into the
+hands of Achmet he did it because he knew that he was a trusty man.
+They are suspicious folk in the East, however: so what does this rajah
+do but take a second even more trusty servant and set him to play the
+spy upon the first? This second man was ordered never to let Achmet out
+of his sight, and he followed him like his shadow. He went after him
+that night and saw him pass through the doorway. Of course he thought
+he had taken refuge in the fort, and applied for admission there
+himself next day, but could find no trace of Achmet. This seemed to him
+so strange that he spoke about it to a sergeant of guides, who brought
+it to the ears of the commandant. A thorough search was quickly made,
+and the body was discovered. Thus at the very moment that we thought
+that all was safe we were all four seized and brought to trial on a
+charge of murder,—three of us because we had held the gate that night,
+and the fourth because he was known to have been in the company of the
+murdered man. Not a word about the jewels came out at the trial, for
+the rajah had been deposed and driven out of India: so no one had any
+particular interest in them. The murder, however, was clearly made out,
+and it was certain that we must all have been concerned in it. The
+three Sikhs got penal servitude for life, and I was condemned to death,
+though my sentence was afterwards commuted into the same as the others.
+
+[12.63] “It was rather a queer position that we found ourselves in then. There
+we were all four tied by the leg and with precious little chance of
+ever getting out again, while we each held a secret which might have
+put each of us in a palace if we could only have made use of it. It was
+enough to make a man eat his heart out to have to stand the kick and
+the cuff of every petty jack-in-office, to have rice to eat and water
+to drink, when that gorgeous fortune was ready for him outside, just
+waiting to be picked up. It might have driven me mad; but I was always
+a pretty stubborn one, so I just held on and bided my time.
+
+[12.64] “At last it seemed to me to have come. I was changed from Agra to
+Madras, and from there to Blair Island in the Andamans. There are very
+few white convicts at this settlement, and, as I had behaved well from
+the first, I soon found myself a sort of privileged person. I was given
+a hut in Hope Town, which is a small place on the slopes of Mount
+Harriet, and I was left pretty much to myself. It is a dreary,
+fever-stricken place, and all beyond our little clearings was infested
+with wild cannibal natives, who were ready enough to blow a poisoned
+dart at us if they saw a chance. There was digging, and ditching, and
+yam-planting, and a dozen other things to be done, so we were busy
+enough all day; though in the evening we had a little time to
+ourselves. Among other things, I learned to dispense drugs for the
+surgeon, and picked up a smattering of his knowledge. All the time I
+was on the lookout for a chance of escape; but it is hundreds of miles
+from any other land, and there is little or no wind in those seas: so
+it was a terribly difficult job to get away.
+
+[12.65] “The surgeon, Dr. Somerton, was a fast, sporting young chap, and the
+other young officers would meet in his rooms of an evening and play
+cards. The surgery, where I used to make up my drugs, was next to his
+sitting-room, with a small window between us. Often, if I felt
+lonesome, I used to turn out the lamp in the surgery, and then,
+standing there, I could hear their talk and watch their play. I am fond
+of a hand at cards myself, and it was almost as good as having one to
+watch the others. There was Major Sholto, Captain Morstan, and
+Lieutenant Bromley Brown, who were in command of the native troops, and
+there was the surgeon himself, and two or three prison-officials,
+crafty old hands who played a nice sly safe game. A very snug little
+party they used to make.
+
+[12.66] “Well, there was one thing which very soon struck me, and that was that
+the soldiers used always to lose and the civilians to win. Mind, I
+don’t say that there was anything unfair, but so it was. These
+prison-chaps had done little else than play cards ever since they had
+been at the Andamans, and they knew each other’s game to a point, while
+the others just played to pass the time and threw their cards down
+anyhow. Night after night the soldiers got up poorer men, and the
+poorer they got the more keen they were to play. Major Sholto was the
+hardest hit. He used to pay in notes and gold at first, but soon it
+came to notes of hand and for big sums. He sometimes would win for a
+few deals, just to give him heart, and then the luck would set in
+against him worse than ever. All day he would wander about as black as
+thunder, and he took to drinking a deal more than was good for him.
+
+[12.67] “One night he lost even more heavily than usual. I was sitting in my
+hut when he and Captain Morstan came stumbling along on the way to
+their quarters. They were bosom friends, those two, and never far
+apart. The major was raving about his losses.
+
+[12.68] “‘It’s all up, Morstan,’ he was saying, as they passed my hut. ‘I shall
+have to send in my papers. I am a ruined man.’
+
+[12.69] “‘Nonsense, old chap!’ said the other, slapping him upon the shoulder.
+‘I’ve had a nasty facer myself, but—’ That was all I could hear, but it
+was enough to set me thinking.
+
+[12.70] “A couple of days later Major Sholto was strolling on the beach: so I
+took the chance of speaking to him.
+
+[12.71] “‘I wish to have your advice, major,’ said I.
+
+[12.72] “‘Well, Small, what is it?’ he asked, taking his cheroot from his lips.
+
+[12.73] “‘I wanted to ask you, sir,’ said I, ‘who is the proper person to whom
+hidden treasure should be handed over. I know where half a million
+worth lies, and, as I cannot use it myself, I thought perhaps the best
+thing that I could do would be to hand it over to the proper
+authorities, and then perhaps they would get my sentence shortened for
+me.’
+
+[12.74] “‘Half a million, Small?’ he gasped, looking hard at me to see if I was
+in earnest.
+
+[12.75] “‘Quite that, sir,—in jewels and pearls. It lies there ready for any
+one. And the queer thing about it is that the real owner is outlawed
+and cannot hold property, so that it belongs to the first comer.’
+
+[12.76] “‘To government, Small,’ he stammered,—‘to government.’ But he said it
+in a halting fashion, and I knew in my heart that I had got him.
+
+[12.77] “‘You think, then, sir, that I should give the information to the
+Governor-General?’ said I, quietly.
+
+[12.78] “‘Well, well, you must not do anything rash, or that you might repent.
+Let me hear all about it, Small. Give me the facts.’
+
+[12.79] “I told him the whole story, with small changes so that he could not
+identify the places. When I had finished he stood stock still and full
+of thought. I could see by the twitch of his lip that there was a
+struggle going on within him.
+
+[12.80] “‘This is a very important matter, Small,’ he said, at last. ‘You must
+not say a word to any one about it, and I shall see you again soon.’
+
+[12.81] “Two nights later he and his friend Captain Morstan came to my hut in
+the dead of the night with a lantern.
+
+[12.82] “‘I want you just to let Captain Morstan hear that story from your own
+lips, Small,’ said he.
+
+[12.83] “I repeated it as I had told it before.
+
+[12.84] “‘It rings true, eh?’ said he. ‘It’s good enough to act upon?’
+
+[12.85] “Captain Morstan nodded.
+
+[12.86] “‘Look here, Small,’ said the major. ‘We have been talking it over, my
+friend here and I, and we have come to the conclusion that this secret
+of yours is hardly a government matter, after all, but is a private
+concern of your own, which of course you have the power of disposing of
+as you think best. Now, the question is, what price would you ask for
+it? We might be inclined to take it up, and at least look into it, if
+we could agree as to terms.’ He tried to speak in a cool, careless way,
+but his eyes were shining with excitement and greed.
+
+[12.87] “‘Why, as to that, gentlemen,’ I answered, trying also to be cool, but
+feeling as excited as he did, ‘there is only one bargain which a man in
+my position can make. I shall want you to help me to my freedom, and to
+help my three companions to theirs. We shall then take you into
+partnership, and give you a fifth share to divide between you.’
+
+[12.88] “‘Hum!’ said he. ‘A fifth share! That is not very tempting.’
+
+[12.89] “‘It would come to fifty thousand apiece,’ said I.
+
+[12.90] “‘But how can we gain your freedom? You know very well that you ask an
+impossibility.’
+
+[12.91] “‘Nothing of the sort,’ I answered. ‘I have thought it all out to the
+last detail. The only bar to our escape is that we can get no boat fit
+for the voyage, and no provisions to last us for so long a time. There
+are plenty of little yachts and yawls at Calcutta or Madras which would
+serve our turn well. Do you bring one over. We shall engage to get
+aboard her by night, and if you will drop us on any part of the Indian
+coast you will have done your part of the bargain.’
+
+[12.92] “‘If there were only one,’ he said.
+
+[12.93] “‘None or all,’ I answered. ‘We have sworn it. The four of us must
+always act together.’
+
+[12.94] “‘You see, Morstan,’ said he, ‘Small is a man of his word. He does not
+flinch from his friend. I think we may very well trust him.’
+
+[12.95] “‘It’s a dirty business,’ the other answered. ‘Yet, as you say, the
+money would save our commissions handsomely.’
+
+[12.96] “‘Well, Small,’ said the major, ‘we must, I suppose, try and meet you.
+We must first, of course, test the truth of your story. Tell me where
+the box is hid, and I shall get leave of absence and go back to India
+in the monthly relief-boat to inquire into the affair.’
+
+[12.97] “‘Not so fast,’ said I, growing colder as he got hot. ‘I must have the
+consent of my three comrades. I tell you that it is four or none with
+us.’
+
+[12.98] “‘Nonsense!’ he broke in. ‘What have three black fellows to do with our
+agreement?’
+
+[12.99] “‘Black or blue,’ said I, ‘they are in with me, and we all go
+together.’
+
+[12.100] “Well, the matter ended by a second meeting, at which Mahomet Singh,
+Abdullah Khan, and Dost Akbar were all present. We talked the matter
+over again, and at last we came to an arrangement. We were to provide
+both the officers with charts of the part of the Agra fort and mark the
+place in the wall where the treasure was hid. Major Sholto was to go to
+India to test our story. If he found the box he was to leave it there,
+to send out a small yacht provisioned for a voyage, which was to lie
+off Rutland Island, and to which we were to make our way, and finally
+to return to his duties. Captain Morstan was then to apply for leave of
+absence, to meet us at Agra, and there we were to have a final division
+of the treasure, he taking the major’s share as well as his own. All
+this we sealed by the most solemn oaths that the mind could think or
+the lips utter. I sat up all night with paper and ink, and by the
+morning I had the two charts all ready, signed with the sign of
+four,—that is, of Abdullah, Akbar, Mahomet, and myself.
+
+[12.101] “Well, gentlemen, I weary you with my long story, and I know that my
+friend Mr. Jones is impatient to get me safely stowed in chokey. I’ll
+make it as short as I can. The villain Sholto went off to India, but he
+never came back again. Captain Morstan showed me his name among a list
+of passengers in one of the mail-boats very shortly afterwards. His
+uncle had died, leaving him a fortune, and he had left the army, yet he
+could stoop to treat five men as he had treated us. Morstan went over
+to Agra shortly afterwards, and found, as we expected, that the
+treasure was indeed gone. The scoundrel had stolen it all, without
+carrying out one of the conditions on which we had sold him the secret.
+From that day I lived only for vengeance. I thought of it by day and I
+nursed it by night. It became an overpowering, absorbing passion with
+me. I cared nothing for the law,—nothing for the gallows. To escape, to
+track down Sholto, to have my hand upon his throat,—that was my one
+thought. Even the Agra treasure had come to be a smaller thing in my
+mind than the slaying of Sholto.
+
+[12.102] “Well, I have set my mind on many things in this life, and never one
+which I did not carry out. But it was weary years before my time came.
+I have told you that I had picked up something of medicine. One day
+when Dr. Somerton was down with a fever a little Andaman Islander was
+picked up by a convict-gang in the woods. He was sick to death, and had
+gone to a lonely place to die. I took him in hand, though he was as
+venomous as a young snake, and after a couple of months I got him all
+right and able to walk. He took a kind of fancy to me then, and would
+hardly go back to his woods, but was always hanging about my hut. I
+learned a little of his lingo from him, and this made him all the
+fonder of me.
+
+[12.103] “Tonga—for that was his name—was a fine boatman, and owned a big, roomy
+canoe of his own. When I found that he was devoted to me and would do
+anything to serve me, I saw my chance of escape. I talked it over with
+him. He was to bring his boat round on a certain night to an old wharf
+which was never guarded, and there he was to pick me up. I gave him
+directions to have several gourds of water and a lot of yams,
+cocoa-nuts, and sweet potatoes.
+
+[12.104] “He was stanch and true, was little Tonga. No man ever had a more
+faithful mate. At the night named he had his boat at the wharf. As it
+chanced, however, there was one of the convict-guard down there,—a vile
+Pathan who had never missed a chance of insulting and injuring me. I
+had always vowed vengeance, and now I had my chance. It was as if fate
+had placed him in my way that I might pay my debt before I left the
+island. He stood on the bank with his back to me, and his carbine on
+his shoulder. I looked about for a stone to beat out his brains with,
+but none could I see. Then a queer thought came into my head and showed
+me where I could lay my hand on a weapon. I sat down in the darkness
+and unstrapped my wooden leg. With three long hops I was on him. He put
+his carbine to his shoulder, but I struck him full, and knocked the
+whole front of his skull in. You can see the split in the wood now
+where I hit him. We both went down together, for I could not keep my
+balance, but when I got up I found him still lying quiet enough. I made
+for the boat, and in an hour we were well out at sea. Tonga had brought
+all his earthly possessions with him, his arms and his gods. Among
+other things, he had a long bamboo spear, and some Andaman cocoa-nut
+matting, with which I made a sort of sail. For ten days we were beating
+about, trusting to luck, and on the eleventh we were picked up by a
+trader which was going from Singapore to Jiddah with a cargo of Malay
+pilgrims. They were a rum crowd, and Tonga and I soon managed to settle
+down among them. They had one very good quality: they let you alone and
+asked no questions.
+
+[12.105] “Well, if I were to tell you all the adventures that my little chum and
+I went through, you would not thank me, for I would have you here until
+the sun was shining. Here and there we drifted about the world,
+something always turning up to keep us from London. All the time,
+however, I never lost sight of my purpose. I would dream of Sholto at
+night. A hundred times I have killed him in my sleep. At last, however,
+some three or four years ago, we found ourselves in England. I had no
+great difficulty in finding where Sholto lived, and I set to work to
+discover whether he had realised the treasure, or if he still had it. I
+made friends with someone who could help me,—I name no names, for I
+don’t want to get any one else in a hole,—and I soon found that he
+still had the jewels. Then I tried to get at him in many ways; but he
+was pretty sly, and had always two prize-fighters, besides his sons and
+his khitmutgar, on guard over him.
+
+[12.106] “One day, however, I got word that he was dying. I hurried at once to
+the garden, mad that he should slip out of my clutches like that, and,
+looking through the window, I saw him lying in his bed, with his sons
+on each side of him. I’d have come through and taken my chance with the
+three of them, only even as I looked at him his jaw dropped, and I knew
+that he was gone. I got into his room that same night, though, and I
+searched his papers to see if there was any record of where he had
+hidden our jewels. There was not a line, however: so I came away,
+bitter and savage as a man could be. Before I left I bethought me that
+if I ever met my Sikh friends again it would be a satisfaction to know
+that I had left some mark of our hatred; so I scrawled down the sign of
+the four of us, as it had been on the chart, and I pinned it on his
+bosom. It was too much that he should be taken to the grave without
+some token from the men whom he had robbed and befooled.
+
+[12.107] “We earned a living at this time by my exhibiting poor Tonga at fairs
+and other such places as the black cannibal. He would eat raw meat and
+dance his war-dance: so we always had a hatful of pennies after a day’s
+work. I still heard all the news from Pondicherry Lodge, and for some
+years there was no news to hear, except that they were hunting for the
+treasure. At last, however, came what we had waited for so long. The
+treasure had been found. It was up at the top of the house, in Mr.
+Bartholomew Sholto’s chemical laboratory. I came at once and had a look
+at the place, but I could not see how with my wooden leg I was to make
+my way up to it. I learned, however, about a trap-door in the roof, and
+also about Mr. Sholto’s supper-hour. It seemed to me that I could
+manage the thing easily through Tonga. I brought him out with me with a
+long rope wound round his waist. He could climb like a cat, and he soon
+made his way through the roof, but, as ill luck would have it,
+Bartholomew Sholto was still in the room, to his cost. Tonga thought he
+had done something very clever in killing him, for when I came up by
+the rope I found him strutting about as proud as a peacock. Very much
+surprised was he when I made at him with the rope’s end and cursed him
+for a little blood-thirsty imp. I took the treasure-box and let it
+down, and then slid down myself, having first left the sign of the four
+upon the table, to show that the jewels had come back at last to those
+who had most right to them. Tonga then pulled up the rope, closed the
+window, and made off the way that he had come.
+
+[12.108] “I don’t know that I have anything else to tell you. I had heard a
+waterman speak of the speed of Smith’s launch the _Aurora_, so I
+thought she would be a handy craft for our escape. I engaged with old
+Smith, and was to give him a big sum if he got us safe to our ship. He
+knew, no doubt, that there was some screw loose, but he was not in our
+secrets. All this is the truth, and if I tell it to you, gentlemen, it
+is not to amuse you,—for you have not done me a very good turn,—but it
+is because I believe the best defence I can make is just to hold back
+nothing, but let all the world know how badly I have myself been served
+by Major Sholto, and how innocent I am of the death of his son.”
+
+[12.109] “A very remarkable account,” said Sherlock Holmes. “A fitting wind-up
+to an extremely interesting case. There is nothing at all new to me in
+the latter part of your narrative, except that you brought your own
+rope. That I did not know. By the way, I had hoped that Tonga had lost
+all his darts; yet he managed to shoot one at us in the boat.”
+
+[12.110] “He had lost them all, sir, except the one which was in his blow-pipe
+at the time.”
+
+[12.111] “Ah, of course,” said Holmes. “I had not thought of that.”
+
+[12.112] “Is there any other point which you would like to ask about?” asked the
+convict, affably.
+
+[12.113] “I think not, thank you,” my companion answered.
+
+[12.114] “Well, Holmes,” said Athelney Jones, “You are a man to be humoured, and
+we all know that you are a connoisseur of crime, but duty is duty, and
+I have gone rather far in doing what you and your friend asked me. I
+shall feel more at ease when we have our story-teller here safe under
+lock and key. The cab still waits, and there are two inspectors
+downstairs. I am much obliged to you both for your assistance. Of
+course you will be wanted at the trial. Good-night to you.”
+
+[12.115] “Good-night, gentlemen both,” said Jonathan Small.
+
+[12.116] “You first, Small,” remarked the wary Jones as they left the room.
+“I’ll take particular care that you don’t club me with your wooden leg,
+whatever you may have done to the gentleman at the Andaman Isles.”
+
+[12.117] “Well, and there is the end of our little drama,” I remarked, after we
+had set some time smoking in silence. “I fear that it may be the last
+investigation in which I shall have the chance of studying your
+methods. Miss Morstan has done me the honour to accept me as a husband
+in prospective.”
+
+[12.118] He gave a most dismal groan. “I feared as much,” said he. “I really
+cannot congratulate you.”
+
+[12.119] I was a little hurt. “Have you any reason to be dissatisfied with my
+choice?” I asked.
+
+[12.120] “Not at all. I think she is one of the most charming young ladies I
+ever met, and might have been most useful in such work as we have been
+doing. She had a decided genius that way: witness the way in which she
+preserved that Agra plan from all the other papers of her father. But
+love is an emotional thing, and whatever is emotional is opposed to
+that true cold reason which I place above all things. I should never
+marry myself, lest I bias my judgment.”
+
+[12.121] “I trust,” said I, laughing, “that my judgment may survive the ordeal.
+But you look weary.”
+
+[12.122] “Yes, the reaction is already upon me. I shall be as limp as a rag for
+a week.”
+
+[12.123] “Strange,” said I, “how terms of what in another man I should call
+laziness alternate with your fits of splendid energy and vigour.”
+
+[12.124] “Yes,” he answered, “there are in me the makings of a very fine loafer
+and also of a pretty spry sort of fellow. I often think of those lines
+of old Goethe,—
+
+[12.125] Schade dass die Natur nur _einen_ Mensch aus Dir schuf,
+Denn zum würdigen Mann war und zum Schelmen der Stoff.
+
+
+[12.126] “By the way, _à propos_ of this Norwood business, you see that they
+had, as I surmised, a confederate in the house, who could be none other
+than Lal Rao, the butler: so Jones actually has the undivided honour of
+having caught one fish in his great haul.”
+
+[12.127] “The division seems rather unfair,” I remarked. “You have done all the
+work in this business. I get a wife out of it, Jones gets the credit,
+pray what remains for you?”
+
+[12.128] “For me,” said Sherlock Holmes, “there still remains the
+cocaine-bottle.” And he stretched his long white hand up for it.
+
+
+
+

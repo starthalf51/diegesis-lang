@@ -12,8 +12,8 @@ type srcLine struct {
 	Text string
 }
 
-// split separates a .sl.md file into frontmatter, language-block lines and
-// prose. A file ending in .sl (not .sl.md) is all language.
+// split separates a .dieg.md file into frontmatter, language-block lines and
+// prose. A file ending in .dieg (not .dieg.md) is all language.
 type parts struct {
 	fm      []srcLine // YAML lines between the --- fences
 	fmStart int       // line of the opening --- (0 = no frontmatter)
@@ -35,7 +35,7 @@ func split(path string, src []byte, diag func(Diag)) parts {
 		lines[i] = srcLine{i + 1, t}
 	}
 	var p parts
-	if strings.HasSuffix(path, ".sl") {
+	if strings.HasSuffix(path, ".dieg") {
 		p.code = lines
 		return p
 	}
@@ -94,3 +94,6 @@ func split(path string, src []byte, diag func(Diag)) parts {
 	flush()
 	return p
 }
+
+// IsSource 는 Diegesis 소스 파일(.dieg.md)인지 판정한다. 확장자 인식은 여기 한 곳뿐이다.
+func IsSource(path string) bool { return strings.HasSuffix(path, ".dieg.md") }

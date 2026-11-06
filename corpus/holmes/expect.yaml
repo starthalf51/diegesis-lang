@@ -1,0 +1,114 @@
+# 셜록 홈즈 합격 기준(정답 셋). 기대값은 원작(texts/*, Project Gutenberg #244 / #2097 / #1661, 단락 번호)과 정전 연구
+# (셜로키언의 "왓슨의 부상", "James 문제")에서 왔다. 이 코퍼스는 알려진 원작 모순을 도구가 **찾아야** 합격이다.
+# 그 진단은 억제하지 않는다(waived: false). 도구 출력에 맞춰 고치지 않는다. 고칠 때는 원문 근거를 why 와 보고서에 남긴다.
+# 세 작품 = 세 모듈(holmes.scarlet, holmes.four, holmes.lip). 공통 선언은 holmes.cast 에 있고, 장면은 모듈을 건너
+# 시간 참조(when after holmes.scarlet/s2, after holmes.four/f12)와 속성 대상(watson.wound)을 쓴다.
+work: holmes
+compile_errors: 0
+
+expected:
+  - rule: attribute-conflict
+    target: "holmes.four/f1#attr1"     # 『네 사람의 서명』 1.17 의 attr watson.wound = "leg"
+    waived: false
+    why: >-
+      왓슨의 부상 부위. 『주홍색 연구』 1.1.2 "There I was struck on the shoulder by a Jezail bullet, which shattered the bone
+      and grazed the subclavian artery"(1.2.34 홈즈 "His left arm has been injured" 도 같은 쪽) ↔ 『네 사람의 서명』 1.17
+      "sat nursing my wounded leg. I had a Jezail bullet through it some time before". 같은 마이완드의 총알 한 발이다.
+      부상 부위는 바뀌는 값이 아니라 충돌이다. 대상은 이야기 시간상 나중 단언: 서명 1.17 "the years that I had lived with
+      him in Baker Street" 이라 f1 은 『주홍색 연구』의 첫 만남(s2) 뒤 여러 해다(when after holmes.scarlet/s2 by 1y..12y).
+      원문 순서(src_id)는 모듈 적재 순서 때문에 서명이 앞이다 — 그래서 대상은 시간 순서가 정한다(보고서 음성 대조 3).
+
+  - rule: attribute-conflict
+    target: "holmes.lip/l1#attr1"      # 「입술이 비뚤어진 사나이」 6.9 의 attr watson.given_name = "James"
+    waived: false
+    why: >-
+      왓슨의 이름. 『주홍색 연구』 1부 표제 1.0.2 "(Being a reprint from the Reminiscences of JOHN H. WATSON, M.D., Late of the
+      Army Medical Department.)" ↔ 「입술」 6.9 아내가 케이트 휘트니에게 "Or should you rather that I sent James off to bed?".
+      대상은 나중 단언: 「입술」은 6.2 "One night—it was in June, '89 … my wife" 로 결혼 뒤이고, 아내는 서명 11.40-41 에서
+      청혼받고 12.117 "Miss Morstan has done me the honour to accept me as a husband in prospective" 의 메리다
+      (when after holmes.four/f12 by 310d..350d; 서명 2.19-2.20 "July 7" 1888 → 6.22 "Friday, June 19th" 1889).
+
+queries:
+  - name: wound-assertions-after-the-afghan-campaign
+    why: >-
+      두 부상 단언은 모두 아프간 원정(1.1.1-2, 마이완드에서 맞음)이 끝난 뒤의 서술이다: 『주홍색 연구』의 화자는 귀국 뒤
+      런던에서(1.1.3-5), 서명의 화자는 베이커 가 동거 여러 해 뒤(1.17). 그래서 원정 끝 → 각 단언 시점이 확정적으로 앞선다.
+    sql: |
+      SELECT a.value, a.src_ref,
+             precedes($1, (SELECT end_pt FROM scene WHERE work_id = $1 AND id = $1 || '/holmes.scarlet/afghan_campaign'), a.at_pt)
+        FROM attribute a
+       WHERE a.work_id = $1 AND a.entity_id = $1 || '/holmes.cast/watson' AND a.key = 'wound'
+       ORDER BY a.src_ref
+    rows: [["shoulder", "1.1.2", "yes"], ["leg", "1.17", "yes"]]
+
+  - name: story-order-scarlet-four-lip
+    why: >-
+      모듈을 건너는 시간 참조가 이야기 순서를 만든다: 『주홍색 연구』 s1(스탬퍼드, 1.1.5) → s2(첫 만남) → 서명 f1(1.17
+      "the years that I had lived with him") → 서명 f12(약혼 통고 12.117) → 「입술」 l1(6.2 "June, '89", "my wife").
+    sql: |
+      SELECT precedes($1, $1 || '/holmes.scarlet/s1.end', $1 || '/holmes.four/f1.start'),
+             precedes($1, $1 || '/holmes.four/f12.end', $1 || '/holmes.lip/l1.start'),
+             precedes($1, $1 || '/holmes.lip/l1.start', $1 || '/holmes.scarlet/s1.end')
+    rows: [["yes", "yes", "no"]]
+
+  - name: maiwand-to-the-opium-den-within-eleven-years
+    why: >-
+      원정 끝에서 「입술」의 아편굴 장면 끝까지의 최소 경과. 1.1.1 "In the year 1878 I took my degree" 뒤에 원정이 있고
+      「입술」은 6.2 "June, '89"(6.22 "Friday, June 19th") 이라 최소 경과는 11년 아래다. 또 서명의 "the years that I had lived
+      with him"(1.17, 1년 이상)과 서명 → 「입술」 열한 달 남짓(2.20 "July 7" 1888 → 6.22 1889) 때문에 1년 이상이다.
+    sql: |
+      SELECT (SELECT -d FROM point_dist WHERE work_id = $1 AND src = $1 || '/holmes.lip/l2.end' AND dst = $1 || '/holmes.scarlet/afghan_campaign.end') <= 11 * 31536000,
+             (SELECT -d FROM point_dist WHERE work_id = $1 AND src = $1 || '/holmes.lip/l2.end' AND dst = $1 || '/holmes.scarlet/afghan_campaign.end') >= 31536000
+    rows: [["true", "true"]]
+
+  - name: side-clocks-are-short
+    why: >-
+      곁가지 시간의 최소 경과: 1.1.12 "this morning"(홈즈의 불평 → 그날 실험실, 하루 안), 1.2.3 "As the weeks went by" 와
+      1.2.18 "the 4th of March"(첫 만남 → 3월 4일 아침, 1년 안), 2.17 "About six years ago … 4th of May, 1882"(첫 진주 → 서명
+      1장, 7년 안), 6.10 "He has not been home for two days"(케이트가 안 때 → 왓슨 집, 이틀 안).
+    sql: |
+      SELECT (SELECT -d FROM point_dist WHERE work_id = $1 AND src = $1 || '/holmes.scarlet/s2.end' AND dst = $1 || '/holmes.scarlet/holmes_complains.start') <= 86400,
+             (SELECT -d FROM point_dist WHERE work_id = $1 AND src = $1 || '/holmes.scarlet/s3.end' AND dst = $1 || '/holmes.scarlet/s2.end') <= 31536000,
+             (SELECT -d FROM point_dist WHERE work_id = $1 AND src = $1 || '/holmes.four/f1.start' AND dst = $1 || '/holmes.four/first_pearl.start') <= 7 * 31536000,
+             (SELECT -d FROM point_dist WHERE work_id = $1 AND src = $1 || '/holmes.lip/l1.end' AND dst = $1 || '/holmes.lip/kate_learns.start') <= 2 * 86400
+    rows: [["true", "true", "true", "true"]]
+
+  - name: holmes-knows-afghanistan-by-sight
+    why: >-
+      1.2.33 왓슨 "You were told, no doubt." 1.2.34 홈즈 "Nothing of the sort. I knew you came from Afghanistan … His left arm
+      has been injured." 홈즈가 watson_from_afghanistan 을 처음 안 출처는 스탬퍼드가 아니라 첫 만남(s2)에서 본 것(sees)이다.
+    sql: |
+      WITH c AS (
+        SELECT DISTINCT a.id, a.pt, a.actor_id, a.verb, a.src_ref
+          FROM believes b JOIN act a ON a.id = b.cause_act
+         WHERE b.work_id = $1 AND b.value AND b.entity_id = $1 || '/holmes.cast/holmes'
+           AND b.prop_id = $1 || '/holmes.cast/watson_from_afghanistan')
+      SELECT lint_short(c.actor_id), c.verb, c.src_ref FROM c
+       WHERE NOT EXISTS (SELECT 1 FROM c d WHERE d.id <> c.id AND precedes($1, c.pt, d.pt) <> 'yes')
+    rows: [["holmes", "sees", "1.2.34"]]
+
+  - name: holmes-hears-of-the-engagement-from-watson
+    why: >-
+      홈즈는 청혼(11.40-41, 포레스터 부인 댁) 자리에 없었다. 12.117 왓슨의 통고가 출처이고 12.118 "I feared as much" 는 그 뒤다.
+    sql: |
+      SELECT DISTINCT lint_short(a.actor_id), a.verb, a.src_ref
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.value AND b.entity_id = $1 || '/holmes.cast/holmes'
+         AND b.prop_id = $1 || '/holmes.cast/engaged'
+       ORDER BY 1, 2, 3
+    rows: [["watson", "tells", "12.117"]]
+
+  - name: watson-learns-of-the-den-from-kate
+    why: >-
+      왓슨이 바 오브 골드를 처음 듣는 것은 6.12 케이트 휘트니의 말이다("at the Bar of Gold, in Upper Swandam Lane").
+      6.18 에 그 자리에서 아이자를 본다(sees).
+    sql: |
+      SELECT lint_short(a.actor_id), a.verb, a.src_ref
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.value AND b.entity_id = $1 || '/holmes.cast/watson'
+         AND b.prop_id = $1 || '/holmes.cast/isa_at_den'
+       GROUP BY 1, 2, 3, a.src_id ORDER BY a.src_id
+    rows: [["kate", "tells", "6.12"], ["watson", "sees", "6.18"]]
+
+mutation_min_rate: 0.8
+mutation_min_rate_wo_move_before: 0.7   # ADR-014

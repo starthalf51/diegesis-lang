@@ -4,15 +4,15 @@ import (
 	"slices"
 	"testing"
 
-	"story-lang/internal/ir"
+	"diegesis/internal/ir"
 )
 
 func TestDiscourseNaturalOrder(t *testing.T) {
 	w, diags := Build(parse(t, map[string]string{
-		"cast.sl":         cast,
-		"book-10/a.sl":    "module t.b10\nimport t.cast\nscene 10.1 at room\n",
-		"book-2/a.sl":     "module t.b2\nimport t.cast\nscene 1.10 at room\nscene 1.2 at room\n",
-		"book-2/z-1.9.sl": "module t.b2z\nimport t.cast\nscene 1.9 at room\n",
+		"cast.dieg":         cast,
+		"book-10/a.dieg":    "module t.b10\nimport t.cast\nscene 10.1 at room\n",
+		"book-2/a.dieg":     "module t.b2\nimport t.cast\nscene 1.10 at room\nscene 1.2 at room\n",
+		"book-2/z-1.9.dieg": "module t.b2z\nimport t.cast\nscene 1.9 at room\n",
 	}))
 	noErrors(t, diags)
 	ord := map[string]int{}
@@ -33,7 +33,7 @@ func TestDiscourseNaturalOrder(t *testing.T) {
 func atEdge(t *testing.T, start, date string) (int64, int64) {
 	t.Helper()
 	w, diags := Build(parse(t, map[string]string{
-		"c.sl": "module t.c\nwork t \"T\"\n  start " + start + "\nplace room \"R\"\nscene 1 at room\n  when at " + date + "\n",
+		"c.dieg": "module t.c\nwork t \"T\"\n  start " + start + "\nplace room \"R\"\nscene 1 at room\n  when at " + date + "\n",
 	}))
 	noErrors(t, diags)
 	for _, e := range w.TimeEdges {
@@ -65,10 +65,10 @@ func TestAtDateNoLeap(t *testing.T) {
 }
 
 func TestNoWork(t *testing.T) {
-	_, diags := Build(parse(t, map[string]string{"a.sl": "module t.a\nplace room \"R\"\n", "b.sl": "module t.b\n"}))
+	_, diags := Build(parse(t, map[string]string{"a.dieg": "module t.a\nplace room \"R\"\n", "b.dieg": "module t.b\n"}))
 	if len(diags) != 1 || diags[0].Rule != "no-work" || diags[0].Severity != "error" ||
-		diags[0].File != "a.sl" || diags[0].Line != 1 || diags[0].Col != 1 {
-		t.Fatalf("diags = %v, want one no-work error at a.sl:1:1", diags)
+		diags[0].File != "a.dieg" || diags[0].Line != 1 || diags[0].Col != 1 {
+		t.Fatalf("diags = %v, want one no-work error at a.dieg:1:1", diags)
 	}
 }
 
@@ -108,8 +108,8 @@ dies a when after X
 
 func TestNestedGroupAudience(t *testing.T) {
 	src := map[string]string{
-		"cast.sl": cast + "group crowd \"Crowd\"\n  members ws, c\n",
-		"s.sl": `module t.s
+		"cast.dieg": cast + "group crowd \"Crowd\"\n  members ws, c\n",
+		"s.dieg": `module t.s
 import t.cast
 scene 1 at room
   enter a, crowd

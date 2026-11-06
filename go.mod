@@ -1,4 +1,4 @@
-module story-lang
+module diegesis
 
 go 1.27.3
 

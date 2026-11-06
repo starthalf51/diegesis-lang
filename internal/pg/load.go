@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"story-lang/internal/ir"
+	"diegesis/internal/ir"
 )
 
 // Load 는 IR 하나를 한 트랜잭션으로 적재한다. 작품 행을 지우고(CASCADE 로 하위 행까지)
@@ -137,12 +137,12 @@ func copies(w *ir.Work, id string) []table {
 		{"belief", cols("entity_id", "verb", "prop_id", "scene_id", "at_pt", "because_pt", "src_id"), each(w.Beliefs, func(x ir.Belief) []any {
 			return r(x.EntityID, x.Verb, nz(x.PropID), nz(x.SceneID), nz(x.AtPt), nz(x.BecausePt), sid(x.SrcID))
 		})},
-		{"fact", cols("id", "text", "truth", "def", "src_id"), each(w.Facts, func(x ir.Fact) []any {
+		{"fact", cols("id", "text", "truth", "def", "tag", "src_id"), each(w.Facts, func(x ir.Fact) []any {
 			var def any // typed nil 포인터는 JSON null 이 되므로 SQL NULL 로 바꾼다
 			if x.Def != nil {
 				def = x.Def
 			}
-			return r(x.ID, x.Text, x.Truth, def, sid(x.SrcID))
+			return r(x.ID, x.Text, x.Truth, def, nz(x.Tag), sid(x.SrcID))
 		})},
 		{"artifact", cols("id", "module_id", "name", "contains", "text", "src_id"), each(w.Artifacts, func(x ir.Artifact) []any {
 			return r(x.ID, nz(x.ModuleID), x.Name, arr(x.Contains), arr(x.Text), sid(x.SrcID))
@@ -173,6 +173,13 @@ func copies(w *ir.Work, id string) []table {
 		})},
 		{"waiver", cols("rule", "target_kind", "target_id", "reason", "src_id"), each(w.Waivers, func(x ir.Waiver) []any {
 			return r(x.Rule, x.TargetKind, nz(x.TargetID), x.Reason, sid(x.SrcID))
+		})},
+		{"attribute", cols("id", "entity_id", "key", "value", "kind", "at_pt", "account_id", "src_ref", "src_id"),
+			each(w.Attributes, func(x ir.Attribute) []any {
+				return r(x.ID, x.EntityID, x.Key, x.Value, x.Kind, nz(x.AtPt), nz(x.AccountID), x.SrcRef, sid(x.SrcID))
+			})},
+		{"pattern_decl", cols("id", "pattern_id", "scene_id", "src_id"), each(w.PatternDecls, func(x ir.PatternDecl) []any {
+			return r(x.ID, x.Pattern, nz(x.SceneID), sid(x.SrcID))
 		})},
 	}
 }

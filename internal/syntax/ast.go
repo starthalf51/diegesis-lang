@@ -1,5 +1,5 @@
-// Package syntax splits .sl.md files, desugars frontmatter and parses the
-// story-lang language (spec/grammar.ebnf) into an AST.
+// Package syntax splits .dieg.md files, desugars frontmatter and parses the
+// Diegesis language (spec/grammar.ebnf) into an AST.
 package syntax
 
 import (
@@ -82,6 +82,7 @@ type Decl struct {
 	Tier  string
 	Def   *Prop  // fact x = prop
 	Value string // "true" | "false" | ""
+	Tag   string // `tag <name>` (fact 만, sema 가 검사)
 	Attrs []Node // Name Members Knows Held Shared Contains Belief Text Pragma
 }
 
@@ -127,6 +128,17 @@ type Contains struct {
 type Text struct {
 	Pos
 	Text string
+}
+
+// Attribute is `attr <entity>.<key> = <value> [src ref]`: top level or a
+// declaration block = true from the start; inside a container = asserted there.
+type Attribute struct {
+	Pos
+	Entity Ident
+	Key    string
+	Kind   string // int | str | id
+	Value  string
+	Src    string
 }
 
 type Distance struct {
@@ -238,6 +250,13 @@ type Setup struct {
 type Payoff struct {
 	Pos
 	Ref Ident
+}
+
+// PatternDecl: `pattern <id> [at <scene>]` — 작가가 선언한 서사 패턴(판정은 PG patterns/*.sql).
+type PatternDecl struct {
+	Pos
+	ID Ident
+	At *Ident
 }
 
 type Discourse struct {

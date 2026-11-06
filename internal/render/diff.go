@@ -13,7 +13,7 @@ type Report struct {
 // VerbClass collapses synonyms; an unknown verb is its own class so it never silently matches.
 func VerbClass(v string) string {
 	switch v {
-	case "tells", "says", "hails", "lies", "whispers", "aside", "asks", "orders", "shows", "decrees", "sends", "thinks":
+	case "tells", "says", "hails", "lies", "whispers", "aside", "asks", "orders", "shows", "decrees", "sends", "thinks", "enacts":
 		return "assert"
 	case "sees":
 		return "perceive"
@@ -75,7 +75,20 @@ func Diff(s Scene, e Extracted) Report {
 		}
 	}
 	sort.Strings(miss)
-	return Report{Missing: miss, Hallucinated: hall.sorted(), Leaked: leak.sorted()}
+	// R4: 원본보다 많이 뽑힌 사실 액트(원본에 없는 것 포함)는 초과분만큼 환각이다. 모르는 사실은 위에서 이미 셌다.
+	halluc := hall.sorted()
+	for _, a := range e.Acts {
+		if _, ok := s.FactByID(a.Fact); !ok || VerbClass(a.Verb) == "presence" {
+			continue
+		}
+		if k := actKey(a.Actor, a.Verb, s.Canon(a.Fact)); want[k] > 0 {
+			want[k]--
+		} else {
+			halluc = append(halluc, "extra-act:"+k)
+		}
+	}
+	sort.Strings(halluc)
+	return Report{Missing: miss, Hallucinated: halluc, Leaked: leak.sorted()}
 }
 
 type set map[string]bool

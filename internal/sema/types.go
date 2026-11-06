@@ -4,8 +4,8 @@ import (
 	"slices"
 	"strings"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 // want resolves a name and checks its kind (any kind when none given).

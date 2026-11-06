@@ -11,8 +11,8 @@ import (
 	"sort"
 	"strings"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 type decl struct{ kind, id string }
@@ -60,6 +60,7 @@ type builder struct {
 	file         string
 	pend         []*syntax.Pragma // waivers of the statement being handled
 	whenEdges    []int            // edges made by the current statement's own `when`
+	nattr        map[string]int   // attr count per container/module (attribute ids)
 }
 
 // Build turns parsed files (one work) into IR. Modules with errors emit no
@@ -68,7 +69,7 @@ func Build(files []*syntax.File) (*ir.Work, []syntax.Diag) {
 	files = slices.Clone(files)
 	sort.SliceStable(files, func(i, j int) bool { return naturalLess(files[i].Path, files[j].Path) })
 	b := &builder{mods: map[string]*module{}, kinds: map[string]string{}, members: map[string][]string{},
-		lives: map[string]bool{}, dord: map[*syntax.Scene]int{}, facts: map[string]bool{}, src: map[srcKey]int{}}
+		lives: map[string]bool{}, dord: map[*syntax.Scene]int{}, facts: map[string]bool{}, src: map[srcKey]int{}, nattr: map[string]int{}}
 	for _, f := range files {
 		if f.Module == nil {
 			continue
@@ -101,6 +102,7 @@ func Build(files []*syntax.File) (*ir.Work, []syntax.Diag) {
 			merge(w, &m.out)
 		}
 	}
+	lifeOrder(w)
 	merge(w, &ir.Work{}) // nil tables → []
 	sort.SliceStable(b.diags, func(i, j int) bool {
 		a, c := b.diags[i], b.diags[j]
@@ -110,6 +112,25 @@ func Build(files []*syntax.File) (*ir.Work, []syntax.Diag) {
 		return a.Line < c.Line || a.Line == c.Line && a.Col < c.Col
 	})
 	return w, b.diags
+}
+
+// lifeOrder: 태어나기 전에 죽을 수 없다 — born 과 dies 가 둘 다 있는 사람마다 @x.born → @x.died (min 0) 순서 간선.
+// 시간 풀이(PG)가 죽음이 출생보다 앞서는 제약을 time-cycle 로 잡게 한다. 위치는 dies 문장이다.
+func lifeOrder(w *ir.Work) {
+	src := map[string]int{}
+	for _, p := range w.Points {
+		if p.Kind == "died" {
+			src[strings.TrimSuffix(p.ID, ".died")] = p.SrcID
+		}
+	}
+	for _, p := range w.Points {
+		if who, ok := strings.CutSuffix(p.ID, ".born"); ok && p.Kind == "born" {
+			if s, ok := src[who]; ok {
+				zero := int64(0)
+				w.TimeEdges = append(w.TimeEdges, ir.TimeEdge{From: p.ID, To: who + ".died", Min: &zero, SrcID: s})
+			}
+		}
+	}
 }
 
 // merge appends every table of src to dst and turns nil tables into [].

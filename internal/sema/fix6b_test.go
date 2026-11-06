@@ -89,3 +89,25 @@ event e "E"
 		t.Errorf("audience = %v, want [b]", got)
 	}
 }
+
+// Task 2: 태어나기 전에 죽을 수 없다. born 과 dies 가 둘 다 있으면 @x.born → @x.died (min 0) 순서 간선을 낸다
+// (둘이 다른 모듈에 있어도). 이 간선이 없으면 "죽음이 출생보다 앞선다"는 결함을 시간 풀이가 보지 못한다.
+func TestLifeOrder(t *testing.T) {
+	w, diags := build(t, `module t.s
+import t.cast
+born a when after start by 0y..0y
+born b when after @a.born by 20y..20y
+dies a when after @b.born by 10y..10y
+dies b
+`)
+	noErrors(t, diags)
+	var got []string
+	for _, e := range w.TimeEdges {
+		if e.Min != nil && *e.Min == 0 && e.Max == nil && e.From != "t/start" {
+			got = append(got, e.From+">"+e.To)
+		}
+	}
+	if !slices.Contains(got, "t/t.cast/a.born>t/t.cast/a.died") || !slices.Contains(got, "t/t.cast/b.born>t/t.cast/b.died") {
+		t.Errorf("order edges = %v, want a.born>a.died and b.born>b.died", got)
+	}
+}

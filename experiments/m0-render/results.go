@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "story-lang/internal/render"
+	. "diegesis/internal/render"
 
 	"encoding/json"
 	"fmt"

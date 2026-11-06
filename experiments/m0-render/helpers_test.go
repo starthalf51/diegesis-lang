@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	. "story-lang/internal/render"
+	. "diegesis/internal/render"
 )
 
 // 장면·문체 픽스처는 internal/render/testdata 에 있다. min.json 은 실험의 -scenes 기본 디렉터리 밖에 둔다.

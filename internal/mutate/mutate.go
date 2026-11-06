@@ -11,11 +11,14 @@ import (
 	"slices"
 	"strings"
 
-	"story-lang/internal/ir"
+	"diegesis/internal/ir"
 )
 
-// Mutation: Op 연산자, Target 대상(행위 ID, `entity@scene`, `act prop`, setup ID, died 시점 ID),
-// Expect 이 중 하나라도 새 warn 으로 나오면 탐지.
+// Mutation: Op 연산자, Target 대상(행위 ID, `entity@scene`, `act prop`, setup ID, died 시점 ID, 간선 `from to`),
+// Expect 이 중 하나라도 새 warn 으로 Site 안에 나오면 탐지.
+// Site = 변이 지점(Review Focus 5): 변이한 행위·문장·setup·시점, 그 행위의 장면, 변이한 명제를 쓰는 행위,
+// 변이한 시점을 끝점으로 하는 간선의 다른 끝(장면 경계면 그 장면과 행위, born/died 면 그 사람의 행위).
+// 하네스는 새 진단의 대상(time-cycle 은 순환이 지나는 시점들 중 하나)이 Site 에 있을 때만 탐지로 센다.
 // Pairs = (정보를 받은 행위 시점, 그 정보를 쓰는 행위 시점) 후보. 하네스가 PG precedes 로 "쓰는 쪽이 뒤"인
 // 쌍이 하나라도 있는 변이만 돌린다(Go 는 시간을 판정하지 않는다). 비어 있으면 거르지 않는다.
 // Before = move-before 가 앞서야 할 출처 시점들. 하네스가 PG 의 believes 에서 채운다.
@@ -23,6 +26,7 @@ import (
 type Mutation struct {
 	Op, Target string
 	Expect     []string
+	Site       []string
 	Pairs      [][2]string
 	Uses       []string
 	Before     []string
@@ -39,24 +43,32 @@ var opExpect = map[string][]string{
 	"drop-payoff":    {"unpaid-promise"},
 	"kill-early":     {"dead-actor"},
 	"flip-perceived": append([]string{"belief-contradiction"}, infoRules...),
+	// 시간을 원문과 모순되게 옮기면 드러나는 자리: 다른 제약과의 순환, 죽은 뒤의 행위, 아직 일어나지 않은 일을 아는 것.
+	// shift-duration 은 그 밖에 작품 질의 불일치로도 탐지된다(하네스가 질의를 다시 돌린다).
+	"shift-duration": append([]string{"time-cycle", "dead-actor"}, infoRules...),
+	"swap-order":     append([]string{"time-cycle", "dead-actor"}, infoRules...),
 }
 
-var ops = []string{"drop-tells", "drop-enter", "move-before", "drop-setup", "drop-payoff", "kill-early", "flip-perceived"}
+var ops = []string{"drop-tells", "drop-enter", "move-before", "drop-setup", "drop-payoff", "kill-early", "flip-perceived",
+	"shift-duration", "swap-order"}
+
+// Shift 는 shift-duration 이 구간에 더하는 값(50년, 초). 나이·햇수가 정확한 족보에서 반드시 어긋난다.
+const Shift = 50 * 365 * 24 * 3600
 
 // Generate 는 연산자마다 적용할 수 있는 대상을 모두 만든다(대상이 없는 연산자는 하나도 내지 않는다).
 // n > 0 이면 seed 로 섞어 n 개만 남긴다(원래 순서는 유지).
 func Generate(w *ir.Work, seed int64, n int) []Mutation {
 	x := index(w)
 	var out []Mutation
-	add := func(op, target string, pairs [][2]string, uses []string) {
-		out = append(out, Mutation{Op: op, Target: target, Expect: opExpect[op], Pairs: pairs, Uses: uses})
+	add := func(op, target string, site []string, pairs [][2]string, uses []string) {
+		out = append(out, Mutation{Op: op, Target: target, Expect: opExpect[op], Site: uniq(site), Pairs: pairs, Uses: uses})
 	}
 	for _, op := range ops {
 		switch op {
 		case "drop-tells":
 			for _, a := range w.Acts {
 				if pairs := x.heardAndUsed(a, false); telling[a.Verb] && len(pairs) > 0 {
-					add(op, a.ID, pairs, nil)
+					add(op, a.ID, append([]string{a.ID, a.SceneID}, x.usersOf(content(a))...), pairs, nil)
 				}
 			}
 		case "drop-enter":
@@ -65,13 +77,15 @@ func Generate(w *ir.Work, seed int64, n int) []Mutation {
 					continue
 				}
 				var pairs [][2]string
+				site := []string{k.scene}
 				for _, a := range w.Acts {
 					if a.SceneID == k.scene && slices.Contains(x.aud[a.ID], k.entity) && assertive[a.Verb] {
 						pairs = append(pairs, x.usedElsewhere(k.entity, a)...)
+						site = append(append(site, a.ID), x.usersOf(content(a))...)
 					}
 				}
 				if len(pairs) > 0 {
-					add(op, k.entity+"@"+k.scene, pairs, nil)
+					add(op, k.entity+"@"+k.scene, site, pairs, nil)
 				}
 			}
 		case "move-before":
@@ -86,19 +100,19 @@ func Generate(w *ir.Work, seed int64, n int) []Mutation {
 					}
 				}
 				if len(uses) > 0 {
-					add(op, a.ID, nil, uses)
+					add(op, a.ID, append([]string{a.ID, a.SceneID}, x.usersOf(uses)...), nil, uses)
 				}
 			}
 		case "drop-setup", "drop-payoff":
 			for _, s := range w.Setups {
 				if (op == "drop-setup" || s.Kind == "promise") && slices.ContainsFunc(w.Payoffs, func(p ir.Payoff) bool { return p.SetupID == s.ID }) {
-					add(op, s.ID, nil, nil)
+					add(op, s.ID, []string{s.ID, s.SceneID}, nil, nil)
 				}
 			}
 		case "kill-early":
 			for _, p := range w.Points {
 				if p.Kind == "died" && x.lastAct(strings.TrimSuffix(p.ID, ".died")) != "" {
-					add(op, p.ID, nil, nil)
+					add(op, p.ID, x.around(p.ID), nil, nil)
 				}
 			}
 		case "flip-perceived":
@@ -110,9 +124,25 @@ func Generate(w *ir.Work, seed int64, n int) []Mutation {
 					one := a
 					one.PropID, one.With = p, nil
 					if pairs := x.heardAndUsed(one, a.Verb == "sees"); len(pairs) > 0 {
-						add(op, a.ID+" "+p, pairs, nil)
+						add(op, a.ID+" "+p, append([]string{a.ID, a.SceneID}, x.usersOf([]string{p})...), pairs, nil)
 					}
 				}
+			}
+		case "shift-duration", "swap-order":
+			for _, e := range w.TimeEdges {
+				if e.Waived || e.TargetID == "" {
+					continue
+				}
+				if op == "shift-duration" && (e.Min == nil || e.Max == nil) {
+					continue
+				}
+				// swap-order: 같은 사람의 born→died, 또는 `before`(문장 자신의 시점이 간선의 시작인 것)
+				// lasts(그 장면의 start→end)는 뒤집어도 같은 간선이라 뺀다
+				if op == "swap-order" && (!(lifespan(e) || e.From == e.TargetID || strings.HasPrefix(e.From, e.TargetID+".")) ||
+					e.From == e.TargetID+".start" && e.To == e.TargetID+".end") {
+					continue
+				}
+				add(op, e.From+" "+e.To, append(x.around(e.From, e.To), e.TargetID), nil, nil)
 			}
 		}
 	}
@@ -124,6 +154,69 @@ func Generate(w *ir.Work, seed int64, n int) []Mutation {
 			keep[i] = out[j]
 		}
 		out = keep
+	}
+	return out
+}
+
+func lifespan(e ir.TimeEdge) bool {
+	p, ok := strings.CutSuffix(e.From, ".born")
+	return ok && e.To == p+".died"
+}
+
+func uniq(s []string) []string {
+	var out []string
+	for _, x := range s {
+		if x != "" && !slices.Contains(out, x) {
+			out = append(out, x)
+		}
+	}
+	return out
+}
+
+// usersOf: 명제(정규형) 중 하나를 쓰는(used) 행위들.
+func (x *idx) usersOf(props []string) []string {
+	var out []string
+	for _, b := range x.w.Acts {
+		if slices.ContainsFunc(x.used(b), func(c string) bool {
+			return slices.ContainsFunc(props, func(p string) bool { return x.canon(p) == c })
+		}) {
+			out = append(out, b.ID)
+		}
+	}
+	return out
+}
+
+// around: 시점들과 그 이웃 — 장면·사건의 경계면 그 컨테이너와 안의 행위, 행위 시점이면 그 행위,
+// `x.born`/`x.died` 면 x 의 행위, 그리고 이 시점을 끝점으로 하는 간선의 문장(waiver 대상).
+func (x *idx) around(pts ...string) []string {
+	out := slices.Clone(pts)
+	for _, p := range pts {
+		for _, s := range x.w.Scenes {
+			if s.StartPt == p || s.EndPt == p {
+				out = append(out, s.ID)
+				for _, a := range x.w.Acts {
+					if a.SceneID == s.ID {
+						out = append(out, a.ID)
+					}
+				}
+			}
+		}
+		e, born := strings.CutSuffix(p, ".born")
+		if d, died := strings.CutSuffix(p, ".died"); died {
+			e = d
+		} else if !born {
+			e = ""
+		}
+		for _, a := range x.w.Acts {
+			if a.Pt == p || (e != "" && a.ActorID == e) {
+				out = append(out, a.ID)
+			}
+		}
+		for _, t := range x.w.TimeEdges {
+			if t.From == p || t.To == p {
+				out = append(out, t.TargetID)
+			}
+		}
 	}
 	return out
 }

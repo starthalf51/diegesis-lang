@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"story-lang/internal/mutate"
-	"story-lang/internal/pg"
+	"diegesis/internal/mutate"
+	"diegesis/internal/pg"
 )
 
 const expectYAML = `work: w
@@ -18,7 +18,7 @@ mutation_min_rate: 0.8
 `
 
 func diag(rule, target, sev string, waived bool) pg.Diagnostic {
-	return pg.Diagnostic{Rule: rule, TargetID: "w/" + target, Severity: sev, Waived: waived, File: "f.sl.md", Line: 3}
+	return pg.Diagnostic{Rule: rule, TargetID: "w/" + target, Severity: sev, Waived: waived, File: "f.dieg.md", Line: 3}
 }
 
 func passing() Input {
@@ -130,5 +130,38 @@ func TestAcceptUndeclaredWaiver(t *testing.T) {
 	r := Judge(parse(t), in)
 	if r.Pass || len(r.Undeclared) != 1 {
 		t.Errorf("pass=%v undeclared=%v, want FAIL with 1 undeclared waiver", r.Pass, r.Undeclared)
+	}
+}
+
+// ADR-014: 전체 ≥ 0.8 이고 move-before 제외 ≥ 0.7(기본값). move-before 가 전부 잡혀도 나머지가 0.65 면 불합격.
+func TestJudgeRequiresBothRates(t *testing.T) {
+	e := parse(t)
+	if e.MutationMinRateWoMoveBefore != 0.7 {
+		t.Errorf("default mutation_min_rate_wo_move_before = %v, want 0.7", e.MutationMinRateWoMoveBefore)
+	}
+	in := passing()
+	in.Mutants = nil
+	add := func(op string, n int, o Outcome) {
+		for range n {
+			in.Mutants = append(in.Mutants, Mutant{Mutation: mutate.Mutation{Op: op}, Outcome: o})
+		}
+	}
+	add("move-before", 20, Detected)
+	add("drop-tells", 13, Detected)
+	add("drop-tells", 7, Survived)
+	r := Judge(e, in) // 전체 33/40 = 0.825, 제외 13/20 = 0.65
+	if r.Pass || r.Rate < 0.8 || r.RateWoMoveBefore != 0.65 {
+		t.Errorf("pass=%v rate=%v wo=%v, want FAIL with 0.825 / 0.65", r.Pass, r.Rate, r.RateWoMoveBefore)
+	}
+	in.Mutants = in.Mutants[:0]
+	add("move-before", 3, Detected)
+	add("drop-tells", 15, Detected)
+	add("drop-tells", 2, DetectedByQuery)
+	add("drop-tells", 3, Survived)
+	if r := Judge(e, in); !r.Pass || r.HitWoMoveBefore != 17 || r.CountedWoMoveBefore != 20 {
+		t.Errorf("pass=%v wo=%d/%d, want PASS with 17/20 (query detections count, R1)", r.Pass, r.HitWoMoveBefore, r.CountedWoMoveBefore)
+	} else if r.HitLint != 18 || r.HitLintWoMoveBefore != 15 || r.RateLintWoMoveBefore != 0.75 {
+		// 린트만(질의 탐지 제외)의 비율은 보고만 한다: 분모는 같고 분자에서 detected-by-query 를 뺀다
+		t.Errorf("lint-only %d/%d, wo %d/%d = %v, want 18/23, 15/20 = 0.75", r.HitLint, r.Counted, r.HitLintWoMoveBefore, r.CountedWoMoveBefore, r.RateLintWoMoveBefore)
 	}
 }

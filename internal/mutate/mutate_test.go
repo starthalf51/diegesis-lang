@@ -11,11 +11,11 @@ import (
 	"strings"
 	"testing"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/mutate"
-	"story-lang/internal/pg"
-	"story-lang/internal/sema"
-	"story-lang/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/mutate"
+	"diegesis/internal/pg"
+	"diegesis/internal/sema"
+	"diegesis/internal/syntax"
 )
 
 const fixture = `module t.s
@@ -84,7 +84,7 @@ func targets(ms []mutate.Mutation, op string) []string {
 }
 
 func TestGenerateTargets(t *testing.T) {
-	ms := mutate.Generate(build(t, map[string]string{"t.sl": fixture}), 1, 0)
+	ms := mutate.Generate(build(t, map[string]string{"t.dieg": fixture}), 1, 0)
 	for op, want := range map[string][]string{
 		// a tells b: p → b 가 2 에서 p 를 쓴다. b tells a: r → a 는 r 을 안 쓴다. c(oracle 그룹) tells → a 가 q 를 안 쓴다
 		"drop-tells": {"1#a2"},
@@ -113,13 +113,13 @@ func TestGenerateTargets(t *testing.T) {
 			t.Errorf("%s %s: no used props", m.Op, m.Target)
 		}
 	}
-	if n := len(mutate.Generate(build(t, map[string]string{"t.sl": fixture}), 7, 3)); n != 3 {
+	if n := len(mutate.Generate(build(t, map[string]string{"t.dieg": fixture}), 7, 3)); n != 3 {
 		t.Errorf("Generate(n=3) = %d mutations", n)
 	}
 }
 
 func TestApplyCopies(t *testing.T) {
-	w := build(t, map[string]string{"t.sl": fixture})
+	w := build(t, map[string]string{"t.dieg": fixture})
 	before := len(w.Acts)
 	for _, m := range mutate.Generate(w, 1, 0) {
 		got := mutate.Apply(w, m)
@@ -215,7 +215,7 @@ func corpus(t *testing.T, dir string) *ir.Work {
 	t.Helper()
 	files := map[string]string{}
 	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !strings.HasSuffix(p, ".sl.md") {
+		if err != nil || d.IsDir() || !syntax.IsSource(p) {
 			return err
 		}
 		b, err := os.ReadFile(p)
@@ -275,5 +275,87 @@ func TestOdysseyEmbraceInto19Detected(t *testing.T) {
 	}
 	if !slices.Contains(got, "because-unbelieved odyssey.b23/23.9#a8") {
 		t.Errorf("warns = %v, want because-unbelieved on the embrace (23.9#a8)", got)
+	}
+}
+
+const timeFixture = `module t.s
+work t "T"
+character a "A"
+character b "B"
+fact p "P" true
+born a when after start by 0y..0y
+born b when after @a.born by 20y..20y
+dies a when after @a.born by 70y..70y
+event e "E"
+  when before 1
+scene 1
+  when after @b.born by 1y..1y
+  enter a, b
+  a tells b: p
+`
+
+// Task 2: 시간 연산자. shift-duration = `by a..b` 구간 하나를 +50년, swap-order = 같은 사람의 born→died 간선이나
+// `before` 간선 하나를 뒤집는다(before → after). 대상 = "from to"(간선의 두 끝점).
+func TestGenerateTimeOps(t *testing.T) {
+	w := build(t, map[string]string{"t.dieg": timeFixture})
+	ms := mutate.Generate(w, 1, 0)
+	for op, want := range map[string][]string{
+		"shift-duration": {"t/start a.born", "a.born b.born", "a.born a.died", "b.born 1.start"},
+		"swap-order":     {"a.born a.died", "e.end 1.start"},
+	} {
+		if got := targets(ms, op); !slices.Equal(got, want) {
+			t.Errorf("%s targets = %v, want %v", op, got, want)
+		}
+	}
+	const year = 365 * 24 * 3600
+	edge := func(w *ir.Work, from, to string) *ir.TimeEdge {
+		for i, e := range w.TimeEdges {
+			if e.From == "t/t.s/"+from && e.To == "t/t.s/"+to && e.TargetID != "" {
+				return &w.TimeEdges[i]
+			}
+		}
+		return nil
+	}
+	for _, m := range ms {
+		switch {
+		case m.Op == "shift-duration" && m.Target == "t/t.s/a.born t/t.s/a.died":
+			if e := edge(mutate.Apply(w, m), "a.born", "a.died"); e == nil || *e.Min != 120*year || *e.Max != 120*year {
+				t.Errorf("shift-duration: edge %+v, want 70y + 50y", e)
+			}
+			// 지점: 두 끝점과 그 사람(a)의 행위
+			if !slices.Contains(m.Site, "t/t.s/a.died") || !slices.Contains(m.Site, "t/t.s/1#a1") {
+				t.Errorf("shift-duration site = %v, want a.died and a's act 1#a1", m.Site)
+			}
+		case m.Op == "swap-order" && m.Target == "t/t.s/e.end t/t.s/1.start":
+			// `e before 1` → `e after 1`: e.end→1.start 를 1.end→e.start 로(장면 경계는 반대쪽 끝으로 바꾼다)
+			if c := mutate.Apply(w, m); edge(c, "1.end", "e.start") == nil || edge(c, "e.end", "1.start") != nil {
+				t.Error("swap-order: the before edge was not turned into after")
+			}
+			if !slices.Contains(m.Site, "t/t.s/1") || !slices.Contains(m.Site, "t/t.s/e") {
+				t.Errorf("swap-order site = %v, want scene 1 and event e", m.Site)
+			}
+		case m.Op == "swap-order":
+			if c := mutate.Apply(w, m); edge(c, "a.died", "a.born") == nil || edge(c, "a.born", "a.died") != nil {
+				t.Error("swap-order: the lifespan edge was not reversed")
+			}
+		}
+		if len(m.Expect) == 0 || len(m.Site) == 0 {
+			t.Errorf("%s %s: expect %v site %v", m.Op, m.Target, m.Expect, m.Site)
+		}
+	}
+}
+
+// 지점: drop-tells 1#a2(a tells b: p) = 그 행위, 그 장면, p 를 쓰는 행위(2#a1 b tells d: p, 1#a2 자신).
+func TestGenerateSites(t *testing.T) {
+	for _, m := range mutate.Generate(build(t, map[string]string{"t.dieg": fixture}), 1, 0) {
+		if len(m.Site) == 0 {
+			t.Errorf("%s %s: empty site", m.Op, m.Target)
+		}
+		if m.Op == "drop-tells" {
+			got := strings.ReplaceAll(strings.Join(m.Site, " "), "t/t.s/", "")
+			if got != "1#a2 1 2#a1" {
+				t.Errorf("drop-tells site = %q, want %q", got, "1#a2 1 2#a1")
+			}
+		}
 	}
 }

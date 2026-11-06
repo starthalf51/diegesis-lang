@@ -20,57 +20,68 @@ const (
 	MinToneShare    = 0.8
 )
 
-// Render 는 (장면, 백엔드) 하나의 렌더 → 재추출 → diff 결과. out/render/<work>/<scene>.<backend>.json 에 남는다.
-// Report·Tones 는 기록 당시 값(참고용)이다. Judge 는 Score 로 산문·재추출에서 다시 센다.
+// Render 는 (장면, 백엔드) 하나의 렌더 → 재추출 k 번 → 다수결 → diff 결과. out/render/<work>/<scene>.<backend>.json 에 남는다.
+// Extracted·Report·Tones 는 기록 당시 값(참고용)이다. Judge 는 Score 로 산문·원본 재추출(Extractions)에서 다시 센다.
 type Render struct {
-	Work       string             `json:"work"`
-	Scene      string             `json:"scene"`
-	Backend    string             `json:"backend"`
-	Lang       string             `json:"lang"`
-	Tone       string             `json:"tone"`
-	Prose      string             `json:"prose"`
-	StopReason string             `json:"stop_reason"`
-	Extracted  Extracted          `json:"extracted"`
-	Report     Report             `json:"report"`
-	Tones      map[string]float64 `json:"tones"`
-	PromptHash string             `json:"prompt_hash"` // PromptHash(장면, 백엔드). 다르면 캐시를 버린다
+	Work        string             `json:"work"`
+	Scene       string             `json:"scene"`
+	Backend     string             `json:"backend"`
+	Lang        string             `json:"lang"`
+	Tone        string             `json:"tone"`
+	Prose       string             `json:"prose"`
+	StopReason  string             `json:"stop_reason"`
+	Extracted   Extracted          `json:"extracted"`   // Vote(Extractions)
+	Extractions []Extracted        `json:"extractions"` // 원본 재추출 DefaultK 개
+	Report      Report             `json:"report"`
+	Tones       map[string]float64 `json:"tones"`
+	RenderHash  string             `json:"render_hash"`  // RenderHash(장면, 백엔드). 다르면 다시 렌더한다
+	ExtractHash string             `json:"extract_hash"` // ExtractHash(장면, 언어). 다르면 산문은 두고 다시 뽑는다
 }
 
-// PromptHash 는 렌더 시스템·사용자 프롬프트와 (산문을 뺀) 재추출 프롬프트의 sha256. 장면·백엔드·프롬프트 코드 중
-// 하나라도 바뀌면 달라진다.
-func PromptHash(s Scene, b Backend) (string, error) {
+func sum(parts ...string) string {
+	h := sha256.Sum256([]byte(strings.Join(parts, "\x00")))
+	return hex.EncodeToString(h[:])
+}
+
+// RenderHash 는 렌더 시스템·사용자 프롬프트의 sha256. 장면·백엔드·렌더 프롬프트 코드 중 하나라도 바뀌면 달라진다.
+func RenderHash(s Scene, b Backend) (string, error) {
 	sys, user, err := b.Prompt(s)
 	if err != nil {
 		return "", err
 	}
-	xs, xu := BuildExtractPrompt(s, b.Lang, "")
-	h := sha256.Sum256([]byte(sys + "\x00" + user + "\x00" + xs + "\x00" + xu))
-	return hex.EncodeToString(h[:]), nil
+	return sum(sys, user), nil
 }
 
-// Score 는 결정적인 판정 입력(어투 비율, diff)을 산문·재추출에서 다시 센다. 렌더·재추출 오류(ExtractError)는 남긴다.
+// ExtractHash 는 (산문을 뺀) 재추출 프롬프트와 횟수의 sha256.
+func ExtractHash(s Scene, lang string) string {
+	xs, xu := BuildExtractPrompt(s, lang, "")
+	return sum(xs, xu, fmt.Sprint(DefaultK))
+}
+
+// Score 는 결정적인 판정 입력(어투 비율, 다수결, diff)을 산문·원본 재추출에서 다시 센다. 렌더·재추출 오류(ExtractError)는 남긴다.
 func Score(s Scene, r Render) Render {
 	r.Tones = nil
 	if r.Lang == "ko" {
 		r.Tones = ClassifyTone(r.Prose)
 	}
 	if r.Report.ExtractError == "" {
+		if len(r.Extractions) > 0 {
+			r.Extracted = Vote(s, r.Extractions)
+		}
 		r.Report = Diff(s, r.Extracted)
 	}
 	return r
 }
 
-// RenderOne 은 백엔드 프롬프트로 렌더하고, 백엔드를 모르는 재추출 프롬프트(BuildExtractPrompt)로 다시 뽑아 diff 한다.
-// Completer 오류는 그대로 돌려준다(아무것도 남기지 않으니 다시 돌리면 재시도한다).
+// RenderOne 은 백엔드 프롬프트로 렌더하고, 백엔드를 모르는 재추출 프롬프트(BuildExtractPrompt)로 DefaultK 번 다시 뽑아
+// 다수결로 diff 한다. Completer 오류는 그대로 돌려준다(아무것도 남기지 않으니 다시 돌리면 재시도한다).
 func RenderOne(ctx context.Context, c Completer, work string, s Scene, b Backend) (Render, error) {
 	r := Render{Work: work, Scene: s.ID, Backend: b.ID, Lang: b.Lang, Tone: b.Tone}
 	sys, user, err := b.Prompt(s)
 	if err != nil {
 		return r, err
 	}
-	if r.PromptHash, err = PromptHash(s, b); err != nil {
-		return r, err
-	}
+	r.RenderHash = sum(sys, user)
 	res, err := c.Complete(ctx, sys, user)
 	if err != nil {
 		return r, fmt.Errorf("%s/%s render: %w", s.ID, b.ID, err)
@@ -83,19 +94,24 @@ func RenderOne(ctx context.Context, c Completer, work string, s Scene, b Backend
 		r.Report.ExtractError = stopped("render", res.StopReason)
 		return r, nil
 	}
-	xs, xu := BuildExtractPrompt(s, b.Lang, r.Prose)
-	xr, err := c.Complete(ctx, xs, xu)
-	if err != nil {
-		return r, fmt.Errorf("%s/%s extract: %w", s.ID, b.ID, err)
-	}
-	if xr.StopReason != "end_turn" {
-		r.Report.ExtractError = stopped("extract", xr.StopReason)
-	} else if e, err := ParseExtracted(xr.Text); err != nil {
+	return r, reextract(ctx, c, s, &r)
+}
+
+// reextract 는 r.Prose 를 다시 뽑아 r 의 재추출·판정 칸을 새로 채운다. 답이 깨지면 ExtractError 로 남긴다.
+func reextract(ctx context.Context, c Completer, s Scene, r *Render) error {
+	r.ExtractHash = ExtractHash(s, r.Lang)
+	r.Extracted, r.Extractions, r.Report = Extracted{}, nil, Report{}
+	e, xs, err := ExtractK(ctx, c, s, r.Lang, r.Prose, DefaultK)
+	r.Extractions = xs
+	switch {
+	case IsBadExtract(err):
 		r.Report.ExtractError = err.Error()
-	} else {
+	case err != nil:
+		return fmt.Errorf("%s/%s %w", s.ID, r.Backend, err)
+	default:
 		r.Extracted, r.Report = e, Diff(s, e)
 	}
-	return r, nil
+	return nil
 }
 
 func stopped(what, reason string) string {
@@ -110,38 +126,48 @@ func ProsePath(work, scene, backend string) string {
 	return filepath.ToSlash(filepath.Join(work, scene+"."+backend+".md"))
 }
 
-// RenderCached 는 dir/<work>/<scene>.<backend>.{md,json} 이 둘 다 있고 기록의 prompt_hash 가 지금 프롬프트와 같으면
-// 다시 부르지 않는다(구독 한도). force 면 다시 한다. 기록(.json)을 마지막에 쓴다.
-func RenderCached(ctx context.Context, c Completer, dir, work string, s Scene, b Backend, force bool) (Render, error) {
+// Force 는 캐시를 무시할 범위. Render 면 다시 렌더한다(재추출도), Extract 면 산문은 캐시를 쓰고 다시 뽑기만 한다.
+type Force struct{ Render, Extract bool }
+
+// RenderCached 는 dir/<work>/<scene>.<backend>.{md,json} 이 둘 다 있고 기록의 render_hash 가 지금 렌더 프롬프트와 같으면
+// 산문을 다시 부르지 않는다(구독 한도). 재추출은 extract_hash 가 다르거나, DefaultK 개가 없거나, 깨졌거나, f.Extract 면
+// 다시 한다. 렌더가 멈춘 기록은 f.Render 전까지 그대로 둔다. 기록(.json)을 마지막에 쓴다.
+func RenderCached(ctx context.Context, c Completer, dir, work string, s Scene, b Backend, f Force) (Render, error) {
 	md := filepath.Join(dir, filepath.FromSlash(ProsePath(work, s.ID, b.ID)))
 	rec := strings.TrimSuffix(md, ".md") + ".json"
-	if !force {
-		if _, err := os.Stat(md); err == nil {
-			if raw, err := os.ReadFile(rec); err == nil {
-				var r Render
-				if err := json.Unmarshal(raw, &r); err != nil {
-					return r, fmt.Errorf("%s: %w", rec, err)
-				}
-				h, err := PromptHash(s, b)
-				if err != nil {
-					return r, err
-				}
-				if r.PromptHash == h {
-					return r, nil
-				}
+	rh, err := RenderHash(s, b)
+	if err != nil {
+		return Render{}, err
+	}
+	var r Render
+	cached := false
+	if _, err := os.Stat(md); err == nil && !f.Render {
+		if raw, err := os.ReadFile(rec); err == nil {
+			if err := json.Unmarshal(raw, &r); err != nil {
+				return r, fmt.Errorf("%s: %w", rec, err)
 			}
+			cached = r.RenderHash == rh
 		}
 	}
-	r, err := RenderOne(ctx, c, work, s, b)
-	if err != nil {
-		return r, err
-	}
-	if err := os.MkdirAll(filepath.Dir(md), 0o755); err != nil {
-		return r, err
-	}
-	head := fmt.Sprintf("---\nwork: %s\nscene: %s\nbackend: %s\nlang: %s\nstop_reason: %s\n---\n\n", work, s.ID, b.ID, b.Lang, r.StopReason)
-	if err := os.WriteFile(md, []byte(head+r.Prose+"\n"), 0o644); err != nil {
-		return r, err
+	if cached {
+		if r.StopReason != "end_turn" || !f.Extract && r.ExtractHash == ExtractHash(s, b.Lang) &&
+			len(r.Extractions) == DefaultK && r.Report.ExtractError == "" {
+			return r, nil
+		}
+		if err := reextract(ctx, c, s, &r); err != nil {
+			return r, err
+		}
+	} else {
+		if r, err = RenderOne(ctx, c, work, s, b); err != nil {
+			return r, err
+		}
+		if err := os.MkdirAll(filepath.Dir(md), 0o755); err != nil {
+			return r, err
+		}
+		head := fmt.Sprintf("---\nwork: %s\nscene: %s\nbackend: %s\nlang: %s\nstop_reason: %s\n---\n\n", work, s.ID, b.ID, b.Lang, r.StopReason)
+		if err := os.WriteFile(md, []byte(head+r.Prose+"\n"), 0o644); err != nil {
+			return r, err
+		}
 	}
 	raw, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {

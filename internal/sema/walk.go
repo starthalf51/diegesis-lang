@@ -3,8 +3,8 @@ package sema
 import (
 	"fmt"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 // walker emits one container's body in statement order.
@@ -112,6 +112,14 @@ func (w *walker) stmt(n syntax.Node) (string, string) {
 		return "parent", b.parent(m, n)
 	case *syntax.Life:
 		return "life", b.life(m, n, w)
+	case *syntax.Attribute:
+		acc := ""
+		if c.kind == "account" {
+			acc = c.id
+		}
+		return "attribute", b.attribute(m, n, c.id, w.last, acc)
+	case *syntax.PatternDecl:
+		return "pattern", b.patternDecl(m, n, c.id)
 	}
 	return "", ""
 }

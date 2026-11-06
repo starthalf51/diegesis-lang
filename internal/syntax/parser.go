@@ -5,7 +5,7 @@ import (
 	"sort"
 )
 
-// ParseFile parses one .sl.md file (or a .sl file, which is all language)
+// ParseFile parses one .dieg.md file (or a .dieg file, which is all language)
 // into an AST. It never stops at the first error: every line that fails is
 // reported and parsing resumes at the next line.
 func ParseFile(path string, src []byte) (*File, []Diag) {
@@ -225,6 +225,12 @@ func (p *parser) top(c *cur) Node {
 		return c.pragma()
 	}
 	f := p.f
+	if c.isPattern() {
+		return c.patternDecl()
+	}
+	if c.isAttribute() {
+		return c.attribute()
+	}
 	if t.Kind == tWord {
 		switch t.Val {
 		case "module":

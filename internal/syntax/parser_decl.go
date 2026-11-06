@@ -1,6 +1,9 @@
 package syntax
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 // work ident [string] [BLOCK(wattr)]
 func (c *cur) work() Node {
@@ -36,8 +39,8 @@ func (c *cur) work() Node {
 var reserved = map[string]bool{}
 
 func init() {
-	for _, w := range strings.Fields("when enter exit mention beat render reveal withhold setup payoff discourse " +
-		"parent born dies all not to with because src major minor extra") {
+	for _, w := range strings.Fields("when lasts enter exit mention beat render reveal withhold setup payoff discourse " +
+		"parent born dies all not to with because src major minor extra enacts") {
 		reserved[w] = true
 	}
 }
@@ -69,6 +72,9 @@ func (c *cur) decl() Node {
 	if c.is("true") || c.is("false") {
 		d.Value = c.word("bool").Val
 	}
+	if c.accept("tag") {
+		d.Tag = c.word("tag name").Val
+	}
 	c.end()
 	c.p.declare("decl", d.ID)
 	d.Attrs = c.children((*cur).attr)
@@ -79,6 +85,9 @@ func (c *cur) attr() Node {
 	t := c.peek()
 	if t.Kind == tPragma {
 		return c.pragma()
+	}
+	if c.isAttribute() {
+		return c.attribute()
 	}
 	if s, ok := c.str(); ok {
 		c.end()
@@ -165,6 +174,66 @@ func (c *cur) life() Node {
 	n.Who = c.ident("character")
 	if c.is("when") {
 		n.When = c.when()
+	}
+	c.end()
+	return n
+}
+
+// isAttribute: "attr" starts an attribute unless it is an actor or believer named attr (attr tells b …).
+func (c *cur) isAttribute() bool {
+	if !c.is("attr") {
+		return false
+	}
+	n := c.peekN(1)
+	return n == nil || n.Kind != tWord || !verbs[n.Val] && n.Val != "believes" && n.Val != "doubts"
+}
+
+// attr <entity>.<key> = <int | string | id> [src (word | string)]
+func (c *cur) attribute() Node {
+	a := &Attribute{Pos: c.peek().Pos}
+	c.k++
+	t := c.word("<entity>.<key>")
+	i := strings.LastIndex(t.Val, ".")
+	if i <= 0 || i == len(t.Val)-1 {
+		c.k--
+		c.fail("expected <entity>.<key>, found %q", t.Val)
+	}
+	a.Entity, a.Key = Ident{t.Pos, t.Val[:i]}, t.Val[i+1:]
+	c.expect("=")
+	if s, ok := c.str(); ok {
+		a.Kind, a.Value = "str", s
+	} else {
+		v := c.word("value (integer, string or id)").Val
+		a.Kind, a.Value = "id", v
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil {
+			a.Kind, a.Value = "int", strconv.FormatInt(n, 10) // 07 ≡ 7
+		}
+	}
+	if c.accept("src") {
+		if s, ok := c.str(); ok {
+			a.Src = s
+		} else {
+			a.Src = c.word("source reference").Val
+		}
+	}
+	c.end()
+	return a
+}
+
+// isPattern: "pattern" starts a declaration unless it is an actor or believer named pattern.
+func (c *cur) isPattern() bool {
+	n := c.peekN(1)
+	return c.is("pattern") && n != nil && n.Kind == tWord && !verbs[n.Val] && n.Val != "believes" && n.Val != "doubts"
+}
+
+// pattern <id> [at <scene>]
+func (c *cur) patternDecl() Node {
+	n := &PatternDecl{Pos: c.peek().Pos}
+	c.k++
+	n.ID = c.ident("pattern id")
+	if c.accept("at") {
+		at := c.ident("scene")
+		n.At = &at
 	}
 	c.end()
 	return n

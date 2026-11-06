@@ -1,8 +1,10 @@
 package sema
 
 import (
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"fmt"
+
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 // top emits one top-level item and returns its waiver target.
@@ -52,6 +54,10 @@ func (b *builder) top(m *module, n syntax.Node) (string, string) {
 		who := b.want(m, n.Who, "believer", "character", "group")
 		b.belief(m, n, who, "", "")
 		return "belief", who
+	case *syntax.PatternDecl:
+		return "pattern", b.patternDecl(m, n, "")
+	case *syntax.Attribute:
+		return "attribute", b.attribute(m, n, m.id, "", "")
 	}
 	return "", ""
 }
@@ -105,7 +111,7 @@ func (b *builder) declItem(m *module, d *syntax.Decl) (string, string) {
 	case "artifact":
 		art = &ir.Artifact{ID: id, WorkID: b.work, ModuleID: m.id, Name: name, Contains: []string{}, Text: []string{}, SrcID: src}
 	case "fact":
-		f := ir.Fact{ID: id, WorkID: b.work, Text: name, Truth: "unknown", SrcID: src}
+		f := ir.Fact{ID: id, WorkID: b.work, Text: name, Truth: "unknown", SrcID: src, Tag: d.Tag}
 		if d.Value != "" {
 			f.Truth = d.Value
 		}
@@ -118,6 +124,9 @@ func (b *builder) declItem(m *module, d *syntax.Decl) (string, string) {
 		m.out.Facts = append(m.out.Facts, f)
 	default:
 		ent = &ir.Entity{ID: id, WorkID: b.work, ModuleID: m.id, Kind: d.Kind, Tier: d.Tier, Name: name, SrcID: src}
+	}
+	if d.Tag != "" && d.Kind != "fact" {
+		b.errf(d.ID.Pos, "arg-kind", "tag applies only to facts, not %s %q", d.Kind, d.ID.Name)
 	}
 	var holders []ir.RoleHolder
 	misplaced := func(pos syntax.Pos, attr string) {
@@ -163,6 +172,8 @@ func (b *builder) declItem(m *module, d *syntax.Decl) (string, string) {
 				continue
 			}
 			b.belief(m, a, id, "", "")
+		case *syntax.Attribute:
+			b.attribute(m, a, m.id, "", "")
 		case *syntax.Pragma:
 			b.waiver(m, a, waiverKind(d.Kind), id)
 		}
@@ -239,4 +250,43 @@ func (b *builder) life(m *module, l *syntax.Life, w *walker) string {
 		b.when(m, l.When, pt, pt)
 	}
 	return pt
+}
+
+// attribute emits one `attr` row and returns its id (<prefix>#attr<n>, the waiver target).
+// at "" = true from the start. id values resolve to their declaration when there is one
+// (aliases are resolved in PG by lint_canon); an undeclared id is kept as a bare symbol.
+func (b *builder) attribute(m *module, a *syntax.Attribute, prefix, at, account string) string {
+	who := b.want(m, a.Entity, "attribute subject", "character", "group", "place", "thing", "faction", "thread")
+	if who == "" {
+		return ""
+	}
+	b.nattr[prefix]++
+	id := fmt.Sprintf("%s#attr%d", prefix, b.nattr[prefix])
+	v := a.Value
+	if d, ok := b.lookup(m, v); ok && a.Kind == "id" {
+		v = d.id
+	}
+	m.out.Attributes = append(m.out.Attributes, ir.Attribute{ID: id, EntityID: who, Key: a.Key, Value: v, Kind: a.Kind,
+		AtPt: at, AccountID: account, SrcRef: a.Src, SrcID: b.srcID(a.Pos)})
+	return id
+}
+
+// patternDecl emits `pattern <id> [at <scene>]`. Inside a container without `at` the
+// declaration is about that container. The id (waiver target) is <scene or module>#<pattern>.
+func (b *builder) patternDecl(m *module, n *syntax.PatternDecl, scene string) string {
+	if n.At != nil {
+		scene = ""
+		if c := b.findCont(m, n.At.Name); c != nil {
+			scene = c.id
+		} else {
+			b.errf(n.At.Pos, "undefined-ref", "undefined scene %q", n.At.Name)
+			return ""
+		}
+	}
+	id := m.id + "#" + n.ID.Name
+	if scene != "" {
+		id = scene + "#" + n.ID.Name
+	}
+	m.out.PatternDecls = append(m.out.PatternDecls, ir.PatternDecl{ID: id, Pattern: n.ID.Name, SceneID: scene, SrcID: b.srcID(n.Pos)})
+	return id
 }

@@ -11,8 +11,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/pg"
+	"diegesis/internal/ir"
+	"diegesis/internal/pg"
 )
 
 // open 은 마이그레이션까지 끝난 풀을 돌려준다.
@@ -61,7 +61,7 @@ func golden(t *testing.T) (*ir.Work, string) {
 
 var tables = []string{"module", "src", "entity", "group_member", "name", "role", "role_holder",
 	"point", "time_edge", "scene", "presence", "act", "audience", "belief", "fact", "artifact",
-	"setup", "payoff", "account", "parent", "distance", "reveal", "withhold", "directive", "waiver",
+	"setup", "payoff", "account", "parent", "distance", "reveal", "withhold", "directive", "waiver", "attribute",
 	"believes", "uses", "deception", "role_span", "diagnostic", "point_dist"}
 
 func counts(t *testing.T, pool *pgxpool.Pool, work string) map[string]int {
@@ -98,7 +98,7 @@ func TestLoadCountsMatchIR(t *testing.T) {
 		"artifact": len(w.Artifacts), "setup": len(w.Setups), "payoff": len(w.Payoffs),
 		"account": len(w.Accounts), "parent": len(w.Parents), "distance": len(w.Distances),
 		"reveal": len(w.Reveals), "withhold": len(w.Withholds), "directive": len(w.Directives),
-		"waiver": len(w.Waivers)}
+		"waiver": len(w.Waivers), "attribute": len(w.Attributes)}
 	for tb, n := range want {
 		if got[tb] != n {
 			t.Errorf("%s: %d rows, IR has %d", tb, got[tb], n)

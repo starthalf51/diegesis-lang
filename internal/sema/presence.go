@@ -3,8 +3,8 @@ package sema
 import (
 	"slices"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 // stage is the presence state machine of one scene. A group on stage puts
@@ -115,7 +115,7 @@ func (w *walker) closeAll() {
 }
 
 var speech = map[string]bool{"tells": true, "says": true, "hails": true, "lies": true, "asks": true,
-	"shows": true, "orders": true, "decrees": true, "sends": true}
+	"shows": true, "orders": true, "decrees": true, "sends": true, "enacts": true}
 
 // audience: who receives an act. Speech reaches everyone on stage (off
 // stage: the named recipients); whispers only the named recipients;

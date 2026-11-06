@@ -1,0 +1,77 @@
+# 오셀로 합격 기준(정답 셋). 기대값은 원작(texts/othello-mit.txt, MIT 판 막.장.줄)과 학계 해석(이중 시간)에서 왔다.
+# 이 코퍼스는 알려진 원작 모순을 도구가 **찾아야** 합격이다. 그 진단은 억제하지 않는다(waived: false).
+# 도구 출력에 맞춰 고치지 않는다. 고칠 때는 원문 근거를 why 와 보고서에 남긴다.
+work: othello
+compile_errors: 0
+
+expected:
+  - rule: time-cycle
+    target: "othello.cyprus/3.4"       # 비앙카의 "keep a week away"(3.4.190)가 있는 장면의 when 문장들(대상 = 장면)
+    waived: false
+    why: >-
+      이중 시간(Wilson/"Christopher North" 이래의 학계 해석). 짧은 시계: 키프로스 도착(2.1) → 그날 밤 소동(2.3, 2.3.1
+      "to-night", 2.3.379 "'tis morning") → 다음 날(3.1.2 "Good morrow", 3.3, 3.4, 4.1 "this night") → 다음 날 밤 죽음(5.2).
+      3.4 는 도착에서 36시간 안이다. 긴 시계: 3.4.190-191 비앙카 "What, keep a week away? seven days and nights? / Eight score
+      eight hours?" — 키프로스 사람인 비앙카(4.1.110)를 카시오는 섬에 온(2.1) 뒤 찾아왔고 그 마지막 방문에서 7일 이상이 지났다.
+      두 시계는 함께 만족될 수 없다. 대상은 순환 간선 중 원문상 가장 앞선 문장의 장면(3.4)이고, 그 장면이 긴 시계 단서를 담는다.
+
+queries:
+  - name: short-clock-arrival-to-death-within-72h
+    why: >-
+      짧은 시계의 최대 폭: 도착(2.1 시작)에서 데스데모나의 죽음까지. 2.1 은 낮(2.2.10 "from this present hour of five"),
+      5.2 는 도착 다음 날 밤(4.1.218 "this night", 5.1.130 "to-night")이라 상한은 72시간 아래다. 하한은 반나절 이상이다
+      (그날 밤의 소동 뒤 하룻낮이 지난다).
+    sql: |
+      SELECT (SELECT d FROM point_dist WHERE work_id = $1 AND src = $1 || '/othello.cyprus/2.1.start' AND dst = $1 || '/othello.cast/desdemona.died') <= 72 * 3600,
+             (SELECT -d FROM point_dist WHERE work_id = $1 AND src = $1 || '/othello.cast/desdemona.died' AND dst = $1 || '/othello.cyprus/2.1.start') >= 12 * 3600
+    rows: [["true", "true"]]
+
+  - name: wedding-to-death-unbounded-by-the-voyage
+    why: >-
+      과제 지침은 "결혼 → 죽음 ≤ 72시간"이었으나 원문은 베네치아 → 키프로스 항해의 길이를 말하지 않는다(2.1.1-20 폭풍,
+      2.1.84 "A se'nnight's speed" 는 예정보다 이르다는 말일 뿐). 그래서 결혼에서 죽음까지의 상한은 없다(NULL). 짧은 시계의
+      72시간은 도착부터 잰다(위 질의). 결혼 밤 → 1.3 은 반나절 안이다(1.2.58 "to-night", 1.3.298 "You must away to-night").
+    sql: |
+      SELECT (SELECT d FROM point_dist WHERE work_id = $1 AND src = $1 || '/othello.venice/wedding.start' AND dst = $1 || '/othello.cast/desdemona.died') IS NULL,
+             (SELECT d FROM point_dist WHERE work_id = $1 AND src = $1 || '/othello.venice/wedding.start' AND dst = $1 || '/othello.venice/1.3.end') <= 24 * 3600
+    rows: [["true", "true"]]
+
+  - name: othello-first-poisoned-by-iago
+    why: >-
+      오셀로가 desdemona_false 를 처음 듣는 출처는 3.3.460 이아고의 거짓("I lay with Cassio lately")이다. 4.1.44 의 되풀이는 그 뒤다.
+    sql: |
+      WITH c AS (
+        SELECT DISTINCT a.id, a.pt, a.actor_id, a.verb, a.src_ref
+          FROM believes b JOIN act a ON a.id = b.cause_act
+         WHERE b.work_id = $1 AND b.value AND b.entity_id = $1 || '/othello.cast/othello'
+           AND b.prop_id = $1 || '/othello.cast/desdemona_false')
+      SELECT lint_short(c.actor_id), c.verb, c.src_ref FROM c
+       WHERE NOT EXISTS (SELECT 1 FROM c d WHERE d.id <> c.id AND precedes($1, c.pt, d.pt) <> 'yes')
+    rows: [["iago", "lies", "3.3.460"]]
+
+  - name: emilia-and-the-napkin
+    why: >-
+      에밀리아는 3.3.325 에서 손수건을 줍고(3.3.347 이아고에게 말한다), 3.4.20 데스데모나에게 "I know not, madam" 이라고 숨기며,
+      5.2.262 에서야 오셀로에게 밝힌다. 원문 순서 그대로 네 행위다(줍기 = sees).
+    sql: |
+      SELECT a.verb, a.src_ref FROM act a
+       WHERE a.work_id = $1 AND a.actor_id = $1 || '/othello.cast/emilia'
+         AND (lint_canon($1, a.prop_id) = lint_canon($1, $1 || '/othello.cast/emilia_found_napkin')
+              OR lint_canon($1, a.prop_id) = lint_neg($1, lint_canon($1, $1 || '/othello.cast/emilia_found_napkin')))
+       ORDER BY a.src_id
+    rows: [["sees", "3.3.325"], ["tells", "3.3.347"], ["lies", "3.4.20"], ["tells", "5.2.262"]]
+
+  - name: desdemona-hears-of-the-dismissal-from-othello
+    why: >-
+      데스데모나는 2.3.252 의 해임 때 무대에 없었다(2.3.253 "Look, if my gentle love be not raised up!" 에 들어온다).
+      3.1.47 "The general and his wife are talking of it" 가 출처다. 3.3.1 의 약속은 그 뒤다.
+    sql: |
+      SELECT DISTINCT lint_short(a.actor_id), lint_short(a.scene_id)
+        FROM believes b JOIN act a ON a.id = b.cause_act
+       WHERE b.work_id = $1 AND b.value AND b.entity_id = $1 || '/othello.cast/desdemona'
+         AND b.prop_id = $1 || '/othello.cast/cassio_cashiered'
+       ORDER BY 1, 2
+    rows: [["othello", "talk"]]
+
+mutation_min_rate: 0.8
+mutation_min_rate_wo_move_before: 0.7   # ADR-014

@@ -4,7 +4,7 @@
 package ir
 
 // Schema is bumped whenever a table or field changes.
-const Schema = 1
+const Schema = 3
 
 type Work struct {
 	Schema       int           `json:"schema"`
@@ -34,6 +34,8 @@ type Work struct {
 	Withholds    []Withhold    `json:"withholds"`
 	Directives   []Directive   `json:"directives"`
 	Waivers      []Waiver      `json:"waivers"`
+	Attributes   []Attribute   `json:"attributes"`
+	PatternDecls []PatternDecl `json:"pattern_decls"`
 }
 
 type WorkRow struct {
@@ -207,6 +209,7 @@ type Fact struct {
 	Text   string   `json:"text"`
 	Truth  string   `json:"truth"`
 	Def    *PropDef `json:"def"`
+	Tag    string   `json:"tag,omitempty"` // `fact … tag <name>` (identity = 정체 사실, recognition 패턴)
 	SrcID  int      `json:"src_id"`
 }
 
@@ -297,4 +300,30 @@ type Waiver struct {
 	TargetID   string `json:"target_id"`
 	Reason     string `json:"reason"`
 	SrcID      int    `json:"src_id"`
+}
+
+// Attribute is one `attr <entity>.<key> = <value>` assertion. Kind int|str|id
+// (id values are resolved decl ids, or the bare word when undeclared). AtPt ""
+// = true from the start (top level or a declaration block). AccountID is the
+// account the statement sits in ("" = not inside an account).
+type Attribute struct {
+	ID        string `json:"id"`
+	EntityID  string `json:"entity_id"`
+	Key       string `json:"key"`
+	Value     string `json:"value"`
+	Kind      string `json:"kind"`
+	AtPt      string `json:"at_pt"`
+	AccountID string `json:"account_id"`
+	SrcRef    string `json:"src_ref"`
+	SrcID     int    `json:"src_id"`
+}
+
+// PatternDecl is one author declaration `pattern <id> [at <scene>]`. ID is
+// <scene or module id>#<pattern> (the waiver target of pattern-missing).
+// SceneID "" = anywhere in the work.
+type PatternDecl struct {
+	ID      string `json:"id"`
+	Pattern string `json:"pattern"`
+	SceneID string `json:"scene_id"`
+	SrcID   int    `json:"src_id"`
 }
