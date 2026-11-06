@@ -11,8 +11,9 @@
 -- 위반(키 ≠ age, 또는 값이 정수가 아닌 age): 정규값이 다르다. `attr` 재단언은 값을 바꾸는 사건이 아니고
 --   지금 언어에는 값을 바꾸는 사건이 없으므로, 다른 값은 시점과 무관하게 충돌이다(바뀐 것이 맞으면 억제).
 -- 위반(키 = age, 둘 다 int): da = 나이(q) − 나이(p), 경과 t = t_q − t_p (년, 1y = 365d).
---   t 의 경계 [lo, hi] = [−d(q, p), d(p, q)] (point_dist). 둘 다 있으면 모든 t 에서 |da − t| > 1 일 때
---   (lo > da + 1 또는 hi < da − 1). 하나라도 없으면 precedes(p, q) = yes 이고 da < 0(나이가 준다)일 때만.
+--   t 의 경계 [lo, hi] = [−d(q, p), d(p, q)] (point_dist, 없으면 그쪽은 무한). 두 검사는 따로 한다(fix 1):
+--   hi 가 있고 hi < da − 1(경과가 너무 짧다), 또는 lo 가 있고 lo > da + 1(경과가 너무 길다) — 어느 쪽이든
+--   [lo, hi] 의 모든 t 에서 |da − t| > 1 이다. 그리고 경계와 무관하게 precedes(p, q) = yes 이고 da < 0(나이가 준다).
 -- 한 대상에 맞서는 단언이 여럿이면 원문에서 가장 앞선 것 하나를 data.other 로 싣는다.
 WITH
 a AS (
@@ -34,9 +35,9 @@ conflict AS (
     LEFT JOIN point_dist lo ON lo.work_id = $1 AND lo.src = l.pt AND lo.dst = l.p_pt
    CROSS JOIN LATERAL (SELECT CASE WHEN l.age THEN l.v::numeric - l.p_v::numeric END AS da) g
    WHERE (NOT l.age AND (l.kind, l.v) <> (l.p_kind, l.p_v))
-      OR (l.age AND hi.d IS NOT NULL AND lo.d IS NOT NULL
-          AND (-lo.d / 31536000.0 > g.da + 1 OR hi.d / 31536000.0 < g.da - 1))
-      OR (l.age AND (hi.d IS NULL OR lo.d IS NULL) AND l.fwd = 'yes' AND g.da < 0))
+      OR (l.age AND hi.d / 31536000.0 < g.da - 1)
+      OR (l.age AND -lo.d / 31536000.0 > g.da + 1)
+      OR (l.age AND l.fwd = 'yes' AND g.da < 0))
 SELECT DISTINCT ON (c.id) 'attribute' AS target_kind, c.id AS target_id, c.src_id,
        format('%s.%s = %s conflicts with %s', lint_short(c.entity_id), c.key, lint_short(c.value), lint_short(c.p_value))
          AS message,

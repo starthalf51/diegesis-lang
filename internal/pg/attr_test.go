@@ -96,3 +96,29 @@ scene 5
 		t.Errorf("attribute-conflict = %v, want none", got)
 	}
 }
+
+// 한쪽 경계만 있어도 판정한다(fix 1). 위 경계만: 날짜 없는 장면(≥ origin)과 1600 년 장면(epoch = 1600) 사이는
+// 1년 안 → 20 → 30 은 충돌. 아래 경계만: 10y 이상 뒤 → 20 → 21 은 충돌. 양쪽 다 없으면 감소만(위 Age 테스트).
+func TestAttributeAgeOneSided(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, `scene 1
+  attr a.age = 20
+scene 2
+  when at 1600
+  attr a.age = 30
+scene 3
+  attr b.age = 20
+scene 4
+  when after 3 by 10y..20y
+  attr b.age = 21
+scene 5
+  attr c.age = 20
+scene 6
+  when after 5
+  attr c.age = 60
+`)
+	want := []string{"t.s/2#attr1/warn", "t.s/4#attr1/warn"}
+	if got := of(lint(t, pool, id), "attribute-conflict", id); !slices.Equal(got, want) {
+		t.Errorf("attribute-conflict = %v, want %v", got, want)
+	}
+}
