@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,6 +13,11 @@ import (
 func TestBenchDryRun(t *testing.T) {
 	ctx := context.Background()
 	out := t.TempDir()
+	defer func() {
+		if fmt.Sprintf("%p", runB) == fmt.Sprintf("%p", fakeB) {
+			t.Error("-dry left runB swapped to fakeB")
+		}
+	}()
 	idea := filepath.Join(out, "idea.txt")
 	os.WriteFile(idea, []byte("가짜 아이디어. 장면 3개."), 0o644)
 	for _, c := range []string{"a", "b"} {

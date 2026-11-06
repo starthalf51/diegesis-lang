@@ -290,7 +290,9 @@ func run(ctx context.Context, cmd string, args []string, w io.Writer) error {
 	var c render.Completer = render.NewClaudeCLI()
 	if *dry {
 		c = fake{}
+		prev := runB
 		runB = fakeB
+		defer func() { runB = prev }()
 	}
 	switch cmd {
 	case "sum":
