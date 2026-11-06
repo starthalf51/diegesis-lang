@@ -123,3 +123,39 @@ func TestBuildPromptNoFactsThroughAddedThoughts(t *testing.T) {
 		t.Error("system prompt lacks the no-restated-facts rule")
 	}
 }
+
+// 거짓 사실을 담은 액트(says/lies)는 서술자가 사실로 단정하지 않도록 표시한다(데모 s4 "종은 울렸고").
+func TestPromptMarksFalseFacts(t *testing.T) {
+	const tag = "(false — the speaker believes or claims it; the narrator must not assert it)"
+	s := Scene{
+		Facts: []Fact{{ID: "bell_rang", Text: "the bell rang", True: false}, {ID: "door_open", Text: "the door is open", True: true}},
+		Beats: []Beat{{Acts: []Act{
+			{Actor: "a", Verb: "says", Fact: "bell_rang"},
+			{Actor: "a", Verb: "lies", Fact: "bell_rang"},
+			{Actor: "a", Verb: "says", Fact: "door_open"},
+		}}},
+	}
+	sys, user, err := BuildPrompt(s, VariantIROnly, "en", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var lines []string
+	for _, l := range strings.Split(user, "\n") {
+		if strings.HasPrefix(l, "- ") && strings.Contains(l, ": the ") {
+			lines = append(lines, l)
+		}
+	}
+	if len(lines) != 3 {
+		t.Fatalf("want 3 act lines, got %q", lines)
+	}
+	if !strings.HasSuffix(lines[0], tag) || !strings.Contains(lines[1], "lies") || !strings.HasSuffix(lines[1], tag) {
+		t.Errorf("false facts not marked: %q", lines[:2])
+	}
+	if strings.Contains(lines[2], "false") {
+		t.Errorf("true fact marked: %q", lines[2])
+	}
+	rule := "- A fact marked false is only what a character says, believes or pretends. Never state it in the narrator's own voice as what happened."
+	if !strings.Contains(sys, rule) {
+		t.Error("system prompt lacks the false-fact rule")
+	}
+}
