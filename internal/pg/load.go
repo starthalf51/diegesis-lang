@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"story-lang/internal/ir"
+	"silmari/internal/ir"
 )
 
 // Load 는 IR 하나를 한 트랜잭션으로 적재한다. 작품 행을 지우고(CASCADE 로 하위 행까지)

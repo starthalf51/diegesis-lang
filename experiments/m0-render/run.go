@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "story-lang/internal/render"
+	. "silmari/internal/render"
 
 	"context"
 	"encoding/json"

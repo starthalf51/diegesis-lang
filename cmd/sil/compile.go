@@ -9,18 +9,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/sema"
-	"story-lang/internal/syntax"
+	"silmari/internal/ir"
+	"silmari/internal/sema"
+	"silmari/internal/syntax"
 )
 
-// compile parses every .sl / .sl.md under dir and builds the IR. Paths in
+// compile parses every .sil.md under dir and builds the IR. Paths in
 // the IR are relative to dir; diags carry dir-joined paths for humans.
 func compile(dir string) (*ir.Work, []syntax.Diag, error) {
 	var files []*syntax.File
 	var diags []syntax.Diag
 	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !(strings.HasSuffix(p, ".sl.md") || strings.HasSuffix(p, ".sl")) {
+		if err != nil || d.IsDir() || !syntax.IsSource(p) {
 			return err
 		}
 		src, err := os.ReadFile(p)
@@ -66,8 +66,8 @@ func report(out io.Writer, diags []syntax.Diag, asJSON bool) (bool, error) {
 	return failed, nil
 }
 
-// cmdCompile runs `slc check <dir> [--json]` (exit 1 on any error) and
-// `slc build <dir> -o ir.json` (writes nothing when there are errors).
+// cmdCompile runs `sil check <dir> [--json]` (exit 1 on any error) and
+// `sil build <dir> -o ir.json` (writes nothing when there are errors).
 func cmdCompile(args []string) int {
 	var dir, outPath string
 	asJSON := false
@@ -89,7 +89,7 @@ func cmdCompile(args []string) int {
 	}
 	w, diags, err := compile(dir)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "slc:", err)
+		fmt.Fprintln(os.Stderr, "sil:", err)
 		return 1
 	}
 	diagOut := io.Writer(os.Stdout)
@@ -106,7 +106,7 @@ func cmdCompile(args []string) int {
 			err = os.WriteFile(outPath, append(b, '\n'), 0o644)
 		}
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "slc:", err)
+			fmt.Fprintln(os.Stderr, "sil:", err)
 			return 1
 		}
 	}
@@ -114,6 +114,6 @@ func cmdCompile(args []string) int {
 }
 
 func usage() int {
-	fmt.Fprintln(os.Stderr, "usage: slc db migrate | check <dir> [--json] | build <dir> -o ir.json | load <ir.json|dir> | lint <work|dir|ir.json> [--json] | test <corpus-dir> [--seed N] [--mutants N] | render <work|dir> <scene> --backend <id> [-o file] | render-check <corpus...> [--force]")
+	fmt.Fprintln(os.Stderr, "usage: sil db migrate | check <dir> [--json] | build <dir> -o ir.json | load <ir.json|dir> | lint <work|dir|ir.json> [--json] | test <corpus-dir> [--seed N] [--mutants N] | render <work|dir> <scene> --backend <id> [-o file] | render-check <corpus...> [--force]")
 	return 2
 }

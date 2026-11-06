@@ -1,4 +1,4 @@
-// slc 는 story-lang 컴파일러 CLI. 판정은 PG 가 하고 여기서는 호출·출력만 한다.
+// sil 는 Silmari(실마리) 컴파일러 CLI. 판정은 PG 가 하고 여기서는 호출·출력만 한다.
 package main
 
 import (
@@ -9,16 +9,16 @@ import (
 	"io/fs"
 	"os"
 
-	"story-lang/db"
-	"story-lang/internal/ir"
-	"story-lang/internal/pg"
+	"silmari/db"
+	"silmari/internal/ir"
+	"silmari/internal/pg"
 )
 
 func main() {
 	args := os.Args[1:]
 	if len(args) >= 2 && args[0] == "db" && args[1] == "migrate" {
 		if err := migrate(os.Stdout); err != nil {
-			fmt.Fprintln(os.Stderr, "slc:", err)
+			fmt.Fprintln(os.Stderr, "sil:", err)
 			os.Exit(1)
 		}
 		return
@@ -43,12 +43,12 @@ func main() {
 	}
 	if args[0] == "load" && len(args) == 2 {
 		if _, err := load(args[1], os.Stdout); err != nil {
-			fmt.Fprintln(os.Stderr, "slc:", err)
+			fmt.Fprintln(os.Stderr, "sil:", err)
 			os.Exit(1)
 		}
 		return
 	}
-	fmt.Fprintf(os.Stderr, "slc %s: not implemented\n", args[0])
+	fmt.Fprintf(os.Stderr, "sil %s: not implemented\n", args[0])
 	os.Exit(2)
 }
 

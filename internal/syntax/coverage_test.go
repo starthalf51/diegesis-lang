@@ -150,7 +150,7 @@ func decl(items []Node, id string) *Decl {
 }
 
 func TestParseCoverage(t *testing.T) {
-	f, diags := ParseFile("cast.sl", []byte(coverage))
+	f, diags := ParseFile("cast.sil", []byte(coverage))
 	for _, d := range diags {
 		t.Errorf("%s", d)
 	}

@@ -9,12 +9,12 @@ import (
 	"strconv"
 	"strings"
 
-	"story-lang/internal/accept"
-	"story-lang/internal/pg"
-	"story-lang/rules"
+	"silmari/internal/accept"
+	"silmari/internal/pg"
+	"silmari/rules"
 )
 
-// cmdTest runs `slc test <corpus-dir> [--seed N] [--mutants N]`: compile, load, lint, the named
+// cmdTest runs `sil test <corpus-dir> [--seed N] [--mutants N]`: compile, load, lint, the named
 // queries and the mutation run, judged against <dir>/expect.yaml. The report goes to
 // out/accept/<work>.md. Exit 0 only on PASS.
 func cmdTest(args []string) int {
@@ -44,7 +44,7 @@ func cmdTest(args []string) int {
 	}
 	r, err := runTest(dir, seed, n)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "slc:", err)
+		fmt.Fprintln(os.Stderr, "sil:", err)
 		return 1
 	}
 	if !r.Pass {

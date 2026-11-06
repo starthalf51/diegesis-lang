@@ -1,4 +1,4 @@
-module story-lang
+module silmari
 
 go 1.27.3
 

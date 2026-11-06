@@ -9,8 +9,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/pg"
+	"silmari/internal/ir"
+	"silmari/internal/pg"
 )
 
 var pgxReadOnly = pgx.TxOptions{AccessMode: pgx.ReadOnly}

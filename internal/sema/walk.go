@@ -3,8 +3,8 @@ package sema
 import (
 	"fmt"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"silmari/internal/ir"
+	"silmari/internal/syntax"
 )
 
 // walker emits one container's body in statement order.

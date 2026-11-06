@@ -164,5 +164,5 @@ queries:
 
 mutation_min_rate: 0.8
 
-# slc render-check 가 모든 문체 백엔드로 렌더해 내용 동일·어투 상이를 판정하는 장면(ADR-012). 대사가 많은 중간 크기 장면.
+# sil render-check 가 모든 문체 백엔드로 렌더해 내용 동일·어투 상이를 판정하는 장면(ADR-012). 대사가 많은 중간 크기 장면.
 render_scene: "19.1"

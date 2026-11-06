@@ -3,8 +3,8 @@ package sema
 import (
 	"strings"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"silmari/internal/ir"
+	"silmari/internal/syntax"
 )
 
 var entityKinds = map[string]bool{"character": true, "group": true, "place": true, "thing": true,

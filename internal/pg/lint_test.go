@@ -11,9 +11,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"story-lang/internal/pg"
-	"story-lang/internal/sema"
-	"story-lang/internal/syntax"
+	"silmari/internal/pg"
+	"silmari/internal/sema"
+	"silmari/internal/syntax"
 )
 
 // cast 는 규칙 픽스처의 공통 선언. WK 는 고유한 작품 ID 로 바뀐다.
@@ -35,7 +35,7 @@ artifact letter "L"
 func compileLoad(t *testing.T, pool *pgxpool.Pool, body string) string {
 	t.Helper()
 	id := fmt.Sprintf("t_%d", rand.Int63())
-	f, diags := syntax.ParseFile("t.sl", []byte(strings.ReplaceAll(cast+body, "WK", id)))
+	f, diags := syntax.ParseFile("t.sil", []byte(strings.ReplaceAll(cast+body, "WK", id)))
 	w, ds := sema.Build([]*syntax.File{f})
 	for _, d := range append(diags, ds...) {
 		if d.Severity == "error" {

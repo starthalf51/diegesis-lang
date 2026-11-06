@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"silmari/internal/ir"
+	"silmari/internal/syntax"
 )
 
 const goldenDir = "../../testdata/golden"
@@ -49,7 +49,7 @@ func parse(t *testing.T, srcs map[string]string) []*syntax.File {
 
 func build(t *testing.T, scene string) (*ir.Work, []syntax.Diag) {
 	t.Helper()
-	w, diags := Build(parse(t, map[string]string{"cast.sl": cast, "s.sl": scene}))
+	w, diags := Build(parse(t, map[string]string{"cast.sil": cast, "s.sil": scene}))
 	if w == nil {
 		t.Fatal("Build returned nil IR")
 	}
@@ -67,7 +67,7 @@ func noErrors(t *testing.T, diags []syntax.Diag) {
 
 // SL_UPDATE_GOLDEN=1 rewrites macbeth.ir.json.
 func TestBuildMacbethGolden(t *testing.T) {
-	paths, _ := filepath.Glob(filepath.Join(goldenDir, "macbeth-*.sl.md"))
+	paths, _ := filepath.Glob(filepath.Join(goldenDir, "macbeth-*.sil.md"))
 	if len(paths) != 4 {
 		t.Fatalf("want 4 macbeth inputs (3 scenes + cast), got %v", paths)
 	}
@@ -190,8 +190,8 @@ scene 1 at room
 	}
 	var got []pos
 	for _, d := range diags {
-		if d.File != "s.sl" || d.Severity != "error" {
-			t.Errorf("want error in s.sl: %s", d)
+		if d.File != "s.sil" || d.Severity != "error" {
+			t.Errorf("want error in s.sil: %s", d)
 		}
 		got = append(got, pos{d.Rule, d.Line, d.Col})
 	}
@@ -203,10 +203,10 @@ scene 1 at room
 
 func TestErrorsKindsAndImports(t *testing.T) {
 	w, diags := Build(parse(t, map[string]string{
-		"cast.sl": cast,
-		"x.sl":    "module t.x\nimport t.y\n",
-		"y.sl":    "module t.y\nimport t.x\n",
-		"s.sl": `module t.s
+		"cast.sil": cast,
+		"x.sil":    "module t.x\nimport t.y\n",
+		"y.sil":    "module t.y\nimport t.x\n",
+		"s.sil": `module t.s
 import t.cast
 scene 1 at a
   enter room
@@ -219,7 +219,7 @@ scene 1 at a
 			got = append(got, d.File+":"+d.Rule)
 		}
 	}
-	want := []string{"s.sl:arg-kind", "s.sl:arg-kind", "s.sl:role-unknown", "s.sl:arg-kind", "y.sl:import-cycle"}
+	want := []string{"s.sil:arg-kind", "s.sil:arg-kind", "s.sil:role-unknown", "s.sil:arg-kind", "y.sil:import-cycle"}
 	if !slices.Equal(got, want) {
 		t.Errorf("diags = %v, want %v", got, want)
 	}
@@ -329,8 +329,8 @@ born a when after X
 
 func TestEventAccountPayoffRole(t *testing.T) {
 	w, diags := Build(parse(t, map[string]string{
-		"cast.sl": cast + "role chief \"Chief\"\n  held a from start\nartifact letter \"L\"\n  contains p\n",
-		"s.sl": `module t.s
+		"cast.sil": cast + "role chief \"Chief\"\n  held a from start\nartifact letter \"L\"\n  contains p\n",
+		"s.sil": `module t.s
 import t.cast
 event e "off stage"
   when after 1

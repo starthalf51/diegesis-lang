@@ -8,21 +8,20 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/sema"
-	"story-lang/internal/syntax"
+	"silmari/internal/ir"
+	"silmari/internal/sema"
+	"silmari/internal/syntax"
 )
 
-// corpusIR 는 corpus/<work> 를 컴파일하고 작품 ID 를 고유한 것으로 바꾼다(slc 가 적재한 실제 작품과 겹치지 않게).
+// corpusIR 는 corpus/<work> 를 컴파일하고 작품 ID 를 고유한 것으로 바꾼다(sil 가 적재한 실제 작품과 겹치지 않게).
 func corpusIR(t *testing.T, work string) (*ir.Work, string) {
 	t.Helper()
 	var files []*syntax.File
 	dir := filepath.Join("..", "..", "corpus", work)
 	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !strings.HasSuffix(p, ".sl.md") {
+		if err != nil || d.IsDir() || !syntax.IsSource(p) {
 			return err
 		}
 		src, err := os.ReadFile(p)

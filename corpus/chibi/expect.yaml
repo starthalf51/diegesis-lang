@@ -4,7 +4,7 @@ work: chibi
 compile_errors: 0
 
 expected:
-  # 정사 대조(accounts.sl.md). 연의에만 있는 것 셋, 정사에만 있는 것 하나. 보고서다(info).
+  # 정사 대조(accounts.sil.md). 연의에만 있는 것 셋, 정사에만 있는 것 하나. 보고서다(info).
   - rule: account-variance
     target: "chibi.accounts/romance_account#a2"
     severity: info
@@ -182,5 +182,5 @@ queries:
 
 mutation_min_rate: 0.8
 
-# slc render-check 가 모든 문체 백엔드로 렌더해 내용 동일·어투 상이를 판정하는 장면(ADR-012). 대사가 많은 중간 크기 장면.
+# sil render-check 가 모든 문체 백엔드로 렌더해 내용 동일·어투 상이를 판정하는 장면(ADR-012). 대사가 많은 중간 크기 장면.
 render_scene: "45.88"

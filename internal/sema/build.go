@@ -11,8 +11,8 @@ import (
 	"sort"
 	"strings"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"silmari/internal/ir"
+	"silmari/internal/syntax"
 )
 
 type decl struct{ kind, id string }

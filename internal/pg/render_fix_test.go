@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"story-lang/internal/pg"
-	"story-lang/internal/render"
+	"silmari/internal/pg"
+	"silmari/internal/render"
 )
 
 // withhold 의 until 이 비트(장면#비트)면 그 장면을 접두어로 찾는다. LIKE 는 장면 ID 의 '_' 를 와일드카드로 읽어

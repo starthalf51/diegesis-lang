@@ -1,5 +1,5 @@
-// Package syntax splits .sl.md files, desugars frontmatter and parses the
-// story-lang language (spec/grammar.ebnf) into an AST.
+// Package syntax splits .sil.md files, desugars frontmatter and parses the
+// Silmari language (spec/grammar.ebnf) into an AST.
 package syntax
 
 import (

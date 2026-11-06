@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"story-lang/internal/mutate"
-	"story-lang/internal/pg"
+	"silmari/internal/mutate"
+	"silmari/internal/pg"
 )
 
 const expectYAML = `work: w
@@ -18,7 +18,7 @@ mutation_min_rate: 0.8
 `
 
 func diag(rule, target, sev string, waived bool) pg.Diagnostic {
-	return pg.Diagnostic{Rule: rule, TargetID: "w/" + target, Severity: sev, Waived: waived, File: "f.sl.md", Line: 3}
+	return pg.Diagnostic{Rule: rule, TargetID: "w/" + target, Severity: sev, Waived: waived, File: "f.sil.md", Line: 3}
 }
 
 func passing() Input {

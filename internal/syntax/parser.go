@@ -5,7 +5,7 @@ import (
 	"sort"
 )
 
-// ParseFile parses one .sl.md file (or a .sl file, which is all language)
+// ParseFile parses one .sil.md file (or a .sil file, which is all language)
 // into an AST. It never stops at the first error: every line that fails is
 // reported and parsing resumes at the next line.
 func ParseFile(path string, src []byte) (*File, []Diag) {

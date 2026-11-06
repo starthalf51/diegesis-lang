@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"silmari/internal/ir"
+	"silmari/internal/syntax"
 )
 
 func i64(v int64) *int64 { return &v }

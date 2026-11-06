@@ -9,8 +9,8 @@ import (
 	"os"
 	"testing"
 
-	"story-lang/db"
-	"story-lang/internal/pg"
+	"silmari/db"
+	"silmari/internal/pg"
 )
 
 func migrations(t *testing.T) fs.FS {

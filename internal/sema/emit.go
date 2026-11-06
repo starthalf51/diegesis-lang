@@ -1,8 +1,8 @@
 package sema
 
 import (
-	"story-lang/internal/ir"
-	"story-lang/internal/syntax"
+	"silmari/internal/ir"
+	"silmari/internal/syntax"
 )
 
 // top emits one top-level item and returns its waiver target.

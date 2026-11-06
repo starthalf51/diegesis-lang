@@ -8,11 +8,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"story-lang/internal/pg"
-	"story-lang/rules"
+	"silmari/internal/pg"
+	"silmari/rules"
 )
 
-// cmdLint runs `slc lint <work|dir|ir.json> [--json]`. A dir or ir.json is
+// cmdLint runs `sil lint <work|dir|ir.json> [--json]`. A dir or ir.json is
 // built and loaded first; a bare name is a work already loaded. Exit 1 when
 // any unwaived warn remains.
 func cmdLint(args []string) int {
@@ -34,7 +34,7 @@ func cmdLint(args []string) int {
 	work, base := target, ""
 	if st, err := os.Stat(target); err == nil {
 		if work, err = load(target, os.Stderr); err != nil {
-			fmt.Fprintln(os.Stderr, "slc:", err)
+			fmt.Fprintln(os.Stderr, "sil:", err)
 			return 1
 		}
 		if st.IsDir() {
@@ -44,13 +44,13 @@ func cmdLint(args []string) int {
 	ctx := context.Background()
 	pool, err := pg.Connect(ctx)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "slc:", err)
+		fmt.Fprintln(os.Stderr, "sil:", err)
 		return 1
 	}
 	defer pool.Close()
 	ds, err := pg.Lint(ctx, pool, work, rules.FS)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "slc:", err)
+		fmt.Fprintln(os.Stderr, "sil:", err)
 		return 1
 	}
 	failed := false

@@ -11,11 +11,11 @@ import (
 	"strings"
 	"testing"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/mutate"
-	"story-lang/internal/pg"
-	"story-lang/internal/sema"
-	"story-lang/internal/syntax"
+	"silmari/internal/ir"
+	"silmari/internal/mutate"
+	"silmari/internal/pg"
+	"silmari/internal/sema"
+	"silmari/internal/syntax"
 )
 
 const fixture = `module t.s
@@ -84,7 +84,7 @@ func targets(ms []mutate.Mutation, op string) []string {
 }
 
 func TestGenerateTargets(t *testing.T) {
-	ms := mutate.Generate(build(t, map[string]string{"t.sl": fixture}), 1, 0)
+	ms := mutate.Generate(build(t, map[string]string{"t.sil": fixture}), 1, 0)
 	for op, want := range map[string][]string{
 		// a tells b: p → b 가 2 에서 p 를 쓴다. b tells a: r → a 는 r 을 안 쓴다. c(oracle 그룹) tells → a 가 q 를 안 쓴다
 		"drop-tells": {"1#a2"},
@@ -113,13 +113,13 @@ func TestGenerateTargets(t *testing.T) {
 			t.Errorf("%s %s: no used props", m.Op, m.Target)
 		}
 	}
-	if n := len(mutate.Generate(build(t, map[string]string{"t.sl": fixture}), 7, 3)); n != 3 {
+	if n := len(mutate.Generate(build(t, map[string]string{"t.sil": fixture}), 7, 3)); n != 3 {
 		t.Errorf("Generate(n=3) = %d mutations", n)
 	}
 }
 
 func TestApplyCopies(t *testing.T) {
-	w := build(t, map[string]string{"t.sl": fixture})
+	w := build(t, map[string]string{"t.sil": fixture})
 	before := len(w.Acts)
 	for _, m := range mutate.Generate(w, 1, 0) {
 		got := mutate.Apply(w, m)
@@ -215,7 +215,7 @@ func corpus(t *testing.T, dir string) *ir.Work {
 	t.Helper()
 	files := map[string]string{}
 	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !strings.HasSuffix(p, ".sl.md") {
+		if err != nil || d.IsDir() || !syntax.IsSource(p) {
 			return err
 		}
 		b, err := os.ReadFile(p)

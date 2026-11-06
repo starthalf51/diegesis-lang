@@ -11,7 +11,7 @@ import (
 	"slices"
 	"strings"
 
-	"story-lang/internal/ir"
+	"silmari/internal/ir"
 )
 
 // Mutation: Op 연산자, Target 대상(행위 ID, `entity@scene`, `act prop`, setup ID, died 시점 ID),

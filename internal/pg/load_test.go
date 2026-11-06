@@ -11,8 +11,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"story-lang/internal/ir"
-	"story-lang/internal/pg"
+	"silmari/internal/ir"
+	"silmari/internal/pg"
 )
 
 // open 은 마이그레이션까지 끝난 풀을 돌려준다.
