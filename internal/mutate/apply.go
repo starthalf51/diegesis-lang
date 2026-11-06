@@ -46,6 +46,22 @@ func Apply(w *ir.Work, m Mutation) *ir.Work {
 		isolate(c, m.Target)
 		c.TimeEdges = append(c.TimeEdges, ir.TimeEdge{From: origin(c), To: m.Target, Min: i64(0)},
 			ir.TimeEdge{From: m.Target, To: last, Min: i64(1)})
+	case "shift-duration", "swap-order":
+		// 대상 간선(그 두 끝점의 첫 문장 간선) 하나를 +Shift 하거나 뒤집는다(나머지 제약은 그대로 둔다).
+		from, to, _ := strings.Cut(m.Target, " ")
+		for i, e := range c.TimeEdges {
+			if e.From != from || e.To != to || e.Waived || e.TargetID == "" {
+				continue
+			}
+			if m.Op == "swap-order" {
+				// 뒤집기: 끝점을 맞바꾸되 장면·사건의 경계는 반대쪽 끝으로(`C before X` 의 C.end→X.start 는 X.end→C.start,
+				// 곧 `C after X`). born→died 같은 한 시점은 그대로 맞바꾼다.
+				c.TimeEdges[i].From, c.TimeEdges[i].To = otherEnd(c, to), otherEnd(c, from)
+			} else {
+				c.TimeEdges[i].Min, c.TimeEdges[i].Max = sum(e.Min, i64(Shift)), sum(e.Max, i64(Shift))
+			}
+			break
+		}
 	case "flip-perceived":
 		act, p, _ := strings.Cut(m.Target, " ")
 		np := negate(c, p)
@@ -64,6 +80,18 @@ func Apply(w *ir.Work, m Mutation) *ir.Work {
 		}
 	}
 	return c
+}
+
+func otherEnd(w *ir.Work, p string) string {
+	for _, s := range w.Scenes {
+		switch p {
+		case s.StartPt:
+			return s.EndPt
+		case s.EndPt:
+			return s.StartPt
+		}
+	}
+	return p
 }
 
 func i64(v int64) *int64 { return &v }

@@ -101,7 +101,7 @@ func runTest(dir string, seed int64, n int) (accept.Result, error) {
 		}
 		in.Diags = append(in.Diags, ds...)
 		in.Rows, in.QueryErrors = accept.RunQueries(ctx, pool, e.Work, e.Queries)
-		if in.Mutants, err = accept.RunMutants(ctx, pool, w, ds, seed, n, os.Stderr); err != nil {
+		if in.Mutants, err = accept.RunMutants(ctx, pool, w, ds, e.Queries, seed, n, os.Stderr); err != nil {
 			return accept.Result{}, err
 		}
 	}
@@ -123,8 +123,9 @@ func runTest(dir string, seed int64, n int) (accept.Result, error) {
 	if r.Pass {
 		verdict = "PASS"
 	}
-	fmt.Printf("%s %s: compile errors %d, expected %d/%d, false positives %d, queries %d/%d, mutation %d/%d = %.2f (min %.2f) → %s\n",
+	fmt.Printf("%s %s: compile errors %d, expected %d/%d, false positives %d, queries %d/%d, mutation %d/%d = %.2f (min %.2f), without move-before %d/%d = %.2f (min %.2f) → %s\n",
 		verdict, e.Work, in.CompileErrors, len(e.Expected)-len(r.Missing), len(e.Expected), len(r.FalsePositives),
-		len(e.Queries)-len(r.BadQueries), len(e.Queries), r.Hit, r.Counted, r.Rate, e.MutationMinRate, out)
+		len(e.Queries)-len(r.BadQueries), len(e.Queries), r.Hit, r.Counted, r.Rate, e.MutationMinRate,
+		r.HitWoMoveBefore, r.CountedWoMoveBefore, r.RateWoMoveBefore, e.MutationMinRateWoMoveBefore, out)
 	return r, nil
 }

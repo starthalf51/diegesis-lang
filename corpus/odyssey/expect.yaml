@@ -163,6 +163,7 @@ queries:
       - ["penelope", "23.5", "true"]
 
 mutation_min_rate: 0.8
+mutation_min_rate_wo_move_before: 0.7   # ADR-014: move-before 를 뺀 나머지 연산자의 탐지율 기준
 
 # sil render-check 가 모든 문체 백엔드로 렌더해 내용 동일·어투 상이를 판정하는 장면(ADR-012). 대사가 많은 중간 크기 장면.
 render_scene: "19.1"

@@ -2,6 +2,7 @@ package accept
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"maps"
@@ -17,69 +18,151 @@ import (
 )
 
 // RunMutants 는 변이마다 `<work>~m<i>` 로 적재하고 린트한 뒤 지운다. base 는 이미 적재·린트된 원본이고
-// baseDiags 는 그 진단이다. 돌리기 전에 PG 로 변이를 확정한다(applicable): "받은 정보를 뒤에 쓰는" 쌍이
-// precedes = yes 인 것만 남기고, move-before 는 출처 시점을 채운다. 남지 않은 변이는 NotApplicable 로
+// baseDiags 는 그 진단, qs 는 expect.yaml 의 질의다. 돌리기 전에 PG 로 변이를 확정한다(applicable): "받은 정보를 뒤에
+// 쓰는" 쌍이 precedes = yes 인 것만 남기고, move-before 는 출처 시점을 채운다. 남지 않은 변이는 NotApplicable 로
 // 목록에만 남는다(비율에서 뺀다).
-// 탐지 = 원본에 없던 억제되지 않은 warn 중 Expect 규칙이 있다. 탐지되지 않았는데 파생 행이 원본과 같으면
-// 동등(Equivalent), 다르면 생존(Survived). 적재·린트·DB 오류는 변이 결과가 아니라 실행 실패다 — 오류를 돌려준다.
+// 탐지 = 원본에 없던 억제되지 않은 warn 중 Expect 규칙이 있고 그 대상이 변이 지점(Site) 안이다(지점 밖은 비고에만 적는다).
+// 그렇지 않아도 질의 결과가 원본과 다르면 DetectedByQuery(R1). 둘 다 아닌데 파생 행이 원본과 같으면 동등(Equivalent),
+// 다르면 생존(Survived). 적재·린트·DB 오류는 변이 결과가 아니라 실행 실패다 — 오류를 돌려준다.
 // IR 변이는 컴파일을 거치지 않으므로 Caught(컴파일러가 잡음)는 여기서 나오지 않는다.
-func RunMutants(ctx context.Context, db *pgxpool.Pool, base *ir.Work, baseDiags []pg.Diagnostic, seed int64, n int,
+func RunMutants(ctx context.Context, db *pgxpool.Pool, base *ir.Work, baseDiags []pg.Diagnostic, qs []Query, seed int64, n int,
 	log io.Writer) ([]Mutant, error) {
-	work := base.Works[0].ID
-	before := map[string]bool{}
-	for _, d := range baseDiags {
-		if d.Severity == "warn" && !d.Waived {
-			before[d.Rule+" "+short(work, d.TargetID)] = true
-		}
-	}
-	basePrint, err := fingerprint(ctx, db, work)
+	h, err := newHarness(ctx, db, base, baseDiags, qs)
 	if err != nil {
 		return nil, err
 	}
+	work := base.Works[0].ID
 	out := []Mutant{}
 	for i, m := range mutate.Generate(base, seed, n) {
-		id := fmt.Sprintf("%s~m%d", work, i+1)
-		res := Mutant{Mutation: m}
-		ok, why, err := applicable(ctx, db, work, base, &res.Mutation)
-		if err != nil {
-			return nil, fmt.Errorf("m%d %s: %w", i+1, m.Op, err)
-		}
-		if !ok {
-			res.Outcome, res.Note = NotApplicable, why
-			fmt.Fprintf(log, "m%d %s %s → %s (%s)\n", i+1, m.Op, shortAll(work, m.Target), res.Outcome, why)
-			out = append(out, res)
-			continue
-		}
-		ds, err := loadLint(ctx, db, mutate.Rename(mutate.Apply(base, res.Mutation), id))
-		if err == nil {
-			for _, d := range ds {
-				if d.Severity == "warn" && !d.Waived && !before[d.Rule+" "+short(id, d.TargetID)] && !slices.Contains(res.Rules, d.Rule) {
-					res.Rules = append(res.Rules, d.Rule)
-				}
-			}
-			slices.Sort(res.Rules)
-			var fp print
-			fp, err = fingerprint(ctx, db, id)
-			switch {
-			case err != nil:
-			case slices.ContainsFunc(res.Rules, func(r string) bool { return slices.Contains(m.Expect, r) }):
-				res.Outcome = Detected
-			case fp.equal(basePrint):
-				res.Outcome, res.Note = Equivalent, "파생 행(believes·uses·role_span·공통 시점의 경계)이 원본과 같다"
-			default:
-				res.Outcome, res.Note = Survived, basePrint.diff(fp)
-			}
-		}
-		if derr := drop(ctx, db, id); err == nil {
-			err = derr
-		}
+		res, err := h.run(ctx, fmt.Sprintf("%s~m%d", work, i+1), m)
 		if err != nil {
 			return nil, fmt.Errorf("m%d %s %s: %w", i+1, m.Op, shortAll(work, m.Target), err)
 		}
-		fmt.Fprintf(log, "m%d %s %s → %s %v\n", i+1, m.Op, shortAll(work, m.Target), res.Outcome, res.Rules)
+		fmt.Fprintf(log, "m%d %s %s → %s %v %s\n", i+1, m.Op, shortAll(work, m.Target), res.Outcome, res.Rules, res.Note)
 		out = append(out, res)
 	}
 	return out, nil
+}
+
+// harness 는 원본 쪽 기준값(원본의 warn, 파생 행 지문, 질의 결과)을 한 번 구해 두고 변이마다 쓴다.
+// qs 는 변이본에 옮겨 돌릴 수 있는 질의만이다(원본을 이름만 바꿔 적재한 복사본에서 결과가 같은 것 — 그래프 이름처럼
+// 작품 상수를 쓰는 질의는 빠진다). baseRows 는 그 질의의 원본 결과.
+type harness struct {
+	db        *pgxpool.Pool
+	work      string
+	base      *ir.Work
+	before    map[string]bool
+	basePrint print
+	qs        []Query
+	baseRows  map[string][][]string
+}
+
+func newHarness(ctx context.Context, db *pgxpool.Pool, base *ir.Work, baseDiags []pg.Diagnostic, qs []Query) (*harness, error) {
+	h := &harness{db: db, work: base.Works[0].ID, base: base, before: map[string]bool{}}
+	for _, d := range baseDiags {
+		if d.Severity == "warn" && !d.Waived {
+			h.before[d.Rule+" "+short(h.work, d.TargetID)] = true
+		}
+	}
+	var err error
+	if h.basePrint, err = fingerprint(ctx, db, h.work, base); err != nil || len(qs) == 0 {
+		return h, err
+	}
+	rows, _ := RunQueries(ctx, db, h.work, qs)
+	copyID := h.work + "~m0"
+	if _, err := loadLint(ctx, db, mutate.Rename(base, copyID)); err != nil {
+		return nil, fmt.Errorf("%s: %w", copyID, err)
+	}
+	got, _ := RunQueries(ctx, db, copyID, qs)
+	if err := drop(ctx, db, copyID); err != nil {
+		return nil, err
+	}
+	h.baseRows = map[string][][]string{}
+	for _, q := range qs {
+		if r, ok := rows[q.Name]; ok && rowsEqual(r, got[q.Name]) {
+			h.qs, h.baseRows[q.Name] = append(h.qs, q), r
+		}
+	}
+	return h, nil
+}
+
+// run 은 변이 하나를 id 로 적재·린트·판정하고 지운다.
+func (h *harness) run(ctx context.Context, id string, m mutate.Mutation) (Mutant, error) {
+	res := Mutant{Mutation: m}
+	ok, why, err := applicable(ctx, h.db, h.work, h.base, &res.Mutation)
+	if err != nil {
+		return res, err
+	}
+	if !ok {
+		res.Outcome, res.Note = NotApplicable, why
+		return res, nil
+	}
+	hit, off := false, []string(nil)
+	ds, err := loadLint(ctx, h.db, mutate.Rename(mutate.Apply(h.base, res.Mutation), id))
+	if err == nil {
+		for _, d := range ds {
+			if d.Severity != "warn" || d.Waived || h.before[d.Rule+" "+short(id, d.TargetID)] {
+				continue
+			}
+			if !slices.Contains(res.Rules, d.Rule) {
+				res.Rules = append(res.Rules, d.Rule)
+			}
+			if hits(res.Mutation, h.work, id, d) {
+				hit = true
+			} else if slices.Contains(m.Expect, d.Rule) {
+				off = append(off, d.Rule+"@"+short(id, d.TargetID))
+			}
+		}
+		slices.Sort(res.Rules)
+		// R1: 작가가 원문에서 적은 질의의 결과가 바뀌면 지점과 무관하게 탐지다(따로 센다)
+		rows, _ := RunQueries(ctx, h.db, id, h.qs)
+		for _, q := range h.qs {
+			if r, ok := rows[q.Name]; ok && !rowsEqual(r, h.baseRows[q.Name]) { // 실행 실패는 탐지로 치지 않는다
+				res.Queries = append(res.Queries, q.Name)
+			}
+		}
+		var fp print
+		fp, err = fingerprint(ctx, h.db, id, h.base)
+		switch {
+		case err != nil:
+		case hit:
+			res.Outcome = Detected
+		case len(res.Queries) > 0:
+			res.Outcome, res.Note = DetectedByQuery, "질의: "+strings.Join(res.Queries, ", ")
+		case fp.equal(h.basePrint):
+			res.Outcome, res.Note = Equivalent, "파생 행(believes·uses·role_span·공통 시점의 경계·간선 끝점의 선후)이 원본과 같다"
+		default:
+			res.Outcome, res.Note = Survived, h.basePrint.diff(fp)
+		}
+		if len(off) > 0 {
+			res.Note = strings.TrimSpace(res.Note + " · 지점 밖(세지 않음): " + strings.Join(off, ", "))
+		}
+	}
+	if derr := drop(ctx, h.db, id); err == nil {
+		err = derr
+	}
+	return res, err
+}
+
+// hits: 새 warn d 가 변이 m 을 탐지한 것인가 — 기대 규칙이고 대상이 m.Site 안이다. time-cycle 은 대상이 순환의
+// 대표 문장 하나뿐이라 data.points(순환이 지나는 시점들, 002/008) 중 하나가 Site 에 있어도 된다(변이한 시점을 지나는 간선).
+func hits(m mutate.Mutation, work, id string, d pg.Diagnostic) bool {
+	if !slices.Contains(m.Expect, d.Rule) {
+		return false
+	}
+	in := func(x string) bool {
+		return slices.ContainsFunc(m.Site, func(s string) bool { return short(work, s) == short(id, x) })
+	}
+	if in(d.TargetID) {
+		return true
+	}
+	var data struct {
+		Points []string `json:"points"`
+	}
+	if d.Rule == "time-cycle" && json.Unmarshal(d.Data, &data) == nil {
+		return slices.ContainsFunc(data.Points, in)
+	}
+	return false
 }
 
 // applicable 은 PG 로 변이를 확정한다. Pairs 가 있으면 precedes(받음, 씀) = yes 인 쌍이 하나라도 있어야 한다.
@@ -152,7 +235,8 @@ func drop(ctx context.Context, db *pgxpool.Pool, work string) error {
 }
 
 // print 는 작품의 파생 행 지문(작품 ID 접두사를 뺀 문자열). rows = believes·uses·role_span 다중집합,
-// points = 시점 → 경계. 시점은 양쪽에 다 있는 것만 비교한다(지운 행위의 시점은 비교 대상이 아니다).
+// points = 시점 → 경계, 그리고 원본 IR 의 간선마다 두 끝점의 선후(`order a b` → precedes(a,b)|precedes(b,a), PG) —
+// 순서만 바꾼 변이도 파생 결과가 다르다. 시점·쌍은 양쪽에 다 있는 것만 비교한다(지운 행위의 시점은 비교 대상이 아니다).
 type print struct {
 	rows   []string
 	points map[string]string
@@ -163,11 +247,19 @@ WITH r(x) AS (
   SELECT concat_ws('|', 'believes', entity_id, prop_id, value, from_pt, cause_act, declared, until_pt) FROM believes WHERE work_id = $1
   UNION ALL SELECT concat_ws('|', 'uses', entity_id, prop_id, at_pt, act_id) FROM uses WHERE work_id = $1
   UNION ALL SELECT concat_ws('|', 'role_span', role_id, entity_id, from_pt, until_pt, span, shared) FROM role_span WHERE work_id = $1
-  UNION ALL SELECT concat_ws('|', 'point', id, coalesce(earliest::text, '-'), coalesce(latest::text, '-')) FROM point WHERE work_id = $1)
+  UNION ALL SELECT concat_ws('|', 'point', id, coalesce(earliest::text, '-'), coalesce(latest::text, '-')) FROM point WHERE work_id = $1
+  UNION ALL SELECT concat_ws('|', 'point', 'order ' || a || ' ' || b, precedes($1, $1 || '/' || a, $1 || '/' || b),
+                            precedes($1, $1 || '/' || b, $1 || '/' || a))
+    FROM unnest($2::text[], $3::text[]) e(a, b)
+   WHERE EXISTS (SELECT 1 FROM point WHERE id = $1 || '/' || a) AND EXISTS (SELECT 1 FROM point WHERE id = $1 || '/' || b))
 SELECT replace(x, $1 || '/', '') FROM r ORDER BY 1`
 
-func fingerprint(ctx context.Context, db *pgxpool.Pool, work string) (print, error) {
-	rows, err := strRows(ctx, db, fingerprintSQL, work)
+func fingerprint(ctx context.Context, db *pgxpool.Pool, work string, base *ir.Work) (print, error) {
+	var a, b []string
+	for _, e := range base.TimeEdges {
+		a, b = append(a, short(base.Works[0].ID, e.From)), append(b, short(base.Works[0].ID, e.To))
+	}
+	rows, err := strRows(ctx, db, fingerprintSQL, work, a, b)
 	if err != nil {
 		return print{}, err
 	}
@@ -202,7 +294,7 @@ func (p print) diff(q print) string {
 	}
 	for _, id := range slices.Sorted(maps.Keys(p.points)) {
 		if b, ok := q.points[id]; ok && b != p.points[id] {
-			return fmt.Sprintf("시점 %s 경계 %s → %s", id, p.points[id], b)
+			return fmt.Sprintf("시점 %s: %s → %s", id, p.points[id], b)
 		}
 	}
 	return ""

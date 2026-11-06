@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"io"
+	iofs "io/fs"
 	"math/rand"
 	"os"
+	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -86,12 +89,12 @@ func TestFingerprint(t *testing.T) {
 	load(t, pool, same)
 	dropped := mutate.Rename(mutate.Apply(w, mutate.Mutation{Op: "drop-tells", Target: id + "/t.s/1#a2"}), id+"~drop")
 	load(t, pool, dropped)
-	base, err := fingerprint(ctx, pool, id)
+	base, err := fingerprint(ctx, pool, id, w)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for name, other := range map[string]string{"renamed": id + "~same", "dropped": id + "~drop"} {
-		fp, err := fingerprint(ctx, pool, other)
+		fp, err := fingerprint(ctx, pool, other, w)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -109,7 +112,7 @@ func TestRunMutants(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ms, err := RunMutants(ctx, pool, w, ds, 1, 0, io.Discard)
+	ms, err := RunMutants(ctx, pool, w, ds, nil, 1, 0, io.Discard)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -188,5 +191,124 @@ scene 1
 		if err != nil || ok != c.want {
 			t.Errorf("%s: applicable = %v (%v), want %v", name, ok, err, c.want)
 		}
+	}
+}
+
+// Review Focus 5: 새 진단이 변이 지점(Site: 그 행위·장면, 변이한 명제를 쓰는 행위, 변이한 시점을 지나는 간선)에
+// 있어야 탐지다. 무관한 장면의 info-flow 는 기대 규칙이어도 탐지가 아니다.
+func TestSiteLocalDetection(t *testing.T) {
+	m := mutate.Mutation{Op: "drop-tells", Target: "w/t.s/1#a2", Expect: []string{"info-flow", "time-cycle"},
+		Site: []string{"w/t.s/1#a2", "w/t.s/1", "w/t.s/2#a1", "w/t.s/1#a2.pt"}}
+	d := func(rule, target, data string) pg.Diagnostic {
+		return pg.Diagnostic{Rule: rule, Severity: "warn", TargetID: "w~m1/" + target, Data: []byte(data)}
+	}
+	for name, c := range map[string]struct {
+		d    pg.Diagnostic
+		want bool
+	}{
+		"using act":            {d("info-flow", "t.s/2#a1", "{}"), true},
+		"unrelated scene":      {d("info-flow", "t.s/3#a1", "{}"), false},
+		"unexpected rule":      {d("dead-actor", "t.s/2#a1", "{}"), false},
+		"cycle through site":   {d("time-cycle", "t.s/9", `{"points": ["w~m1/t.s/0", "w~m1/t.s/1#a2.pt"]}`), true},
+		"cycle elsewhere":      {d("time-cycle", "t.s/9", `{"points": ["w~m1/t.s/0", "w~m1/t.s/9.start"]}`), false},
+		"no data (time-cycle)": {d("time-cycle", "t.s/9", ""), false},
+	} {
+		if got := hits(m, "w", "w~m1", c.d); got != c.want {
+			t.Errorf("%s: local hit = %v, want %v", name, got, c.want)
+		}
+	}
+}
+
+// Task 2: 성경 5:27 므두셀라의 수명(969년)을 +50년 → 질의 methuselah-dies-am-1656 이 바뀐다 → 탐지(R1: 질의 탐지는 지점과 무관).
+func TestShiftDurationGenesis(t *testing.T) {
+	pool, ctx := open(t), context.Background()
+	w := mutate.Rename(corpusWork(t, "../../corpus/bible"), fmt.Sprintf("bible_t%d", rand.Int63()))
+	work := w.Works[0].ID
+	b, err := os.ReadFile("../../corpus/bible/expect.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	e, err := Parse(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	load(t, pool, w)
+	ds, err := pg.Lint(ctx, pool, work, rules.FS)
+	if err != nil {
+		t.Fatal(err)
+	}
+	h, err := newHarness(ctx, pool, w, ds, e.Queries)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var m *mutate.Mutation
+	var nTime int
+	for _, x := range mutate.Generate(w, 1, 0) {
+		if x.Op == "shift-duration" || x.Op == "swap-order" {
+			nTime++
+		}
+		if x.Op == "shift-duration" && x.Target == work+"/bible.cast/methuselah.born "+work+"/bible.cast/methuselah.died" {
+			m = &x
+		}
+	}
+	if nTime < 5 {
+		t.Errorf("time mutations on the genealogy = %d, want ≥ 5", nTime)
+	}
+	if m == nil {
+		t.Fatal("no shift-duration on methuselah's lifespan (5:27)")
+	}
+	res, err := h.run(ctx, work+"~m1", *m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if (res.Outcome != Detected && res.Outcome != DetectedByQuery) || !slices.Contains(res.Queries, "methuselah-dies-am-1656") {
+		t.Errorf("outcome %s, changed queries %v, want methuselah-dies-am-1656 changed", res.Outcome, res.Queries)
+	}
+}
+
+func corpusWork(t *testing.T, dir string) *ir.Work {
+	t.Helper()
+	var fs []*syntax.File
+	err := filepath.WalkDir(dir, func(p string, d iofs.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !syntax.IsSource(p) {
+			return err
+		}
+		b, err := os.ReadFile(p)
+		rel, _ := filepath.Rel(dir, p)
+		f, _ := syntax.ParseFile(filepath.ToSlash(rel), b)
+		fs = append(fs, f)
+		return err
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	w, ds := sema.Build(fs)
+	for _, d := range ds {
+		if d.Severity == "error" {
+			t.Fatalf("compile: %s", d)
+		}
+	}
+	return w
+}
+
+// 순서만 바꾼 변이(scene 2 를 scene 1 앞으로)는 believes·uses 행도 시점 경계도 그대로일 수 있다. 지문은 간선마다
+// 두 끝점의 precedes 도 담아서 이런 변이를 동등으로 치지 않는다(동등 = 파생 결과가 같다 — 선후도 파생 결과다).
+func TestFingerprintSeesOrder(t *testing.T) {
+	pool, ctx := open(t), context.Background()
+	w := compileFixture(t)
+	id := w.Works[0].ID
+	load(t, pool, w)
+	m := mutate.Mutation{Op: "swap-order", Target: id + "/t.s/1.end " + id + "/t.s/2.start"}
+	load(t, pool, mutate.Rename(mutate.Apply(w, m), id+"~swap"))
+	base, err := fingerprint(ctx, pool, id, w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fp, err := fingerprint(ctx, pool, id+"~swap", w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if base.equal(fp) {
+		t.Error("scene 2 moved before scene 1: fingerprint equal, want a precedes difference")
 	}
 }
