@@ -18,6 +18,12 @@ import (
 // corpusIR 는 corpus/<work> 를 컴파일하고 작품 ID 를 고유한 것으로 바꾼다(dieg 가 적재한 실제 작품과 겹치지 않게).
 func corpusIR(t *testing.T, work string) (*ir.Work, string) {
 	t.Helper()
+	return corpusIRMod(t, work, nil)
+}
+
+// corpusIRMod 는 corpusIR 에 소스 변형(mod, 음성 대조용)을 끼운다.
+func corpusIRMod(t *testing.T, work string, mod func(src []byte) []byte) (*ir.Work, string) {
+	t.Helper()
 	var files []*syntax.File
 	dir := filepath.Join("..", "..", "corpus", work)
 	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
@@ -27,6 +33,9 @@ func corpusIR(t *testing.T, work string) (*ir.Work, string) {
 		src, err := os.ReadFile(p)
 		if err != nil {
 			return err
+		}
+		if mod != nil {
+			src = mod(src)
 		}
 		rel, _ := filepath.Rel(dir, p)
 		f, ds := syntax.ParseFile(filepath.ToSlash(rel), src)

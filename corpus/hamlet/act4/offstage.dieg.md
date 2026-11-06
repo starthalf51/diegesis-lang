@@ -20,7 +20,9 @@ event pirates "pirates take Hamlet prisoner"
 
 # 4.6.19-21 "They have dealt with me like thieves of mercy … I am to do a good turn for them": 해적이 그를 덴마크에 내려 준다.
 # 원문은 그 길이를 말하지 않는다. 일부러 느슨한 상한 1년을 둔다(4.5 에서 레어티즈가 파리에서 돌아오는 시간도 들어간다).
-# 판정(1.2 의 20세 → 5.1 의 30세)은 1.2 → 5.1 상한이 8년 아래이기만 하면 성립하므로 이 상한에 기대지 않는다.
+# 이 상한은 해석 경계이고 판정에 필요하다: 1.2 → 5.1 의 경과에 위 상한이 없으면 10년 나이 차를 메울 수 없다는 결론이 서지 않는다
+# (음성 대조: internal/pg/hamlet_test.go 가 이 줄의 상한을 지우면 attribute-conflict 가 사라짐을 확인한다).
+# 다만 결론은 이 값에 민감하지 않다 — 1.2 → 5.1 상한이 8년 아래이기만 하면(1년이든 5년이든) 20세 → 30세는 성립하지 않는다.
 event lands "Hamlet is set ashore and writes to Horatio and the King"
   when after pirates by 0d..1y
   lasts 0d..1d
