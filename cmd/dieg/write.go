@@ -252,6 +252,8 @@ func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
 		if !r.Pass {
 			failed = append(failed, r.ID)
 		}
+		fmt.Fprintf(os.Stderr, "%s: attempts=%d pass=%t missing=%v hallucinated=%v leaked=%v %s\n", r.ID, r.Attempts, r.Pass,
+			r.Report.Missing, r.Report.Hallucinated, r.Report.Leaked, r.Report.ExtractError)
 		if r.Err != nil {
 			fmt.Fprintf(os.Stderr, "dieg: %s: %v\n", r.ID, r.Err)
 		}

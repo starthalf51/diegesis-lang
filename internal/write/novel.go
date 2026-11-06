@@ -2,6 +2,7 @@ package write
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -16,6 +17,7 @@ type SceneResult struct {
 	Attempts int
 	Pass     bool
 	Err      error
+	Report   render.Report // last attempt's verification report
 }
 
 // sceneLabeler tags render calls render-<scene>-a<n> and the extraction calls that follow extract-<scene>-a<n>.
@@ -54,6 +56,11 @@ func Novel(ctx context.Context, c render.Completer, work string, scenes []render
 		sr := SceneResult{ID: s.ID, Attempts: n, Err: err}
 		if err == nil {
 			sr.Pass = render.Passed(r)
+			sr.Report = r.Report
+			rep, _ := json.MarshalIndent(r.Report, "", "  ")
+			if err := os.WriteFile(filepath.Join(dir, s.ID+"."+b.ID+".report.json"), append(rep, '\n'), 0o644); err != nil {
+				return rs, err
+			}
 			if err := os.WriteFile(filepath.Join(dir, s.ID+"."+b.ID+".md"), []byte(r.Prose+"\n"), 0o644); err != nil {
 				return rs, err
 			}

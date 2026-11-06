@@ -173,6 +173,9 @@ func TestNovelLabelsAndFiles(t *testing.T) {
 	if strings.Count(buf.String(), "\n") != 6 {
 		t.Errorf("want 6 calls:\n%s", buf.String())
 	}
+	if _, err := os.Stat(filepath.Join(out, "novel", s.ID+"."+bs[0].ID+".report.json")); err != nil {
+		t.Error(err)
+	}
 	if _, err := os.Stat(filepath.Join(out, "novel", s.ID+"."+bs[0].ID+".md")); err != nil {
 		t.Error(err)
 	}
