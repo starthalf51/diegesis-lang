@@ -33,8 +33,34 @@ func validPath(p string) error {
 	return fmt.Errorf("file %q: extension must be .dieg.md, .md or .yaml", p)
 }
 
-// ParseFiles splits a bundle into files. Text before the first header is ignored (as unpack.sh does).
-// Each content is trimmed of surrounding blank lines and ends with exactly one newline.
+// End is the sentinel line that closes a bundle; everything after it (model chatter, a closing fence) is dropped.
+const End = "=== END ==="
+
+func isFence(l string) bool { return strings.HasPrefix(strings.TrimSpace(l), "```") }
+
+// dropWrapperFence removes a trailing fence line left by a model that wrapped the whole bundle in ``` … ```.
+// A file's own fences (```sl … ```) are balanced, so an odd count means the last one is the wrapper's.
+func dropWrapperFence(body []string) []string {
+	n := 0
+	for _, l := range body {
+		if isFence(l) {
+			n++
+		}
+	}
+	i := len(body) - 1
+	for i >= 0 && strings.TrimSpace(body[i]) == "" {
+		i--
+	}
+	if n%2 == 1 && i >= 0 && isFence(body[i]) {
+		return body[:i]
+	}
+	return body
+}
+
+// ParseFiles splits a bundle into files. Text before the first header (chatter, an opening ``` fence) is
+// ignored, as unpack.sh does; text after the End line is dropped. Without End, an unbalanced trailing fence
+// line is stripped from the last file. Each content is trimmed of surrounding blank lines and ends with exactly
+// one newline.
 func ParseFiles(text string) (map[string]string, error) {
 	files := map[string]string{}
 	var cur string
@@ -43,6 +69,7 @@ func ParseFiles(text string) (map[string]string, error) {
 		if cur == "" {
 			return nil
 		}
+		body = dropWrapperFence(body)
 		c := strings.Trim(strings.Join(body, "\n"), "\r\n")
 		if strings.TrimSpace(c) == "" {
 			return fmt.Errorf("file %q is empty", cur)
@@ -52,6 +79,9 @@ func ParseFiles(text string) (map[string]string, error) {
 	}
 	for _, l := range strings.Split(text, "\n") {
 		l = strings.TrimRight(l, "\r")
+		if strings.TrimSpace(l) == End {
+			break
+		}
 		if strings.HasPrefix(l, hdrPre) && strings.HasSuffix(l, hdrPost) && len(l) >= len(hdrPre)+len(hdrPost) {
 			if err := flush(); err != nil {
 				return nil, err
@@ -78,10 +108,36 @@ func ParseFiles(text string) (map[string]string, error) {
 	return files, nil
 }
 
+// safeToEmpty refuses dirs whose RemoveAll would destroy more than a generated bundle: "", ".", a filesystem
+// root, a dir holding .git (a repo root), and the cwd or any of its ancestors.
+func safeToEmpty(dir string) error {
+	if dir == "" || filepath.Clean(dir) == "." {
+		return fmt.Errorf("refusing to empty %q", dir)
+	}
+	abs, err := filepath.Abs(dir)
+	if err != nil {
+		return err
+	}
+	if filepath.Dir(abs) == abs {
+		return fmt.Errorf("refusing to empty filesystem root %q", abs)
+	}
+	if _, err := os.Stat(filepath.Join(abs, ".git")); err == nil {
+		return fmt.Errorf("refusing to empty %q: it holds .git", abs)
+	}
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	if rel, err := filepath.Rel(abs, cwd); err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return fmt.Errorf("refusing to empty %q: it holds the working directory", abs)
+	}
+	return nil
+}
+
 // WriteFiles empties dir, then writes the files. Every path is re-validated, so nothing lands outside dir.
 func WriteFiles(dir string, files map[string]string) error {
-	if dir == "" {
-		return fmt.Errorf("empty dir")
+	if err := safeToEmpty(dir); err != nil {
+		return err
 	}
 	for p := range files {
 		if err := validPath(p); err != nil {

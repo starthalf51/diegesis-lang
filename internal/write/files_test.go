@@ -67,3 +67,41 @@ func TestWriteFilesStaysInDir(t *testing.T) {
 		t.Error("file escaped dir")
 	}
 }
+
+func TestParseFilesSentinelAndFences(t *testing.T) {
+	sl := "# a\n```sl\nenter x\n```\n"
+	want := map[string]string{"a.dieg.md": sl, "b.md": "b\n"}
+	cases := map[string]string{
+		"chatter after END":                     "=== FILE: a.dieg.md ===\n" + sl + "=== FILE: b.md ===\nb\n=== END ===\nHope this helps!\n",
+		"fenced with END":                       "```text\n=== FILE: a.dieg.md ===\n" + sl + "=== FILE: b.md ===\nb\n=== END ===\n```\n",
+		"fenced, no END":                        "Here you go:\n```\n=== FILE: a.dieg.md ===\n" + sl + "=== FILE: b.md ===\nb\n```\n",
+		"fenced last file has sl block, no END": "```markdown\n=== FILE: b.md ===\nb\n=== FILE: a.dieg.md ===\n" + sl + "```\n",
+		"plain, no END":                         "=== FILE: a.dieg.md ===\n" + sl + "=== FILE: b.md ===\nb\n",
+	}
+	for name, text := range cases {
+		got, err := ParseFiles(text)
+		if err != nil || !reflect.DeepEqual(got, want) {
+			t.Errorf("%s: got %q err %v", name, got, err)
+		}
+	}
+	// A last file that ends with its own closing fence keeps it.
+	got, err := ParseFiles("=== FILE: a.dieg.md ===\n" + sl)
+	if err != nil || got["a.dieg.md"] != sl {
+		t.Errorf("own fence stripped: %q %v", got, err)
+	}
+}
+
+func TestWriteFilesRefusesDangerousDirs(t *testing.T) {
+	cwd, _ := os.Getwd()
+	repo := t.TempDir()
+	os.Mkdir(filepath.Join(repo, ".git"), 0o755)
+	os.WriteFile(filepath.Join(repo, "keep.md"), []byte("keep"), 0o644)
+	for _, d := range []string{"", ".", "/", filepath.VolumeName(cwd) + string(filepath.Separator), cwd, filepath.Dir(cwd), repo} {
+		if err := WriteFiles(d, map[string]string{"x.md": "x\n"}); err == nil {
+			t.Errorf("%q: want refusal", d)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(repo, "keep.md")); err != nil {
+		t.Error("repo dir was emptied")
+	}
+}
