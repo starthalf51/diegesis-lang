@@ -113,9 +113,11 @@ role thane_of_cawdor "Thane of Cawdor", "Cawdor"
   held macbeth from @1.2.decree                       # 법적으로는 1.2부터 맥베스의 것이다. 본인은 1.3에서 안다
 role king "the King", "Scotland"
   held duncan from start until @duncan.died
-  # 2.4.38-39 맥더프 "He is already named, and gone to Scone / To be invested", 3.1.1-2 뱅쿼 "Thou hast it now: king, Cawdor,
-  # Glamis, all, / As the weird women promised". 지명 시점(2.3~2.4)은 포팅 범위 밖이라 덩컨의 죽음부터 보유한다(빈 왕좌를 잇는다)
-  held macbeth from @duncan.died
+  # 원문: 2.4.38-39 맥더프 "He is already named, and gone to Scone / To be invested", 3.1.1 뱅쿼 "Thou hast it now: king".
+  # 포팅한 장면 중 맥베스가 왕인 것은 4.1 이다: 4.1.109-110 "our high-placed Macbeth / Shall live the lease of nature",
+  # 4.1.113-114 "shall Banquo's issue ever / Reign in this kingdom?". 지명(2.4)은 포팅 범위 밖이라 보유는 4.1 부터 적는다
+  # (그 앞의 시점을 지어내지 않는다 — 2.2 끝과 4.1 사이의 보유는 이 포팅이 말하지 않는다. 수정 1회차)
+  held macbeth from 4.1
 role prince_of_cumberland "the Prince of Cumberland"
   held malcolm from @1.4.cumberland
 
