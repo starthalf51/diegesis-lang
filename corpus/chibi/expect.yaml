@@ -185,3 +185,34 @@ mutation_min_rate_wo_move_before: 0.7   # ADR-014: move-before 를 뺀 나머지
 
 # dieg render-check 가 모든 문체 백엔드로 렌더해 내용 동일·어투 상이를 판정하는 장면(ADR-012). 대사가 많은 중간 크기 장면.
 render_scene: "45.88"
+
+# 서사 패턴(Task 7). 대상까지 같아야 한다(Review Focus 1). 근거는 Brewitt-Taylor 판 [장.단락].
+patterns:
+  - pattern: deception-chain
+    target: "chibi.ch45/45.129#a7"     # role:chancellor does execute cai_mao, zhang_yun because commanders_traitors
+    span_from: 3
+    why: >-
+      반간계의 3단 사슬. 기만: 주유가 위조한 서신(45.115-116 장간이 훔쳐 읽는다 "Those two were connected with Wu in the
+      beginning")과 오의 장수가 일부러 들려준 말 "Chang and Tsʻai, the two commanders, have come"(45.124). 수신자 장간이 조조에게
+      서신을 내놓는다(45.133). 조조가 그 믿음으로 두 도독을 처형한다(45.136 "Tsʻao bade the executioners lead them away to
+      instant death"). 곧 속은 줄 안다(45.137 "it dawned upon him that he had been tricked").
+  - pattern: deception-chain
+    target: "chibi.ch47/47.6#a13"      # role:chancellor orders kan_ze … because huang_gai_defects
+    span_from: 14
+    why: >-
+      고육계의 거짓 항복. 감택의 거짓말(47.12 "wishes to desert to your side that he may be revenged", 47.32 "Huang Kai and I are
+      both inclined to desert to you")과 황개의 거짓 항복서(47.14)를 받은 조조가 그 믿음으로 감택에게 날짜를 정해 오라 명한다
+      (47.37 "I must ask you to return to settle the date with your friend: as soon as I know I will have a force waiting").
+  - pattern: counter-deception
+    target: "chibi.ch45/45.88#a4"      # jiang_gan lies zhou_yu: not_envoy
+    span_from: 3
+    why: >-
+      장간 "I came to visit you for the sake of old times. Why do you call me an emissary for the Tsʻao cause?"(45.92)에
+      주유는 속지 않는다: "Though I am not so clever a musician as Shih Kuang, yet I can comprehend the thought behind the
+      music"(45.93). 주유는 그가 조조의 세객임을 미리 안다(45.91 "this task of emissary in the Tsʻao cause").
+  - pattern: counter-deception
+    target: "chibi.ch46/46.74#a1"      # cai_zhong lies zhou_yu: cai_brothers_defect
+    span_from: 8
+    why: >-
+      채중·채화의 거짓 투항(46.74 "Our innocent brother has been put to death and we desire vengeance")을 주유는 꿰뚫는다:
+      "They have come without their families and so I know their desertion is only pretence. They have been sent as spies"(46.76).

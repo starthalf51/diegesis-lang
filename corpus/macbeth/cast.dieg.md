@@ -113,6 +113,9 @@ role thane_of_cawdor "Thane of Cawdor", "Cawdor"
   held macbeth from @1.2.decree                       # 법적으로는 1.2부터 맥베스의 것이다. 본인은 1.3에서 안다
 role king "the King", "Scotland"
   held duncan from start until @duncan.died
+  # 2.4.38-39 맥더프 "He is already named, and gone to Scone / To be invested", 3.1.1-2 뱅쿼 "Thou hast it now: king, Cawdor,
+  # Glamis, all, / As the weird women promised". 지명 시점(2.3~2.4)은 포팅 범위 밖이라 덩컨의 죽음부터 보유한다(빈 왕좌를 잇는다)
+  held macbeth from @duncan.died
 role prince_of_cumberland "the Prince of Cumberland"
   held malcolm from @1.4.cumberland
 
@@ -122,6 +125,13 @@ fact king_hereafter = holds(king, macbeth)
 fact banquo_line "Banquo's descendants shall be kings" true
 fact macdonwald_slain "Macbeth killed the rebel Macdonwald" true
 fact duncan_comes "Duncan lodges at Inverness tonight" true
+# 살해의 뜻(독자 모델·극적 아이러니, Task 7). 1.3.148 맥베스 방백 "My thought, whose murder yet is but fantastical",
+# 1.4.57-58 "Stars, hide your fires; / Let not light see my black and deep desires", 1.5.43 부인 "the fatal entrance of Duncan",
+# 1.7.77-79 계획. 참이다: 2.2.18 "I have done the deed".
+fact murder_plot "the Macbeths have Duncan's murder in mind" true
+# 1.6.17-23 부인의 환대 "All our service / In every point twice done and then done double … We rest your hermits" —
+# 1.5.72-74 "look like the innocent flower, / But be the serpent under't" 의 실행. 충성만 있다는 거짓 겉모습이다
+fact hosts_loyal "Macbeth's house means Duncan nothing but loyal service" = not murder_plot
 
 artifact macbeth_letter "Macbeth's letter"
   contains holds(thane_of_cawdor, macbeth), king_hereafter

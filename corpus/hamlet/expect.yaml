@@ -85,3 +85,13 @@ queries:
 
 mutation_min_rate: 0.8
 mutation_min_rate_wo_move_before: 0.7   # ADR-014
+
+# 서사 패턴(Task 7). 대상까지 같아야 한다(Review Focus 1). 근거는 MIT 판 막.장.줄.
+# 나머지 검출(1.5 유령, 4.7, 5.1)은 보고만 한다 — 원문 근거로 기대값을 세울 만큼 뚜렷하지 않다.
+patterns:
+  - pattern: dramatic-irony
+    target: "hamlet.act3/3.2"
+    why: >-
+      극중극. 관객은 1.5.44-45 "The serpent that did sting thy father's life / Now wears his crown" 과 1.5.66 "Upon my secure
+      hour thy uncle stole" 로 클로디어스의 살해를 안다. 3.2 에서 거트루드와 오필리아는 그 재연("He poisons him i' the garden
+      for's estate", 3.2.256)을 모른 채 본다 — 거트루드 "The lady protests too much, methinks"(3.2.227).

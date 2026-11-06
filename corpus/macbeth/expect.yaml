@@ -158,3 +158,49 @@ mutation_min_rate_wo_move_before: 0.7   # ADR-014: move-before 를 뺀 나머지
 
 # dieg render-check 가 모든 문체 백엔드로 렌더해 내용 동일·어투 상이를 판정하는 장면(ADR-012). 대사가 많은 중간 크기 장면.
 render_scene: "1.3"
+
+# 서사 패턴(Task 7). 대상까지 같아야 한다(Review Focus 1). 근거는 MIT 판 막.장.줄.
+patterns:
+  - pattern: prophecy-fulfilled
+    target: "macbeth.act1/1.3#a5"      # 둘째 마녀 "hail to thee, thane of Cawdor!"
+    span_from: 3
+    why: >-
+      1.3.51 둘째 마녀의 "hail to thee, thane of Cawdor!" — 맥베스는 1.3.74-75 에서 코더가 살아 번창한다며 믿지 않는다(청자에게는 미정).
+      1.3.109 로스 "He bade me, from him, call thee thane of Cawdor" 가 예언자가 아닌 쪽의 참인 확인이고, 뱅쿼가 곧바로
+      "What, can the devil speak true?"(1.3.112)라고 받는다. 작위는 1.2.73-74 의 선포로 이미 맥베스의 것이었다.
+  - pattern: prophecy-fulfilled
+    target: "macbeth.act1/1.3#a6"      # 셋째 마녀 "thou shalt be king hereafter!"
+    span_from: 3
+    why: >-
+      1.3.52 "thou shalt be king hereafter!" 그때 왕은 덩컨이다. 덩컨이 죽은 뒤 맥베스가 왕이 된다: 2.4.38-39 "He is already
+      named, and gone to Scone / To be invested", 3.1.1-2 뱅쿼 "Thou hast it now: king, Cawdor, Glamis, all, / As the weird
+      women promised". 역할 보유(role king)로 판정한다.
+  - pattern: dramatic-irony
+    target: "macbeth.act1/1.4"
+    why: >-
+      1.4.13-16 덩컨 "There's no art / To find the mind's construction in the face: / He was a gentleman on whom I built / An
+      absolute trust" — 관객은 1.3.148 방백 "My thought, whose murder yet is but fantastical" 로 맥베스의 살해 생각을 안다.
+      같은 장면의 방백 1.4.57-58 "Stars, hide your fires; / Let not light see my black and deep desires" 를 덩컨은 모른다.
+  - pattern: dramatic-irony
+    target: "macbeth.act1/1.6"
+    why: >-
+      1.6.1 덩컨 "This castle hath a pleasant seat" — 관객은 1.5.42-44 "The raven himself is hoarse / That croaks the fatal
+      entrance of Duncan / Under my battlements" 와 1.5.72-74 "look like the innocent flower, / But be the serpent under't" 를
+      들었다. 1.6.17 부인의 환대 "All our service / In every point twice done and then done double" 를 덩컨은 믿는다.
+  - pattern: dramatic-irony
+    target: "macbeth.act1/1.3"
+    why: >-
+      관객은 1.2.73-74 "go pronounce his present death, / And with his former title greet Macbeth" 로 맥베스가 이미 코더 영주임을
+      안다. 1.3 에서 맥베스는 모르고(1.3.74-75 "the thane of Cawdor lives, / A prosperous gentleman"), 뱅쿼도 모른다.
+  - pattern: chekhov-gun
+    target: "macbeth.act1/banquo_kings"
+    span_from: 3
+    why: >-
+      1.3.69 "Thou shalt get kings, though thou be none" 의 약속이 4.1 의 여덟 왕 행렬(지문 "A show of Eight Kings")과 4.1.135-136 "the
+      blood-bolter'd Banquo smiles upon me, / And points at them for his" 로 회수된다.
+  - pattern: chekhov-gun
+    target: "macbeth.act1/frame_grooms"
+    span_from: 7
+    why: >-
+      1.7.77-79 "what not put upon / His spongy officers, who shall bear the guilt / Of our great quell?" 의 계획이 2.2.70-71
+      "I'll gild the faces of the grooms withal; / For it must seem their guilt" 로 회수된다.

@@ -173,3 +173,31 @@ mutation_min_rate_wo_move_before: 0.7   # ADR-014: move-before 를 뺀 나머지
 
 # dieg render-check 가 모든 문체 백엔드로 렌더해 내용 동일·어투 상이를 판정하는 장면(ADR-012). 대사가 많은 중간 크기 장면.
 render_scene: "mark_denial"
+
+# 서사 패턴(Task 7). 대상까지 같아야 한다(Review Focus 1). 근거는 World English Bible <책>.<장>.<절>.
+# 네 기록은 보이는 장면이 아니라 사건의 기록(account)이라 서술 위치(span)가 없다.
+patterns:
+  - pattern: prophecy-fulfilled
+    target: "bible.gospels/matthew_foretells#a2"
+    why: 마 26:34 "before the rooster crows, you will deny me three times" → 26:69-74 세 번 부인, 26:75 "Peter remembered the word".
+  - pattern: prophecy-fulfilled
+    target: "bible.gospels/mark_foretells#a2"
+    why: 막 14:30 "before the rooster crows twice, you will deny me three times" → 14:66-71 세 번 부인, 14:72 "The rooster crowed the second time".
+  - pattern: prophecy-fulfilled
+    target: "bible.gospels/luke_foretells#a3"
+    why: 눅 22:34 "the rooster will by no means crow today until you deny that you know me three times" → 22:57-60 세 번 부인, 22:61 "Peter remembered the Lord's word".
+  - pattern: prophecy-fulfilled
+    target: "bible.gospels/john_foretells#a3"
+    why: 요 13:38 "the rooster won't crow until you have denied me three times" → 18:17, 18:25, 18:27 세 번 부인, 18:27 "immediately the rooster crowed".
+  - pattern: chekhov-gun
+    target: "bible.gospels/matthew_foretold"
+    why: 마 26:34 의 예언(약속 복선)이 26:75 에서 회수된다("Peter remembered the word which Jesus had said to him").
+  - pattern: chekhov-gun
+    target: "bible.gospels/mark_foretold"
+    why: 막 14:30 의 예언이 14:72 에서 회수된다("Peter remembered the words that Jesus said to him").
+  - pattern: chekhov-gun
+    target: "bible.gospels/luke_foretold"
+    why: 눅 22:34 의 예언이 22:61 에서 회수된다("Then Peter remembered the Lord's word").
+  - pattern: chekhov-gun
+    target: "bible.gospels/john_foretold"
+    why: 요 13:38 의 예언이 18:27 의 셋째 부인과 닭 울음으로 회수된다("Peter therefore denied it again, and immediately the rooster crowed").

@@ -71,7 +71,7 @@ place upper_room "Penelope's upper room"
   name ko "페넬로페의 윗방"
   name en "the upper room"
 
-fact beggar_is_odysseus "the old beggar is Ulysses" true
+fact beggar_is_odysseus "the old beggar is Ulysses" true tag identity   # 정체 사실(R3): recognition 패턴이 고른다
 # 19.19 "alive and on his way home … will return in this self same year"(14.9 "he is coming") 의 시제를 따른다. 19.30·23.1 의 도착도 이 진행형에 든다
 fact odysseus_home "Ulysses is alive and coming home to Ithaca" true
 fact stranger_is_cretan "the stranger is a Cretan (his lying tale)" false
