@@ -14,8 +14,15 @@ import (
 	"diegesis/internal/pg"
 )
 
+// version 은 SemVer. 릴리스할 때 git 태그(v0.2.0)와 같이 올린다. 1.0 전까지 문법은 바뀔 수 있다.
+const version = "0.2.0"
+
 func main() {
 	args := os.Args[1:]
+	if len(args) == 1 && (args[0] == "version" || args[0] == "--version") {
+		fmt.Println("dieg", version)
+		return
+	}
 	if len(args) >= 2 && args[0] == "db" && args[1] == "migrate" {
 		if err := migrate(os.Stdout); err != nil {
 			fmt.Fprintln(os.Stderr, "dieg:", err)

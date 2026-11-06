@@ -1,4 +1,4 @@
-(* Diegesis 문법 — 단일 기준. internal/syntax 파서는 이 문법을 그대로 받는다.
+(* Diegesis 0.2 문법 — 단일 기준. internal/syntax 파서는 이 문법을 그대로 받는다.
    원본: vault projects/story-lang/language.md (v0) + 언어 추가 사항 + file-format.md 프론트매터.
 
    어휘

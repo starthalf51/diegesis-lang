@@ -68,3 +68,12 @@ cd deploy && docker compose up -d   # ro-init 이 sl_ro 에 비밀번호를 걸�
 go test -count=1 ./...   # SL_PG_DSN 필요(PG 가 떠 있어야 한다)
 go vet ./...
 ```
+
+## 버전
+
+[SemVer](https://semver.org/lang/ko/)(`MAJOR.MINOR.PATCH`)를 따른다. 1.0 전(0.x)에는 문법과 IR 이 MINOR 판에서 바뀔 수 있다. 판은 git 태그(`v0.2.0`)로 붙이고 `dieg version` 이 출력한다.
+
+| 판 | 내용 |
+|---|---|
+| v0.1.0 | 플랜 1: 컴파일러, PG 판정, 린트, 렌더러 4종, 4편 합격 |
+| v0.2.0 | 플랜 2: 정답 셋 3편, 시간 변이, 속성, 독자 모델, 패턴 9종, 지표, Grafana 대시보드 |
