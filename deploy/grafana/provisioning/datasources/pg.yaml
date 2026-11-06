@@ -1,0 +1,15 @@
+apiVersion: 1
+datasources:
+  - name: Diegesis PG
+    uid: diegesis-pg
+    type: grafana-postgresql-datasource
+    access: proxy
+    url: pg:5432 # compose 내부 네트워크의 pg 서비스(호스트 포트 55432 가 아니다)
+    user: sl_ro
+    isDefault: true
+    jsonData:
+      database: sl
+      sslmode: disable
+      postgresVersion: 1700
+    secureJsonData:
+      password: $SL_RO_PASSWORD # Grafana 가 환경변수로 치환한다
