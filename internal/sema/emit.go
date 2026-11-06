@@ -1,8 +1,8 @@
 package sema
 
 import (
-	"silmari/internal/ir"
-	"silmari/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 // top emits one top-level item and returns its waiver target.

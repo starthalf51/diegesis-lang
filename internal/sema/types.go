@@ -4,8 +4,8 @@ import (
 	"slices"
 	"strings"
 
-	"silmari/internal/ir"
-	"silmari/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 // want resolves a name and checks its kind (any kind when none given).

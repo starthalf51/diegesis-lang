@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"silmari/internal/ir"
+	"diegesis/internal/ir"
 )
 
 // Apply 는 w 의 복사본에 m 을 적용한다(w 는 바꾸지 않는다). 대상이 없으면 복사본 그대로다.

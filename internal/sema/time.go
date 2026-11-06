@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"silmari/internal/ir"
-	"silmari/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 func i64(v int64) *int64 { return &v }

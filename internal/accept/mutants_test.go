@@ -14,12 +14,12 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"silmari/internal/ir"
-	"silmari/internal/mutate"
-	"silmari/internal/pg"
-	"silmari/internal/sema"
-	"silmari/internal/syntax"
-	"silmari/rules"
+	"diegesis/internal/ir"
+	"diegesis/internal/mutate"
+	"diegesis/internal/pg"
+	"diegesis/internal/sema"
+	"diegesis/internal/syntax"
+	"diegesis/rules"
 )
 
 const fixture = `module t.s
@@ -69,7 +69,7 @@ func load(t *testing.T, pool *pgxpool.Pool, w *ir.Work) {
 func compileFixture(t *testing.T) *ir.Work {
 	t.Helper()
 	id := fmt.Sprintf("t_%d", rand.Int63())
-	f, diags := syntax.ParseFile("t.sil", []byte(strings.ReplaceAll(fixture, "WK", id)))
+	f, diags := syntax.ParseFile("t.dieg", []byte(strings.ReplaceAll(fixture, "WK", id)))
 	w, ds := sema.Build([]*syntax.File{f})
 	for _, d := range append(diags, ds...) {
 		if d.Severity == "error" {
@@ -176,7 +176,7 @@ scene 1
   o tells a: p
   a tells b: p
 `, "WK", id)
-	f, _ := syntax.ParseFile("t.sil", []byte(src))
+	f, _ := syntax.ParseFile("t.dieg", []byte(src))
 	w, _ := sema.Build([]*syntax.File{f})
 	load(t, pool, w)
 	for name, c := range map[string]struct {

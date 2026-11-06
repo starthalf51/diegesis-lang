@@ -11,8 +11,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"silmari/internal/mutate"
-	"silmari/internal/pg"
+	"diegesis/internal/mutate"
+	"diegesis/internal/pg"
 )
 
 // Expect 는 expect.yaml.
@@ -23,7 +23,7 @@ type Expect struct {
 	Queries                     []Query `yaml:"queries"`
 	MutationMinRate             float64 `yaml:"mutation_min_rate"`
 	MutationMinRateWoMoveBefore float64 `yaml:"mutation_min_rate_wo_move_before"`
-	RenderScene                 string  `yaml:"render_scene"` // sil render-check 가 렌더할 장면(짧은 ID)
+	RenderScene                 string  `yaml:"render_scene"` // dieg render-check 가 렌더할 장면(짧은 ID)
 }
 
 // Want 는 반드시 나와야 하는 진단 하나. Target 은 작품 ID 를 뺀 대상 ID(`macbeth.act1/1.3#a5`).

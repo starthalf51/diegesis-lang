@@ -9,9 +9,9 @@ import (
 	"sort"
 	"strings"
 
-	"silmari/internal/accept"
-	"silmari/internal/pg"
-	"silmari/internal/render"
+	"diegesis/internal/accept"
+	"diegesis/internal/pg"
+	"diegesis/internal/render"
 )
 
 // sceneRequest 는 작품(ID 또는 코퍼스 디렉터리 — 디렉터리면 먼저 적재한다)의 장면 렌더 요청을 PG 에서 받는다.
@@ -52,7 +52,7 @@ func backend(dir, id string) (render.Backend, error) {
 	return render.Backend{}, fmt.Errorf("no backend %q in %s", id, dir)
 }
 
-// cmdRender runs `sil render <work|dir> <scene> --backend <id> [-o file] [--styles dir]`: 산문만 낸다(재추출 없음).
+// cmdRender runs `dieg render <work|dir> <scene> --backend <id> [-o file] [--styles dir]`: 산문만 낸다(재추출 없음).
 func cmdRender(args []string) int {
 	var pos []string
 	id, out, styles := "", "", "styles"
@@ -71,7 +71,7 @@ func cmdRender(args []string) int {
 		return usage()
 	}
 	if err := renderOnce(pos[0], pos[1], id, out, styles); err != nil {
-		fmt.Fprintln(os.Stderr, "sil:", err)
+		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
 	}
 	return 0
@@ -104,7 +104,7 @@ func renderOnce(target, scene, id, out, styles string) error {
 	return os.WriteFile(out, []byte(res.Text+"\n"), 0o644)
 }
 
-// cmdRenderCheck runs `sil render-check <corpus...> [--force] [--styles dir]`: 코퍼스마다 expect.yaml 의 render_scene 을
+// cmdRenderCheck runs `dieg render-check <corpus...> [--force] [--styles dir]`: 코퍼스마다 expect.yaml 의 render_scene 을
 // 모든 백엔드로 렌더 → 재추출 → diff 하고 ADR-012 로 판정한다. 보고서는 out/render-check.md, 산문은 out/render/.
 // 합격이면 0.
 func cmdRenderCheck(args []string) int {
@@ -128,7 +128,7 @@ func cmdRenderCheck(args []string) int {
 	}
 	pass, err := renderCheck(dirs, styles, force)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "sil:", err)
+		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
 	}
 	if !pass {
@@ -166,7 +166,7 @@ func renderCheck(dirs []string, styles string, force bool) (bool, error) {
 			r, err := render.RenderCached(context.Background(), c, filepath.Join("out", "render"), work, s, b, force)
 			if err != nil { // 기록하지 않았으니 다음 실행이 다시 시도한다
 				errs = append(errs, err.Error())
-				fmt.Fprintln(os.Stderr, "sil:", err)
+				fmt.Fprintln(os.Stderr, "dieg:", err)
 				continue
 			}
 			r = render.Score(s, r)

@@ -3,8 +3,8 @@ package sema
 import (
 	"slices"
 
-	"silmari/internal/ir"
-	"silmari/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 // stage is the presence state machine of one scene. A group on stage puts

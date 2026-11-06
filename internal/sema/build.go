@@ -11,8 +11,8 @@ import (
 	"sort"
 	"strings"
 
-	"silmari/internal/ir"
-	"silmari/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 type decl struct{ kind, id string }

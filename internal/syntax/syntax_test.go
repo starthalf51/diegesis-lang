@@ -12,7 +12,7 @@ const goldenDir = "../../testdata/golden"
 
 // SL_UPDATE_GOLDEN=1 rewrites *.ast.json.
 func TestGoldenParse(t *testing.T) {
-	files, _ := filepath.Glob(filepath.Join(goldenDir, "*.sil.md"))
+	files, _ := filepath.Glob(filepath.Join(goldenDir, "*.dieg.md"))
 	if len(files) < 3 {
 		t.Fatalf("want ≥3 golden inputs, got %v", files)
 	}
@@ -27,7 +27,7 @@ func TestGoldenParse(t *testing.T) {
 				t.Errorf("unexpected diag: %s", d)
 			}
 			got := Dump(f, true)
-			want := strings.TrimSuffix(path, ".sil.md") + ".ast.json"
+			want := strings.TrimSuffix(path, ".dieg.md") + ".ast.json"
 			if os.Getenv("SL_UPDATE_GOLDEN") == "1" {
 				if err := os.WriteFile(want, got, 0o644); err != nil {
 					t.Fatal(err)
@@ -46,7 +46,7 @@ func TestGoldenParse(t *testing.T) {
 }
 
 func TestSugarEquivalence(t *testing.T) {
-	files, _ := filepath.Glob(filepath.Join(goldenDir, "*.sil.md"))
+	files, _ := filepath.Glob(filepath.Join(goldenDir, "*.dieg.md"))
 	for _, path := range files {
 		t.Run(filepath.Base(path), func(t *testing.T) {
 			sugar := parseNoDiag(t, path)
@@ -150,11 +150,11 @@ func runCases(t *testing.T, cases []errCase) {
 	t.Helper()
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			f, diags := ParseFile("t.sil.md", []byte(c.src))
+			f, diags := ParseFile("t.dieg.md", []byte(c.src))
 			var got []want
 			for _, d := range diags {
 				got = append(got, want{d.Line, d.Col, d.Rule})
-				if d.File != "t.sil.md" || d.Severity != "error" || d.Msg == "" {
+				if d.File != "t.dieg.md" || d.Severity != "error" || d.Msg == "" {
 					t.Errorf("incomplete diag %+v", d)
 				}
 			}
@@ -176,7 +176,7 @@ func runCases(t *testing.T, cases []errCase) {
 func TestRecoverManyErrors(t *testing.T) {
 	src := "```sl\nmodule m\nscene 1 at x\n  enter a\n  frobnicate b\n  a tells b: \"unterminated\n" +
 		"  exit all\n      enter c\n  exit a\nplace heath\n```\n"
-	_, diags := ParseFile("t.sil.md", []byte(src))
+	_, diags := ParseFile("t.dieg.md", []byte(src))
 	if len(diags) != 3 {
 		t.Fatalf("want 3 diags, got %d: %v", len(diags), diags)
 	}

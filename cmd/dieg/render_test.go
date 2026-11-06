@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"silmari/internal/render"
+	"diegesis/internal/render"
 )
 
 // 판정 Jaccard 는 사실을 전하는 비입퇴장 액트만 센다고 밝히고, 모든 액트 Jaccard 는 참고로 함께 싣는다.

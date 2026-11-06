@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"silmari/internal/pg"
-	"silmari/internal/render"
+	"diegesis/internal/pg"
+	"diegesis/internal/render"
 )
 
 // TestRenderSceneJSON: 맥베스 1.3 의 렌더 요청이 render.Scene 으로 엄격하게 읽히고 Validate 를 통과하며,

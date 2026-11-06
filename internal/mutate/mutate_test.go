@@ -11,11 +11,11 @@ import (
 	"strings"
 	"testing"
 
-	"silmari/internal/ir"
-	"silmari/internal/mutate"
-	"silmari/internal/pg"
-	"silmari/internal/sema"
-	"silmari/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/mutate"
+	"diegesis/internal/pg"
+	"diegesis/internal/sema"
+	"diegesis/internal/syntax"
 )
 
 const fixture = `module t.s
@@ -84,7 +84,7 @@ func targets(ms []mutate.Mutation, op string) []string {
 }
 
 func TestGenerateTargets(t *testing.T) {
-	ms := mutate.Generate(build(t, map[string]string{"t.sil": fixture}), 1, 0)
+	ms := mutate.Generate(build(t, map[string]string{"t.dieg": fixture}), 1, 0)
 	for op, want := range map[string][]string{
 		// a tells b: p → b 가 2 에서 p 를 쓴다. b tells a: r → a 는 r 을 안 쓴다. c(oracle 그룹) tells → a 가 q 를 안 쓴다
 		"drop-tells": {"1#a2"},
@@ -113,13 +113,13 @@ func TestGenerateTargets(t *testing.T) {
 			t.Errorf("%s %s: no used props", m.Op, m.Target)
 		}
 	}
-	if n := len(mutate.Generate(build(t, map[string]string{"t.sil": fixture}), 7, 3)); n != 3 {
+	if n := len(mutate.Generate(build(t, map[string]string{"t.dieg": fixture}), 7, 3)); n != 3 {
 		t.Errorf("Generate(n=3) = %d mutations", n)
 	}
 }
 
 func TestApplyCopies(t *testing.T) {
-	w := build(t, map[string]string{"t.sil": fixture})
+	w := build(t, map[string]string{"t.dieg": fixture})
 	before := len(w.Acts)
 	for _, m := range mutate.Generate(w, 1, 0) {
 		got := mutate.Apply(w, m)
@@ -297,7 +297,7 @@ scene 1
 // Task 2: 시간 연산자. shift-duration = `by a..b` 구간 하나를 +50년, swap-order = 같은 사람의 born→died 간선이나
 // `before` 간선 하나를 뒤집는다(before → after). 대상 = "from to"(간선의 두 끝점).
 func TestGenerateTimeOps(t *testing.T) {
-	w := build(t, map[string]string{"t.sil": timeFixture})
+	w := build(t, map[string]string{"t.dieg": timeFixture})
 	ms := mutate.Generate(w, 1, 0)
 	for op, want := range map[string][]string{
 		"shift-duration": {"t/start a.born", "a.born b.born", "a.born a.died", "b.born 1.start"},
@@ -347,7 +347,7 @@ func TestGenerateTimeOps(t *testing.T) {
 
 // 지점: drop-tells 1#a2(a tells b: p) = 그 행위, 그 장면, p 를 쓰는 행위(2#a1 b tells d: p, 1#a2 자신).
 func TestGenerateSites(t *testing.T) {
-	for _, m := range mutate.Generate(build(t, map[string]string{"t.sil": fixture}), 1, 0) {
+	for _, m := range mutate.Generate(build(t, map[string]string{"t.dieg": fixture}), 1, 0) {
 		if len(m.Site) == 0 {
 			t.Errorf("%s %s: empty site", m.Op, m.Target)
 		}

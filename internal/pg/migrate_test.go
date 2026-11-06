@@ -9,8 +9,8 @@ import (
 	"os"
 	"testing"
 
-	"silmari/db"
-	"silmari/internal/pg"
+	"diegesis/db"
+	"diegesis/internal/pg"
 )
 
 func migrations(t *testing.T) fs.FS {

@@ -1,4 +1,4 @@
-(* Silmari(실마리) 문법 — 단일 기준. internal/syntax 파서는 이 문법을 그대로 받는다.
+(* Diegesis 문법 — 단일 기준. internal/syntax 파서는 이 문법을 그대로 받는다.
    원본: vault projects/story-lang/language.md (v0) + 언어 추가 사항 + file-format.md 프론트매터.
 
    어휘
@@ -81,11 +81,11 @@ idlist      = ident { "," ident } ;
 tref        = word ;                                                 (* [@] sid [. beat | .end | .born | .died] | start *)
 dur         = 숫자 { 숫자 } ("y" | "d" | "h" | "m") ;               (* 1y = 365d. AST Dur 는 N, Unit 과 초 단위 Sec 를 함께 가진다 *)
 
-(* ───── .sil.md 파일 ─────
+(* ───── .dieg.md 파일 ─────
    - 1행이 "---" 이면 다음 "---"(또는 "...") 줄까지가 YAML 프론트매터. 닫히지 않으면 unterminated-fence.
    - 0열의 "```sl" ~ "```" 가 언어 블록. 여러 개면 순서대로 이어 붙인다. 닫히지 않으면 unterminated-fence.
    - 나머지는 산문(Prose, 원래 줄 번호 보존). 한 줄 전체가 "<!-- beat:<id> -->" 이면 BeatAnchor.
-   - 확장자가 .sil 이면 파일 전체가 언어 소스다.
+   - 확장자가 .dieg 이면 파일 전체가 언어 소스다.
    - 파일 맨 앞의 UTF-8 BOM 은 무시한다.
 
    프론트매터 (yaml.v3 Node, 스칼라는 원문 문자열. 앵커·별칭·병합 키 → yaml-anchor, 모르는 키 → unknown-key)

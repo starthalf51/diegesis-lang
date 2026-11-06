@@ -12,8 +12,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"silmari/internal/ir"
-	"silmari/internal/pg"
+	"diegesis/internal/ir"
+	"diegesis/internal/pg"
 )
 
 const day = int64(86400)
@@ -39,7 +39,7 @@ func (f *fx) ref(s string) string { return f.id + "/" + s }
 // src 는 새 소스 위치를 만들고 ID 를 돌려준다(줄 = ID).
 func (f *fx) src() int {
 	n := len(f.Src) + 1
-	f.Src = append(f.Src, ir.Src{ID: n, File: "t.sil", Line: n, Col: 1})
+	f.Src = append(f.Src, ir.Src{ID: n, File: "t.dieg", Line: n, Col: 1})
 	return n
 }
 

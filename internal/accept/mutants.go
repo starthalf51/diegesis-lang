@@ -12,10 +12,10 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"silmari/internal/ir"
-	"silmari/internal/mutate"
-	"silmari/internal/pg"
-	"silmari/rules"
+	"diegesis/internal/ir"
+	"diegesis/internal/mutate"
+	"diegesis/internal/pg"
+	"diegesis/rules"
 )
 
 // RunMutants 는 변이마다 `<work>~m<i>` 로 적재하고 린트한 뒤 지운다. base 는 이미 적재·린트된 원본이고

@@ -3,8 +3,8 @@ package sema
 import (
 	"fmt"
 
-	"silmari/internal/ir"
-	"silmari/internal/syntax"
+	"diegesis/internal/ir"
+	"diegesis/internal/syntax"
 )
 
 // walker emits one container's body in statement order.

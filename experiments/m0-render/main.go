@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "silmari/internal/render"
+	. "diegesis/internal/render"
 
 	"context"
 	"flag"

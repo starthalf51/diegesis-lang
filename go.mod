@@ -1,4 +1,4 @@
-module silmari
+module diegesis
 
 go 1.27.3
 
