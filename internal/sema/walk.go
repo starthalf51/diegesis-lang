@@ -151,6 +151,8 @@ func objectKinds(verb string) []string {
 		return []string{"character", "group", "place", "thing", "faction", "thread"}
 	case "does":
 		return nil
+	case "shows": // 보여 주는 것은 사람 또는 사물·기록. 사물은 청중이 아니다(presence.go)
+		return []string{"character", "group", "thing", "artifact"}
 	}
 	return []string{"character", "group"}
 }

@@ -111,3 +111,25 @@ dies b
 		t.Errorf("order edges = %v, want a.born>a.died and b.born>b.died", got)
 	}
 }
+
+// `shows` 의 목적어로 사물을 허용한다. 사물은 청중이 되지 않는다.
+func TestShowsThing(t *testing.T) {
+	w, diags := build(t, `module t.s
+import t.cast
+thing hairpin "H"
+scene 1 at room
+  enter a, b
+  a shows b, hairpin
+`)
+	noErrors(t, diags)
+	for _, a := range w.Acts {
+		if a.Verb == "shows" && !slices.Equal(a.Objects, []string{"t/t.cast/b", "t/t.s/hairpin"}) {
+			t.Errorf("objects = %v", a.Objects)
+		}
+	}
+	for _, au := range w.Audience {
+		if au.EntityID == "t/t.s/hairpin" {
+			t.Errorf("thing in audience")
+		}
+	}
+}

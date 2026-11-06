@@ -69,6 +69,7 @@ act         = actor verb [ ident ] [ idlist ] [ "to" idlist ] [ "with" proplist 
 actor       = ident | "role" ":" ident ;                             (* role:chancellor — 그 시점의 보유자 *)
 verb        = "tells" | "says" | "hails" | "asks" | "lies" | "whispers" | "aside" | "thinks"
             | "sees" | "shows" | "reads" | "writes" | "sends" | "orders" | "decrees" | "does" | "enacts" ;
+              (* shows 의 목적어는 인물·그룹 또는 사물·기록이다. 사물은 보여 준 대상이고 청중은 무대 위 사람이다(믿음 파생 없음). *)
               (* enacts = 공연·재연: 내용을 무대 위 모두(청중)에게 보이지만 단언이 아니다(assertive 아님 → 믿음 파생 없음,
                  독자 모델에도 안 든다). 청중은 패턴의 engaged(그 사실에 닿은 인물)로 센다. 예: 햄릿 3.2 의 극중극 *)
 belief      = ident ("believes" | "doubts") prop [ "because" tref ] ;
