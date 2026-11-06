@@ -78,11 +78,14 @@ func perfectJSON(t *testing.T, s Scene) string {
 func TestExtractPromptHasNoBackendInfo(t *testing.T) {
 	s := mustLoad(t, "testdata/scenes/macbeth-1.3.json")
 	for _, b := range mustBackends(t) {
-		r := &recorder{replies: []string{"산문입니다.", perfectJSON(t, s)}}
+		r := &recorder{replies: rep("산문입니다.", perfectJSON(t, s))}
 		if _, err := RenderOne(ctx, r, "macbeth", s, b); err != nil {
 			t.Fatal(err)
 		}
 		x := r.prompts[1]
+		if len(r.prompts) != 1+DefaultK || r.prompts[2] != x || r.prompts[3] != x {
+			t.Fatalf("%s: want %d identical extract calls, got %d prompts", b.ID, DefaultK, len(r.prompts))
+		}
 		bad := []string{b.ID, b.Sample.Author, b.Sample.Work, b.Sample.Source, b.Sample.Text[:40], "해라체", "하십시오체", "고전소설체", "style", "tone"}
 		if b.Tone != "" {
 			bad = append(bad, b.Tone)
@@ -110,7 +113,7 @@ func renderAll(t *testing.T, s Scene, tone func(Backend) string, extract func(Ba
 	t.Helper()
 	var rs []Render
 	for _, b := range mustBackends(t) {
-		r := &recorder{replies: []string{toneProse[tone(b)], extract(b)}}
+		r := &recorder{replies: rep(toneProse[tone(b)], extract(b))}
 		x, err := RenderOne(ctx, r, "macbeth", s, b)
 		if err != nil {
 			t.Fatal(err)
@@ -174,11 +177,11 @@ func TestRenderCachedSkips(t *testing.T) {
 	s := mustLoad(t, "testdata/min.json")
 	b := mustBackends(t)[2] // ko-haera
 	dir := t.TempDir()
-	r := &recorder{replies: []string{toneProse["haera"], perfectJSON(t, s)}}
-	if _, err := RenderCached(ctx, r, dir, "w", s, b, false); err != nil {
+	r := &recorder{replies: rep(toneProse["haera"], perfectJSON(t, s))}
+	if _, err := RenderCached(ctx, r, dir, "w", s, b, Force{}); err != nil {
 		t.Fatal(err)
 	}
-	got, err := RenderCached(ctx, r, dir, "w", s, b, false) // 답이 남아 있지 않다: 호출하면 패닉
+	got, err := RenderCached(ctx, r, dir, "w", s, b, Force{}) // 답이 남아 있지 않다: 호출하면 패닉
 	if err != nil || got.Prose != toneProse["haera"] {
 		t.Fatalf("cached: %v %+v", err, got)
 	}
@@ -193,8 +196,8 @@ func TestJudgeRescoresCachedRecords(t *testing.T) {
 	s := mustLoad(t, "testdata/min.json")
 	b := mustBackends(t)[2] // ko-haera
 	dir := t.TempDir()
-	r := &recorder{replies: []string{toneProse["hapsho"], `{"acts":[],"facts_stated":[],"new_events":[]}`}}
-	if _, err := RenderCached(ctx, r, dir, "w", s, b, false); err != nil {
+	r := &recorder{replies: rep(toneProse["hapsho"], `{"acts":[],"facts_stated":[],"new_events":[]}`)}
+	if _, err := RenderCached(ctx, r, dir, "w", s, b, Force{}); err != nil {
 		t.Fatal(err)
 	}
 	// 옛 분류기·옛 Diff 가 남긴 듯한 기록: 어투 haera 1.0, 빠진 것 없음.
@@ -209,7 +212,7 @@ func TestJudgeRescoresCachedRecords(t *testing.T) {
 	if err := os.WriteFile(rec, raw, 0o644); err != nil {
 		t.Fatal(err)
 	}
-	got, err := RenderCached(ctx, r, dir, "w", s, b, false) // 답이 남아 있지 않다: 호출하면 패닉
+	got, err := RenderCached(ctx, r, dir, "w", s, b, Force{}) // 답이 남아 있지 않다: 호출하면 패닉
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -227,17 +230,17 @@ func TestRenderCachedInvalidatesOnPromptChange(t *testing.T) {
 	s := mustLoad(t, "testdata/min.json")
 	b := mustBackends(t)[2]
 	dir := t.TempDir()
-	r := &recorder{replies: []string{toneProse["haera"], perfectJSON(t, s), toneProse["haera"], perfectJSON(t, s)}}
-	first, err := RenderCached(ctx, r, dir, "w", s, b, false)
-	if err != nil || first.PromptHash == "" {
-		t.Fatalf("%v %q", err, first.PromptHash)
+	r := &recorder{replies: append(rep(toneProse["haera"], perfectJSON(t, s)), rep(toneProse["haera"], perfectJSON(t, s))...)}
+	first, err := RenderCached(ctx, r, dir, "w", s, b, Force{})
+	if err != nil || first.RenderHash == "" || first.ExtractHash == "" {
+		t.Fatalf("%v %q %q", err, first.RenderHash, first.ExtractHash)
 	}
-	if _, err := RenderCached(ctx, r, dir, "w", s, b, false); err != nil || len(r.prompts) != 2 {
+	if _, err := RenderCached(ctx, r, dir, "w", s, b, Force{}); err != nil || len(r.prompts) != 1+DefaultK {
 		t.Fatalf("same scene must hit the cache: %v, %d calls", err, len(r.prompts))
 	}
 	s.Facts[0].Text = "The king lives."
-	again, err := RenderCached(ctx, r, dir, "w", s, b, false)
-	if err != nil || len(r.prompts) != 4 || again.PromptHash == first.PromptHash {
+	again, err := RenderCached(ctx, r, dir, "w", s, b, Force{})
+	if err != nil || len(r.prompts) != 2*(1+DefaultK) || again.RenderHash == first.RenderHash {
 		t.Fatalf("changed scene must re-render: %v, %d calls", err, len(r.prompts))
 	}
 }

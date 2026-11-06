@@ -104,16 +104,23 @@ func renderOnce(target, scene, id, out, styles string) error {
 	return os.WriteFile(out, []byte(res.Text+"\n"), 0o644)
 }
 
-// cmdRenderCheck runs `dieg render-check <corpus...> [--force] [--styles dir]`: 코퍼스마다 expect.yaml 의 render_scene 을
+// cmdRenderCheck runs `dieg render-check <corpus...> [--force | --force-extract] [--only <work>/<scene>.<backend>]... [--styles dir]`: 코퍼스마다 expect.yaml 의 render_scene 을
 // 모든 백엔드로 렌더 → 재추출 → diff 하고 ADR-012 로 판정한다. 보고서는 out/render-check.md, 산문은 out/render/.
 // 합격이면 0.
 func cmdRenderCheck(args []string) int {
 	var dirs []string
-	force, styles := false, "styles"
+	var f render.Force
+	only := map[string]bool{}
+	styles := "styles"
 	for i := 0; i < len(args); i++ {
 		switch a := args[i]; {
 		case a == "--force":
-			force = true
+			f.Render = true
+		case a == "--force-extract":
+			f.Extract = true
+		case a == "--only" && i+1 < len(args):
+			i++
+			only[args[i]] = false
 		case a == "--styles" && i+1 < len(args):
 			i++
 			styles = args[i]
@@ -126,7 +133,7 @@ func cmdRenderCheck(args []string) int {
 	if len(dirs) == 0 {
 		return usage()
 	}
-	pass, err := renderCheck(dirs, styles, force)
+	pass, err := renderCheck(dirs, styles, f, only)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
@@ -137,7 +144,8 @@ func cmdRenderCheck(args []string) int {
 	return 0
 }
 
-func renderCheck(dirs []string, styles string, force bool) (bool, error) {
+// only 가 있으면 f 는 거기 적힌 쌍(<work>/<scene>.<backend>)에만 쓴다. 나머지 쌍은 캐시로 판정한다. 맞는 쌍이 없는 항목은 오류다.
+func renderCheck(dirs []string, styles string, f render.Force, only map[string]bool) (bool, error) {
 	bs, err := render.LoadBackends(styles)
 	if err != nil {
 		return false, err
@@ -163,7 +171,7 @@ func renderCheck(dirs []string, styles string, force bool) (bool, error) {
 		}
 		var rs []render.Render
 		for _, b := range bs {
-			r, err := render.RenderCached(context.Background(), c, filepath.Join("out", "render"), work, s, b, force)
+			r, err := render.RenderCached(context.Background(), c, filepath.Join("out", "render"), work, s, b, scoped(f, only, work+"/"+s.ID+"."+b.ID))
 			if err != nil { // 기록하지 않았으니 다음 실행이 다시 시도한다
 				errs = append(errs, err.Error())
 				fmt.Fprintln(os.Stderr, "dieg:", err)
@@ -175,6 +183,11 @@ func renderCheck(dirs []string, styles string, force bool) (bool, error) {
 			rs = append(rs, r)
 		}
 		vs = append(vs, render.Judge(work, s, rs))
+	}
+	for k, hit := range only {
+		if !hit {
+			errs = append(errs, "--only "+k+": no such pair")
+		}
 	}
 	pass := len(errs) == 0
 	for _, v := range vs {
@@ -189,6 +202,18 @@ func renderCheck(dirs []string, styles string, force bool) (bool, error) {
 	}
 	fmt.Printf("%s → %s\n", map[bool]string{true: "PASS", false: "FAIL"}[pass], out)
 	return pass, nil
+}
+
+// scoped 는 only 가 비었으면 f, 아니면 key 가 only 에 있을 때만 f 를 쓴다(맞은 항목은 표시한다).
+func scoped(f render.Force, only map[string]bool, key string) render.Force {
+	if len(only) == 0 {
+		return f
+	}
+	if _, ok := only[key]; !ok {
+		return render.Force{}
+	}
+	only[key] = true
+	return f
 }
 
 func shares(t map[string]float64) string {

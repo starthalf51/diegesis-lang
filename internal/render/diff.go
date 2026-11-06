@@ -75,7 +75,20 @@ func Diff(s Scene, e Extracted) Report {
 		}
 	}
 	sort.Strings(miss)
-	return Report{Missing: miss, Hallucinated: hall.sorted(), Leaked: leak.sorted()}
+	// R4: 원본보다 많이 뽑힌 사실 액트(원본에 없는 것 포함)는 초과분만큼 환각이다. 모르는 사실은 위에서 이미 셌다.
+	halluc := hall.sorted()
+	for _, a := range e.Acts {
+		if _, ok := s.FactByID(a.Fact); !ok || VerbClass(a.Verb) == "presence" {
+			continue
+		}
+		if k := actKey(a.Actor, a.Verb, s.Canon(a.Fact)); want[k] > 0 {
+			want[k]--
+		} else {
+			halluc = append(halluc, "extra-act:"+k)
+		}
+	}
+	sort.Strings(halluc)
+	return Report{Missing: miss, Hallucinated: halluc, Leaked: leak.sorted()}
 }
 
 type set map[string]bool

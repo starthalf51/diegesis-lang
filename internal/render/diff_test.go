@@ -66,7 +66,8 @@ func TestDiffKeysAndFailClosed(t *testing.T) {
 		NewEvents:   []string{"x", "x"},
 	}
 	r := Diff(s, e)
-	if want := []string{"unknown-fact:yy", "unknown-fact:zz", "x"}; !reflect.DeepEqual(r.Hallucinated, want) {
+	// a says w 는 원본에 없는 사실 액트라 누출이자 초과 액트(R4)다.
+	if want := []string{"extra-act:a|assert|w", "unknown-fact:yy", "unknown-fact:zz", "x"};!reflect.DeepEqual(r.Hallucinated, want) {
 		t.Fatalf("halluc %v", r.Hallucinated)
 	}
 	if !reflect.DeepEqual(r.Leaked, []string{"w"}) || len(r.Missing) != 0 {

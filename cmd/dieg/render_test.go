@@ -18,3 +18,18 @@ func TestCheckReportLabelsJaccard(t *testing.T) {
 		}
 	}
 }
+
+// --only 는 --force·--force-extract 를 적힌 쌍에만 쓴다.
+func TestScopedForce(t *testing.T) {
+	f := render.Force{Render: true}
+	if got := scoped(f, map[string]bool{}, "w/s.b"); got != f {
+		t.Errorf("no --only: %+v", got)
+	}
+	only := map[string]bool{"w/s.b": false}
+	if got := scoped(f, only, "w/s.c"); got != (render.Force{}) {
+		t.Errorf("unlisted pair forced: %+v", got)
+	}
+	if got := scoped(f, only, "w/s.b"); got != f || !only["w/s.b"] {
+		t.Errorf("listed pair: %+v %v", got, only)
+	}
+}
