@@ -1,0 +1,146 @@
+package write
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+
+	"diegesis/internal/render"
+)
+
+// Diag is one compiler or lint diagnostic, File relative to the bundle root. Waived lints are not Diags.
+type Diag struct {
+	File      string
+	Line, Col int
+	Severity  string
+	Rule, Msg string
+}
+
+func (d Diag) String() string {
+	f := d.File
+	if f == "" {
+		f = "-"
+	}
+	return fmt.Sprintf("%s:%d:%d: %s %s: %s", f, d.Line, d.Col, d.Severity, d.Rule, d.Msg)
+}
+
+// Blocking says whether d keeps the code from being clean: errors and warns do, info does not.
+func (d Diag) Blocking() bool { return d.Severity == "error" || d.Severity == "warn" }
+
+// Checker compiles and lints the bundle in dir.
+type Checker func(ctx context.Context, dir string) (diags []Diag, err error)
+
+type Opts struct {
+	Rounds   int
+	Backend  string
+	Render   bool
+	Out      string
+	Reserved []string // work ids the model must not take (corpus works); listed in the prompt
+}
+
+func DefaultOpts() Opts { return Opts{Rounds: 4, Backend: "ko-haera", Render: true} }
+
+// Result: Rounds used, whether the last code is clean, its diagnostics (the blocking ones and any info),
+// and Dir = <out>/story holding the last well-formed code.
+type Result struct {
+	Rounds int
+	Clean  bool
+	Diags  []Diag
+	Dir    string
+}
+
+// label tags c's calls when c is a Meter.
+func label(c render.Completer, l string) render.Completer {
+	if m, ok := c.(*render.Meter); ok {
+		return m.Label(l)
+	}
+	return c
+}
+
+func bundleDiag(msg string) []Diag {
+	return []Diag{{Severity: "error", Rule: "bundle", Msg: msg}}
+}
+
+// Loop asks c for code, checks it, and feeds diagnostics back until clean or o.Rounds is spent. Round r's
+// raw output is <out>/rounds/r<r>.raw.txt and its code <out>/rounds/r<r>/. A malformed bundle is one "bundle"
+// diagnostic and consumes its round; the next prompt shows the last well-formed bundle. The last well-formed
+// code is copied to <out>/story/ either way; remaining diagnostics go to <out>/diags.txt. Loop never renders.
+func Loop(ctx context.Context, c render.Completer, check Checker, idea string, refs Refs, o Opts) (Result, error) {
+	if o.Rounds <= 0 {
+		o.Rounds = DefaultOpts().Rounds
+	}
+	if o.Out == "" {
+		return Result{}, fmt.Errorf("write: no output dir")
+	}
+	res := Result{Dir: filepath.Join(o.Out, "story")}
+	var last map[string]string // last well-formed bundle
+	var bundle string
+	user := CodePrompt(idea, refs, o.Reserved)
+	for r := 1; r <= o.Rounds; r++ {
+		l := "code-r" + strconv.Itoa(r)
+		if r > 1 {
+			l = "fix-r" + strconv.Itoa(r)
+		}
+		out, err := label(c, l).Complete(ctx, System, user)
+		if err != nil {
+			return res, fmt.Errorf("round %d: %w", r, err)
+		}
+		res.Rounds = r
+		rdir := filepath.Join(o.Out, "rounds", "r"+strconv.Itoa(r))
+		if err := os.MkdirAll(filepath.Dir(rdir), 0o755); err != nil {
+			return res, err
+		}
+		if err := os.WriteFile(rdir+".raw.txt", []byte(out.Text), 0o644); err != nil {
+			return res, err
+		}
+		files, perr := ParseFiles(out.Text)
+		switch {
+		case out.StopReason != "end_turn":
+			res.Diags = bundleDiag(fmt.Sprintf("model output stopped early (%s); write every file and end with %s", out.StopReason, End))
+		case perr != nil:
+			res.Diags = bundleDiag(perr.Error())
+		default:
+			if err := WriteFiles(rdir, files); err != nil {
+				return res, err
+			}
+			if res.Diags, err = check(ctx, rdir); err != nil {
+				return res, fmt.Errorf("round %d check: %w", r, err)
+			}
+			last = files
+			if bundle, err = PackFiles(rdir); err != nil {
+				return res, err
+			}
+			res.Clean = true
+			for _, d := range res.Diags {
+				res.Clean = res.Clean && !d.Blocking()
+			}
+		}
+		if res.Clean {
+			break
+		}
+		user = FixPrompt(idea, refs, o.Reserved, bundle, blocking(res.Diags))
+	}
+	if last != nil {
+		if err := WriteFiles(res.Dir, last); err != nil {
+			return res, err
+		}
+	}
+	var sb strings.Builder
+	for _, d := range res.Diags {
+		sb.WriteString(d.String() + "\n")
+	}
+	return res, os.WriteFile(filepath.Join(o.Out, "diags.txt"), []byte(sb.String()), 0o644)
+}
+
+func blocking(ds []Diag) []Diag {
+	var out []Diag
+	for _, d := range ds {
+		if d.Blocking() {
+			out = append(out, d)
+		}
+	}
+	return out
+}
