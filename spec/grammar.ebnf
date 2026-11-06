@@ -19,14 +19,15 @@
 
 file        = header { top } ;
 header      = "module" qname NL { "import" qname NL } ;             (* module 두 번 → dup-decl, 같은 import 두 번 → dup-decl *)
-top         = work | decl | scene | event | account | setup | distance | parent | life | belief | attribute | pragma ;
+top         = work | decl | scene | event | account | setup | distance | parent | life | belief | attribute | pattern | pragma ;
               (* 최상위 attribute = 처음부터 참(IR at_pt "") *)
               (* 최상위 belief = 배경 지식: 시점 없이 처음부터 믿는다(IR at_pt "") *)
 
 (* 선언 *)
 work        = "work" ident [string] [ BLOCK(wattr) ] ;
 wattr       = "unit" ident | "start" date | name | pragma ;
-decl        = kind ident [ string { "," string } ] [tier] [ "=" prop ] [bool] [ BLOCK(attr) ] ;
+decl        = kind ident [ string { "," string } ] [tier] [ "=" prop ] [bool] [ "tag" ident ] [ BLOCK(attr) ] ;
+              (* tag 은 fact 만(다른 종류면 arg-kind). tag identity = 정체 사실: recognition 패턴이 고른다(R3) *)
 kind        = "character" | "group" | "place" | "thing" | "faction" | "role" | "fact" | "artifact" | "thread" ;
 tier        = "major" | "minor" | "extra" ;
 bool        = "true" | "false" ;
@@ -51,7 +52,7 @@ event       = "event" ident [string] [ BLOCK(stmt) ] ;               (* 무대 �
 account     = "account" ident "of" qname "by" ident [ BLOCK(stmt) ] ; (* 같은 사건에 대한 기록 하나 *)
 
 stmt        = when | lasts | presence | beat | act | belief | reader | render | setup | payoff
-            | discourse | parent | life | attribute | pragma ;
+            | discourse | parent | life | attribute | pattern | pragma ;
 when        = "when" ( ("after" | "before") tref [ "by" dur ".." dur ]
                      | "at" date [ident]                             (* 시각: dawn 등 *)
                      | "during" tref ) ;
@@ -79,6 +80,10 @@ reader      = "reveal" prop [ "at" tref ] | "withhold" prop "until" tref ;
 setup       = "setup" ident ("promise" | "hint" | "symbol") ":" ( prop | string ) ;
 payoff      = "payoff" qname ;                                       (* 모듈/복선: macbeth.act1/banquo_kings *)
 discourse   = "discourse" "after" tref ;
+pattern     = "pattern" ident [ "at" ident ] ;                       (* 작가 선언: 이 서사 패턴(patterns/*.sql 의 ID)이 있다.
+                                                                        at = 그 장면(없으면 장면 안에서는 그 장면, 최상위에서는 작품 어디든).
+                                                                        매치가 없으면 lint warn pattern-missing(대상 = 이 선언 <장면|모듈>#<패턴>).
+                                                                        "pattern" 은 예약어가 아니다: 다음 단어가 동사나 believes·doubts 면 pattern 이라는 이름의 행위·믿음이다 *)
 pragma      = "#!" "allow" ruleid ":" string ;                       (* 바로 다음 문장에 붙는다(sema) *)
 render      = "render" BLOCK(rentry) ;
 rentry      = rkey rvalue { [","] rvalue } ;

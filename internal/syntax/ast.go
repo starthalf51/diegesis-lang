@@ -82,6 +82,7 @@ type Decl struct {
 	Tier  string
 	Def   *Prop  // fact x = prop
 	Value string // "true" | "false" | ""
+	Tag   string // `tag <name>` (fact 만, sema 가 검사)
 	Attrs []Node // Name Members Knows Held Shared Contains Belief Text Pragma
 }
 
@@ -249,6 +250,13 @@ type Setup struct {
 type Payoff struct {
 	Pos
 	Ref Ident
+}
+
+// PatternDecl: `pattern <id> [at <scene>]` — 작가가 선언한 서사 패턴(판정은 PG patterns/*.sql).
+type PatternDecl struct {
+	Pos
+	ID Ident
+	At *Ident
 }
 
 type Discourse struct {

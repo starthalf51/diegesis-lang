@@ -118,6 +118,8 @@ func (w *walker) stmt(n syntax.Node) (string, string) {
 			acc = c.id
 		}
 		return "attribute", b.attribute(m, n, c.id, w.last, acc)
+	case *syntax.PatternDecl:
+		return "pattern", b.patternDecl(m, n, c.id)
 	}
 	return "", ""
 }

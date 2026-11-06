@@ -1,5 +1,5 @@
 {
-  "schema": 2,
+  "schema": 3,
   "works": [
     {
       "id": "macbeth",
@@ -2735,5 +2735,6 @@
       "src_id": 34
     }
   ],
-  "attributes": []
+  "attributes": [],
+  "pattern_decls": []
 }

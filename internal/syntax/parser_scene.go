@@ -90,6 +90,9 @@ func (c *cur) stmt() Node {
 	if c.isAttribute() {
 		return c.attribute()
 	}
+	if c.isPattern() {
+		return c.patternDecl()
+	}
 	var n Node
 	switch t.Val {
 	case "when":

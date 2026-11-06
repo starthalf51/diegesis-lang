@@ -225,6 +225,9 @@ func (p *parser) top(c *cur) Node {
 		return c.pragma()
 	}
 	f := p.f
+	if c.isPattern() {
+		return c.patternDecl()
+	}
 	if c.isAttribute() {
 		return c.attribute()
 	}

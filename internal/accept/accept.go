@@ -24,6 +24,7 @@ type Expect struct {
 	MutationMinRate             float64 `yaml:"mutation_min_rate"`
 	MutationMinRateWoMoveBefore float64 `yaml:"mutation_min_rate_wo_move_before"`
 	RenderScene                 string  `yaml:"render_scene"` // dieg render-check 가 렌더할 장면(짧은 ID)
+	Patterns                    []WantPattern `yaml:"patterns"`
 }
 
 // Want 는 반드시 나와야 하는 진단 하나. Target 은 작품 ID 를 뺀 대상 ID(`macbeth.act1/1.3#a5`).
@@ -33,6 +34,15 @@ type Want struct {
 	Target   string `yaml:"target"`
 	Severity string `yaml:"severity"`
 	Waived   bool   `yaml:"waived"`
+	Why      string `yaml:"why"`
+}
+
+// WantPattern 은 반드시 나와야 하는 패턴 매치 하나. Target 은 작품 ID 를 뺀 대상 ID 이고 정확히 같아야 한다(Review Focus 1).
+// SpanFrom 을 적으면 구간 시작(discourse_ord)도 같아야 한다. Why 는 원문 근거(줄 번호).
+type WantPattern struct {
+	Pattern  string `yaml:"pattern"`
+	Target   string `yaml:"target"`
+	SpanFrom *int   `yaml:"span_from"`
 	Why      string `yaml:"why"`
 }
 
@@ -97,6 +107,7 @@ type Input struct {
 	Diags         []pg.Diagnostic
 	Rows          map[string][][]string
 	QueryErrors   map[string]string
+	Patterns      []pg.Match // pg.Patterns 의 결과(작품 전체)
 	Mutants       []Mutant
 }
 
@@ -107,6 +118,7 @@ type Result struct {
 	FalsePositives                       []pg.Diagnostic
 	Undeclared                           []pg.Diagnostic // 억제됐지만 expect.yaml 에 없는 warn
 	BadQueries                           []string
+	MissingPatterns                      []WantPattern
 	Rate                                 float64
 	Counted                              int // 비율의 분모(동등 변이 제외)
 	Hit                                  int // 분자(detected + caught)
@@ -152,6 +164,12 @@ func Judge(e *Expect, in Input) Result {
 		if !ok || !rowsEqual(got, q.Rows) {
 			r.BadQueries = append(r.BadQueries, q.Name)
 			fail("query %s: got %v, want %v %s", q.Name, got, q.Rows, in.QueryErrors[q.Name])
+		}
+	}
+	for _, w := range e.Patterns {
+		if !slices.ContainsFunc(in.Patterns, w.matches(e.Work)) {
+			r.MissingPatterns = append(r.MissingPatterns, w)
+			fail("missing expected pattern %s %s%s", w.Pattern, w.Target, spanText(w.SpanFrom))
 		}
 	}
 	for _, m := range in.Mutants {
@@ -206,6 +224,7 @@ func Report(e *Expect, in Input, r Result) string {
 	p("| 오탐(기대 밖 억제되지 않은 warn) | %d | 0 |\n", len(r.FalsePositives))
 	p("| 선언되지 않은 억제(기대 밖 억제된 warn) | %d | 0 |\n", len(r.Undeclared))
 	p("| 질의 | %d/%d | 전부 |\n", len(e.Queries)-len(r.BadQueries), len(e.Queries))
+	p("| 기대 패턴 | %d/%d | 전부 |\n", len(e.Patterns)-len(r.MissingPatterns), len(e.Patterns))
 	p("| 변이 탐지율 | %d/%d = %.2f | ≥ %.2f |\n", r.Hit, r.Counted, r.Rate, e.MutationMinRate)
 	p("| 변이 탐지율(move-before 제외) | %d/%d = %.2f | ≥ %.2f |\n\n", r.HitWoMoveBefore, r.CountedWoMoveBefore,
 		r.RateWoMoveBefore, e.MutationMinRateWoMoveBefore)
@@ -240,6 +259,7 @@ func Report(e *Expect, in Input, r Result) string {
 		p("### %s — %s\n\n%s\n\n```sql\n%s\n```\n\n기대 `%v` · 실제 `%v` %s\n\n", q.Name, st, q.Why, strings.TrimSpace(q.SQL),
 			q.Rows, in.Rows[q.Name], in.QueryErrors[q.Name])
 	}
+	patternTables(&b, e, in, r)
 	p("## 변이\n\n")
 	if in.Mutants == nil {
 		p("(돌리지 않았다)\n")

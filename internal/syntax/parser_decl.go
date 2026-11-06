@@ -72,6 +72,9 @@ func (c *cur) decl() Node {
 	if c.is("true") || c.is("false") {
 		d.Value = c.word("bool").Val
 	}
+	if c.accept("tag") {
+		d.Tag = c.word("tag name").Val
+	}
 	c.end()
 	c.p.declare("decl", d.ID)
 	d.Attrs = c.children((*cur).attr)
@@ -215,4 +218,23 @@ func (c *cur) attribute() Node {
 	}
 	c.end()
 	return a
+}
+
+// isPattern: "pattern" starts a declaration unless it is an actor or believer named pattern.
+func (c *cur) isPattern() bool {
+	n := c.peekN(1)
+	return c.is("pattern") && n != nil && n.Kind == tWord && !verbs[n.Val] && n.Val != "believes" && n.Val != "doubts"
+}
+
+// pattern <id> [at <scene>]
+func (c *cur) patternDecl() Node {
+	n := &PatternDecl{Pos: c.peek().Pos}
+	c.k++
+	n.ID = c.ident("pattern id")
+	if c.accept("at") {
+		at := c.ident("scene")
+		n.At = &at
+	}
+	c.end()
+	return n
 }

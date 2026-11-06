@@ -4,7 +4,7 @@
 package ir
 
 // Schema is bumped whenever a table or field changes.
-const Schema = 2
+const Schema = 3
 
 type Work struct {
 	Schema       int           `json:"schema"`
@@ -35,6 +35,7 @@ type Work struct {
 	Directives   []Directive   `json:"directives"`
 	Waivers      []Waiver      `json:"waivers"`
 	Attributes   []Attribute   `json:"attributes"`
+	PatternDecls []PatternDecl `json:"pattern_decls"`
 }
 
 type WorkRow struct {
@@ -208,6 +209,7 @@ type Fact struct {
 	Text   string   `json:"text"`
 	Truth  string   `json:"truth"`
 	Def    *PropDef `json:"def"`
+	Tag    string   `json:"tag,omitempty"` // `fact … tag <name>` (identity = 정체 사실, recognition 패턴)
 	SrcID  int      `json:"src_id"`
 }
 
@@ -314,4 +316,14 @@ type Attribute struct {
 	AccountID string `json:"account_id"`
 	SrcRef    string `json:"src_ref"`
 	SrcID     int    `json:"src_id"`
+}
+
+// PatternDecl is one author declaration `pattern <id> [at <scene>]`. ID is
+// <scene or module id>#<pattern> (the waiver target of pattern-missing).
+// SceneID "" = anywhere in the work.
+type PatternDecl struct {
+	ID      string `json:"id"`
+	Pattern string `json:"pattern"`
+	SceneID string `json:"scene_id"`
+	SrcID   int    `json:"src_id"`
 }

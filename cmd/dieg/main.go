@@ -41,6 +41,9 @@ func main() {
 	if args[0] == "lint" {
 		os.Exit(cmdLint(args[1:]))
 	}
+	if args[0] == "patterns" {
+		os.Exit(cmdPatterns(args[1:]))
+	}
 	if args[0] == "load" && len(args) == 2 {
 		if _, err := load(args[1], os.Stdout); err != nil {
 			fmt.Fprintln(os.Stderr, "dieg:", err)
