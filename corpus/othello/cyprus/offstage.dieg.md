@@ -20,7 +20,10 @@ event plant "Iago leaves the handkerchief in Cassio's lodging"
   iago does drop src 3.3.360
   cassio sees: cassio_has_napkin src 3.4.209
 
-# 3.4.190 비앙카가 마지막으로 카시오를 본 때. 카시오가 키프로스에 온(2.1) 뒤다
+# 3.4.190 비앙카가 마지막으로 카시오를 본 때. 카시오가 키프로스에 온(2.1) 뒤다 — 전제(해석): 두 사람의 왕래는 섬에서 이뤄진다.
+# 근거: 3.4.188-189 "I was coming to your house." / "And I was going to your lodging, Cassio."(서로의 숙소를 오간다),
+# 4.1.149-152 "she haunts me in every place. I was the other day talking on the sea-bank with certain Venetians; and thither comes
+# the bauble"(카시오가 섬에 있는 동안 그녀가 쫓아다닌다). 마지막 방문의 날짜는 원문에 없다.
 event last_visit "Cassio's last visit to Bianca"
   when after 2.1
 ```
