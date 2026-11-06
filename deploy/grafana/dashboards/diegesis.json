@@ -463,6 +463,10 @@
        {
         "id": "unit",
         "value": "none"
+       },
+       {
+        "id": "custom.axisLabel",
+        "value": "서술 순서"
        }
       ]
      }
