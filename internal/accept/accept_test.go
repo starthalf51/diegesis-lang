@@ -160,5 +160,8 @@ func TestJudgeRequiresBothRates(t *testing.T) {
 	add("drop-tells", 3, Survived)
 	if r := Judge(e, in); !r.Pass || r.HitWoMoveBefore != 17 || r.CountedWoMoveBefore != 20 {
 		t.Errorf("pass=%v wo=%d/%d, want PASS with 17/20 (query detections count, R1)", r.Pass, r.HitWoMoveBefore, r.CountedWoMoveBefore)
+	} else if r.HitLint != 18 || r.HitLintWoMoveBefore != 15 || r.RateLintWoMoveBefore != 0.75 {
+		// 린트만(질의 탐지 제외)의 비율은 보고만 한다: 분모는 같고 분자에서 detected-by-query 를 뺀다
+		t.Errorf("lint-only %d/%d, wo %d/%d = %v, want 18/23, 15/20 = 0.75", r.HitLint, r.Counted, r.HitLintWoMoveBefore, r.CountedWoMoveBefore, r.RateLintWoMoveBefore)
 	}
 }

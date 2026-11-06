@@ -124,6 +124,9 @@ type Result struct {
 	Hit                                  int // 분자(detected + caught)
 	RateWoMoveBefore                     float64
 	CountedWoMoveBefore, HitWoMoveBefore int
+	// 린트만(detected-by-query 를 뺀 분자, 분모는 같다). 보고용이고 판정에는 쓰지 않는다(R1).
+	HitLint, HitLintWoMoveBefore   int
+	RateLint, RateLintWoMoveBefore float64
 }
 
 // Judge: 컴파일 오류 수 일치 ∧ expected 전부 있음 ∧ expected 밖의 warn = 0(억제되지 않은 것은 오탐,
@@ -173,23 +176,27 @@ func Judge(e *Expect, in Input) Result {
 		}
 	}
 	for _, m := range in.Mutants {
-		hit, counted := 0, 0
+		hit, lint, counted := 0, 0, 0
 		switch m.Outcome {
-		case Detected, DetectedByQuery, Caught:
+		case Detected, Caught:
+			hit, lint, counted = 1, 1, 1
+		case DetectedByQuery:
 			hit, counted = 1, 1
 		case Survived:
 			counted = 1
 		}
-		r.Hit, r.Counted = r.Hit+hit, r.Counted+counted
+		r.Hit, r.HitLint, r.Counted = r.Hit+hit, r.HitLint+lint, r.Counted+counted
 		if m.Mutation.Op != "move-before" {
-			r.HitWoMoveBefore, r.CountedWoMoveBefore = r.HitWoMoveBefore+hit, r.CountedWoMoveBefore+counted
+			r.HitWoMoveBefore, r.HitLintWoMoveBefore, r.CountedWoMoveBefore =
+				r.HitWoMoveBefore+hit, r.HitLintWoMoveBefore+lint, r.CountedWoMoveBefore+counted
 		}
 	}
 	if r.Counted > 0 {
-		r.Rate = float64(r.Hit) / float64(r.Counted)
+		r.Rate, r.RateLint = float64(r.Hit)/float64(r.Counted), float64(r.HitLint)/float64(r.Counted)
 	}
 	if r.CountedWoMoveBefore > 0 {
 		r.RateWoMoveBefore = float64(r.HitWoMoveBefore) / float64(r.CountedWoMoveBefore)
+		r.RateLintWoMoveBefore = float64(r.HitLintWoMoveBefore) / float64(r.CountedWoMoveBefore)
 	}
 	if e.MutationMinRate > 0 && (r.Counted == 0 || r.Rate < e.MutationMinRate) {
 		fail("mutation detection %d/%d = %.2f, want ≥ %.2f", r.Hit, r.Counted, r.Rate, e.MutationMinRate)
@@ -306,7 +313,7 @@ func mutantTables(b *strings.Builder, work string, ms []Mutant) {
 			if s == &noMove && op == "move-before" {
 				continue
 			}
-			s.det, s.caught, s.surv = s.det+t.det+t.query, s.caught+t.caught, s.surv+t.surv
+			s.det, s.query, s.caught, s.surv = s.det+t.det+t.query, s.query+t.query, s.caught+t.caught, s.surv+t.surv
 		}
 	}
 	rate := func(t tally) string {
@@ -316,7 +323,16 @@ func mutantTables(b *strings.Builder, work string, ms []Mutant) {
 		}
 		return fmt.Sprintf("%d/%d = %.2f", t.det+t.caught, n, float64(t.det+t.caught)/float64(n))
 	}
+	lintOnly := func(t tally) string { // 질의 탐지를 뺀 분자, 분모는 같다
+		n := t.det + t.caught + t.surv
+		if n == 0 {
+			return "-"
+		}
+		k := t.det - t.query + t.caught
+		return fmt.Sprintf("%d/%d = %.2f", k, n, float64(k)/float64(n))
+	}
 	fmt.Fprintf(b, "\n탐지율: 전체 %s · move-before 제외 %s\n", rate(all), rate(noMove))
+	fmt.Fprintf(b, "\n린트만(질의 탐지 제외, 판정에는 쓰지 않는다): 전체 %s · move-before 제외 %s\n", lintOnly(all), lintOnly(noMove))
 	fmt.Fprintf(b, "\n| # | 연산자 | 대상 | 기대 규칙 | 결과 | 새 warn 규칙 | 비고 |\n|---|---|---|---|---|---|---|\n")
 	for i, m := range ms {
 		fmt.Fprintf(b, "| m%d | %s | `%s` | %s | %s | %s | %s |\n", i+1, m.Mutation.Op, cell(shortAll(work, m.Mutation.Target)),
