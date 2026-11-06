@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -27,7 +28,7 @@ import (
 // IR 변이는 컴파일을 거치지 않으므로 Caught(컴파일러가 잡음)는 여기서 나오지 않는다.
 func RunMutants(ctx context.Context, db *pgxpool.Pool, base *ir.Work, baseDiags []pg.Diagnostic, qs []Query, seed int64, n int,
 	log io.Writer) ([]Mutant, error) {
-	h, err := newHarness(ctx, db, base, baseDiags, qs)
+	h, err := newHarness(ctx, db, base, baseDiags, qs, log)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +58,8 @@ type harness struct {
 	baseRows  map[string][][]string
 }
 
-func newHarness(ctx context.Context, db *pgxpool.Pool, base *ir.Work, baseDiags []pg.Diagnostic, qs []Query) (*harness, error) {
+func newHarness(ctx context.Context, db *pgxpool.Pool, base *ir.Work, baseDiags []pg.Diagnostic, qs []Query,
+	log io.Writer) (*harness, error) {
 	h := &harness{db: db, work: base.Works[0].ID, base: base, before: map[string]bool{}}
 	for _, d := range baseDiags {
 		if d.Severity == "warn" && !d.Waived {
@@ -79,12 +81,21 @@ func newHarness(ctx context.Context, db *pgxpool.Pool, base *ir.Work, baseDiags 
 	}
 	h.baseRows = map[string][][]string{}
 	for _, q := range qs {
-		if r, ok := rows[q.Name]; ok && rowsEqual(r, got[q.Name]) {
+		r, ok := rows[q.Name]
+		switch {
+		case readsDiagnostics.MatchString(q.SQL):
+			fmt.Fprintf(log, "query %s: excluded from query detection (reads the diagnostic table — lint detection, site-local only)\n", q.Name)
+		case !ok || !rowsEqual(r, got[q.Name]):
+			fmt.Fprintf(log, "query %s: excluded from query detection (result differs on the renamed unmutated copy %s — not transportable)\n", q.Name, copyID)
+		default:
 			h.qs, h.baseRows[q.Name] = append(h.qs, q), r
 		}
 	}
 	return h, nil
 }
+
+// readsDiagnostics: diagnostic 표를 읽는 질의는 린트 결과를 다시 보는 것이라(지점 한정을 우회한다) 질의 탐지에 쓰지 않는다.
+var readsDiagnostics = regexp.MustCompile(`(?i)\bdiagnostic\b`)
 
 // run 은 변이 하나를 id 로 적재·린트·판정하고 지운다.
 func (h *harness) run(ctx context.Context, id string, m mutate.Mutation) (Mutant, error) {

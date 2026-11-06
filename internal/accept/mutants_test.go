@@ -237,9 +237,32 @@ func TestShiftDurationGenesis(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	h, err := newHarness(ctx, pool, w, ds, e.Queries)
+	var log strings.Builder
+	// 작품 ID 를 상수로 쓰는 질의(그래프 이름과 같은 꼴)는 복사본에서 결과가 다르다
+	qs := append(slices.Clone(e.Queries), Query{Name: "work-constant", SQL: "SELECT $1 = '" + work + "'"})
+	h, err := newHarness(ctx, pool, w, ds, qs, &log)
 	if err != nil {
 		t.Fatal(err)
+	}
+	// 리뷰 fix 1: diagnostic 표를 읽는 질의는 지점 한정을 우회하는 린트 탐지라서 질의 탐지에서 뺀다.
+	// 그래프 이름이 작품 상수인 질의는 이름만 바꾼 복사본에서 결과가 달라 뺀다. 뺀 질의마다 사유 한 줄.
+	var kept []string
+	for _, q := range h.qs {
+		kept = append(kept, q.Name)
+	}
+	for _, x := range []struct{ name, why string }{
+		{"prediction-paid-off-in-every-account", "diagnostic"},
+		{"work-constant", "copy"},
+	} {
+		if slices.Contains(kept, x.name) {
+			t.Errorf("%s kept for query detection, want excluded", x.name)
+		}
+		if !strings.Contains(log.String(), x.name) || !strings.Contains(log.String(), x.why) {
+			t.Errorf("log does not name %s with reason %q:\n%s", x.name, x.why, log.String())
+		}
+	}
+	if !slices.Contains(kept, "methuselah-dies-am-1656") {
+		t.Errorf("kept queries %v, want methuselah-dies-am-1656", kept)
 	}
 	var m *mutate.Mutation
 	var nTime int
