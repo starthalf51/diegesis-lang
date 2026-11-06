@@ -8,7 +8,7 @@ import (
 // VerifyOpts: K 는 재추출 횟수, Retries 는 첫 렌더 뒤 최대 재렌더 횟수.
 type VerifyOpts struct{ K, Retries int }
 
-// Passed 는 ADR-012 의 사실 기준(환각 0, 누출 0, 누락 ≤ MaxMissing)을 통과했는지. 재추출이 깨졌으면 통과가 아니다.
+// Passed 는 ADR-019 의 사실 기준(환각 0, 누출 0, 누락 ≤ MaxMissing)을 통과했는지. render-check 의 ADR-012(누락 ≤ 1 허용)보다 엄격하다. 재추출이 깨졌으면 통과가 아니다.
 func Passed(r Render) bool {
 	p := r.Report
 	return p.ExtractError == "" && len(p.Hallucinated) == 0 && len(p.Leaked) == 0 && len(p.Missing) <= MaxMissing

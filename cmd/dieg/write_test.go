@@ -26,3 +26,17 @@ func TestWriteCheckerRelativePaths(t *testing.T) {
 		t.Errorf("file %q, want bundle-relative", ds[0].File)
 	}
 }
+
+func TestNotUnderCorpus(t *testing.T) {
+	root := t.TempDir()
+	cwd, _ := os.Getwd()
+	if err := os.Chdir(root); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chdir(cwd)
+	for out, bad := range map[string]bool{"corpus": true, "corpus/x/y": true, "out/corpus": false, "corpusx": false, "out/s": false} {
+		if err := notUnderCorpus(out); (err != nil) != bad {
+			t.Errorf("%s: err=%v want bad=%t", out, err, bad)
+		}
+	}
+}

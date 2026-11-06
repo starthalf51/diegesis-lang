@@ -201,7 +201,13 @@ func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
 	if err != nil {
 		return 1, err
 	}
+	if err := notUnderCorpus(o.Out); err != nil {
+		return 1, err
+	}
 	if err := os.MkdirAll(o.Out, 0o755); err != nil {
+		return 1, err
+	}
+	if err := write.ResetRun(o.Out); err != nil {
 		return 1, err
 	}
 	f, err := os.Create(filepath.Join(o.Out, "calls.jsonl"))
@@ -265,4 +271,20 @@ func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
 		return 3, nil
 	}
 	return 0, nil
+}
+
+// notUnderCorpus refuses an output dir inside ./corpus, where generated story files would compile into a corpus work.
+func notUnderCorpus(out string) error {
+	abs, err := filepath.Abs(out)
+	if err != nil {
+		return err
+	}
+	corpus, err := filepath.Abs("corpus")
+	if err != nil {
+		return err
+	}
+	if rel, err := filepath.Rel(corpus, abs); err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return fmt.Errorf("-o %q is under the corpus directory; pick another output dir", out)
+	}
+	return nil
 }

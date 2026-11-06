@@ -63,6 +63,7 @@ func dropWrapperFence(body []string) []string {
 // one newline.
 func ParseFiles(text string) (map[string]string, error) {
 	files := map[string]string{}
+	lower := map[string]string{}
 	var cur string
 	var body []string
 	flush := func() error {
@@ -93,6 +94,11 @@ func ParseFiles(text string) (map[string]string, error) {
 			if _, dup := files[cur]; dup {
 				return nil, fmt.Errorf("duplicate file %q", cur)
 			}
+			low := strings.ToLower(cur)
+			if prev, ok := lower[low]; ok {
+				return nil, fmt.Errorf("files %q and %q differ only in case", prev, cur)
+			}
+			lower[low] = cur
 			files[cur] = "" // reserve so a repeat is caught before flush
 			body = nil
 			continue
@@ -186,4 +192,22 @@ func PackFiles(dir string) (string, error) {
 		sb.WriteString(hdrPre + p + hdrPost + "\n" + c)
 	}
 	return sb.String(), nil
+}
+
+// ResetRun removes out/novel and out/rounds left by an earlier run, so stale scene files and higher round dirs
+// cannot survive into this one. Each is checked with safeToEmpty first.
+func ResetRun(out string) error {
+	if err := safeToEmpty(out); err != nil {
+		return err
+	}
+	for _, n := range []string{"novel", "rounds"} {
+		d := filepath.Join(out, n)
+		if err := safeToEmpty(d); err != nil {
+			return err
+		}
+		if err := os.RemoveAll(d); err != nil {
+			return err
+		}
+	}
+	return nil
 }

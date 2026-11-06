@@ -41,6 +41,7 @@ func TestParseFilesRejects(t *testing.T) {
 		"duplicate":  h("a.dieg.md", "x\n") + h("a.dieg.md", "y\n"),
 		"extension":  h("a.txt", "x\n"),
 		"inner dots": h("a/../../b.md", "x\n"),
+		"case dup":   h("A.md", "x\n") + h("a.md", "y\n"),
 	}
 	for name, text := range cases {
 		if _, err := ParseFiles(text); err == nil {
@@ -103,5 +104,24 @@ func TestWriteFilesRefusesDangerousDirs(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(repo, "keep.md")); err != nil {
 		t.Error("repo dir was emptied")
+	}
+}
+
+func TestResetRun(t *testing.T) {
+	out := t.TempDir()
+	for _, p := range []string{"novel/s1.md", "rounds/r9/x.md", "story/keep.md"} {
+		os.MkdirAll(filepath.Dir(filepath.Join(out, p)), 0o755)
+		os.WriteFile(filepath.Join(out, p), []byte("x"), 0o644)
+	}
+	if err := ResetRun(out); err != nil {
+		t.Fatal(err)
+	}
+	for p, want := range map[string]bool{"novel": false, "rounds": false, "story/keep.md": true} {
+		if _, err := os.Stat(filepath.Join(out, p)); (err == nil) != want {
+			t.Errorf("%s exists=%t want %t", p, err == nil, want)
+		}
+	}
+	if err := ResetRun(""); err == nil {
+		t.Error("empty out: want refusal")
 	}
 }
