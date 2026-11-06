@@ -1,0 +1,10 @@
+s1: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+write: rounds=2 clean=true scenes=7 failed=4[s3 s4 s5 s6] calls=34 tokens in=68 out=96892 cache_read=32608 cache_write=105186 → examples\bench\lighthouse\b
+s2: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s3: attempts=3 pass=false missing=[] hallucinated=[extra-act:eunsol|perceive|flashlight_left 은솔은 날이 새면 등롱실에 올라가 아버지의 일지를 확인하기로 결심한다.] leaked=[] 
+s4: attempts=3 pass=false missing=[] hallucinated=[Eunsol hides her father's log inside the front of her jacket. extra-act:eunsol|perceive|motor_works extra-act:eunsol|read|last_page] leaked=[] 
+s5: attempts=3 pass=false missing=[] hallucinated=[extra-act:eunsol|perceive|boxes_hidden extra-act:jeongseok|assert|smuggling extra-act:mikyung|perceive|boxes_hidden] leaked=[] 
+s6: attempts=3 pass=false missing=[] hallucinated=[extra-act:mikyung|perceive|radio_works] leaked=[] 
+s7: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+exit status 3
+bench: dieg write exit 1

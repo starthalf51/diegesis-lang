@@ -1,0 +1,770 @@
+=== FILE: cast.dieg.md ===
+---
+module: gangdo.cast
+mode: authored
+---
+
+# 일흔두 시간 — 등장인물과 선언
+
+1987년 12월, 이듬해 봄 문을 닫을 광업소. 동편 3갱도가 무너지고 구조대가 길을 뚫기까지 일흔두 시간이 걸린다.
+
+```sl
+work gangdo "일흔두 시간"
+  unit day
+  start 1987-12-14
+  name ko "일흔두 시간"
+
+character suah "Kang Suah" major
+  name ko "강수아"
+  attr suah.age = 14
+  believes mine_closing
+  believes props_rotten
+character chulsu "Kang Chulsu" major
+  name ko "강철수"
+  attr chulsu.age = 41
+  believes mine_closing
+  believes props_rotten
+  believes inspection_skipped
+  believes yeongho_offbook
+  believes yeongho_with_chulsu
+  believes vent_air
+character hwang "Hwang Manseok" major
+  name ko "황만석"
+  attr hwang.age = 56
+  believes mine_closing
+  believes inspection_skipped
+  believes yeongho_offbook
+  believes yeongho_with_chulsu
+  believes yeongho_months
+  believes closure_money
+  believes forge_plan
+character migyeong "Seo Migyeong" major
+  name ko "서미경"
+  attr migyeong.age = 29
+  believes mine_closing
+  believes yeongho_offbook
+  believes yeongho_months
+character park "Park Taesik" major
+  name ko "박태식"
+  attr park.age = 45
+character yeongho "Min Yeongho" major
+  name ko "민영호"
+  attr yeongho.age = 17
+  believes yeongho_offbook
+  believes yeongho_with_chulsu
+  believes no_tag
+character mangil "Oh Mangil" minor
+  name ko "오만길"
+  attr mangil.age = 52
+character dongsu "Choi Dongsu" minor
+  name ko "최동수"
+  attr dongsu.age = 33
+
+group villagers "the villagers" extra
+  name ko "마을 사람들"
+  believes mine_closing
+group rescuers "the rescue team" extra
+  name ko "구조대원들"
+
+role director "the mine director"
+  name ko "광업소장"
+  held hwang from start
+
+place suah_house "Suah's company house"
+  name ko "수아네 사택"
+place pithead "the pithead yard"
+  name ko "갱구 앞 광장"
+place director_office "the director's office"
+  name ko "광업소장실"
+place east_face "the east No.3 face"
+  name ko "동편 3갱도 막장"
+place migyeong_room "Migyeong's lodging room"
+  name ko "미경의 하숙방"
+
+thing lunchbox "tin lunchbox"
+  name ko "양은 도시락"
+thing tag_board "the name-tag board"
+  name ko "명패판"
+  attr tag_board.at = pithead
+thing stove "iron stove"
+  name ko "무쇠 난로"
+  attr stove.at = director_office
+thing harmonica "Yeongho's harmonica"
+  name ko "영호의 하모니카"
+thing envelope "Yeongho's wage envelopes"
+  name ko "영호의 일당 봉투"
+
+fact mine_closing "광업소는 내년 봄에 문을 닫는다" true
+fact props_rotten "동편 3갱도 버팀목이 썩어 가고 있었다" true
+fact cavein "동편 3갱도 천장이 무너져 갱구 쪽 길이 막혔다" true
+fact inspection_done "동편 3갱도는 지난주에 안전 점검을 마쳤다" false
+fact inspection_skipped "동편 3갱도의 안전 점검은 하지 않은 채 미뤄졌다" true
+fact only_three "갇힌 사람은 강철수, 오만길, 최동수 세 사람뿐이다" false
+fact four_trapped "갱도 안에는 장부에 없는 민영호까지 네 사람이 갇혀 있다" true
+fact yeongho_offbook "민영호는 소장이 장부에 올리지 않고 현금 일당으로 쓰는 열일곱 살 인부다" true
+fact yeongho_with_chulsu "민영호가 강철수를 따라 동편 3갱도에 들어갔다" true
+fact yeongho_months "민영호는 석 달째 장부 없이 동편 막장에 들어갔다" true
+fact yeongho_in_town "민영호는 그날 읍내에 나가 갱에 들어가지 않았다" false
+fact no_tag "민영호에게는 명패판에 걸 명패가 없다" true
+fact rescue_72h "구조대가 무너진 길을 뚫으려면 일흔두 시간이 걸린다" true
+fact ledger_sent "점검 장부는 이미 본사에 올려보냈다" false
+fact hwang_took_ledger "소장이 사고 난 밤 갱구 사무소에서 점검 장부를 몰래 가져왔다" true
+fact hwang_home "소장은 사고 난 밤 내내 사택에서 나오지 않았다" false
+fact forge_plan "소장은 장부를 말려 지난주 날짜로 가짜 점검 기록을 써넣으려 한다" true
+fact closure_money "폐광 보상금은 사고 기록이 없어야 제대로 나온다" true
+fact job_real "소장이 미경을 서울 본사 경리로 넣어 줄 수 있다" false
+fact air_short "막장 안 공기가 갈수록 탁해진다" true
+fact vent_air "옆 갱도 환기구 쪽에는 아직 바깥 공기가 조금 들어온다" true
+fact yeongho_side "민영호가 공기가 남은 옆 갱도 환기구 쪽으로 옮겨 갔다" true
+fact note_left "강철수가 수아의 도시락 밥 밑에 쪽지를 넣어 두었다" true
+
+artifact note "the lunchbox note"
+  name ko "도시락 쪽지"
+  contains yeongho_with_chulsu, inspection_skipped
+  "수아야, 오늘은 영호 데리고 동편 3갱도 들어간다. 점검 끝나면 소장님이 수당 준다니 고기 사 오마. 밥 다 먹어라."
+artifact ledger "the east-side inspection ledger"
+  name ko "동편 점검 장부"
+  contains inspection_skipped, yeongho_offbook
+  "12월 7일 동편 3갱도 점검 — (빈칸)"
+  "현금 일당: 민영호(17)"
+```
+=== FILE: scenes/offstage.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+mode: authored
+---
+
+```sl
+event note_written "새벽, 강철수가 부엌 등불 아래에서 쪽지를 쓴다"
+  when before s1 by 10m..1h
+  lasts 5m..10m
+  chulsu writes note
+```
+=== FILE: scenes/s1.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s1"
+location: suah_house
+date: 1987-12-14
+time: dawn
+pov: suah close
+render:
+  pace: slow
+  tension: 0.2
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter suah, chulsu
+chulsu says suah: mine_closing "봄이 오면 이 광업소도 문을 닫는다. 그때까지만 버티자."
+suah asks chulsu: "그럼 우리는 어디로 가?"
+chulsu says suah: "아부지가 다 알아본다. 넌 공부나 해라."
+chulsu does tuck_note lunchbox "접은 종이를 도시락 밥 밑에 밀어 넣고 뚜껑을 닫는다"
+chulsu believes note_left
+setup note_promise promise: "아버지가 도시락 밥 밑에 밀어 넣은 접힌 종이"
+suah sees lunchbox
+suah thinks: "아부지가 뭘 넣었는데, 반찬 쪽지겠지."
+chulsu says suah: "밥 남기지 말고 밑바닥까지 다 먹어라."
+suah says chulsu: "다녀오세요. 오늘은 일찍 와."
+chulsu says suah: "그래, 늦어도 저녁엔 온다."
+exit chulsu
+suah thinks: "문 밖에서 아부지 장화가 언 눈을 밟는 소리가 멀어진다."
+exit suah
+```
+=== FILE: scenes/s2.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s2"
+location: pithead
+when: after s1 by 30m..1h
+pov: chulsu close
+render:
+  pace: medium
+  tension: 0.4
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+withhold yeongho_months until s14
+enter chulsu, hwang, yeongho, mangil, dongsu
+hwang orders chulsu: yeongho_with_chulsu "오늘 영호는 철수 자네가 데리고 동편 3갱도로 들어가."
+chulsu asks hwang: inspection_skipped "소장님, 동편은 아직 점검도 안 했잖습니까."
+hwang says chulsu: inspection_skipped "점검은 다음 주에 한다. 그 전에 동편 탄을 빼야 한다."
+chulsu does hang_tag tag_board "제 명패를 명패판 고리에 건다"
+dongsu does hang_tag tag_board "오만길과 최동수도 차례로 명패를 건다"
+yeongho says chulsu: no_tag "아저씨, 저는 걸 명패가 없어요."
+hwang tells yeongho: yeongho_offbook "너는 장부에 없는 사람이다. 일당은 현금으로 준다."
+setup tag_promise promise: no_tag
+yeongho does play_harmonica harmonica "주머니에서 하모니카를 꺼내 짧은 노래 한 소절을 분다"
+setup harmonica_promise promise: "영호가 늘 주머니에 넣고 다니는 하모니카"
+mangil says yeongho: "그건 막장 가서는 불지 마라. 탄가루 들어간다."
+dongsu says chulsu: "형님, 오늘은 바람이 유난히 차네요."
+exit chulsu, yeongho, mangil, dongsu
+exit hwang
+```
+=== FILE: scenes/s3.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s3"
+location: east_face
+when: after s2 by 2h..3h
+pov: chulsu close
+render:
+  pace: fast
+  tension: 0.9
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter chulsu, yeongho, mangil, dongsu
+attr east_face.collapse_time = "12월 14일 오전 10시 20분"
+dongsu says chulsu: "형님, 천장에서 돌가루가 떨어집니다."
+chulsu orders yeongho: "영호야, 뒤로 물러서!"
+chulsu sees cavein
+chulsu says mangil, dongsu, yeongho: cavein "갱구 쪽 길이 통째로 막혔다."
+mangil says chulsu: "다리가… 돌에 깔렸다."
+dongsu does count_heads "어둠 속에서 안전등을 하나씩 비춰 머릿수를 센다"
+dongsu sees four_trapped
+dongsu says chulsu: four_trapped "넷 다 있어요. 형님, 영호, 만길이 형, 나."
+chulsu thinks: yeongho_offbook "영호 이름은 위쪽 장부 어디에도 없다."
+chulsu says yeongho: "울지 마라. 위에서 꼭 판다."
+exit all
+```
+=== FILE: scenes/s4.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s4"
+location: pithead
+when: after s3 by 1h..3h
+pov: suah close
+render:
+  pace: medium
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 1h..2h
+enter suah, villagers, hwang
+hwang believes four_trapped
+suah sees tag_board
+attr tag_board.unclaimed = "강철수, 오만길, 최동수"
+suah thinks: "아부지 명패가 아직 판에 걸려 있다. 아직 안 나왔다는 뜻이다."
+hwang lies villagers: inspection_done "동편 3갱도는 지난주에 안전 점검을 마쳤습니다. 하늘이 한 일입니다."
+hwang lies villagers: only_three "안에 있는 사람은 강철수, 오만길, 최동수 세 사람뿐입니다."
+enter park
+park asks hwang: "안에 몇 명입니까?"
+hwang lies park: only_three "셋이오. 명패판을 보시오."
+park sees tag_board
+park believes rescue_72h
+park says villagers: rescue_72h "무너진 길을 뚫으려면 일흔두 시간이 걸립니다."
+suah asks park: rescue_72h "일흔두 시간이면 사흘이잖아요."
+park says suah: "사흘 안에 꼭 꺼내 주마."
+exit hwang, park
+exit suah, villagers
+```
+=== FILE: scenes/s5.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s5"
+location: director_office
+when: after s4 by 8h..11h
+pov: migyeong close
+render:
+  pace: slow
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter migyeong
+attr stove.lit = "예"
+migyeong does count_wages stove "난로 옆에서 현금 일당 봉투를 센다"
+enter hwang
+attr hwang.arrival = "12월 14일 밤 11시"
+migyeong sees hwang, hwang_took_ledger
+hwang does dry_ledger ledger, stove "눈에 젖은 장부를 펼쳐 난로 옆 의자에 걸쳐 놓는다"
+migyeong asks hwang: hwang_took_ledger "소장님, 그 장부 갱구 사무소에 있던 거 아닙니까?"
+hwang orders migyeong: "이 장부는 못 본 걸로 해라."
+hwang tells migyeong: four_trapped "영호도 철수랑 같이 안에 있다."
+hwang tells migyeong: closure_money "사고 기록이 남으면 폐광 보상금이 반으로 준다."
+hwang lies migyeong: job_real "이 일만 넘기면 내가 너를 서울 본사 경리로 넣어 주마."
+migyeong thinks: "장부에서 떨어진 물방울이 난로 위에서 치익 소리를 낸다."
+exit hwang
+migyeong does hide_envelope envelope "영호 이름이 적힌 일당 봉투를 서랍 깊숙이 넣는다"
+exit migyeong
+```
+=== FILE: scenes/s6.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s6"
+location: east_face
+when: after s5 by 6h..9h
+pov: chulsu close
+render:
+  pace: slow
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter chulsu, yeongho, mangil, dongsu
+chulsu orders dongsu: "안전등은 하나만 켜자. 기름을 아껴야 한다."
+dongsu sees air_short
+dongsu says chulsu: air_short "형님, 공기가 어제보다 무겁습니다."
+yeongho asks chulsu: four_trapped "위에서는 우리가 넷인 줄 알까요?"
+chulsu says yeongho: note_left "수아 도시락 밥 밑에 쪽지 하나 넣어 뒀다."
+yeongho asks chulsu: "그 쪽지에 제 이름도 있어요?"
+chulsu says yeongho: yeongho_with_chulsu "있다. 영호 데리고 들어간다고 썼다."
+mangil says chulsu: "철수야, 다리 감각이 없다."
+chulsu does tap_pipe "쇠파이프를 돌로 세 번씩 끊어 두드린다"
+exit all
+```
+=== FILE: scenes/s7.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s7"
+location: pithead
+when: after s6 by 2h..5h
+pov: suah close
+render:
+  pace: medium
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter suah, park, hwang
+park asks hwang: "동편 버팀목 상태는 어떻습니까?"
+hwang lies park: inspection_done "지난주에 점검 마쳤소. 버팀목은 멀쩡했소."
+park says suah: inspection_done "지난주에 점검 마친 갱도라니 안쪽은 버틸 거다."
+suah asks park: "얼마나 팠어요?"
+park says suah: "스무 자 남짓 팠다. 아직 멀었다."
+hwang lies park: only_three "산소통은 세 사람 몫이면 충분하오."
+park says hwang: "그래도 여유 있게 들이겠습니다."
+exit hwang
+suah says park: props_rotten "아부지는 동편 버팀목이 썩어 간다고 했어요."
+suah doubts inspection_done
+park says suah: "버팀목 걱정은 내가 하마. 넌 집에 가서 좀 자라."
+suah thinks: "소장님은 점검 얘기를 하면서 장부는 한 번도 꺼내지 않았다."
+exit suah, park
+```
+=== FILE: scenes/s8.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s8"
+location: suah_house
+when: after s7 by 6h..9h
+pov: suah close
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter suah
+suah sees lunchbox
+suah does open_lunchbox lunchbox "얼어붙은 밥을 숟가락으로 들추다 밑에서 접힌 종이를 꺼낸다"
+beat reading:
+  suah reads note
+payoff gangdo.scenes/note_promise
+suah thinks: yeongho_with_chulsu "영호 오빠가 아부지를 따라 같이 들어갔다."
+suah believes four_trapped because @s8.reading
+suah thinks: four_trapped "그럼 아부지 곁에 영호 오빠까지, 안에는 넷이다."
+suah thinks: inspection_skipped "점검 끝나면 수당을 준다고 했으니, 점검은 안 한 거다."
+enter migyeong
+migyeong does give_rice "광업소에서 보낸 쌀 한 되를 부뚜막에 내려놓는다"
+suah asks migyeong: "언니, 영호 오빠 봤어요?"
+migyeong lies suah: yeongho_in_town "영호는 그날 읍내 나갔대. 갱에는 안 들어갔어."
+suah doubts yeongho_in_town
+suah thinks: "미경 언니는 쌀자루에서 눈을 떼지 못한다."
+exit migyeong
+exit suah
+```
+=== FILE: scenes/s9.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s9"
+location: director_office
+when: after s8 by 9h..12h
+pov: suah close
+render:
+  pace: medium
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter suah, migyeong
+suah asks migyeong: "언니, 영호 오빠 일당 적은 장부 좀 보여 주세요."
+migyeong says suah: "장부는 소장님 허락 없이는 못 보여 줘."
+suah sees stove
+suah sees ledger
+setup ledger_promise promise: "난로 옆 의자에 펼쳐 말리고 있는 젖은 장부"
+suah thinks: "눈도 안 들이치는 방 안에서 장부가 왜 젖어 있지."
+enter hwang
+hwang lies suah: ledger_sent "점검 장부는 어제 본사에 올려보냈다. 여긴 아무것도 없다."
+suah asks hwang: "그럼 저 젖은 장부는 뭐예요?"
+hwang lies suah: "그건 작년 쌀 배급 장부다."
+hwang orders migyeong: "아이 내보내고 문 잠가라."
+migyeong does leave_latch "앞문을 잠그면서 뒤창 걸쇠는 슬그머니 풀어 둔다"
+suah sees migyeong
+exit suah
+exit hwang, migyeong
+```
+=== FILE: scenes/s10.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s10"
+location: pithead
+when: after s9 by 1h..2h
+pov: suah close
+render:
+  pace: medium
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter suah, park
+suah tells park: four_trapped "아저씨, 안에는 넷이에요. 영호 오빠도 있어요."
+park asks suah: "누가 그러더냐?"
+suah tells park: yeongho_with_chulsu "아부지 쪽지에 영호 오빠를 데리고 들어간다고 써 있었어요."
+suah shows note
+enter hwang
+park asks hwang: four_trapped "소장님, 안에 넷이라는 말이 있습니다."
+hwang lies park: yeongho_in_town "영호는 그날 읍내 갔소. 쪽지는 아침에 쓴 거고, 계획이 바뀐 거요."
+hwang lies park: only_three "안에는 셋이오."
+park doubts four_trapped
+park says suah: "수아야, 쪽지 한 장만으로는 막장 뒤까지 뚫을 수가 없다."
+suah thinks: "어른들은 아부지 쪽지보다 소장님 말을 믿는다."
+exit hwang
+exit suah, park
+```
+=== FILE: scenes/s11.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s11"
+location: east_face
+when: after s10 by 3h..6h
+pov: yeongho close
+render:
+  pace: slow
+  tension: 0.8
+mode: authored
+---
+
+```sl
+lasts 1h..2h
+enter chulsu, yeongho, mangil, dongsu
+mangil says chulsu: "철수야, 우리 막내 운동화 사 주기로 했는데."
+mangil asks yeongho: "영호야, 그 하모니카 한 번 불어 봐라."
+yeongho does play_harmonica harmonica "어둠 속에서 아리랑 한 소절을 가늘게 분다"
+mangil says yeongho: "좋다… 탄가루 들어가도 괜찮다."
+dies mangil
+attr mangil.death_time = "12월 16일 오후 2시께"
+chulsu sees mangil
+chulsu says dongsu, yeongho: "만길이 형이 갔다."
+dongsu does cover_face "만길의 얼굴을 작업복 윗도리로 덮는다"
+chulsu says yeongho: vent_air "영호야, 옆 갱도 환기구 쪽에는 아직 바깥 공기가 든다. 그리 가라."
+yeongho does crawl_vent harmonica "하모니카를 쥐고 옆 갱도 환기구 쪽으로 기어 간다"
+chulsu sees yeongho_side
+yeongho thinks: "하모니카를 불면 위에서 들을지도 모른다."
+exit all
+```
+=== FILE: scenes/s12.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s12"
+location: director_office
+when: after s11 by 3h..5h
+pov: migyeong close
+render:
+  pace: slow
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter migyeong, hwang
+hwang does test_ledger ledger "장부 귀퉁이를 손끝으로 비벼 마른 정도를 본다"
+hwang tells migyeong: forge_plan "다 마르면 지난주 날짜로 점검 기록을 써넣을 거다. 네 글씨로."
+migyeong asks hwang: "영호는요? 안에서 살아 있으면요?"
+hwang says migyeong: "살아 나오면 그때 가서 다른 데서 다쳤다고 하면 된다."
+migyeong asks hwang: job_real "서울 본사 자리는 정말입니까?"
+hwang lies migyeong: job_real "내가 약속하지 않았느냐. 본사 경리 자리다."
+exit hwang
+migyeong does take_envelope envelope "서랍에서 영호 이름이 적힌 일당 봉투 뭉치를 꺼낸다"
+migyeong doubts job_real
+migyeong thinks: "살아 나와도 없던 애로 만든다니, 그 애를 두 번 묻는 셈이다."
+migyeong does leave_latch "나가면서 뒤창 걸쇠를 다시 풀어 둔다"
+exit migyeong
+```
+=== FILE: scenes/s13.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s13"
+location: director_office
+when: after s12 by 3h..5h
+pov: suah close
+render:
+  pace: medium
+  tension: 0.8
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter suah
+suah does climb_window "풀린 뒤창 걸쇠를 밀고 캄캄한 소장실로 숨어든다"
+suah sees stove
+suah sees ledger
+beat ledger_read:
+  suah reads ledger
+payoff gangdo.scenes/ledger_promise
+suah thinks: inspection_skipped "지난주 칸이 비어 있다. 점검은 하지 않았다."
+suah thinks: yeongho_offbook "현금 일당 쪽에 민영호, 열일곱, 이름이 적혀 있다. 장부에도 없는 사람이다."
+suah does take_ledger ledger "덜 마른 장부를 덮어 품에 안는다"
+enter migyeong
+migyeong sees suah
+migyeong asks suah: "수아야, 거기서 뭐 해."
+suah says migyeong: "언니가 걸쇠 풀어 둔 거 알아요."
+migyeong says suah: "따라와. 여기선 얘기 못 해."
+exit suah, migyeong
+```
+=== FILE: scenes/s14.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s14"
+location: migyeong_room
+when: after s13 by 30m..1h
+pov: migyeong close
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter migyeong, suah
+suah shows ledger
+suah asks migyeong: "언니, 이 장부 왜 젖었어요?"
+migyeong tells suah: hwang_took_ledger "사고 난 밤에 소장님이 갱구 사무소에서 몰래 들고 왔어. 눈 속을 걸어서."
+migyeong tells suah: forge_plan "다 마르면 지난주 날짜로 점검했다고 써넣으라고 했어."
+migyeong tells suah: four_trapped "영호도 안에 있어. 내가 너한테 거짓말했어."
+migyeong shows envelope
+migyeong tells suah: yeongho_months "영호는 석 달째 장부 없이 동편 막장에 들어갔어. 이 봉투가 다 그 애 거야."
+suah asks migyeong: "같이 구조대장 아저씨한테 가 줄 거예요?"
+migyeong says suah: "날 밝기 전에 가자."
+migyeong thinks: "이제 이 마을에 내 자리는 없다."
+exit all
+```
+=== FILE: scenes/s15.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s15"
+location: pithead
+when: after s14 by 4h..6h
+pov: park close
+render:
+  pace: medium
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter park, suah, migyeong, rescuers
+suah shows ledger
+park reads ledger
+migyeong tells park: hwang_took_ledger "사고 난 밤 소장님이 갱구 사무소에서 이 장부를 들고 왔습니다."
+migyeong tells park: four_trapped "영호도 안에 있습니다. 소장님이 숨기라고 했습니다."
+migyeong shows envelope
+suah tells park: yeongho_months "영호 오빠는 석 달째 장부 없이 막장에 들어갔대요."
+park believes four_trapped
+park orders rescuers: four_trapped "안에 넷이다. 들것 넷, 산소통 넷 준비해."
+park says suah: "막장 끝까지 판다. 한 사람도 두고 나오지 않는다."
+park thinks: "길이 열릴 때까지 여섯 시간 남짓 남았다."
+reveal four_trapped
+exit all
+```
+=== FILE: scenes/s16.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s16"
+location: pithead
+when: after s15 by 1h..2h
+pov: suah close
+render:
+  pace: fast
+  tension: 0.9
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter suah, park, villagers, hwang
+hwang lies villagers: inspection_done "다시 말하지만 동편은 지난주에 점검을 마쳤소."
+suah shows ledger
+suah tells villagers: inspection_skipped "지난주 점검 칸은 비어 있어요. 아무도 점검 안 했어요."
+suah tells villagers: four_trapped "안에는 영호 오빠까지 넷이에요."
+park asks hwang: "사고 난 밤에 어디 계셨습니까?"
+hwang lies park: hwang_home "밤새 사택에서 한 발짝도 안 나갔소."
+park tells hwang: hwang_took_ledger "경리가 봤답니다. 그 밤에 갱구 사무소 장부를 눈 맞혀 들고 들어오시는 걸."
+villagers doubts inspection_done
+hwang does walk_away "대꾸 없이 사무실 쪽으로 걸어간다"
+exit hwang
+park says villagers: "이제 막장까지 두 시간 남았습니다."
+exit all
+```
+=== FILE: scenes/s17.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s17"
+location: east_face
+when: after s16 by 1h..2h
+pov: chulsu close
+render:
+  pace: slow
+  tension: 0.8
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter chulsu, dongsu
+mention mangil
+chulsu does listen_drill "바위 너머로 드릴 소리가 가까워지는 것을 듣는다"
+dongsu says chulsu: "형님, 저 소리가 우리 쪽으로 옵니다."
+chulsu does tap_pipe "남은 힘을 다해 쇠파이프를 세 번 두드린다"
+chulsu says dongsu: yeongho_side "영호는 옆 갱도 환기구 쪽에 있다. 저쪽부터 알려야 한다."
+dongsu asks chulsu: "위에서 영호를 알까요?"
+chulsu says dongsu: note_left "수아 도시락 밥 밑에 쪽지를 넣었다. 수아는 밥 남기는 애가 아니다."
+chulsu thinks: "수아가 밑바닥까지 먹었기를."
+dongsu does trim_lamp "마지막 안전등 심지를 돋운다"
+chulsu thinks: "만길이 형 몫까지 버텨야 한다."
+exit all
+```
+=== FILE: scenes/s18.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s18"
+location: east_face
+when: after s17 by 1h..2h
+pov: park close
+render:
+  pace: fast
+  tension: 1.0
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter park, rescuers
+attr east_face.breakthrough_time = "12월 17일 오전 10시 20분"
+park does break_through "마지막 바위를 들어내고 막장 안으로 불빛을 들이민다"
+enter chulsu, dongsu
+park sees chulsu, dongsu
+park sees mangil
+chulsu tells park: yeongho_side "영호는 옆 갱도 환기구 쪽에 있소."
+park says chulsu: four_trapped "압니다. 영호까지 넷인 거, 수아가 알려 줬습니다."
+enter yeongho
+yeongho does play_harmonica harmonica "환기구 쪽 어둠에서 하모니카 소리가 가늘게 새어 나온다"
+payoff gangdo.scenes/harmonica_promise
+park orders rescuers: "환기구 쪽이다! 들것 가져와!"
+park sees yeongho
+park thinks: "마지막 한 사람이다."
+exit all
+```
+=== FILE: scenes/s19.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s19"
+location: pithead
+when: after s18 by 30m..1h
+pov: suah close
+render:
+  pace: medium
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter suah, villagers, migyeong
+enter park, chulsu, dongsu, yeongho
+suah sees chulsu
+suah says chulsu: "아부지, 도시락 밑바닥까지 다 먹었어."
+chulsu asks suah: "쪽지, 봤구나."
+suah shows note
+chulsu says suah: "잘했다, 우리 수아."
+yeongho says suah: "수아야, 니 덕에 내가 사람 셈에 들었다."
+park says villagers: "오만길 씨는 끝내 함께 나오지 못했습니다."
+park says villagers: inspection_skipped "동편은 점검을 하지 않은 갱도였습니다. 장부는 광산보안사무소로 넘겼습니다."
+migyeong says yeongho: "미안하다, 영호야."
+dongsu does lay_helmet "안전모를 벗어 만길이 누운 들것 위에 얹는다"
+reveal inspection_skipped
+exit all
+```
+=== FILE: scenes/s20.dieg.md ===
+---
+module: gangdo.scenes
+import: [gangdo.cast]
+scene: "s20"
+location: pithead
+when: after s19 by 6d..8d
+pov: suah close
+render:
+  pace: slow
+  tension: 0.3
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter suah, park, yeongho, chulsu
+park does write_tag "빈 명패에 먹으로 '민영호'라고 쓴다"
+park does hang_tag tag_board "그 명패를 명패판 맨 끝 고리에 건다"
+payoff gangdo.scenes/tag_promise
+yeongho sees tag_board
+yeongho says park: "제 이름이 처음으로 걸렸네요."
+chulsu does take_tag tag_board "오만길의 명패를 내려 품에 넣는다"
+chulsu says suah: mine_closing "봄에 광업소 문 닫으면 이 판도 떼어 간다더라."
+suah says chulsu: "그래도 오늘은 다 걸려 있어."
+yeongho does play_harmonica harmonica "명패판 앞에서 만길이 좋아하던 아리랑을 분다"
+suah thinks: "아부지 쪽지는 이제 내 필통 맨 밑에 있다."
+exit all
+```
+=== END ===

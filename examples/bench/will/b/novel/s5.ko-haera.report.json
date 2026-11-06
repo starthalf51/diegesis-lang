@@ -1,0 +1,12 @@
+{
+  "missing": [],
+  "hallucinated": [
+    "extra-act:daon|assert|raised_by_jeongho",
+    "extra-act:daon|assert|raised_by_jeongho",
+    "extra-act:daon|perceive|daon_birth",
+    "extra-act:jeongsuk|act|open_together",
+    "extra-act:jeongsuk|assert|daon_birth"
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

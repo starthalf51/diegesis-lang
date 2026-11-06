@@ -1,0 +1,8 @@
+{"t":"2026-11-06T15:32:06Z","label":"outline","input":2,"output":5821,"cache_read":0,"cache_write":1298,"stop":"end_turn","err":"","ms":74956}
+{"t":"2026-11-06T15:33:21Z","label":"scene-1","input":2,"output":4324,"cache_read":0,"cache_write":2888,"stop":"end_turn","err":"","ms":61383}
+{"t":"2026-11-06T15:34:22Z","label":"scene-2","input":2,"output":5098,"cache_read":0,"cache_write":5837,"stop":"end_turn","err":"","ms":67666}
+{"t":"2026-11-06T15:35:30Z","label":"scene-3","input":2,"output":5191,"cache_read":0,"cache_write":5920,"stop":"end_turn","err":"","ms":67821}
+{"t":"2026-11-06T15:36:38Z","label":"scene-4","input":2,"output":6833,"cache_read":0,"cache_write":6026,"stop":"end_turn","err":"","ms":86245}
+{"t":"2026-11-06T15:38:04Z","label":"scene-5","input":2,"output":5458,"cache_read":0,"cache_write":6468,"stop":"end_turn","err":"","ms":69293}
+{"t":"2026-11-06T15:39:13Z","label":"scene-6","input":2,"output":5921,"cache_read":0,"cache_write":5796,"stop":"end_turn","err":"","ms":77393}
+{"t":"2026-11-06T15:40:30Z","label":"scene-7","input":2,"output":5436,"cache_read":0,"cache_write":5229,"stop":"end_turn","err":"","ms":68378}

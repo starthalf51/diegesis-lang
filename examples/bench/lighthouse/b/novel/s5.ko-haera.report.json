@@ -1,0 +1,10 @@
+{
+  "missing": [],
+  "hallucinated": [
+    "extra-act:eunsol|perceive|boxes_hidden",
+    "extra-act:jeongseok|assert|smuggling",
+    "extra-act:mikyung|perceive|boxes_hidden"
+  ],
+  "leaked": [],
+  "extract_error": ""
+}
