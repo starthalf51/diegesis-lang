@@ -76,12 +76,19 @@ func Score(s Scene, r Render) Render {
 // RenderOne 은 백엔드 프롬프트로 렌더하고, 백엔드를 모르는 재추출 프롬프트(BuildExtractPrompt)로 DefaultK 번 다시 뽑아
 // 다수결로 diff 한다. Completer 오류는 그대로 돌려준다(아무것도 남기지 않으니 다시 돌리면 재시도한다).
 func RenderOne(ctx context.Context, c Completer, work string, s Scene, b Backend) (Render, error) {
+	return renderWith(ctx, c, work, s, b, DefaultK, "")
+}
+
+// renderWith 는 RenderOne 의 본체. 재추출을 k 번 하고, extra 가 있으면 사용자 프롬프트 끝에 붙여 렌더한다
+// (RenderHash 는 extra 없는 프롬프트 기준이라 캐시 키가 변하지 않는다).
+func renderWith(ctx context.Context, c Completer, work string, s Scene, b Backend, k int, extra string) (Render, error) {
 	r := Render{Work: work, Scene: s.ID, Backend: b.ID, Lang: b.Lang, Tone: b.Tone}
 	sys, user, err := b.Prompt(s)
 	if err != nil {
 		return r, err
 	}
 	r.RenderHash = sum(sys, user)
+	user += extra
 	res, err := c.Complete(ctx, sys, user)
 	if err != nil {
 		return r, fmt.Errorf("%s/%s render: %w", s.ID, b.ID, err)
@@ -94,14 +101,14 @@ func RenderOne(ctx context.Context, c Completer, work string, s Scene, b Backend
 		r.Report.ExtractError = stopped("render", res.StopReason)
 		return r, nil
 	}
-	return r, reextract(ctx, c, s, &r)
+	return r, reextract(ctx, c, s, &r, k)
 }
 
 // reextract 는 r.Prose 를 다시 뽑아 r 의 재추출·판정 칸을 새로 채운다. 답이 깨지면 ExtractError 로 남긴다.
-func reextract(ctx context.Context, c Completer, s Scene, r *Render) error {
+func reextract(ctx context.Context, c Completer, s Scene, r *Render, k int) error {
 	r.ExtractHash = ExtractHash(s, r.Lang)
 	r.Extracted, r.Extractions, r.Report = Extracted{}, nil, Report{}
-	e, xs, err := ExtractK(ctx, c, s, r.Lang, r.Prose, DefaultK)
+	e, xs, err := ExtractK(ctx, c, s, r.Lang, r.Prose, k)
 	r.Extractions = xs
 	switch {
 	case IsBadExtract(err):
@@ -154,7 +161,7 @@ func RenderCached(ctx context.Context, c Completer, dir, work string, s Scene, b
 			len(r.Extractions) == DefaultK && r.Report.ExtractError == "" {
 			return r, nil
 		}
-		if err := reextract(ctx, c, s, &r); err != nil {
+		if err := reextract(ctx, c, s, &r, DefaultK); err != nil {
 			return r, err
 		}
 	} else {

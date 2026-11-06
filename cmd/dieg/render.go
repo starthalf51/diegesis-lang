@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"diegesis/internal/accept"
@@ -52,12 +53,22 @@ func backend(dir, id string) (render.Backend, error) {
 	return render.Backend{}, fmt.Errorf("no backend %q in %s", id, dir)
 }
 
-// cmdRender runs `dieg render <work|dir> <scene> --backend <id> [-o file] [--styles dir]`: 산문만 낸다(재추출 없음).
+// cmdRender runs `dieg render <work|dir> <scene> --backend <id> [--verify] [--retries N] [-o file] [--styles dir]`: 산문을 낸다.
+// --verify 면 재추출·대조·피드백 재렌더(최대 1+retries 회)를 거치고, 통과하지 못하면 산문은 쓰되 3 으로 끝난다.
 func cmdRender(args []string) int {
 	var pos []string
-	id, out, styles := "", "", "styles"
+	id, out, styles, verify, retries := "", "", "styles", false, 2
 	for i := 0; i < len(args); i++ {
 		switch a := args[i]; {
+		case a == "--verify":
+			verify = true
+		case a == "--retries" && i+1 < len(args):
+			i++
+			n, err := strconv.Atoi(args[i])
+			if err != nil || n < 0 {
+				return usage()
+			}
+			retries = n
 		case (a == "--backend" || a == "-o" || a == "--styles") && i+1 < len(args):
 			i++
 			*map[string]*string{"--backend": &id, "-o": &out, "--styles": &styles}[a] = args[i]
@@ -70,38 +81,61 @@ func cmdRender(args []string) int {
 	if len(pos) != 2 || id == "" {
 		return usage()
 	}
-	if err := renderOnce(pos[0], pos[1], id, out, styles); err != nil {
+	pass, err := renderOnce(pos[0], pos[1], id, out, styles, verify, retries)
+	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
+	}
+	if !pass {
+		return 3
 	}
 	return 0
 }
 
-func renderOnce(target, scene, id, out, styles string) error {
+// renderOnce 는 pass=false 여도 산문은 쓴다(--verify 가 상한까지 가도 통과 못 한 경우).
+func renderOnce(target, scene, id, out, styles string, verify bool, retries int) (bool, error) {
 	b, err := backend(styles, id)
 	if err != nil {
-		return err
+		return false, err
 	}
 	_, s, err := sceneRequest(target, scene)
 	if err != nil {
-		return err
+		return false, err
 	}
-	sys, user, err := b.Prompt(s)
-	if err != nil {
-		return err
-	}
-	res, err := render.NewClaudeCLI().Complete(context.Background(), sys, user)
-	if err != nil {
-		return err
-	}
-	if res.StopReason != "end_turn" {
-		return fmt.Errorf("render stopped: %q", res.StopReason)
+	var text string
+	pass := true
+	if verify {
+		r, n, err := render.RenderVerified(context.Background(), render.NewClaudeCLI(), target, s, b, render.VerifyOpts{K: 1, Retries: retries})
+		if err != nil {
+			return false, err
+		}
+		pass = render.Passed(r)
+		fmt.Fprintf(os.Stderr, "verify: attempts=%d missing=%d halluc=%d leaked=%d pass=%t\n", n,
+			len(r.Report.Missing), len(r.Report.Hallucinated), len(r.Report.Leaked), pass)
+		if r.Report.ExtractError != "" {
+			fmt.Fprintln(os.Stderr, "verify:", r.Report.ExtractError)
+		}
+		text = r.Prose
+	} else {
+		sys, user, err := b.Prompt(s)
+		if err != nil {
+			return false, err
+		}
+		res, err := render.NewClaudeCLI().Complete(context.Background(), sys, user)
+		if err != nil {
+			return false, err
+		}
+		if res.StopReason != "end_turn" {
+			return false, fmt.Errorf("render stopped: %q", res.StopReason)
+		}
+		text = res.Text
 	}
 	if out == "" {
-		_, err = fmt.Println(res.Text)
-		return err
+		_, err = fmt.Println(text)
+	} else {
+		err = os.WriteFile(out, []byte(text+"\n"), 0o644)
 	}
-	return os.WriteFile(out, []byte(res.Text+"\n"), 0o644)
+	return pass && err == nil, err
 }
 
 // cmdRenderCheck runs `dieg render-check <corpus...> [--force | --force-extract] [--only <work>/<scene>.<backend>]... [--styles dir]`: 코퍼스마다 expect.yaml 의 render_scene 을
