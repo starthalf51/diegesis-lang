@@ -202,3 +202,29 @@ func TestRefsInSync(t *testing.T) {
 		t.Errorf("keywords section:\n%s", r.Keywords)
 	}
 }
+
+func TestLoopDiagsTxtDescribesStory(t *testing.T) {
+	out := t.TempDir()
+	f := &fakeLLM{replies: []string{good, "no header"}}
+	chk, _ := checks([]Diag{{File: "cast.dieg.md", Line: 1, Col: 1, Severity: "warn", Rule: "dead-actor", Msg: "m"}})
+	res, err := Loop(ctx, f, chk, "idea", testRefs(t), Opts{Rounds: 2, Out: out})
+	if err != nil || res.Clean || res.Diags[0].Rule != "bundle" {
+		t.Fatalf("%+v %v", res, err)
+	}
+	b, _ := os.ReadFile(filepath.Join(out, "diags.txt"))
+	if !strings.Contains(string(b), "dead-actor") || strings.Contains(string(b), "bundle") {
+		t.Errorf("diags.txt should describe story/ (round 1), got:\n%s", b)
+	}
+}
+
+func TestFileIDAndPromptRules(t *testing.T) {
+	if got := fileID(`a/b?c`); got != "a_b_c" {
+		t.Errorf("fileID %q", got)
+	}
+	p := CodePrompt("idea", testRefs(t), nil)
+	for _, w := range []string{"8–12", "exit all", "road_cut"} {
+		if !strings.Contains(p, w) {
+			t.Errorf("prompt lacks %q", w)
+		}
+	}
+}

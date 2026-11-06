@@ -36,7 +36,7 @@ type Checker func(ctx context.Context, dir string) (diags []Diag, err error)
 type Opts struct {
 	Rounds   int
 	Backend  string
-	Render   bool
+	Render   bool // not used by Loop (it never renders); the CLI reads it
 	Out      string
 	Reserved []string // work ids the model must not take (corpus works); listed in the prompt
 }
@@ -67,7 +67,8 @@ func bundleDiag(msg string) []Diag {
 // Loop asks c for code, checks it, and feeds diagnostics back until clean or o.Rounds is spent. Round r's
 // raw output is <out>/rounds/r<r>.raw.txt and its code <out>/rounds/r<r>/. A malformed bundle is one "bundle"
 // diagnostic and consumes its round; the next prompt shows the last well-formed bundle. The last well-formed
-// code is copied to <out>/story/ either way; remaining diagnostics go to <out>/diags.txt. Loop never renders.
+// code is copied to <out>/story/ either way and <out>/diags.txt holds that code's diagnostics (a later malformed
+// round does not overwrite it; with no well-formed round it holds the last bundle diagnostic). Loop never renders.
 func Loop(ctx context.Context, c render.Completer, check Checker, idea string, refs Refs, o Opts) (Result, error) {
 	if o.Rounds <= 0 {
 		o.Rounds = DefaultOpts().Rounds
@@ -77,6 +78,7 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 	}
 	res := Result{Dir: filepath.Join(o.Out, "story")}
 	var last map[string]string // last well-formed bundle
+	var lastDiags []Diag       // its diagnostics
 	var bundle string
 	user := CodePrompt(idea, refs, o.Reserved)
 	for r := 1; r <= o.Rounds; r++ {
@@ -109,7 +111,7 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 			if res.Diags, err = check(ctx, rdir); err != nil {
 				return res, fmt.Errorf("round %d check: %w", r, err)
 			}
-			last = files
+			last, lastDiags = files, res.Diags
 			if bundle, err = PackFiles(rdir); err != nil {
 				return res, err
 			}
@@ -128,8 +130,11 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 			return res, err
 		}
 	}
+	if last == nil {
+		lastDiags = res.Diags
+	}
 	var sb strings.Builder
-	for _, d := range res.Diags {
+	for _, d := range lastDiags {
 		sb.WriteString(d.String() + "\n")
 	}
 	return res, os.WriteFile(filepath.Join(o.Out, "diags.txt"), []byte(sb.String()), 0o644)

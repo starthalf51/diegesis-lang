@@ -238,6 +238,7 @@ func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
 	}
 	work, ss, err := shownScenes(ctx, res.Dir)
 	if err != nil {
+		summary(res, 0, nil)
 		return 1, err
 	}
 	if limit > 0 && limit < len(ss) {
@@ -245,6 +246,7 @@ func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
 	}
 	rs, err := write.Novel(ctx, m, work, ss, b, o.Out)
 	if err != nil {
+		summary(res, len(rs), nil)
 		return 1, err
 	}
 	var failed []string

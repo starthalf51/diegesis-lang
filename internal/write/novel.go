@@ -58,10 +58,10 @@ func Novel(ctx context.Context, c render.Completer, work string, scenes []render
 			sr.Pass = render.Passed(r)
 			sr.Report = r.Report
 			rep, _ := json.MarshalIndent(r.Report, "", "  ")
-			if err := os.WriteFile(filepath.Join(dir, s.ID+"."+b.ID+".report.json"), append(rep, '\n'), 0o644); err != nil {
+			if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".report.json"), append(rep, '\n'), 0o644); err != nil {
 				return rs, err
 			}
-			if err := os.WriteFile(filepath.Join(dir, s.ID+"."+b.ID+".md"), []byte(r.Prose+"\n"), 0o644); err != nil {
+			if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".md"), []byte(r.Prose+"\n"), 0o644); err != nil {
 				return rs, err
 			}
 			title := s.Title
@@ -73,4 +73,14 @@ func Novel(ctx context.Context, c render.Completer, work string, scenes []render
 		rs = append(rs, sr)
 	}
 	return rs, os.WriteFile(filepath.Join(out, "novel.md"), []byte(novel.String()), 0o644)
+}
+
+// fileID makes a scene id safe as a file name part.
+func fileID(id string) string {
+	return strings.Map(func(r rune) rune {
+		if strings.ContainsRune(`/\?:*"<>|`, r) {
+			return '_'
+		}
+		return r
+	}, id)
 }
