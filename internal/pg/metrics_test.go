@@ -114,9 +114,13 @@ func TestMetricTensionRange(t *testing.T) {
 	pool := open(t)
 	id := loadCorpus(t, pool, "macbeth")
 	var rows, bad int
-	pool.QueryRow(context.Background(), `SELECT count(*), count(*) FILTER (WHERE value < 0 OR value > 1) FROM metric_tension($1)`, id).Scan(&rows, &bad)
+	if err := pool.QueryRow(context.Background(), `SELECT count(*), count(*) FILTER (WHERE value < 0 OR value > (SELECT sum(weight) FROM metric_weights)) FROM metric_tension($1)`, id).Scan(&rows, &bad); err != nil {
+		t.Fatal(err)
+	}
 	var scenes int
-	pool.QueryRow(context.Background(), `SELECT count(DISTINCT discourse_ord) FROM scene WHERE work_id = $1 AND shown`, id).Scan(&scenes)
+	if err := pool.QueryRow(context.Background(), `SELECT count(DISTINCT discourse_ord) FROM scene WHERE work_id = $1 AND shown`, id).Scan(&scenes); err != nil {
+		t.Fatal(err)
+	}
 	if rows != scenes || rows == 0 || bad != 0 {
 		t.Errorf("tension rows = %d (scenes %d), out of range = %d", rows, scenes, bad)
 	}
@@ -196,5 +200,25 @@ func TestGraphColumns(t *testing.T) {
 		if n == 0 {
 			t.Errorf("%s: no rows on macbeth", f)
 		}
+	}
+}
+
+// 시간 제약이 없는 점(풀이 기본값 earliest = 0)은 착행 그래프에 오르지 않는다. 앵커 없는 작품은 0행, 앵커 있는 작품은 가짜 0 이 없다.
+func TestMetricAnachronyUnconstrained(t *testing.T) {
+	pool := open(t)
+	ctx := context.Background()
+	mb := loadCorpus(t, pool, "macbeth")
+	var n int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM metric_anachrony($1)`, mb).Scan(&n); err != nil || n != 0 {
+		t.Errorf("macbeth anachrony rows = %d, err %v, want 0", n, err)
+	}
+	h := loadCorpus(t, pool, "holmes")
+	var rows, fake int
+	if err := pool.QueryRow(ctx, `SELECT count(*), count(*) FILTER (WHERE p.earliest = 0 AND p.latest IS NULL)
+		FROM metric_anachrony($1) a JOIN scene s ON s.id = a.scene JOIN point p ON p.id = s.start_pt`, h).Scan(&rows, &fake); err != nil {
+		t.Fatal(err)
+	}
+	if rows == 0 || fake != 0 {
+		t.Errorf("holmes anachrony rows = %d, unconstrained = %d, want rows > 0 and 0", rows, fake)
 	}
 }

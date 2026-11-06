@@ -21,6 +21,7 @@ LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
 -- 그 장면 끝에서 독자가 믿는 참인 명제(reader_state 와 같은 규칙: 그 장면의 공개까지 포함) 중
 -- 장면에 있는 인물이 모르는(char_knows = no | opp; maybe 는 세지 않는다 — dramatic-irony 패턴과 같다) 수.
 -- 예언자·전지(lint_exempt)는 뺀다. ponytail: 참 = truth_at 가 정해진 것만(derived·unknown 사실은 NULL 이라 빠진다).
+-- ponytail: char_knows 를 (장면 x 출석 인물 x 참인 사실)마다 부른다. 큰 작품이 느려지면 머티리얼라이즈한다.
 CREATE FUNCTION metric_asymmetry(w text) RETURNS TABLE (ord int, entity text, n int)
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   WITH kn AS (SELECT * FROM reader_knows(w)),
@@ -55,6 +56,7 @@ LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
 
 -- 활성 기만 수: 기만(deception 행: lies, 거짓 문서 writes)을 받은 사람 중 누군가가 그 위치에 아직 거짓을 믿는 것.
 -- 믿음 행 = believes(value, cause_act = 그 lies 행위 또는 그 문서를 읽은 reads). until_pt(의심)가 서술 위치로 지났으면 거둔다.
+-- 세는 것은 사람이 아니라 기만 (행위, 명제)다: 수신자 중 한 명이라도 아직 믿으면 1.
 CREATE FUNCTION metric_active_deceptions(w text) RETURNS TABLE (ord int, n int)
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   WITH live AS (  -- (기만 행위, 명제, 수신자) 마다 믿음이 서는 구간 [from, until)
@@ -92,11 +94,11 @@ LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
                     + wt.q * coalesce(t.c::numeric / nullif(max(t.c) OVER (), 0), 0), 4)
     FROM t CROSS JOIN wt ORDER BY 1 $$;
 
--- 시간 착행: x = 서술 위치, y = 장면 시작의 earliest(이야기 시간). 시간을 풀 수 없는(NULL) 장면은 뺀다.
+-- 시간 착행: x = 서술 위치, y = 장면 시작의 earliest(이야기 시간). 시간 제약이 없는 점(earliest = 0 이고 latest 없음: 풀이의 기본값)은 뺀다.
 CREATE FUNCTION metric_anachrony(w text) RETURNS TABLE (scene text, ord int, story_t int8)
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   SELECT s.id, s.discourse_ord, p.earliest FROM scene s JOIN point p ON p.id = s.start_pt
-   WHERE s.work_id = w AND s.shown AND p.earliest IS NOT NULL ORDER BY 2, 1 $$;
+   WHERE s.work_id = w AND s.shown AND p.earliest IS NOT NULL AND (p.earliest > 0 OR p.latest IS NOT NULL) ORDER BY 2, 1 $$;
 
 -- 속도: 장면의 이야기 시간 폭(끝 earliest − 시작 earliest, 초) 대 행위 수.
 -- 시간 제약이 없는 점(earliest = 0 이고 latest 없음: 풀이의 기본값)이 한쪽이라도 끝이면 span_s = NULL.
