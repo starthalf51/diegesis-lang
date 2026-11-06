@@ -1,0 +1,17 @@
+b-diegesis/rounds/r0/scenes/offstage.dieg.md:16:3: error arg-kind: enter only applies inside a scene
+b-diegesis/rounds/r0/scenes/offstage.dieg.md:18:3: error arg-kind: exit only applies inside a scene
+b-diegesis/rounds/r0/scenes/offstage.dieg.md:24:3: error arg-kind: enter only applies inside a scene
+b-diegesis/rounds/r0/scenes/offstage.dieg.md:29:3: error arg-kind: exit only applies inside a scene
+b-diegesis/rounds/r0/scenes/offstage.dieg.md:35:3: error arg-kind: enter only applies inside a scene
+b-diegesis/rounds/r0/scenes/offstage.dieg.md:45:3: error arg-kind: exit only applies inside a scene
+b-diegesis/rounds/r0/scenes/offstage.dieg.md:50:3: error arg-kind: enter only applies inside a scene
+b-diegesis/rounds/r0/scenes/offstage.dieg.md:54:3: error arg-kind: exit only applies inside a scene
+b-diegesis/rounds/r0/scenes/offstage.dieg.md:60:3: error arg-kind: enter only applies inside a scene
+b-diegesis/rounds/r0/scenes/offstage.dieg.md:66:3: error arg-kind: exit only applies inside a scene
+b-diegesis/rounds/r0/scenes/s1.dieg.md:22:17: error arg-kind: shows object "watch" is a thing, want character or group
+b-diegesis/rounds/r0/scenes/s2.dieg.md:17:14: error arg-kind: shows object "mitten" is a thing, want character or group
+b-diegesis/rounds/r0/scenes/s2.dieg.md:26:19: error arg-kind: shows object "closure_form" is a artifact, want character or group
+b-diegesis/rounds/r0/scenes/s6.dieg.md:21:15: error arg-kind: shows object "watch" is a thing, want character or group
+b-diegesis/rounds/r0/scenes/s8.dieg.md:24:15: error arg-kind: shows object "mitten" is a thing, want character or group
+b-diegesis/rounds/r0/scenes/s9.dieg.md:19:16: error arg-kind: shows object "mitten" is a thing, want character or group
+dieg: b-diegesis/rounds/r0: compile errors, nothing loaded

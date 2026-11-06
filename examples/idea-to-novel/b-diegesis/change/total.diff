@@ -1,0 +1,235 @@
+diff -ru ../story/cast.dieg.md c2/cast.dieg.md
+--- ../story/cast.dieg.md	2026-11-06 18:31:57.461963500 +0900
++++ c2/cast.dieg.md	2026-11-06 18:45:33.339888300 +0900
+@@ -5,9 +5,13 @@
+ 
+ # 종이 울리지 않은 날 — 등장인물과 선언
+ 
+-폭설로 고갯길이 끊긴 백운초등학교 눈골분교. 이틀 동안의 이야기다.
+-첫날 오후 두 시 오십이 분에 교장이 죽는다. 담임은 "그 시각 서진이와 함께 있었다"고 말한다.
++폭설로 고갯길이 끊긴 백운초등학교 눈골분교에서 이틀 동안 벌어지는 이야기다.
++첫날 오후 두 시 오십이 분에 교장이 죽는다. 종탑 계단에서 교장을 민 사람은 조리 실무사 최말순이다.
++최말순은 쓰러진 교장의 손에서 폐교 동의서를 빼앗았다. 그리고 급식실 아궁이에 넣어 태웠다.
++담임은 그 직후 종탑에 갔다가 숨진 교장을 보고 돌아왔다. 아침에 "폐교를 막겠다"고 소리친 일 때문에 자신이 의심받을까 두려웠다.
++그래서 "그 시각 서진이와 함께 있었다"고 거짓말을 한다.
+ 오십 년 동안 오후 세 시를 거른 적 없던 종은 그날 울리지 않았다.
++이튿날 주무관은 아궁이 재 속에서 반쯤 탄 동의서를 찾아낸다.
+ 
+ ```sl
+ work bungyo "종이 울리지 않은 날"
+@@ -40,7 +44,7 @@
+ character custodian "김덕수" minor
+   name ko "김덕수"
+   attr custodian.age = 58
+-  attr custodian.relation = "분교 주무관. 장작과 제설과 종탑을 맡는다"
++  attr custodian.relation = "분교 주무관. 장작과 제설과 종탑과 아궁이를 맡는다"
+   believes bell_daily
+   believes bell_substitute
+ character cook "최말순" minor
+@@ -48,6 +52,7 @@
+   attr cook.age = 63
+   attr cook.relation = "분교 조리 실무사. 급식실 뒷문 옆에서 일한다"
+   believes bell_daily
++  believes cook_motive
+ character officer "오태식" minor
+   name ko "오태식"
+   attr officer.age = 46
+@@ -99,11 +104,16 @@
+ fact bell_substitute "교장이 자리에 없는 날에는 김덕수 주무관이 대신 세 시 종을 친다" true
+ fact firewood_quarrel "그날 아침 김덕수 주무관과 박성규 교장이 장작 문제로 언성을 높였다" true
+ fact closure_plan "박성규 교장은 눈이 그치면 분교 폐교 동의서를 교육청에 보낼 작정이었다" true
++fact cook_motive "최말순 실무사는 분교가 닫히면 삼십 년 일한 급식실을 잃는다. 혼자 사는 산골에서 갈 곳이 없었다" true
+ fact seojin_fever "서진은 점심 무렵부터 열이 올랐다" true
+ fact principal_to_tower "박성규 교장은 세 시 종을 치기 전에 종탑 계단의 눈을 쓸려고 일찍 나갔다" true
+ fact teacher_left "정혜원 선생님은 서진이 잠든 사이 보건실을 비우고 종탑에 다녀왔다" true
+ fact teacher_alibi "정혜원 선생님은 두 시 반부터 줄곧 보건실에서 서진 곁을 떠나지 않았다" = not teacher_left
+-fact teacher_pushed "정혜원 선생님이 종탑 계단에서 박성규 교장을 밀쳤다" true
++fact cook_pushed "최말순 실무사가 종탑 계단에서 박성규 교장을 밀쳤다" true
++# 순경이 s9 에서 잠깐 품는 잘못된 의심이다
++fact teacher_pushed "정혜원 선생님이 종탑 계단에서 박성규 교장을 밀쳤다" false
++fact teacher_found_body "정혜원 선생님이 종탑에 갔을 때 박성규 교장은 이미 계단 아래 숨져 있었다" true
++fact teacher_feared "정혜원 선생님은 폐교를 막겠다고 소리친 자신이 의심받을까 두려웠다. 그래서 서진과 함께 있었다고 거짓말을 했다" true
+ fact principal_died "박성규 교장이 종탑 계단 아래에서 숨졌다" true
+ fact teacher_returned "세 시 조금 전, 정혜원 선생님이 눈을 뒤집어쓴 채 급식실 뒷문으로 급히 들어왔다" true
+ fact bell_silent "그날 오후 세 시, 분교의 종은 울리지 않았다" true
+@@ -118,4 +128,6 @@
+ fact rope_frozen "종줄에는 서리가 손자국 하나 없이 하얗게 얼어붙어 있었다" true
+ fact mitten_at_tower "서진이 떠 준 빨간 벙어리장갑 한 짝이 종탑 계단 아래 눈 속에 묻혀 있었다" true
+ fact teacher_was_at_tower "정혜원 선생님은 그날 오후 종탑 계단에 왔었다" true
++fact form_missing "숨진 박성규 교장의 손에도 주머니에도 폐교 동의서가 없었다" true
++fact form_burned "급식실 아궁이 재 속에서 반쯤 탄 폐교 동의서가 나왔다. '교장 박성규'라는 서명만 남아 있었다" true
+ ```
+diff -ru ../story/scenes/offstage.dieg.md c2/scenes/offstage.dieg.md
+--- ../story/scenes/offstage.dieg.md	2026-11-06 18:31:57.460345600 +0900
++++ c2/scenes/offstage.dieg.md	2026-11-06 18:45:33.500313700 +0900
+@@ -6,16 +6,18 @@
+ 
+ # 무대 밖 사건
+ 
+-서진이 보건실에서 잠든 사이(첫날 오후 두 시 반 무렵 ~ 세 시 이십 분)에 일어난 일들.
+-렌더하지 않는다. 누가 무엇을 언제 알게 되었는지만 적는다.
++서진이 보건실에서 잠든 사이(첫날 오후 두 시 반 무렵 ~ 세 시 이십 분)에 일어난 일들이다. 이튿날 아침 아궁이의 일도 함께 적는다.
++이 사건들은 렌더하지 않는다. 누가 무엇을 언제 알게 되었는지만 적는다.
+ 무대 밖 사건에는 등퇴장(enter/exit)이 없다. 행위자와 수신자가 곧 그 자리에 있던 사람이다.
+ 
+ 시간표(s3 끝 = 오후 두 시 삼십오 분 기준):
+-- 두 시 사십 분 ~ 두 시 오십 분 무렵: 종탑 계단(fall). 두 시 오십이 분 전후 교장 사망.
+-- 그 뒤 몇 분: 급식실 뒷문(back_door). 세 시 조금 전.
+-- 세 시(s3 끝 + 25분): 종이 울리지 않는다(three_oclock). 5–10분 안에 끝난다.
++- 두 시 사십 분 ~ 두 시 오십 분 무렵, 종탑 계단(fall): 최말순이 교장을 민다. 교장은 두 시 오십이 분 전후에 숨진다. 최말순은 동의서를 빼앗아 달아난다.
++- 사망 1–2분 뒤(found): 담임이 종탑에 와서 숨진 교장을 본다. 동의서가 없는 것도 본다. 그 자리에 장갑을 떨어뜨린다.
++- 사망 6–8분 뒤, 세 시 조금 전, 급식실 뒷문(back_door): 먼저 돌아와 동의서를 아궁이에 넣은 최말순이 담임을 본다.
++- 세 시(s3 끝 + 25분, three_oclock): 종이 울리지 않는다. 이 일은 5–10분 안에 끝난다.
+ - 세 시 십오 분 이후: 서진이 깬다(s4).
+-사건마다 길이(lasts)를 적어, 사건 안의 앎이 뒤 장면의 발화보다 앞선다는 것이 정해지게 한다.
++- 이튿날 아침 순경의 조사(s6) 뒤(stove_ash): 주무관이 급식실 아궁이 재를 치우다 탄 동의서를 찾는다.
++사건마다 길이(lasts)를 적는다. 그래야 사건 안의 앎이 뒤 장면의 발화보다 앞선다는 것이 정해진다.
+ 
+ ```sl
+ # 첫날 새벽: 주무관이 고갯길이 끊긴 것을 본다
+@@ -33,29 +35,41 @@
+   custodian believes custodian_at_gate
+   custodian believes custodian_no_ring
+ 
+-# 오후 두 시 오십이 분: 종탑 계단
++# 오후 두 시 오십이 분, 종탑 계단: 조리 실무사가 교장에게 매달리다 밀친다
+ event fall "종탑 계단에서"
+   when after s3.end by 5m..15m
+   lasts 5m..10m
+-  teacher says principal: "교장 선생님, 그 서류 제게 주세요."
+-  principal tells teacher: closure_plan "이미 정한 일이야, 정 선생."
+-  teacher does push principal because closure_plan
++  cook says principal: "교장 선생님, 그 서류 보내지 마세요. 학교 닫으면 저는 어디로 가요."
++  principal tells cook: closure_plan "이미 정한 일이에요, 최 여사님."
++  cook does push principal because closure_plan
+   dies principal
+   attr watch.stopped_at = "오후 두 시 오십이 분"
+-  attr mitten.lost_at = tower
++  cook sees principal_died
++  cook does snatch_form
++  cook believes cook_pushed
++
++# 사망 직후: 교장을 붙잡고 다시 말해 보려고 뒤따라온 담임이 숨진 교장을 본다
++event found "종탑 계단 아래"
++  when after @principal.died by 1m..2m
++  lasts 2m..3m
+   teacher sees principal_died
+-  teacher believes teacher_pushed
++  teacher does kneel principal
++  teacher sees form_missing
++  attr mitten.lost_at = tower
++  teacher believes teacher_found_body
+   teacher believes teacher_left
++  teacher believes teacher_feared
+ 
+-# 세 시 조금 전: 조리 실무사가 뒷문으로 들어오는 담임을 본다
++# 세 시 조금 전: 동의서를 아궁이에 넣고 돌아서던 조리 실무사가 뒷문으로 들어오는 담임을 본다
+ event back_door "급식실 뒷문"
+-  when after @principal.died by 3m..8m
++  when after @principal.died by 6m..8m
+   lasts 2m..5m
++  cook does burn_form
+   cook sees teacher_returned
+   teacher does wash
+   teacher believes not window_snow
+ 
+-# 오후 세 시: 종은 울리지 않는다. 하람은 썰매 언덕에서 종을 기다리다 울리지 않은 것을 안다.
++# 오후 세 시: 종은 울리지 않는다. 하람은 썰매 언덕에서 종을 기다리다 울리지 않은 것을 안다
+ # 뒷방에서 물을 틀어 놓고 있던 담임은 주무관이 대신 쳤으리라 여긴다(bell_substitute)
+ event three_oclock "오후 세 시"
+   when after s3.end by 25m..25m
+@@ -65,4 +79,11 @@
+   attr bell.rung = "아니오"
+   attr rope.frost = "손자국 없이 얼어붙음"
+   teacher believes bell_rang
++
++# 이튿날 아침, 순경의 조사 뒤: 주무관이 급식실 아궁이 재를 치운다
++event stove_ash "급식실 아궁이"
++  when after s6.end by 10m..30m
++  lasts 5m..10m
++  custodian does clear_ash
++  custodian sees form_burned
+ ```
+diff -ru ../story/scenes/s1.dieg.md c2/scenes/s1.dieg.md
+--- ../story/scenes/s1.dieg.md	2026-11-06 18:31:57.459329700 +0900
++++ c2/scenes/s1.dieg.md	2026-11-06 18:45:33.654865900 +0900
+@@ -14,7 +14,7 @@
+ ```sl
+ lasts 20m..30m
+ withhold teacher_left until s7
+-withhold teacher_pushed until s9
++withhold cook_pushed until s9
+ principal says seojin, haram: "눈이 무릎까지 왔구나. 그래도 학교는 학교다."
+ custodian tells principal: road_cut "교장 선생님, 고갯길이 막혔습니다. 제설차도 못 올라온답니다."
+ principal says custodian: "그럼 오늘은 우리끼리 지내야겠군."
+diff -ru ../story/scenes/s2.dieg.md c2/scenes/s2.dieg.md
+--- ../story/scenes/s2.dieg.md	2026-11-06 18:31:57.453216400 +0900
++++ c2/scenes/s2.dieg.md	2026-11-06 18:45:33.806366400 +0900
+@@ -28,8 +28,10 @@
+   teacher says principal: "학교 닫으면 서진이랑 하람이는 매일 저 고개를 넘어야 해요."
+   principal says teacher: "내 정년 전에 끝내야 할 일이야."
+   teacher says principal: "그 서류, 못 보내세요. 제가 막을 거예요."
++setup promise_form promise: "교장 선생님이 눈 그치면 교육청에 보내겠다던 폐교 동의서"
+ seojin believes closure_plan because @s2.argument
+ teacher believes closure_plan because @s2.argument
++cook believes closure_plan because @s2.argument
+ seojin thinks: "어른들의 목소리가 열 오른 귀를 때렸다. 학교가 없어진다는 말만 또렷이 남았다."
+ exit principal
+ teacher does lead seojin
+diff -ru ../story/scenes/s8.dieg.md c2/scenes/s8.dieg.md
+--- ../story/scenes/s8.dieg.md	2026-11-06 18:31:57.450678900 +0900
++++ c2/scenes/s8.dieg.md	2026-11-06 18:45:34.744737300 +0900
+@@ -34,5 +34,5 @@
+ custodian says seojin, haram: custodian_at_gate "정문 비탈에서 눈만 치웠지."
+ custodian sees mitten_at_tower
+ seojin says custodian: teacher_was_at_tower "선생님이 여기 왔었어요. 어제."
+-custodian says seojin, haram: "그거 들고 순경님한테 가자."
++custodian says seojin, haram: "그거 들고 순경님한테 가자. 나도 보여 드릴 게 있다."
+ ```
+diff -ru ../story/scenes/s9.dieg.md c2/scenes/s9.dieg.md
+--- ../story/scenes/s9.dieg.md	2026-11-06 18:31:57.446619900 +0900
++++ c2/scenes/s9.dieg.md	2026-11-06 18:45:34.893716600 +0900
+@@ -17,27 +17,33 @@
+ lasts 25m..35m
+ beat evidence:
+   seojin shows officer: mitten_at_tower "이 빨간 장갑, 종탑 계단 아래 눈 속에 있었어요. 제가 선생님께 드린 장갑이에요."
+-  seojin tells officer: bell_silent "어제 세 시 종은 안 울렸어요."
+-  haram tells officer: bell_silent "제가 썰매 언덕에서 네 시까지 기다렸어요. 한 번도 안 울렸어요."
++  haram tells officer: bell_silent "제가 썰매 언덕에서 네 시까지 기다렸어요. 어제 세 시 종은 한 번도 안 울렸어요."
+   seojin tells officer: rope_frozen "종줄에 서리가 그대로예요. 아무도 안 당겼어요."
+   custodian tells officer: custodian_no_ring "저는 어제 종을 치지 않았습니다."
+   cook tells officer: teacher_returned "세 시 조금 전에 선생님이 뒷문으로 들어오시는 걸 봤어요. 어제는 말을 못 했습니다."
+ officer believes teacher_left because @s9.evidence
++officer believes teacher_pushed because @s9.evidence
+ officer doubts custodian_suspect
+ officer asks teacher: "세 시 종이 울릴 때 서진이 옆에 계셨다고 하셨지요."
+ teacher says officer: bell_substitute "교장 선생님이 안 계시면 주무관님이 치시니까… 당연히 울린 줄 알았어요."
+ seojin says teacher: teacher_left "선생님은 그때 제 옆에 없었어요. 있었으면 종이 안 울린 걸 아셨을 거예요."
+-beat confession:
+-  teacher does look seojin
+-  teacher tells officer: closure_plan "교장 선생님이 눈 그치면 폐교 동의서를 보내신다고 했어요."
+-  teacher tells officer: teacher_pushed "서류를 달라고 매달렸어요. 계단에서… 제가 밀었어요."
++beat truth:
++  teacher tells officer: teacher_found_body "서진이가 잠든 사이 종탑에 갔었어요. 그런데 제가 갔을 때 교장 선생님은 벌써 계단 아래 쓰러져 계셨어요."
++  teacher tells officer: form_missing "늘 품에 넣고 다니시던 폐교 동의서가 손에도 주머니에도 없었어요."
++  teacher tells officer: teacher_feared "아침에 폐교를 막겠다고 소리친 게 저라서… 의심받을까 무서워 서진이랑 있었다고 했어요."
+   teacher says seojin: "서진아, 미안해. 선생님이 거짓말했어."
+-reveal teacher_pushed
+-officer orders teacher: "가시죠."
+-exit teacher, officer
++officer doubts teacher_pushed because @s9.truth
++beat ash:
++  custodian shows officer: form_burned "아침에 급식실 아궁이 재를 치우다 이게 나왔습니다. 교장 선생님 서명만 남았어요."
++  cook tells officer: cook_pushed "서류만 달라고 매달렸어요. 계단에서… 제가 밀었어요. 학교가 없어지면 저는 갈 데가 없어서요."
++payoff bungyo.scenes/promise_form
++officer believes cook_pushed because @s9.ash
++reveal cook_pushed
++officer orders cook: "가시죠."
++exit cook, officer
+ seojin thinks: "벽시계가 세 시를 가리켰다. 오십 년 동안 거른 적 없던 시각이었다."
+ seojin does ring bell
+ payoff bungyo.scenes/promise_bell
+-cook says seojin, haram: "교장 선생님 약속이다. 코코아 마셔라."
++teacher says seojin, haram: "교장 선생님 약속이었지. 선생님이 코코아 타 줄게."
+ haram says seojin: "종소리, 되게 크다."
+ ```

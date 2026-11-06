@@ -1,0 +1,43 @@
+time	arm	step	prompt	output	seconds	stop_reason
+2026-11-06T18:18:10+09:00	A	outline	prompts/a1-outline.txt	a-direct/outline.md	79	end_turn
+2026-11-06T18:18:00+09:00	B	code-r0	prompts/b1-code.txt	b-diegesis/rounds/r0.raw.txt	530	end_turn
+2026-11-06T18:27:39+09:00	A	a2-s1	prompts/a2-s1.txt	a-direct/scenes/s1.md	63	end_turn
+2026-11-06T18:27:23+09:00	B	fix-r1	prompts/b2-fix-r1.txt	b-diegesis/rounds/r1.raw.txt	112	end_turn
+2026-11-06T18:28:42+09:00	A	a2-s2	prompts/a2-s2.txt	a-direct/scenes/s2.md	64	end_turn
+2026-11-06T18:29:47+09:00	A	a2-s3	prompts/a2-s3.txt	a-direct/scenes/s3.md	91	end_turn
+2026-11-06T18:29:52+09:00	B	fix-r2	prompts/b2-fix-r2.txt	b-diegesis/rounds/r2.raw.txt	101	end_turn
+2026-11-06T18:31:20+09:00	A	a2-s4	prompts/a2-s4.txt	a-direct/scenes/s4.md	75	end_turn
+2026-11-06T18:32:18+09:00	B	render-ko-haera-s1	(dieg render s1)	b-diegesis/novel/s1.ko-haera.md	56	end_turn
+2026-11-06T18:32:35+09:00	A	a2-s5	prompts/a2-s5.txt	a-direct/scenes/s5.md	69	end_turn
+2026-11-06T18:33:22+09:00	B	render-ko-haera-s2	(dieg render s2)	b-diegesis/novel/s2.ko-haera.md	35	end_turn
+2026-11-06T18:33:57+09:00	B	render-ko-haera-s3	(dieg render s3)	b-diegesis/novel/s3.ko-haera.md	26	end_turn
+2026-11-06T18:34:23+09:00	B	render-ko-haera-s4	(dieg render s4)	b-diegesis/novel/s4.ko-haera.md	36	end_turn
+2026-11-06T18:33:45+09:00	A	a2-s6	prompts/a2-s6.txt	a-direct/scenes/s6.md	80	end_turn
+2026-11-06T18:34:59+09:00	B	render-ko-haera-s5	(dieg render s5)	b-diegesis/novel/s5.ko-haera.md	35	end_turn
+2026-11-06T18:35:06+09:00	A	a2-s7	prompts/a2-s7.txt	a-direct/scenes/s7.md	64	end_turn
+2026-11-06T18:35:34+09:00	B	render-ko-haera-s6	(dieg render s6)	b-diegesis/novel/s6.ko-haera.md	39	end_turn
+2026-11-06T18:36:13+09:00	B	render-ko-haera-s7	(dieg render s7)	b-diegesis/novel/s7.ko-haera.md	34	end_turn
+2026-11-06T18:36:11+09:00	A	a2-s8	prompts/a2-s8.txt	a-direct/scenes/s8.md	57	end_turn
+2026-11-06T18:36:47+09:00	B	render-ko-haera-s8	(dieg render s8)	b-diegesis/novel/s8.ko-haera.md	45	end_turn
+2026-11-06T18:37:32+09:00	B	render-ko-haera-s9	(dieg render s9)	b-diegesis/novel/s9.ko-haera.md	36	end_turn
+2026-11-06T18:37:09+09:00	A	a2-s9	prompts/a2-s9.txt	a-direct/scenes/s9.md	64	end_turn
+2026-11-06T18:39:28+09:00	A	change-outline	prompts/a3-change-outline.txt	a-direct/change/outline.md	108	end_turn
+2026-11-06T18:39:08+09:00	J	judge1-run2	prompts/judge1.txt	judge/judge1-run2.json	135	end_turn
+2026-11-06T18:39:08+09:00	J	judge1-run3	prompts/judge1.txt	judge/judge1-run3.json	150	end_turn
+2026-11-06T18:39:08+09:00	J	judge1-run1	prompts/judge1.txt	judge/judge1-run1.json	156	end_turn
+2026-11-06T18:40:42+09:00	B	change-edit	prompts/b3-change.txt	b-diegesis/change/edit.raw.txt	78	end_turn
+2026-11-06T18:39:30+09:00	B	change-edit (lost)	prompts/b3-change.txt	(none: output dir missing, result discarded, re-run below)	?	?
+2026-11-06T18:41:18+09:00	A	a4-change-s1	prompts/a4-change-s1.txt	a-direct/change/scenes/s1.md	54	end_turn
+2026-11-06T18:42:13+09:00	A	a4-change-s2	prompts/a4-change-s2.txt	a-direct/change/scenes/s2.md	67	end_turn
+2026-11-06T18:43:21+09:00	A	a4-change-s3	prompts/a4-change-s3.txt	a-direct/change/scenes/s3.md	47	end_turn
+2026-11-06T18:44:09+09:00	A	a4-change-s4	prompts/a4-change-s4.txt	a-direct/change/scenes/s4.md	73	end_turn
+2026-11-06T18:42:35+09:00	B	change-fix1	prompts/b4-change-fix1.txt	b-diegesis/change/fix1.raw.txt	174	end_turn
+2026-11-06T18:45:23+09:00	A	a4-change-s5	prompts/a4-change-s5.txt	a-direct/change/scenes/s5.md	91	end_turn
+2026-11-06T18:46:50+09:00	B	render-ko-haera-s8	(dieg render s8)	b-diegesis/change/novel/s8.ko-haera.md	45	end_turn
+2026-11-06T18:46:55+09:00	A	a4-change-s6	prompts/a4-change-s6.txt	a-direct/change/scenes/s6.md	40	end_turn
+2026-11-06T18:47:35+09:00	B	render-ko-haera-s9	(dieg render s9)	b-diegesis/change/novel/s9.ko-haera.md	47	end_turn
+2026-11-06T18:47:37+09:00	A	a4-change-s7	prompts/a4-change-s7.txt	a-direct/change/scenes/s7.md	69	end_turn
+2026-11-06T18:48:23+09:00	B	render-ko-hapsho-s4	(dieg render s4)	b-diegesis/styles/s4.ko-hapsho.md	26	end_turn
+2026-11-06T18:48:47+09:00	A	a4-change-s8	prompts/a4-change-s8.txt	a-direct/change/scenes/s8.md	59	end_turn
+2026-11-06T18:49:48+09:00	A	a4-change-s9	prompts/a4-change-s9.txt	a-direct/change/scenes/s9.md	73	end_turn
+2026-11-06T18:51:09+09:00	J	judge2-run1	prompts/judge2.txt	judge/judge2-run1.json	178	end_turn

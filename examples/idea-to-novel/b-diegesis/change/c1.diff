@@ -1,0 +1,95 @@
+diff -ru b-diegesis/story/cast.dieg.md b-diegesis/change/c1/cast.dieg.md
+--- b-diegesis/story/cast.dieg.md	2026-11-06 18:31:57.461963500 +0900
++++ b-diegesis/change/c1/cast.dieg.md	2026-11-06 18:42:18.572286800 +0900
+@@ -6,7 +6,9 @@
+ # 종이 울리지 않은 날 — 등장인물과 선언
+ 
+ 폭설로 고갯길이 끊긴 백운초등학교 눈골분교. 이틀 동안의 이야기다.
+-첫날 오후 두 시 오십이 분에 교장이 죽는다. 담임은 "그 시각 서진이와 함께 있었다"고 말한다.
++첫날 오후 두 시 오십이 분에 교장이 죽는다. 종탑 계단에서 교장을 민 사람은 조리 실무사 최말순이다.
++담임은 그 직후 종탑에 갔다가 숨진 교장을 보고 돌아왔다. 아침에 "폐교를 막겠다"고 소리친 자신이 의심받을까 두려워
++"그 시각 서진이와 함께 있었다"고 말한다.
+ 오십 년 동안 오후 세 시를 거른 적 없던 종은 그날 울리지 않았다.
+ 
+ ```sl
+@@ -48,6 +50,7 @@
+   attr cook.age = 63
+   attr cook.relation = "분교 조리 실무사. 급식실 뒷문 옆에서 일한다"
+   believes bell_daily
++  believes cook_motive
+ character officer "오태식" minor
+   name ko "오태식"
+   attr officer.age = 46
+@@ -99,11 +102,15 @@
+ fact bell_substitute "교장이 자리에 없는 날에는 김덕수 주무관이 대신 세 시 종을 친다" true
+ fact firewood_quarrel "그날 아침 김덕수 주무관과 박성규 교장이 장작 문제로 언성을 높였다" true
+ fact closure_plan "박성규 교장은 눈이 그치면 분교 폐교 동의서를 교육청에 보낼 작정이었다" true
++fact cook_motive "최말순 실무사는 분교가 닫히면 삼십 년 일한 급식실을 잃고, 혼자 사는 산골에서 갈 곳이 없었다" true
+ fact seojin_fever "서진은 점심 무렵부터 열이 올랐다" true
+ fact principal_to_tower "박성규 교장은 세 시 종을 치기 전에 종탑 계단의 눈을 쓸려고 일찍 나갔다" true
+ fact teacher_left "정혜원 선생님은 서진이 잠든 사이 보건실을 비우고 종탑에 다녀왔다" true
+ fact teacher_alibi "정혜원 선생님은 두 시 반부터 줄곧 보건실에서 서진 곁을 떠나지 않았다" = not teacher_left
+-fact teacher_pushed "정혜원 선생님이 종탑 계단에서 박성규 교장을 밀쳤다" true
++fact cook_pushed "최말순 실무사가 종탑 계단에서 박성규 교장을 밀쳤다" true
++fact teacher_pushed "정혜원 선생님이 종탑 계단에서 박성규 교장을 밀쳤다" false
++fact teacher_found_body "정혜원 선생님이 종탑에 갔을 때 박성규 교장은 이미 계단 아래 숨져 있었다" true
++fact teacher_feared "정혜원 선생님은 폐교를 막겠다고 소리친 자신이 의심받을까 두려워 서진과 함께 있었다고 거짓말을 했다" true
+ fact principal_died "박성규 교장이 종탑 계단 아래에서 숨졌다" true
+ fact teacher_returned "세 시 조금 전, 정혜원 선생님이 눈을 뒤집어쓴 채 급식실 뒷문으로 급히 들어왔다" true
+ fact bell_silent "그날 오후 세 시, 분교의 종은 울리지 않았다" true
+diff -ru b-diegesis/story/scenes/offstage.dieg.md b-diegesis/change/c1/scenes/offstage.dieg.md
+--- b-diegesis/story/scenes/offstage.dieg.md	2026-11-06 18:31:57.460345600 +0900
++++ b-diegesis/change/c1/scenes/offstage.dieg.md	2026-11-06 18:42:18.575316000 +0900
+@@ -11,8 +11,9 @@
+ 무대 밖 사건에는 등퇴장(enter/exit)이 없다. 행위자와 수신자가 곧 그 자리에 있던 사람이다.
+ 
+ 시간표(s3 끝 = 오후 두 시 삼십오 분 기준):
+-- 두 시 사십 분 ~ 두 시 오십 분 무렵: 종탑 계단(fall). 두 시 오십이 분 전후 교장 사망.
+-- 그 뒤 몇 분: 급식실 뒷문(back_door). 세 시 조금 전.
++- 두 시 사십 분 ~ 두 시 오십 분 무렵: 종탑 계단(fall). 최말순이 교장을 민다. 두 시 오십이 분 전후 교장 사망.
++- 사망 1–2분 뒤: 담임이 종탑에 와서 숨진 교장을 본다(found). 그 자리에서 장갑을 떨어뜨린다.
++- 사망 6–8분 뒤: 급식실 뒷문(back_door). 세 시 조금 전. 먼저 돌아와 있던 최말순이 담임을 본다.
+ - 세 시(s3 끝 + 25분): 종이 울리지 않는다(three_oclock). 5–10분 안에 끝난다.
+ - 세 시 십오 분 이후: 서진이 깬다(s4).
+ 사건마다 길이(lasts)를 적어, 사건 안의 앎이 뒤 장면의 발화보다 앞선다는 것이 정해지게 한다.
+@@ -33,23 +34,32 @@
+   custodian believes custodian_at_gate
+   custodian believes custodian_no_ring
+ 
+-# 오후 두 시 오십이 분: 종탑 계단
++# 오후 두 시 오십이 분: 종탑 계단. 조리 실무사가 교장을 붙잡고 매달린다
+ event fall "종탑 계단에서"
+   when after s3.end by 5m..15m
+   lasts 5m..10m
+-  teacher says principal: "교장 선생님, 그 서류 제게 주세요."
+-  principal tells teacher: closure_plan "이미 정한 일이야, 정 선생."
+-  teacher does push principal because closure_plan
++  cook says principal: "교장 선생님, 그 서류 보내지 마세요. 학교 닫으면 저는 어디로 가요."
++  principal tells cook: closure_plan "이미 정한 일이에요, 최 여사님."
++  cook does push principal because closure_plan
+   dies principal
+   attr watch.stopped_at = "오후 두 시 오십이 분"
+-  attr mitten.lost_at = tower
++  cook sees principal_died
++  cook believes cook_pushed
++
++# 사망 직후: 교장을 붙잡고 말려 보려고 뒤따라온 담임이 숨진 교장을 본다
++event found "종탑 계단 아래"
++  when after @principal.died by 1m..2m
++  lasts 2m..3m
+   teacher sees principal_died
+-  teacher believes teacher_pushed
++  teacher does kneel principal
++  attr mitten.lost_at = tower
++  teacher believes teacher_found_body
+   teacher believes teacher_left
++  teacher believes teacher_feared
+ 
+-# 세 시 조금 전: 조리 실무사가 뒷문으로 들어오는 담임을 본다
++# 세 시 조금 전: 먼저 돌아와 있던 조리 실무사가 뒷문으로 들어오는 담임을 본다
+ event back_door "급식실 뒷문"
+-  when after @principal.died by 3m..8m
++  when after @principal.died by 6m..8m
+   lasts 2m..5m
+   cook sees teacher_returned
+   teacher does wash

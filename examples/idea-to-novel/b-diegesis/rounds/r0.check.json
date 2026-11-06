@@ -1,0 +1,146 @@
+[
+  {
+    "file": "b-diegesis/rounds/r0/scenes/offstage.dieg.md",
+    "line": 16,
+    "col": 3,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "enter only applies inside a scene",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/offstage.dieg.md",
+    "line": 18,
+    "col": 3,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "exit only applies inside a scene",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/offstage.dieg.md",
+    "line": 24,
+    "col": 3,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "enter only applies inside a scene",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/offstage.dieg.md",
+    "line": 29,
+    "col": 3,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "exit only applies inside a scene",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/offstage.dieg.md",
+    "line": 35,
+    "col": 3,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "enter only applies inside a scene",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/offstage.dieg.md",
+    "line": 45,
+    "col": 3,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "exit only applies inside a scene",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/offstage.dieg.md",
+    "line": 50,
+    "col": 3,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "enter only applies inside a scene",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/offstage.dieg.md",
+    "line": 54,
+    "col": 3,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "exit only applies inside a scene",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/offstage.dieg.md",
+    "line": 60,
+    "col": 3,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "enter only applies inside a scene",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/offstage.dieg.md",
+    "line": 66,
+    "col": 3,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "exit only applies inside a scene",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/s1.dieg.md",
+    "line": 22,
+    "col": 17,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "shows object \"watch\" is a thing, want character or group",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/s2.dieg.md",
+    "line": 17,
+    "col": 14,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "shows object \"mitten\" is a thing, want character or group",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/s2.dieg.md",
+    "line": 26,
+    "col": 19,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "shows object \"closure_form\" is a artifact, want character or group",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/s6.dieg.md",
+    "line": 21,
+    "col": 15,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "shows object \"watch\" is a thing, want character or group",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/s8.dieg.md",
+    "line": 24,
+    "col": 15,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "shows object \"mitten\" is a thing, want character or group",
+    "waived": false
+  },
+  {
+    "file": "b-diegesis/rounds/r0/scenes/s9.dieg.md",
+    "line": 19,
+    "col": 16,
+    "severity": "error",
+    "rule": "arg-kind",
+    "msg": "shows object \"mitten\" is a thing, want character or group",
+    "waived": false
+  }
+]

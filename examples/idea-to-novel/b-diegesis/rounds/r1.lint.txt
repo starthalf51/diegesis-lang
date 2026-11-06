@@ -1,0 +1,7 @@
+up to date
+loaded bungyo
+b-diegesis/rounds/r1/scenes/s4.dieg.md:21:3: info info-flow: teacher says bell_rang; the only source may come after this act (order not determined)
+b-diegesis/rounds/r1/scenes/s6.dieg.md:26:3: info info-flow: teacher says bell_rang; the only source may come after this act (order not determined)
+b-diegesis/rounds/r1/scenes/s7.dieg.md:20:3: info info-flow: haram says bell_silent; the only source may come after this act (order not determined)
+b-diegesis/rounds/r1/scenes/s7.dieg.md:32:3: info info-flow: cook says teacher_returned; the only source may come after this act (order not determined)
+b-diegesis/rounds/r1/scenes/s9.dieg.md:24:3: info info-flow: cook says teacher_returned; the only source may come after this act (order not determined)
