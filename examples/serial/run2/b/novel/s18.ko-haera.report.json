@@ -1,0 +1,11 @@
+{
+  "missing": [
+    "haeun|assert|record_1993"
+  ],
+  "hallucinated": [
+    "extra-act:haeun|perceive|record_1993",
+    "도하은이 해진호 사고 기록이 든 상자를 한쪽으로 밀어 놓았다."
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

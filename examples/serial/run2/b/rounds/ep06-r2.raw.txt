@@ -1,0 +1,118 @@
+=== FILE: ep06/cast.dieg.md ===
+---
+module: yeoulseom.cast
+mode: authored
+---
+
+# 여울섬 — 6화 추가 선언
+
+강민재는 3화에 육지로 떠나 퇴장했고 다시 나오지 않는다. 서윤을 돕는 자리는 분교 교사 윤유진이 맡는다.
+
+장부는 등대에 머무는 물건(thing)이다. 서윤이 읽는 것은 그 안에 적힌 근무 기록(artifact)이다.
+
+```sl
+thing lighthouse_logbook "lighthouse duty logbook"
+  name ko "등대 근무 장부"
+
+fact logbook_kept_daily "등대 근무 장부는 하루도 빠짐없이 날마다 적혀 있다" true
+fact logbook_day_torn "등대 근무 장부에서 해진호 사고 당일 쪽만 찢겨 나가 있다" true
+fact tell_only_yujin "서윤은 장부 일을 유진에게만 털어놓기로 한다" true
+fact boxes_moving "류지환이 마을회관 창고의 기록물 상자를 선착장으로 옮길 채비를 하고 있다" true
+fact keep_secret "유진은 장부 일을 누구에게도 말하지 않겠다고 약속한다" true
+
+artifact logbook_entries "lighthouse duty log entries"
+  name ko "등대 근무 장부의 기록"
+  contains logbook_kept_daily
+  "날마다 같은 손글씨로 적힌 근무 기록"
+
+jihwan believes boxes_moving
+yujin believes keep_secret
+```
+
+```sl
+attr lighthouse_logbook.at = lighthouse
+```
+=== FILE: ep06/s15.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s15"
+location: village_hall
+when: after s14 by 0h..3h
+pov: jihwan
+render:
+  pace: medium
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter jihwan
+jihwan sees island_records, record_1993
+jihwan thinks: archive_out
+jihwan does stack_boxes island_records
+enter yujin
+yujin sees boxes_moving
+yujin asks jihwan: boxes_moving
+jihwan says yujin: boxes_moving
+jihwan lies yujin: records_moldy
+exit yujin
+jihwan thinks: vote_in_12
+exit jihwan
+```
+=== FILE: ep06/s16.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s16"
+location: lighthouse
+when: after s15 by 0h..4h
+pov: seoyun
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 30m..60m
+enter seoyun
+seoyun does force_lock
+seoyun does climb_stairs
+seoyun sees lighthouse_logbook
+seoyun reads logbook_entries: logbook_kept_daily
+seoyun sees logbook_day_torn
+seoyun thinks: father_died
+seoyun thinks: tell_only_yujin
+seoyun does put_back lighthouse_logbook
+exit seoyun
+```
+=== FILE: ep06/s17.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s17"
+location: school
+when: after s16 by 0h..3h
+pov: seoyun
+render:
+  pace: medium
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter yujin
+enter seoyun
+seoyun tells yujin: logbook_day_torn
+seoyun tells yujin: logbook_kept_daily
+seoyun tells yujin: tell_only_yujin
+yujin says seoyun: boxes_moving
+yujin says seoyun: records_moldy
+seoyun doubts records_moldy
+yujin says seoyun: keep_secret
+exit seoyun, yujin
+```
+=== END ===

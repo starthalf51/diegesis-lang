@@ -1,0 +1,3 @@
+{"t":"2026-11-07T08:28:45Z","label":"plan","input":2,"output":2080,"cache_read":1816,"cache_write":353,"stop":"end_turn","err":"","ms":28958}
+{"t":"2026-11-07T08:47:36Z","label":"replan-1","input":2,"output":1834,"cache_read":0,"cache_write":2809,"stop":"end_turn","err":"","ms":23973}
+{"t":"2026-11-07T09:25:05Z","label":"replan-2","input":2,"output":1395,"cache_read":0,"cache_write":2532,"stop":"end_turn","err":"","ms":19659}

@@ -1,0 +1,21 @@
+write: rounds=1 clean=true scenes=2 failed=0[] calls=13 tokens in=26 out=34056 cache_read=13985 cache_write=34469 → examples\serial\run2\b
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=5 tokens in=10 out=12658 cache_read=4294 cache_write=25374 → examples\serial\run2\b
+continue: backlog=0 (stale scenes of earlier episodes picked up)
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=5 tokens in=10 out=10964 cache_read=4294 cache_write=24402 → examples\serial\run2\b
+continue: backlog=1 (stale scenes of earlier episodes picked up)
+continue: rounds=1 clean=true scenes=2 failed=1[s7] calls=9 tokens in=18 out=16380 cache_read=8588 cache_write=30268 → examples\serial\run2\b
+continue: backlog=2 (stale scenes of earlier episodes picked up)
+revise: rounds=2 clean=true changed=s8 added=s10,s11,s7b,s7c,s9 removed= failed=3[s7b s9 s10] calls=32 tokens in=64 out=64119 cache_read=32205 cache_write=91463 → examples\serial\run2\b
+continue: rounds=3 clean=true scenes=2 failed=0[] calls=7 tokens in=14 out=19873 cache_read=4294 cache_write=68643 → examples\serial\run2\b
+continue: backlog=0 (stale scenes of earlier episodes picked up)
+continue: rounds=3 clean=true scenes=2 failed=0[] calls=9 tokens in=18 out=21295 cache_read=6441 cache_write=74962 → examples\serial\run2\b
+continue: backlog=1 (stale scenes of earlier episodes picked up)
+continue: rounds=1 clean=true scenes=2 failed=1[s16] calls=9 tokens in=18 out=21187 cache_read=8588 cache_write=35547 → examples\serial\run2\b
+continue: backlog=2 (stale scenes of earlier episodes picked up)
+continue: rounds=1 clean=true scenes=2 failed=2[s18 s19] calls=13 tokens in=26 out=37172 cache_read=12882 cache_write=44082 → examples\serial\run2\b
+continue: backlog=3 (stale scenes of earlier episodes picked up)
+revise: rounds=1 clean=true changed=s13,s14,s15,s16 added=s20,s21,s22,s23 removed= failed=3[s13 s14 s16] calls=35 tokens in=70 out=79090 cache_read=36499 cache_write=90353 → examples\serial\run2\b
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=11 tokens in=22 out=26421 cache_read=10735 cache_write=42319 → examples\serial\run2\b
+continue: backlog=0 (stale scenes of earlier episodes picked up)
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=7 tokens in=14 out=20082 cache_read=6441 cache_write=35009 → examples\serial\run2\b
+continue: backlog=1 (stale scenes of earlier episodes picked up)

@@ -1,0 +1,97 @@
+=== FILE: ep02/cast.dieg.md ===
+---
+module: yeoulseom.cast
+mode: authored
+---
+
+# 여울섬 — 2화 추가 선언
+
+```sl
+fact sink_tide "해진호가 가라앉은 밤은 열한 물때였다" true
+
+gicheol believes sink_tide
+```
+=== FILE: ep02/s3.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s3"
+location: village_hall
+when: after s2
+pov: seoyun
+render:
+  pace: slow
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, gyeongtae, haeun
+gyeongtae says seoyun: vote_in_12
+haeun says seoyun: vote_in_12
+seoyun asks gyeongtae: father_died
+beat alibi:
+  gyeongtae lies seoyun: hospital_alibi
+haeun says seoyun: hospital_alibi
+seoyun believes hospital_alibi because @s3.alibi
+gyeongtae lies seoyun: official_cause
+seoyun thinks: father_died
+exit seoyun, gyeongtae, haeun
+```
+=== FILE: ep02/s4.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s4"
+location: malsun_house
+when: after s3
+pov: seoyun
+render:
+  pace: slow
+  tension: 0.4
+mode: authored
+---
+
+```sl
+lasts 30m..60m
+enter seoyun, malsun, minjae
+malsun says seoyun, minjae: song_lyric
+minjae says seoyun: malsun_dementia
+seoyun asks malsun: song_lyric
+malsun says seoyun: song_lyric
+seoyun thinks: song_lyric
+seoyun says minjae: hospital_alibi
+minjae says seoyun: vote_in_12
+minjae says seoyun: official_cause
+exit seoyun, malsun, minjae
+```
+=== FILE: ep02/s5.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s5"
+location: minbak
+when: after s4
+pov: seoyun
+render:
+  pace: medium
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, gicheol
+gicheol says seoyun: father_died
+seoyun says gicheol: hospital_alibi
+gicheol says seoyun: hospital_alibi
+seoyun says gicheol: song_lyric
+beat tide:
+  gicheol tells seoyun: sink_tide
+seoyun believes sink_tide because @s5.tide
+seoyun thinks: sink_tide
+seoyun thinks: song_lyric
+exit seoyun, gicheol
+```
+=== END ===

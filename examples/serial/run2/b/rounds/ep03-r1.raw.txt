@@ -1,0 +1,99 @@
+=== FILE: ep03/cast.dieg.md ===
+---
+module: yeoulseom.cast
+mode: authored
+---
+
+# 여울섬 — 3화 추가 선언
+
+```sl
+place beach "tidal flat beach"
+  name ko "여울섬 갯가"
+```
+=== FILE: ep03/s6.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s6"
+location: beach
+when: after s5 by 0d..1d
+pov: seoyun
+render:
+  pace: slow
+  tension: 0.3
+mode: authored
+---
+
+```sl
+lasts 20m..50m
+enter seoyun, sua
+sua does gather_shells
+sua shows glass_shard to seoyun
+seoyun sees glass_shard
+seoyun does pass_over glass_shard
+setup shard_seen hint: "수아가 갯가에서 주운 두껍고 뿌연 유리 조각"
+sua asks seoyun
+seoyun says sua: father_died
+sua says seoyun
+seoyun thinks
+exit sua
+exit seoyun
+```
+=== FILE: ep03/s7.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s7"
+location: malsun_house
+when: after s6 by 0d..1d
+pov: seoyun
+render:
+  pace: slow
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 30m..90m
+enter seoyun, malsun
+malsun does hum_old_song
+malsun says seoyun: song_lyric
+seoyun believes song_lyric
+seoyun asks malsun
+malsun says seoyun
+seoyun sees malsun
+seoyun thinks: song_lyric
+malsun does fall_asleep
+seoyun does cover_with_blanket malsun
+exit all
+```
+=== FILE: ep03/s8.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s8"
+location: minbak
+when: after s7 by 0d..1d
+pov: seoyun
+render:
+  pace: medium
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 30m..90m
+enter seoyun, gicheol
+seoyun asks gicheol
+gicheol says seoyun: father_died
+gicheol says seoyun: sink_tide
+seoyun believes sink_tide
+seoyun thinks: song_lyric
+seoyun thinks: sink_tide
+payoff yeoulseom.scenes/eleven_tide
+gicheol says seoyun
+seoyun does leave_guesthouse
+exit seoyun
+exit gicheol
+```
+=== END ===

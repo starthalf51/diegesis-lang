@@ -1,0 +1,118 @@
+=== FILE: ep07/cast.dieg.md ===
+---
+module: yeoulseom.cast
+mode: authored
+---
+
+# 여울섬 — 7화 추가 선언
+
+강민재는 3화에 육지로 떠나 퇴장했고 다시 나오지 않는다. 서윤을 돕는 자리는 분교 교사 윤유진이 맡는다.
+
+입원 서류는 도경태의 집 서랍에 머무는 물건이다. 하은은 서류를 보고 제자리에 돌려놓는다.
+
+```sl
+place gyeongtae_house "Gyeongtae's house"
+  name ko "도경태의 집"
+
+thing admission_papers "hospital admission papers"
+  name ko "도경태의 입원 서류"
+
+fact admit_date_off "도경태의 입원 서류에 적힌 입원 날짜는 해진호 사고 다음 날이다" true
+fact papers_in_envelope "입원 서류는 아버지 서랍 맨 아래 누런 봉투 속에 접혀 있다" true
+```
+
+```sl
+attr admission_papers.at = gyeongtae_house
+```
+=== FILE: ep07/s18.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s18"
+location: village_hall
+when: after s17 by 0d..1d
+pov: haeun close
+render:
+  pace: medium
+  tension: 0.5
+mode: authored
+---
+
+```sl
+enter haeun, jihwan, seoyun, yujin
+lasts 30m..60m
+jihwan says haeun: boxes_moving
+jihwan lies seoyun, yujin: records_moldy
+haeun sees island_records
+haeun sees record_1993
+payoff yeoulseom.scenes/night_register
+haeun thinks: record_1993
+haeun does set_aside island_records
+yujin sees boxes_moving
+seoyun says haeun: father_died
+seoyun says haeun: hospital_alibi
+haeun says seoyun: hospital_alibi
+exit all
+```
+=== FILE: ep07/s19.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s19"
+location: gyeongtae_house
+when: after s18 by 0d..1d
+pov: haeun close
+render:
+  pace: slow
+  tension: 0.8
+mode: authored
+---
+
+```sl
+enter haeun
+mention gyeongtae
+lasts 20m..40m
+haeun does open_drawer
+haeun sees admission_papers
+haeun sees papers_in_envelope
+haeun sees admit_date_off
+setup drawer_papers hint: admit_date_off
+haeun thinks: hospital_alibi
+haeun doubts hospital_alibi
+haeun thinks: admit_date_off
+haeun does put_back admission_papers
+enter gyeongtae
+gyeongtae says haeun: vote_in_12
+haeun says gyeongtae
+exit all
+```
+=== FILE: ep07/s20.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s20"
+location: harbor
+when: after s19 by 0d..1d
+pov: haeun close
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+enter seoyun, yujin, haeun
+lasts 20m..40m
+yujin says seoyun: boxes_moving
+seoyun asks haeun: hospital_alibi
+haeun thinks: admit_date_off
+haeun says seoyun
+seoyun says haeun: father_died
+haeun thinks
+haeun thinks: record_1993
+haeun does turn_away
+exit haeun
+seoyun says yujin
+exit all
+```
+=== END ===
