@@ -26,7 +26,7 @@ func TestDiff(t *testing.T) {
 		t.Fatalf("%+v", r)
 	}
 	halluc := perfect
-	halluc.NewEvents = []string{"주유가 장간을 죽인다"}
+	halluc.NewEvents = []NewEvent{{Text: "주유가 장간을 죽인다"}}
 	if r := Diff(s, halluc); len(r.Hallucinated) != 1 {
 		t.Fatalf("%+v", r)
 	}
@@ -63,7 +63,7 @@ func TestDiffKeysAndFailClosed(t *testing.T) {
 	e := Extracted{
 		Acts:        []ExtractedAct{{Actor: "a", Verb: "reads", Fact: "f1"}, {Actor: "a", Verb: "says", Fact: "zz"}, {Actor: "a", Verb: "says", Fact: "w"}},
 		FactsStated: []string{"f1", "zz", "yy", "w", "w"},
-		NewEvents:   []string{"x", "x"},
+		NewEvents:   []NewEvent{{Text: "x"}, {Text: "x"}},
 	}
 	r := Diff(s, e)
 	// a says w 는 원본에 없는 사실 액트라 누출이자 초과 액트(R4)다.
@@ -87,6 +87,44 @@ func TestDiffMissingIsMultiset(t *testing.T) {
 	e.Acts = acts // the aside with the same key remains
 	r := Diff(s, e)
 	if !reflect.DeepEqual(r.Missing, []string{"jiang_gan|assert|commanders_traitors"}) {
+		t.Fatalf("%+v", r)
+	}
+}
+
+func factlessScene() Scene {
+	return Scene{
+		Cast: []Entity{{ID: "seoyun", Names: map[string][]string{"ko": {"서윤"}}}, {ID: "haeun", Names: map[string][]string{"ko": {"하은"}}}, {ID: "ferry_ticket"}},
+		Beats: []Beat{{ID: "b1", Acts: []Act{
+			{Actor: "haeun", Verb: "does", Action: "hide", Targets: []string{"ferry_ticket"}},
+			{Verb: "exit", Targets: []string{"seoyun", "haeun"}},
+		}}},
+	}
+}
+
+func TestDiffDropsAuthoredFactlessEvent(t *testing.T) {
+	e := Extracted{NewEvents: []NewEvent{{Actor: "하은", Verb: "does", Action: "Hide", Targets: []string{"ferry_ticket"}}}}
+	if r := Diff(factlessScene(), e); len(r.Hallucinated) != 0 {
+		t.Fatalf("%+v", r)
+	}
+}
+
+func TestDiffKeepsDifferentAction(t *testing.T) {
+	e := Extracted{NewEvents: []NewEvent{{Actor: "haeun", Verb: "does", Action: "burn", Targets: []string{"ferry_ticket"}}}}
+	if r := Diff(factlessScene(), e); len(r.Hallucinated) != 1 {
+		t.Fatalf("%+v", r)
+	}
+}
+
+func TestDiffDropsExitAll(t *testing.T) {
+	e := Extracted{NewEvents: []NewEvent{{Actor: "haeun", Verb: "exit"}}}
+	if r := Diff(factlessScene(), e); len(r.Hallucinated) != 0 {
+		t.Fatalf("%+v", r)
+	}
+}
+
+func TestDiffKeepsUnauthoredEvent(t *testing.T) {
+	e := Extracted{NewEvents: []NewEvent{{Actor: "seoyun", Verb: "does", Action: "hide", Targets: []string{"ferry_ticket"}}}}
+	if r := Diff(factlessScene(), e); len(r.Hallucinated) != 1 {
 		t.Fatalf("%+v", r)
 	}
 }

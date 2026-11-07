@@ -77,3 +77,10 @@ func TestExtractPromptOneEntryPerFact(t *testing.T) {
 		t.Error("extract prompt lacks the one-entry-per-fact rule")
 	}
 }
+
+func TestParseExtractedLegacyStrings(t *testing.T) {
+	e, err := ParseExtracted(`{"acts":[],"facts_stated":[],"new_events":["x happens",{"actor":"a","verb":"does","action":"hide","targets":["t"],"text":""}]}`)
+	if err != nil || len(e.NewEvents) != 2 || e.NewEvents[0].Text != "x happens" || e.NewEvents[1].Action != "hide" {
+		t.Fatalf("%v %+v", err, e)
+	}
+}

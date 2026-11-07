@@ -31,7 +31,7 @@ func factText(s Scene, id string) string {
 
 // extractedFromScene is the "perfect extractor": every act with a Fact, facts deduped, no new events.
 func extractedFromScene(s Scene) Extracted {
-	e := Extracted{Acts: []ExtractedAct{}, FactsStated: []string{}, NewEvents: []string{}}
+	e := Extracted{Acts: []ExtractedAct{}, FactsStated: []string{}, NewEvents: []NewEvent{}}
 	seen := map[string]bool{}
 	for _, b := range s.Beats {
 		for _, a := range b.Acts {

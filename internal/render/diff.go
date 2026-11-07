@@ -1,6 +1,9 @@
 package render
 
-import "sort"
+import (
+	"sort"
+	"strings"
+)
 
 // Report is the diff verdict. ExtractError is set by the runner, never by Diff.
 type Report struct {
@@ -56,7 +59,9 @@ func Diff(s Scene, e Extracted) Report {
 		check(id)
 	}
 	for _, n := range e.NewEvents {
-		hall[n] = true
+		if !s.authored(n) {
+			hall[n.Label()] = true
+		}
 	}
 	want := map[string]int{}
 	for _, b := range s.Beats {
@@ -100,4 +105,62 @@ func (m set) sorted() []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+// authored reports whether a new_event merely restates an act the IR itself authors without a fact
+// (e.g. `does hide ferry_ticket`, `exit all`). Such an event is not invented content, so ADR-019
+// (no unauthored plot) is not loosened: anything not authored in the IR stays a hallucination.
+func (s Scene) authored(n NewEvent) bool {
+	ev := s.resolve(n.Actor)
+	vc := VerbClass(n.Verb)
+	for _, b := range s.Beats {
+		for _, a := range b.Acts {
+			ac := VerbClass(a.Verb)
+			if a.Fact != "" && ac != "presence" || ac != vc {
+				continue
+			}
+			tg := map[string]bool{}
+			for _, t := range a.Targets {
+				tg[s.resolve(t)] = true
+			}
+			if a.Actor == "" && a.Verb == "exit" && n.Verb == "exit" && tg[ev] {
+				return true // exit all: empty actor, targets = the cast
+			}
+			if s.resolve(a.Actor) != ev {
+				continue
+			}
+			switch {
+			case vc == "act" && n.Action != "":
+				if strings.EqualFold(n.Action, a.Action) {
+					return true
+				}
+			case (vc == "act" || vc == "presence") && len(n.Targets) > 0:
+				for _, t := range n.Targets {
+					if tg[s.resolve(t)] {
+						return true
+					}
+				}
+			default:
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// resolve maps an id or any cast name to a lowercase canonical id; unknown strings stay as lowercase text.
+func (s Scene) resolve(x string) string {
+	for _, e := range s.Cast {
+		if strings.EqualFold(e.ID, x) {
+			return strings.ToLower(e.ID)
+		}
+		for _, ns := range e.Names {
+			for _, n := range ns {
+				if strings.EqualFold(n, x) {
+					return strings.ToLower(e.ID)
+				}
+			}
+		}
+	}
+	return strings.ToLower(x)
 }

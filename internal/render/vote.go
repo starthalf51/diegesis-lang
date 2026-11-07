@@ -50,7 +50,7 @@ func ExtractK(ctx context.Context, c Completer, s Scene, lang, prose string, k i
 //   - 숨긴 사실은 한 번이라도 나오면(액트든 facts_stated 든) facts_stated 에 넣는다 — 누출 판정은 fail-closed.
 //   - new_events: 자유 문장이라 맞대지 못한다. 과반이 그 이상 낸 개수만큼, 그만큼 낸 첫 재추출의 문장을 쓴다.
 func Vote(s Scene, xs []Extracted) Extracted {
-	out := Extracted{Acts: []ExtractedAct{}, FactsStated: []string{}, NewEvents: []string{}}
+	out := Extracted{Acts: []ExtractedAct{}, FactsStated: []string{}, NewEvents: []NewEvent{}}
 	if len(xs) == 0 {
 		return out
 	}

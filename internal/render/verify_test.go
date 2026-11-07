@@ -11,7 +11,7 @@ func verifyFixture(t *testing.T) (Scene, Backend, string, string) {
 	s := mustLoad(t, "testdata/scenes/chibi-jianggan.json")
 	b := mustBackends(t)[0]
 	bad := extractedFromScene(s)
-	bad.NewEvents = []string{"주유가 장간을 죽인다"}
+	bad.NewEvents = []NewEvent{{Text: "주유가 장간을 죽인다"}}
 	raw, _ := json.Marshal(bad)
 	return s, b, perfectJSON(t, s), "```json\n" + string(raw) + "\n```"
 }

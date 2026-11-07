@@ -19,7 +19,39 @@ type ExtractedAct struct {
 type Extracted struct {
 	Acts        []ExtractedAct `json:"acts"`
 	FactsStated []string       `json:"facts_stated"`
-	NewEvents   []string       `json:"new_events"`
+	NewEvents   []NewEvent     `json:"new_events"`
+}
+
+// NewEvent is a plot event the extractor found beyond its acts. Legacy caches hold plain strings (Text only).
+type NewEvent struct {
+	Actor   string   `json:"actor"`
+	Verb    string   `json:"verb"`
+	Targets []string `json:"targets"`
+	Action  string   `json:"action"`
+	Text    string   `json:"text"`
+}
+
+func (n *NewEvent) UnmarshalJSON(b []byte) error {
+	var s string
+	if json.Unmarshal(b, &s) == nil {
+		*n = NewEvent{Text: s}
+		return nil
+	}
+	type plain NewEvent
+	var p plain
+	if err := json.Unmarshal(b, &p); err != nil {
+		return err
+	}
+	*n = NewEvent(p)
+	return nil
+}
+
+// Label is the hallucination report string for an event.
+func (n NewEvent) Label() string {
+	if n.Text != "" {
+		return n.Text
+	}
+	return strings.TrimSpace(n.Actor + " " + n.Verb + " " + n.Action + " " + strings.Join(n.Targets, ","))
 }
 
 // BuildExtractPrompt shows the extractor only the prose and an unlabeled
@@ -37,9 +69,9 @@ Answer only with IDs from the catalog you are given. Do not invent IDs.
 - An aside or a character's thoughts assert their proposition: record a catalog fact conveyed in an aside or in what a character thinks as that character's assertion (that character as actor, the fact as fact).
 - A line can convey a fact without stating it: how a speaker addresses someone, what a speaker admits about themselves, or what a deceiver wants the listener to believe. Use that fact for the act. If one act conveys several catalog facts, list that act once per fact (same actor, verb and targets).
 - facts_stated: the ID of every catalog fact the prose states or strongly implies. Report in facts_stated every listed fact the prose states or clearly implies, whether true or not in the story; do not report facts the prose does not convey.
-- new_events: plot events only: an action or revelation that changes the situation, not already reported in acts, and not covered by any listed fact. Ignore description, gesture, setting, and manner. Each as one short sentence. Use [] if none.
+- new_events: plot events only: an action or revelation that changes the situation, not already reported in acts, and not covered by any listed fact. Ignore description, gesture, setting, and manner. Each as an object {"actor": "<entity ID or name>", "verb": "<verb>", "targets": ["<entity IDs or names>"], "action": "<the does action word, else empty>", "text": "<one short sentence>"}. Use [] if none.
 - Judge only from what this prose says or implies to a reader who does not know the source story; ignore your knowledge of any original work.
-Reply with a single ` + "```json" + ` fenced block and nothing else, shaped as {"acts":[{"actor":"","verb":"","targets":[],"fact":""}],"facts_stated":[],"new_events":[]}.`
+Reply with a single ` + "```json" + ` fenced block and nothing else, shaped as {"acts":[{"actor":"","verb":"","targets":[],"fact":""}],"facts_stated":[],"new_events":[{"actor":"","verb":"","targets":[],"action":"","text":""}]}.`
 
 	var b strings.Builder
 	b.WriteString("Prose language: " + lang + "\n\n## Entities (ID: names in every language)\n")

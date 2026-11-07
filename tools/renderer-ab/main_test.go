@@ -27,7 +27,7 @@ func (f *abFake) Complete(_ context.Context, system, user string) (render.Result
 	}
 	switch {
 	case strings.Contains(system, "structured record"):
-		e := render.Extracted{Acts: []render.ExtractedAct{}, FactsStated: []string{}, NewEvents: []string{}}
+		e := render.Extracted{Acts: []render.ExtractedAct{}, FactsStated: []string{}, NewEvents: []render.NewEvent{}}
 		for _, id := range []string{"f1", "f2", "f3"} {
 			if strings.Contains(user, "F"+id+" 가온이") {
 				e.Acts = append(e.Acts, render.ExtractedAct{Actor: "a", Verb: "sees", Targets: []string{}, Fact: id})
@@ -35,7 +35,7 @@ func (f *abFake) Complete(_ context.Context, system, user string) (render.Result
 			}
 		}
 		if strings.Contains(user, "누군가 쓰러졌다") {
-			e.NewEvents = append(e.NewEvents, "someone collapses")
+			e.NewEvents = append(e.NewEvents, render.NewEvent{Text: "someone collapses"})
 		}
 		b, _ := json.Marshal(e)
 		return ok("```json\n" + string(b) + "\n```")

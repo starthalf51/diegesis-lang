@@ -41,7 +41,7 @@ func (f *pipeFake) Complete(_ context.Context, system, user string) (render.Resu
 	case strings.Contains(system, "이음새만 다듬는다"):
 		return ok(strings.TrimPrefix(user, "## 비트\n") + f.stitchAdds)
 	}
-	e := render.Extracted{Acts: []render.ExtractedAct{}, FactsStated: []string{}, NewEvents: []string{}}
+	e := render.Extracted{Acts: []render.ExtractedAct{}, FactsStated: []string{}, NewEvents: []render.NewEvent{}}
 	for k, id := range pipeFacts {
 		if strings.Contains(user, fmt.Sprintf("B%d 가온이", k+1)) {
 			e.Acts = append(e.Acts, render.ExtractedAct{Actor: "a", Verb: "sees", Targets: []string{}, Fact: id})
