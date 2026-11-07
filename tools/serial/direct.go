@@ -41,7 +41,7 @@ func parseBriefs(text string, n int) ([]string, error) {
 
 func runPlan(ctx context.Context, t *tracker) ([]string, error) {
 	c := t.c
-	if err := t.check(judgeReserve); err != nil {
+	if err := t.check(judgeReserve + 1); err != nil {
 		return nil, err
 	}
 	m, f, err := meter(c.a, filepath.Join(c.out, "plan"))
@@ -165,7 +165,7 @@ func newArmA(ctx context.Context, t *tracker, briefs []string) (*armA, error) {
 }
 
 func (a *armA) step(label, prompt string) (string, error) {
-	if err := a.t.check(judgeReserve); err != nil {
+	if err := a.t.check(judgeReserve + 1); err != nil {
 		return "", err
 	}
 	if err := write(filepath.Join(a.t.c.out, "a", "prompts", label+".txt"), prompt); err != nil {

@@ -156,9 +156,6 @@ func runJudge(ctx context.Context, t *tracker) judgeOutcome {
 		if err := write(filepath.Join(dir, fmt.Sprintf("prompt%d.txt", i+1)), prompt); err != nil {
 			return fail("%v", err)
 		}
-		if err := t.check(0); err != nil {
-			return fail("%v", err)
-		}
 		raw, err := call(ctx, m, fmt.Sprintf("judge-%d", i+1), prompt)
 		if err != nil {
 			return fail("%v", err)
@@ -226,6 +223,9 @@ func runJudge(ctx context.Context, t *tracker) judgeOutcome {
 // fakeJudge selects a judge failure for tests: "garbage", "noY" (no Y key), "norev" (no revision marks for Y).
 var fakeJudge string
 
+// fakeDiegCalls is how many metered calls one fake dieg invocation makes.
+var fakeDiegCalls = 3
+
 // fakeSkip names a scene (e.g. "e2b") the fake dieg does not render, like a scene that failed verification.
 var fakeSkip string
 
@@ -270,7 +270,12 @@ func fakeDieg(ctx context.Context, out string, args []string) error {
 		return err
 	}
 	defer f.Close()
-	for _, l := range []string{"code-r1", "render-s1-a1", "extract-s1-a1"} {
+	labels := []string{"code-r1", "render-s1-a1", "extract-s1-a1"}
+	for i := 0; i < fakeDiegCalls; i++ {
+		l := labels[min(i, 2)]
+		if i > 2 {
+			l = labels[1+i%2]
+		}
 		if _, err := m.Label(l).Complete(ctx, "", ""); err != nil {
 			return err
 		}

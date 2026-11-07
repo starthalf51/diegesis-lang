@@ -28,14 +28,15 @@ type armSum struct {
 }
 
 type summary struct {
-	Cut_at_episode, Episodes int
-	Stopped_by, Judge_status string
-	Rev_after                []int
-	Chars_per_episode        map[string][]int
-	B_missing_scenes         map[string]int
-	Plan_uncharged, A, B     armSum
-	Judge                    armSum
-	Revisions                []struct {
+	Cut_at_episode, Episodes                               int
+	Stopped_by, Judge_status                               string
+	Rev_after                                              []int
+	Chars_per_episode                                      map[string][]int
+	B_missing_scenes                                       map[string]int
+	Plan_uncharged, A, B                                   armSum
+	A_total_including_cut_work, B_total_including_cut_work armSum
+	Judge                                                  armSum
+	Revisions                                              []struct {
 		AfterEp              int `json:"after_ep"`
 		A, B                 struct{ Calls int64 }
 		AResidual, BResidual any
@@ -100,11 +101,11 @@ func TestSerialDryRun(t *testing.T) {
 		t.Errorf("plan %+v judge %+v cut %d status %q", s.Plan_uncharged, s.Judge, s.Cut_at_episode, s.Judge_status)
 	}
 	// per model: B has 4 code calls on opus and 8 render/extract calls on sonnet; price-weighted = weighted*in + output*out.
-	if b := s.B.ByModel; b["claude-opus-5-5"].Calls != 4 || b["claude-sonnet-5-5"].Calls != 8 || len(s.A.ByModel) != 1 {
-		t.Errorf("per-model %+v / %+v", s.B.ByModel, s.A.ByModel)
+	if b := s.B_total_including_cut_work.ByModel; b["claude-opus-5-5"].Calls != 4 || b["claude-sonnet-5-5"].Calls != 8 || len(s.A_total_including_cut_work.ByModel) != 1 {
+		t.Errorf("per-model %+v / %+v", s.B_total_including_cut_work.ByModel, s.A_total_including_cut_work.ByModel)
 	}
-	if s.A.PriceWeighted == nil || *s.A.PriceWeighted != 820+2*110 || s.B.PriceWeighted == nil || *s.B.PriceWeighted != 298+2*40+596+80 {
-		t.Errorf("price-weighted A %v B %v", s.A.PriceWeighted, s.B.PriceWeighted)
+	if s.A_total_including_cut_work.PriceWeighted == nil || *s.A_total_including_cut_work.PriceWeighted != 820+2*110 || s.B_total_including_cut_work.PriceWeighted == nil || *s.B_total_including_cut_work.PriceWeighted != 298+2*40+596+80 {
+		t.Errorf("price-weighted A %v B %v", s.A_total_including_cut_work.PriceWeighted, s.B_total_including_cut_work.PriceWeighted)
 	}
 	if len(s.Revisions) != 1 || s.Revisions[0].AfterEp != 2 || s.Revisions[0].A.Calls != 4 || s.Revisions[0].B.Calls != 3 {
 		t.Errorf("revisions %+v", s.Revisions)
@@ -140,8 +141,14 @@ func TestSerialDryRun(t *testing.T) {
 }
 
 func TestSerialBudgetCut(t *testing.T) {
-	// limit for non-judge steps = 11-2 = 9 calls: plan 1, outline 1, ep1 A 2 + B 3 = 7, ep2 A 2 = 9, B ep2 trips.
+	// the fake dieg step makes 3 calls, so stepReserve 3: B reserves 3+2, A reserves 1+2. Budget 11: plan 1, outline 1,
+	// ep1 A 2 + B 3 = 7, ep2 A 2 = 9, then B ep2 needs 9+5 > 11 and does not start.
+	stepReserve = 3
+	defer func() { stepReserve = 20 }()
 	_, s, rd := dry(t, "-eps", "3", "-rev-after", "2", "-budget", "11")
+	if s.A.Calls != 3 || s.B.Calls != 3 || s.A_total_including_cut_work.Calls != 5 || s.B_total_including_cut_work.Calls != 3 {
+		t.Errorf("at-cut A %+v B %+v, totals A %d B %d", s.A, s.B, s.A_total_including_cut_work.Calls, s.B_total_including_cut_work.Calls)
+	}
 	if s.Cut_at_episode != 1 || !strings.Contains(s.Stopped_by, "budget") || s.Judge_status != "ok" || len(s.Revisions) != 0 || len(s.Rev_after) != 0 {
 		t.Errorf("%+v", s)
 	}
@@ -214,5 +221,18 @@ func TestRealDiegExit(t *testing.T) {
 		if lg, _ := os.ReadFile(filepath.Join(out, "b.log")); code == "3" && !strings.Contains(string(lg), "exit 3") {
 			t.Errorf("exit 3 not logged: %q", lg)
 		}
+	}
+}
+
+// A B step that makes 15 calls must not start when it could carry the run past the budget: both arms are cut at the
+// same episode and the judge still runs inside the budget.
+func TestSerialStepReserve(t *testing.T) {
+	fakeDiegCalls = 15
+	defer func() { fakeDiegCalls = 3 }()
+	// plan 1, outline 1, ep1 A 2 (n=4), B ep1 needs 4+22 <= 40 -> 19, A ep2 2 -> 21, B ep2 needs 21+22 > 40: not started.
+	_, s, _ := dry(t, "-eps", "3", "-rev-after", "2", "-budget", "40")
+	used := s.Plan_uncharged.Calls + s.A_total_including_cut_work.Calls + s.B_total_including_cut_work.Calls + s.Judge.Calls
+	if s.Cut_at_episode != 1 || s.B_total_including_cut_work.Calls != 15 || s.Judge_status != "ok" || s.Judge.Calls != 1 || used > 40 || !strings.Contains(s.Stopped_by, "budget") {
+		t.Errorf("cut %d, B %d, judge %q/%d, used %d: %+v", s.Cut_at_episode, s.B_total_including_cut_work.Calls, s.Judge_status, s.Judge.Calls, used, s)
 	}
 }

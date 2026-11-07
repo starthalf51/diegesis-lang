@@ -25,7 +25,7 @@ func runBEpisode(ctx context.Context, t *tracker, briefs []string, e int) error 
 		}
 		args = []string{"write", idea, "-o", b, "--scenes", sc}
 	}
-	if err := t.check(judgeReserve); err != nil {
+	if err := t.check(stepReserve + judgeReserve); err != nil {
 		return err
 	}
 	if err := runDieg(ctx, c.out, args); err != nil {
@@ -39,7 +39,7 @@ func runBEpisode(ctx context.Context, t *tracker, briefs []string, e int) error 
 // runBRevise runs `dieg revise` for revision k (no --scenes: every scene whose render request changed is re-rendered).
 func runBRevise(ctx context.Context, t *tracker, k, e int) error {
 	return t.revStep("B", k+1, func() error {
-		if err := t.check(judgeReserve); err != nil {
+		if err := t.check(stepReserve + judgeReserve); err != nil {
 			return err
 		}
 		if err := runDieg(ctx, t.c.out, []string{"revise", filepath.Join(t.c.out, "b"), revReqs[k]}); err != nil {

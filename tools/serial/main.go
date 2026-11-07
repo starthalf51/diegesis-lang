@@ -46,6 +46,9 @@ const (
 	opus, sonnet = "claude-opus-5-5", "claude-sonnet-5-5"
 )
 
+// stepReserve is the worst case for one dieg step (code rounds + render/extract retries of a few scenes).
+var stepReserve = 20
+
 var errBudget = errors.New("call budget reached")
 
 type cfg struct {
@@ -205,7 +208,8 @@ func (t *tracker) totals(arm string) Totals {
 	return x
 }
 
-// check fails with errBudget once plan+a+b+judge calls reach budget-reserve (reserve 0 for the judge itself).
+// check fails with errBudget unless used calls (plan+a+b+judge) + reserve fit in the budget. A step reserves its own
+// worst case plus the judge's calls; the judge itself is exempt (already reserved).
 func (t *tracker) check(reserve int) error {
 	n := 0
 	for _, d := range []string{"plan", "a", "b", "judge"} {
@@ -215,8 +219,8 @@ func (t *tracker) check(reserve int) error {
 		}
 		n += x.Calls
 	}
-	if n >= t.c.budget-reserve {
-		return fmt.Errorf("%w (%d used of %d)", errBudget, n, t.c.budget)
+	if n+reserve > t.c.budget {
+		return fmt.Errorf("%w (%d used + %d reserved of %d)", errBudget, n, reserve, t.c.budget)
 	}
 	return nil
 }
@@ -460,11 +464,44 @@ func writeMetrics(t *tracker, j *judgeOutcome) error {
 	b, err := json.MarshalIndent(map[string]any{
 		"episodes": c.eps, "cut_at_episode": t.cut, "stopped_by": stop, "scenes_per_episode": perEp, "rev_after": included,
 		"judge_status": status, "length_target": lengthLine, "chars_per_episode": chars, "b_missing_scenes": t.bMissing(),
-		"plan_uncharged": c.sum(t.totals("plan")), "A": c.sum(t.totals("a")), "B": c.sum(t.totals("b")), "judge": c.sum(t.totals("judge")),
+		"plan_uncharged": c.sum(t.totals("plan")), "A": t.atCut("A"), "B": t.atCut("B"), "A_total_including_cut_work": c.sum(t.totals("a")), "B_total_including_cut_work": c.sum(t.totals("b")), "judge": c.sum(t.totals("judge")),
 		"revisions": revs,
 	}, "", "  ")
 	if err != nil {
 		return err
 	}
 	return os.WriteFile(filepath.Join(c.out, "summary.json"), b, 0o644)
+}
+
+type cutTotals struct {
+	Calls                             int
+	RealTokens, CacheWeighted, Output int64
+	Errs                              int
+}
+
+// atCut is arm's cumulative totals after its last step that counts: outline, episodes 1..cut and the revisions
+// applied to both arms. Work for an episode or revision that only one arm finished is left out.
+func (t *tracker) atCut(arm string) cutTotals {
+	ok := map[string]bool{"outline": true}
+	for e := 1; e <= t.cut; e++ {
+		ok[fmt.Sprintf("ep%d", e)] = true
+	}
+	for k, d := range t.revDone {
+		ok[fmt.Sprintf("rev%d", k+1)] = d
+	}
+	var r []string
+	for _, row := range t.rows {
+		if row[1] == arm && ok[row[0]] {
+			r = row
+		}
+	}
+	var c cutTotals
+	if r != nil {
+		c.Calls, _ = strconv.Atoi(r[2])
+		c.Errs, _ = strconv.Atoi(r[3])
+		c.RealTokens, _ = strconv.ParseInt(r[4], 10, 64)
+		c.CacheWeighted, _ = strconv.ParseInt(r[5], 10, 64)
+		c.Output, _ = strconv.ParseInt(r[6], 10, 64)
+	}
+	return c
 }
