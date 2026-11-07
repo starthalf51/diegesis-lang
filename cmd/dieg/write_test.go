@@ -41,6 +41,15 @@ func TestNotUnderCorpus(t *testing.T) {
 	}
 }
 
+func TestBadCodeEffortExits2(t *testing.T) {
+	if c := cmdWrite([]string{"idea", "-o", t.TempDir(), "--code-effort", "max"}); c != 2 {
+		t.Errorf("write exit %d", c)
+	}
+	if c := cmdContinue([]string{t.TempDir(), "--ep", "2", "--code-effort", "extreme"}); c != 2 {
+		t.Errorf("continue exit %d", c)
+	}
+}
+
 func TestWriteRejectsUnknownModel(t *testing.T) {
 	if c := cmdWrite([]string{"idea", "-o", t.TempDir(), "--render-model", "nope"}); c != 2 {
 		t.Fatalf("exit %d", c)

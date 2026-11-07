@@ -43,7 +43,6 @@ func Novel(ctx context.Context, cs render.Completers, work string, scenes []rend
 		return nil, err
 	}
 	var rs []SceneResult
-	var novel strings.Builder
 	for _, s := range scenes {
 		s.FreeDialogue = skeleton
 		n0 := 0
@@ -59,15 +58,31 @@ func Novel(ctx context.Context, cs render.Completers, work string, scenes []rend
 			if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".md"), []byte(r.Prose+"\n"), 0o644); err != nil {
 				return rs, err
 			}
-			title := s.Title
-			if title == "" {
-				title = s.ID
-			}
-			novel.WriteString("## " + title + "\n\n" + strings.TrimSpace(r.Prose) + "\n\n")
 		}
 		rs = append(rs, sr)
 	}
-	return rs, os.WriteFile(filepath.Join(out, "novel.md"), []byte(novel.String()), 0o644)
+	return rs, Concat(out, scenes, b.ID)
+}
+
+// Concat writes <out>/novel.md from the scene files <out>/novel/<scene>.<backend>.md in scenes' order (discourse
+// order); a scene without a file is left out.
+func Concat(out string, scenes []render.Scene, backend string) error {
+	var novel strings.Builder
+	for _, s := range scenes {
+		p, err := os.ReadFile(filepath.Join(out, "novel", fileID(s.ID)+"."+backend+".md"))
+		if os.IsNotExist(err) {
+			continue
+		}
+		if err != nil {
+			return err
+		}
+		title := s.Title
+		if title == "" {
+			title = s.ID
+		}
+		novel.WriteString("## " + title + "\n\n" + strings.TrimSpace(string(p)) + "\n\n")
+	}
+	return os.WriteFile(filepath.Join(out, "novel.md"), []byte(novel.String()), 0o644)
 }
 
 // fileID makes a scene id safe as a file name part.

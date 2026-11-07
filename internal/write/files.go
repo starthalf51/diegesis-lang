@@ -166,12 +166,17 @@ func WriteFiles(dir string, files map[string]string) error {
 }
 
 // PackFiles bundles every file under dir in sorted path order, for feeding back to the model.
-func PackFiles(dir string) (string, error) {
+func PackFiles(dir string) (string, error) { return packFiles(dir, nil) }
+
+// packFiles is PackFiles over the paths keep accepts (nil keeps all).
+func packFiles(dir string, keep func(rel string) bool) (string, error) {
 	var paths []string
 	err := filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
 		if err == nil && !d.IsDir() {
 			rel, _ := filepath.Rel(dir, p)
-			paths = append(paths, filepath.ToSlash(rel))
+			if rel = filepath.ToSlash(rel); keep == nil || keep(rel) {
+				paths = append(paths, rel)
+			}
 		}
 		return err
 	})

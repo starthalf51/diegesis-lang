@@ -151,7 +151,7 @@ func (k *counter) Complete(ctx context.Context, system, user string) (render.Res
 	return k.c.Complete(ctx, system, user)
 }
 
-// cmdWrite runs `dieg write <idea.txt | "아이템 문장"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M]`.
+// cmdWrite runs `dieg write <idea.txt | "아이템 문장"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high]`.
 // Exit 1 when the code is not clean after the rounds (nothing rendered), 3 when a rendered scene failed verification.
 // --scenes N renders only the first N shown scenes (to fit a call budget).
 func cmdWrite(args []string) int {
@@ -159,28 +159,15 @@ func cmdWrite(args []string) int {
 	var idea, styles = "", "styles"
 	limit := 0
 	for i := 0; i < len(args); i++ {
+		j, ok, code := commonFlag(args, i, &o, &styles, &limit)
 		switch a := args[i]; {
-		case a == "--no-render":
-			o.Render = false
-		case a == "--skeleton" || a == "--skeleton=true" || a == "--skeleton=false":
-			o.Skeleton = a != "--skeleton=false"
-		case (a == "--rounds" || a == "--scenes") && i+1 < len(args):
+		case code != 0:
+			return code
+		case ok:
+			i = j
+		case (a == "-o") && i+1 < len(args):
 			i++
-			n, err := strconv.Atoi(args[i])
-			if err != nil || n < 1 {
-				return usage()
-			}
-			*map[string]*int{"--rounds": &o.Rounds, "--scenes": &limit}[a] = n
-		case (a == "--code-model" || a == "--render-model" || a == "--extract-model") && i+1 < len(args):
-			i++
-			if err := render.ValidModel(args[i]); err != nil {
-				fmt.Fprintln(os.Stderr, "dieg:", err)
-				return 2
-			}
-			*map[string]*string{"--code-model": &o.CodeModel, "--render-model": &o.RenderModel, "--extract-model": &o.ExtractModel}[a] = args[i]
-		case (a == "-o" || a == "--backend" || a == "--styles") && i+1 < len(args):
-			i++
-			*map[string]*string{"-o": &o.Out, "--backend": &o.Backend, "--styles": &styles}[a] = args[i]
+			o.Out = args[i]
 		case idea == "" && !strings.HasPrefix(a, "-"):
 			idea = a
 		default:
@@ -199,6 +186,66 @@ func cmdWrite(args []string) int {
 		return 1
 	}
 	return code
+}
+
+// commonFlag parses the write/continue flag at args[i]: ok=false when it is not one, code≠0 (usage 2) for a bad
+// value, else the index of its last token. Bad models and efforts exit 2 before any call.
+func commonFlag(args []string, i int, o *write.Opts, styles *string, limit *int) (int, bool, int) {
+	a := args[i]
+	switch {
+	case a == "--no-render":
+		o.Render = false
+	case a == "--skeleton" || a == "--skeleton=true" || a == "--skeleton=false":
+		o.Skeleton = a != "--skeleton=false"
+	case (a == "--rounds" || a == "--scenes") && i+1 < len(args):
+		n, err := strconv.Atoi(args[i+1])
+		if err != nil || n < 1 {
+			return i, false, usage()
+		}
+		*map[string]*int{"--rounds": &o.Rounds, "--scenes": limit}[a] = n
+		return i + 1, true, 0
+	case (a == "--code-model" || a == "--render-model" || a == "--extract-model") && i+1 < len(args):
+		if err := render.ValidModel(args[i+1]); err != nil {
+			fmt.Fprintln(os.Stderr, "dieg:", err)
+			return i, false, 2
+		}
+		*map[string]*string{"--code-model": &o.CodeModel, "--render-model": &o.RenderModel, "--extract-model": &o.ExtractModel}[a] = args[i+1]
+		return i + 1, true, 0
+	case a == "--code-effort" && i+1 < len(args):
+		if e := args[i+1]; e != "low" && e != "medium" && e != "high" {
+			fmt.Fprintf(os.Stderr, "dieg: --code-effort %q: want low, medium or high\n", e)
+			return i, false, 2
+		}
+		o.CodeEffort = args[i+1]
+		return i + 1, true, 0
+	case (a == "--backend" || a == "--styles") && i+1 < len(args):
+		*map[string]*string{"--backend": &o.Backend, "--styles": styles}[a] = args[i+1]
+		return i + 1, true, 0
+	default:
+		return i, false, 0
+	}
+	return i, true, 0
+}
+
+// meters builds the metered completers: coding on o.CodeModel at o.CodeEffort, render and extract on their own
+// models, all logged into one Meter writing f and counted in one counter.
+func meters(o write.Opts, f io.Writer) (*render.Meter, render.Completers, *counter) {
+	k := &counter{c: render.NewClaudeCLIWith(o.CodeModel, o.CodeEffort), n: new(atomic.Int64)}
+	m := render.NewMeter(k, f)
+	cs := render.Completers{
+		Render:  m.With(&counter{c: render.NewClaudeCLIWith(o.RenderModel, "medium"), n: k.n}),
+		Extract: m.With(&counter{c: render.NewClaudeCLIWith(o.ExtractModel, "low"), n: k.n}),
+	}
+	return m, cs, k
+}
+
+// summaryLine prints "<cmd>: rounds=… clean=… scenes=… failed=… calls=… tokens …".
+func summaryLine(cmd string, m *render.Meter, k *counter, out string) func(write.Result, int, []string) {
+	return func(res write.Result, scenes int, failed []string) {
+		t := m.Total()
+		fmt.Printf("%s: rounds=%d clean=%t scenes=%d failed=%d%v calls=%d tokens in=%d out=%d cache_read=%d cache_write=%d → %s\n",
+			cmd, res.Rounds, res.Clean, scenes, len(failed), failed, k.n.Load(), t.Input, t.Output, t.CacheRead, t.CacheWrite, out)
+	}
 }
 
 func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
@@ -224,37 +271,17 @@ func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
 		return 1, err
 	}
 	defer f.Close()
-	k := &counter{c: render.NewClaudeCLIWith(o.CodeModel, "high"), n: new(atomic.Int64)}
-	m := render.NewMeter(k, f)
-	// render and extract run on their own models but log into the same Meter and count in the same counter.
-	cs := render.Completers{
-		Render:  m.With(&counter{c: render.NewClaudeCLIWith(o.RenderModel, "medium"), n: k.n}),
-		Extract: m.With(&counter{c: render.NewClaudeCLIWith(o.ExtractModel, "low"), n: k.n}),
-	}
+	m, cs, k := meters(o, f)
 	o.Reserved = corpusWorks()
 	ctx := context.Background()
-	summary := func(res write.Result, scenes int, failed []string) {
-		t := m.Total()
-		fmt.Printf("write: rounds=%d clean=%t scenes=%d failed=%d%v calls=%d tokens in=%d out=%d cache_read=%d cache_write=%d → %s\n",
-			res.Rounds, res.Clean, scenes, len(failed), failed, k.n.Load(), t.Input, t.Output, t.CacheRead, t.CacheWrite, o.Out)
-	}
+	summary := summaryLine("write", m, k, o.Out)
 	res, err := write.Loop(ctx, m, writeChecker(o.Reserved), idea, refs, o)
 	if err != nil {
 		summary(res, 0, nil)
 		return 1, err
 	}
-	if !res.Clean {
-		for _, d := range res.Diags {
-			if d.Blocking() {
-				fmt.Fprintln(os.Stderr, d)
-			}
-		}
-		summary(res, 0, nil)
-		return 1, nil
-	}
-	if !o.Render {
-		summary(res, 0, nil)
-		return 0, nil
+	if code, done := uncleanOrNoRender(res, o, summary); done {
+		return code, nil
 	}
 	work, ss, err := shownScenes(ctx, res.Dir)
 	if err != nil {
@@ -264,7 +291,35 @@ func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
 	if limit > 0 && limit < len(ss) {
 		ss = ss[:limit]
 	}
+	return renderAll(ctx, cs, work, ss, b, o, res, summary, nil)
+}
+
+// uncleanOrNoRender ends a run that is not clean (exit 1, blocking diags on stderr) or not rendering (exit 0).
+func uncleanOrNoRender(res write.Result, o write.Opts, summary func(write.Result, int, []string)) (int, bool) {
+	if !res.Clean {
+		for _, d := range res.Diags {
+			if d.Blocking() {
+				fmt.Fprintln(os.Stderr, d)
+			}
+		}
+		summary(res, 0, nil)
+		return 1, true
+	}
+	if !o.Render {
+		summary(res, 0, nil)
+		return 0, true
+	}
+	return 0, false
+}
+
+// renderAll renders ss into o.Out, reports each scene on stderr, and when all is non-nil re-concatenates novel.md
+// over all (every shown scene, discourse order). Exit 3 when a scene failed verification.
+func renderAll(ctx context.Context, cs render.Completers, work string, ss []render.Scene, b render.Backend, o write.Opts,
+	res write.Result, summary func(write.Result, int, []string), all []render.Scene) (int, error) {
 	rs, err := write.Novel(ctx, cs, work, ss, b, o.Out, o.Skeleton)
+	if err == nil && all != nil {
+		err = write.Concat(o.Out, all, b.ID)
+	}
 	if err != nil {
 		summary(res, len(rs), nil)
 		return 1, err

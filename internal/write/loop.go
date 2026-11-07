@@ -41,10 +41,12 @@ type Opts struct {
 	Reserved                             []string // work ids the model must not take (corpus works); listed in the prompt
 	CodeModel, RenderModel, ExtractModel string   // model per role; DefaultOpts fills them
 	Skeleton                             bool     // code carries events only; the renderer writes the dialogue
+	CodeEffort                           string   // claude --effort for coding calls: low, medium or high
+	Digest                               string   // ContinueLoop only: the PG state digest of the story so far
 }
 
 func DefaultOpts() Opts {
-	return Opts{Rounds: 4, Backend: "ko-haera", Render: true, Skeleton: true,
+	return Opts{Rounds: 4, Backend: "ko-haera", Render: true, Skeleton: true, CodeEffort: "medium",
 		CodeModel: "claude-opus-5-5", RenderModel: "claude-sonnet-5-5", ExtractModel: "claude-sonnet-5-5"}
 }
 
@@ -55,6 +57,7 @@ type Result struct {
 	Clean  bool
 	Diags  []Diag
 	Dir    string
+	Scenes []string // ContinueLoop only: scene ids the accepted episode files declare, in file order
 }
 
 // label tags c's calls when c is a Meter.
