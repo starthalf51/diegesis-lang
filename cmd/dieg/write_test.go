@@ -126,3 +126,35 @@ type fakeC struct{ s string }
 func (f fakeC) Complete(context.Context, string, string) (render.Result, error) {
 	return render.Result{Text: f.s, StopReason: "end_turn"}, nil
 }
+
+func TestRendererFlagValidation(t *testing.T) {
+	for _, bad := range [][]string{{"--renderer", "foo"}, {"--beat-retries", "-1"}, {"--beat-retries", "x"}} {
+		if c := cmdWrite(append([]string{"idea", "-o", t.TempDir()}, bad...)); c != 2 {
+			t.Errorf("write %v exit %d", bad, c)
+		}
+		if c := cmdContinue(append([]string{t.TempDir(), "--ep", "2"}, bad...)); c != 2 {
+			t.Errorf("continue %v exit %d", bad, c)
+		}
+		if c := cmdRevise(append([]string{t.TempDir(), "요청"}, bad...)); c != 2 {
+			t.Errorf("revise %v exit %d", bad, c)
+		}
+	}
+}
+
+func TestRendererFlagParses(t *testing.T) {
+	o, styles, limit := write.DefaultOpts(), "", 0
+	if o.Renderer != "single" || o.BeatRetries != 2 {
+		t.Fatalf("defaults %q %d", o.Renderer, o.BeatRetries)
+	}
+	args := []string{"--renderer", "layered", "--beat-retries", "0"}
+	for i := 0; i < len(args); i++ {
+		j, ok, code := commonFlag(args, i, &o, &styles, &limit)
+		if !ok || code != 0 {
+			t.Fatalf("%s: ok=%t code=%d", args[i], ok, code)
+		}
+		i = j
+	}
+	if o.Renderer != "layered" || o.BeatRetries != 0 {
+		t.Fatalf("%q %d", o.Renderer, o.BeatRetries)
+	}
+}

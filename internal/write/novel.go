@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"diegesis/internal/narrate"
 	"diegesis/internal/render"
 )
 
@@ -34,31 +35,59 @@ func (l *sceneLabeler) Complete(ctx context.Context, system, user string) (rende
 	return label(l.c, l.kind+l.scene+"-a"+strconv.Itoa(*l.attempt)).Complete(ctx, system, user)
 }
 
-// Novel renders scenes (already in discourse order) with RenderVerified2 and writes <out>/novel/<scene>.<backend>.md
-// and the concatenation <out>/novel.md. A scene that fails verification keeps its last render; a scene whose
-// call fails gets no file. Neither stops the rest.
-func Novel(ctx context.Context, cs render.Completers, work string, scenes []render.Scene, b render.Backend, out string, skeleton bool) ([]SceneResult, error) {
+// sceneHash is what Rerender compares to find stale prose: render.RenderHash, prefixed "layered:" for the layered
+// renderer so that switching --renderer re-renders every scene.
+func sceneHash(s render.Scene, b render.Backend, renderer string) (string, error) {
+	h, err := render.RenderHash(s, b)
+	if err == nil && renderer == "layered" {
+		h = "layered:" + h
+	}
+	return h, err
+}
+
+// sceneReport is <scene>.<backend>.report.json: the verify report, plus the layer stats for the layered renderer.
+type sceneReport struct {
+	render.Report
+	Layers *narrate.LayerStats `json:"layers,omitempty"`
+}
+
+func renderScene(ctx context.Context, cs render.Completers, work string, s render.Scene, b render.Backend, o Opts) (render.Render, int, *narrate.LayerStats, error) {
+	if o.Renderer == "layered" {
+		no := narrate.DefaultOpts()
+		no.BeatRetries = o.BeatRetries
+		r, st, err := narrate.RenderLayered(ctx, narrate.Roles{Beat: cs.Render, Verify: cs.Extract, Style: cs.Render, Stitch: cs.Render}, work, s, b, no)
+		return r, 1, &st, err
+	}
+	n0 := 0
+	r, n, err := render.RenderVerified2(ctx, render.Completers{Render: &sceneLabeler{c: cs.Render, scene: s.ID, kind: "render-", attempt: &n0}, Extract: &sceneLabeler{c: cs.Extract, scene: s.ID, kind: "extract-", attempt: &n0}}, work, s, b, render.VerifyOpts{K: 1, Retries: 2})
+	return r, n, nil, err
+}
+
+// Novel renders scenes (already in discourse order) with RenderVerified2, or narrate.RenderLayered when o.Renderer is
+// "layered", and writes <out>/novel/<scene>.<backend>.md and the concatenation <out>/novel.md. A scene that fails
+// verification keeps its last render; a scene whose call fails gets no file. Neither stops the rest.
+// o.Skeleton sets Scene.FreeDialogue.
+func Novel(ctx context.Context, cs render.Completers, work string, scenes []render.Scene, b render.Backend, out string, o Opts) ([]SceneResult, error) {
 	dir := filepath.Join(out, "novel")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, err
 	}
 	var rs []SceneResult
 	for _, s := range scenes {
-		s.FreeDialogue = skeleton
-		n0 := 0
-		r, n, err := render.RenderVerified2(ctx, render.Completers{Render: &sceneLabeler{c: cs.Render, scene: s.ID, kind: "render-", attempt: &n0}, Extract: &sceneLabeler{c: cs.Extract, scene: s.ID, kind: "extract-", attempt: &n0}}, work, s, b, render.VerifyOpts{K: 1, Retries: 2})
+		s.FreeDialogue = o.Skeleton
+		r, n, st, err := renderScene(ctx, cs, work, s, b, o)
 		sr := SceneResult{ID: s.ID, Attempts: n, Err: err}
 		if err == nil {
 			sr.Pass = render.Passed(r)
 			sr.Report = r.Report
-			rep, _ := json.MarshalIndent(r.Report, "", "  ")
+			rep, _ := json.MarshalIndent(sceneReport{r.Report, st}, "", "  ")
 			if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".report.json"), append(rep, '\n'), 0o644); err != nil {
 				return rs, err
 			}
 			if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".md"), []byte(r.Prose+"\n"), 0o644); err != nil {
 				return rs, err
 			}
-			if h, err := render.RenderHash(s, b); err == nil { // what Rerender compares to find stale prose
+			if h, err := sceneHash(s, b, o.Renderer); err == nil {
 				if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".hash"), []byte(h+"\n"), 0o644); err != nil {
 					return rs, err
 				}

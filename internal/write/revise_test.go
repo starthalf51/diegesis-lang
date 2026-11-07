@@ -1,6 +1,7 @@
 package write
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -135,7 +136,7 @@ func TestReviseRendersOnlyChanged(t *testing.T) {
 	seedNovel(t, out, b, s1, s2, mk("s3", ""))
 	rc := &fakeLLM{replies: []string{"산문"}}
 	xc := &fakeLLM{replies: []string{"{}"}}
-	rr, err := Rerender(ctx, render.Completers{Render: rc, Extract: xc}, "w", []render.Scene{s1, s2b, s4}, b, out, false, 0)
+	rr, err := Rerender(ctx, render.Completers{Render: rc, Extract: xc}, "w", []render.Scene{s1, s2b, s4}, b, out, Opts{}, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +181,7 @@ func TestRerenderPicksUpBacklog(t *testing.T) {
 	now := []render.Scene{mk("s1", "X"), mk("s2", "X"), mk("s3", "X")}
 	run := func(limit int) RerenderResult {
 		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
-		rr, err := Rerender(ctx, cs, "w", now, b, out, false, limit)
+		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{}, limit)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -327,5 +328,47 @@ func TestSwapDirDoubleFailureNamesOld(t *testing.T) {
 	err := swapDir(d, map[string]string{"b.dieg.md": "y"})
 	if err == nil || !strings.Contains(err.Error(), "previous story kept at "+d+".old") {
 		t.Fatalf("%v", err)
+	}
+}
+
+func TestNovelUsesLayered(t *testing.T) {
+	b, mk, _ := rerenderFixture(t)
+	for _, mode := range []string{"layered", "single"} {
+		var buf bytes.Buffer
+		m := render.NewMeter(&fakeLLM{replies: []string{"산문"}}, &buf)
+		if _, err := Novel(ctx, render.Completers{Render: m, Extract: m}, "w", []render.Scene{mk("s1", "")}, b, t.TempDir(), Opts{Renderer: mode, BeatRetries: 0}); err != nil {
+			t.Fatal(err)
+		}
+		has := strings.Contains(buf.String(), `"label":"beat-s1-b1-a1"`) && strings.Contains(buf.String(), `"label":"final-s1"`)
+		if has != (mode == "layered") || (mode == "single") == !strings.Contains(buf.String(), `"label":"render-s1-a1"`) {
+			t.Errorf("%s calls:\n%s", mode, buf.String())
+		}
+	}
+}
+
+// Switching --renderer makes every scene stale; the same mode again renders nothing.
+func TestRendererSwitchMakesStale(t *testing.T) {
+	b, mk, out := rerenderFixture(t)
+	seedNovel(t, out, b, mk("s1", ""), mk("s2", ""))
+	now := []render.Scene{mk("s1", ""), mk("s2", "")}
+	run := func(mode string) RerenderResult {
+		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
+		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{Renderer: mode}, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return rr
+	}
+	if rr := run("single"); len(rr.Changed)+len(rr.Added) != 0 {
+		t.Fatalf("single over single %+v", rr)
+	}
+	if rr := run("layered"); len(rr.Changed) != 2 {
+		t.Fatalf("layered over single %+v", rr)
+	}
+	if rr := run("layered"); len(rr.Changed) != 0 {
+		t.Fatalf("layered again %+v", rr)
+	}
+	if rr := run("single"); len(rr.Changed) != 2 {
+		t.Fatalf("single over layered %+v", rr)
 	}
 }

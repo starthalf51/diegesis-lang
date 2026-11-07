@@ -43,10 +43,12 @@ type Opts struct {
 	Skeleton                             bool     // code carries events only; the renderer writes the dialogue
 	CodeEffort                           string   // claude --effort for coding calls: low, medium or high
 	Digest                               string   // ContinueLoop only: the PG state digest of the story so far
+	Renderer                             string   // "single" (render.RenderVerified2) or "layered" (narrate.RenderLayered)
+	BeatRetries                          int      // layered only: re-writes per failed beat
 }
 
 func DefaultOpts() Opts {
-	return Opts{Rounds: 4, Backend: "ko-haera", Render: true, Skeleton: true, CodeEffort: "medium",
+	return Opts{Rounds: 4, Backend: "ko-haera", Render: true, Skeleton: true, CodeEffort: "medium", Renderer: "single", BeatRetries: 2,
 		CodeModel: "claude-opus-5-5", RenderModel: "claude-sonnet-5-5", ExtractModel: "claude-sonnet-5-5"}
 }
 

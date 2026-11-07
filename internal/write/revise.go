@@ -300,21 +300,26 @@ type RerenderResult struct {
 
 // Rerender brings the prose in out/novel up to date with all (every shown scene of the story, discourse order):
 // a scene is stale when its stored <scene>.<backend>.hash is missing (Added) or differs from its current RenderHash
-// (Changed). Stale scenes are rendered (limit > 0 caps this run to the first limit; the rest stay stale and the next
+// (Changed; the hash includes the renderer mode). Stale scenes are rendered (limit > 0 caps this run to the first limit; the rest stay stale and the next
 // run picks them up), prose files of scenes no longer in all are deleted (Removed), and novel.md is rebuilt.
 // A scene whose render call failed gets no hash, so it is retried; one that rendered but failed verification keeps
 // its hash (its report.json says so).
-func Rerender(ctx context.Context, cs render.Completers, work string, all []render.Scene, b render.Backend, out string, skeleton bool, limit int) (RerenderResult, error) {
+func Rerender(ctx context.Context, cs render.Completers, work string, all []render.Scene, b render.Backend, out string, o Opts, limit int) (RerenderResult, error) {
 	cur := make([]render.Scene, len(all))
 	copy(cur, all)
 	live := map[string]bool{}
 	for i := range cur {
-		cur[i].FreeDialogue = skeleton // Novel renders (and hashes) with this
+		cur[i].FreeDialogue = o.Skeleton // Novel renders (and hashes) with this
 		live[fileID(cur[i].ID)] = true
 	}
 	after, err := SceneHashes(cur, b)
 	if err != nil {
 		return RerenderResult{}, err
+	}
+	for id, h := range after { // the stored hash carries the renderer mode (sceneHash)
+		if o.Renderer == "layered" {
+			after[id] = "layered:" + h
+		}
 	}
 	dir := filepath.Join(out, "novel")
 	before := map[string]string{}
@@ -343,7 +348,7 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 	if limit > 0 && limit < len(ss) {
 		ss = ss[:limit]
 	}
-	rr.Scenes, err = Novel(ctx, cs, work, ss, b, out, skeleton)
+	rr.Scenes, err = Novel(ctx, cs, work, ss, b, out, o)
 	if err == nil {
 		err = Concat(out, cur, b.ID)
 	}

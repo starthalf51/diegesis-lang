@@ -161,7 +161,7 @@ func TestNovelLabelsAndFiles(t *testing.T) {
 	out := t.TempDir()
 	// Every extraction is unparseable, so verification never passes: 3 renders + 3 extractions, then give up.
 	m := render.NewMeter(&fakeLLM{replies: []string{"산문1", "not json", "산문2", "not json", "산문3", "not json"}}, &buf)
-	rs, err := Novel(ctx, render.Completers{Render: m, Extract: m}, "w", []render.Scene{s}, bs[0], out, false)
+	rs, err := Novel(ctx, render.Completers{Render: m, Extract: m}, "w", []render.Scene{s}, bs[0], out, Opts{})
 	if err != nil || len(rs) != 1 || rs[0].Pass || rs[0].Attempts != 3 {
 		t.Fatalf("%+v %v", rs, err)
 	}
