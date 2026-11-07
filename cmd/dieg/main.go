@@ -51,6 +51,9 @@ func main() {
 	if args[0] == "continue" {
 		os.Exit(cmdContinue(args[1:]))
 	}
+	if args[0] == "revise" {
+		os.Exit(cmdRevise(args[1:]))
+	}
 	if args[0] == "lint" {
 		os.Exit(cmdLint(args[1:]))
 	}
