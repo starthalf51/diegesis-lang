@@ -58,10 +58,38 @@ dieg write "아이템 한 문장" -o out/story1
 
 종료 코드: `0` 코드가 깨끗하고 모든 장면이 검증 통과(`--no-render` 면 코드만 깨끗), `1` 라운드가 끝나도 error·warn 진단이 남음(warn 도 막는다 — 사물 위치·거짓 공개 린트 포함, 렌더하지 않음) 또는 입력·실행 오류, `3` 렌더한 장면 중 검증 실패가 있음(마지막 렌더는 소설에 들어간다). 장면은 환각 0 일 때만 통과한다(ADR-019).
 
+## 이어 쓰기와 수정: `dieg continue` · `dieg revise`
+
+```sh
+dieg continue out/story1 --ep 2 [--brief "다음 화 방향" | --brief-file f] [--rounds N] [--scenes N] [--no-render]
+dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--no-render]
+```
+
+- `continue`: `dieg write -o <dir>` 로 만든 폴더에 다음 화(`story/epNN/`)를 더한다. AI 는 앞 화 전문이 아니라 PG 가 만든 **상태 요약**(참인 사실, 누가 무엇을 믿는지, 독자에게 아직 숨긴 것)을 입력으로 받는다. 과거 화 파일은 바뀌지 않는다(기존 경로를 건드린 묶음은 거부). 새 화의 장면만 렌더한다.
+- `revise`: 요청대로 `story/` 를 고친다(파일 삭제 가능). 복사본에서 검사·린트 루프를 돌고, 깨끗할 때만 `story/` 를 원자적으로 바꾼다. 렌더 입력이 바뀐 장면과 새 장면만 다시 렌더한다(장면별 해시를 디스크에 둔다).
+- 두 명령 모두 `write` 와 같은 모델·효과 플래그를 받는다. 종료 코드도 같다.
+
+## 모델·효과·뼈대 모드
+
+| 플래그 | 뜻 |
+|---|---|
+| `--code-model M` | 코딩 모델(기본 `claude-opus-5-5`) |
+| `--render-model M` | 렌더 모델(기본 `claude-sonnet-5-5`) |
+| `--extract-model M` | 재추출 모델(기본 `claude-sonnet-5-5`) |
+| `--code-effort e` | 코딩 추론 효과 `low`/`medium`/`high`(기본 `medium`) |
+| `--skeleton` | 뼈대 모드: 코드는 대사를 쓰지 않고 렌더러가 대사를 쓴다 |
+
+- 없는 모델 ID·효과 값은 첫 호출에서 실패한다(조용히 기본값으로 바뀌지 않는다).
+- 뼈대 모드는 `FreeDialogue` 옵트인이다. 코퍼스 장면의 렌더 프롬프트·캐시는 바이트 단위로 그대로다.
+- **동작 변경:** `dieg render --verify` 의 기본 모델이 sonnet 이 되었다(`--render-model`·`--extract-model` 로 바꾼다).
+- 비용 측정: 뼈대 모드만으로는 코드 출력 토큰이 약 2% 줄었다(출력의 대부분이 추론 토큰). `--code-effort medium` 은 high 대비 코드 출력이 약 55% 적었고 깨끗해지는 라운드 수는 늘지 않았다.
+
 ## 측정 결과
 
 직접 쓰기(A) 대 `dieg write`(B)는 [`examples/bench/README.md`](examples/bench/README.md) 에 있다.
 짧은 아이템에서 B 는 캐시 가중 input 토큰이 A 의 2.7–2.8배라 "더 싸다"는 지지되지 않고, 일관성(오류 수)은 3:1 과 2:2 로 섞여 있다. 아이템 3개·판정 1회라 통계가 아니라 사례다.
+
+연재(12화 계획, 11화에서 잘림, 수정 2회)는 [`examples/serial/README.md`](examples/serial/README.md) 에 있다. 가설은 서지 않았다: 오류는 원 수치로 B 3 대 A 4 지만 1만 자당으로는 B 1.24 대 A 0.89 (미충족), 가중 입력 토큰은 B 가 A 의 1.89배 (가격 기준은 단가표가 없어 미정), 수정 잔여는 B 4 대 A 1 (미충족). 아이템 1개·판정 1회다.
 
 ## 대시보드(Grafana)
 
@@ -101,10 +129,11 @@ go vet ./...
 
 ## 버전
 
-[SemVer](https://semver.org/lang/ko/)(`MAJOR.MINOR.PATCH`)를 따른다. 1.0 전(0.x)에는 문법과 IR 이 MINOR 판에서 바뀔 수 있다. 판은 git 태그(`v0.3.0`)로 붙이고 `dieg version` 이 출력한다.
+[SemVer](https://semver.org/lang/ko/)(`MAJOR.MINOR.PATCH`)를 따른다. 1.0 전(0.x)에는 문법과 IR 이 MINOR 판에서 바뀔 수 있다. 판은 git 태그(`v0.4.0`)로 붙이고 `dieg version` 이 출력한다.
 
 | 판 | 내용 |
 |---|---|
 | v0.1.0 | 플랜 1: 컴파일러, PG 판정, 린트, 렌더러 4종, 4편 합격 |
 | v0.2.0 | 플랜 2: 정답 셋 3편, 시간 변이, 속성, 독자 모델, 패턴 9종, 지표, Grafana 대시보드 |
 | v0.3.0 | 플랜 3: 거짓 사실 표시, 검증 렌더, 호출 계량(Meter), 사물 위치·거짓 공개 린트, `dieg write`, 직접 쓰기 대 Diegesis 측정 |
+| v0.4.0 | 플랜 4: 역할별 모델·`--code-effort`, 뼈대 모드(`--skeleton`), `dieg continue`, `dieg revise`, 연재 측정 하네스(`tools/serial`). `render --verify` 기본 모델 sonnet |
