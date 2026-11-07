@@ -1,6 +1,7 @@
 package main
 
 import (
+	"diegesis/internal/write"
 	"context"
 	"fmt"
 	"io"
@@ -53,15 +54,24 @@ func backend(dir, id string) (render.Backend, error) {
 	return render.Backend{}, fmt.Errorf("no backend %q in %s", id, dir)
 }
 
-// cmdRender runs `dieg render <work|dir> <scene> --backend <id> [--verify] [--retries N] [-o file] [--styles dir]`: 산문을 낸다.
+// cmdRender runs `dieg render <work|dir> <scene> --backend <id> [--verify] [--retries N] [--render-model M] [--extract-model M] [-o file] [--styles dir]`: 산문을 낸다.
 // --verify 면 재추출·대조·피드백 재렌더(최대 1+retries 회)를 거치고, 통과하지 못하면 산문은 쓰되 3 으로 끝난다.
 func cmdRender(args []string) int {
 	var pos []string
 	id, out, styles, verify, retries := "", "", "styles", false, 2
+	dw := write.DefaultOpts()
+	rm, xm := dw.RenderModel, dw.ExtractModel
 	for i := 0; i < len(args); i++ {
 		switch a := args[i]; {
 		case a == "--verify":
 			verify = true
+		case (a == "--render-model" || a == "--extract-model") && i+1 < len(args):
+			i++
+			if err := render.ValidModel(args[i]); err != nil {
+				fmt.Fprintln(os.Stderr, "dieg:", err)
+				return 2
+			}
+			*map[string]*string{"--render-model": &rm, "--extract-model": &xm}[a] = args[i]
 		case a == "--retries" && i+1 < len(args):
 			i++
 			n, err := strconv.Atoi(args[i])
@@ -81,7 +91,7 @@ func cmdRender(args []string) int {
 	if len(pos) != 2 || id == "" {
 		return usage()
 	}
-	pass, err := renderOnce(pos[0], pos[1], id, out, styles, verify, retries)
+	pass, err := renderOnce(pos[0], pos[1], id, out, styles, verify, retries, rm, xm)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
@@ -93,7 +103,7 @@ func cmdRender(args []string) int {
 }
 
 // renderOnce 는 pass=false 여도 산문은 쓴다(--verify 가 상한까지 가도 통과 못 한 경우).
-func renderOnce(target, scene, id, out, styles string, verify bool, retries int) (bool, error) {
+func renderOnce(target, scene, id, out, styles string, verify bool, retries int, rm, xm string) (bool, error) {
 	b, err := backend(styles, id)
 	if err != nil {
 		return false, err
@@ -105,7 +115,7 @@ func renderOnce(target, scene, id, out, styles string, verify bool, retries int)
 	var text string
 	pass := true
 	if verify {
-		r, n, err := render.RenderVerified(context.Background(), render.NewClaudeCLI(), target, s, b, render.VerifyOpts{K: 1, Retries: retries})
+		r, n, err := render.RenderVerified2(context.Background(), render.Completers{Render: render.NewClaudeCLIWith(rm, "medium"), Extract: render.NewClaudeCLIWith(xm, "low")}, target, s, b, render.VerifyOpts{K: 1, Retries: retries})
 		if err != nil {
 			return false, err
 		}

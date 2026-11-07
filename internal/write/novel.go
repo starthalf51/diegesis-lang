@@ -21,26 +21,23 @@ type SceneResult struct {
 }
 
 // sceneLabeler tags render calls render-<scene>-a<n> and the extraction calls that follow extract-<scene>-a<n>.
-// A call is a render when its system prompt is the backend's render system prompt.
 type sceneLabeler struct {
-	c          render.Completer
-	scene, sys string
-	attempt    int
+	c           render.Completer
+	scene, kind string // kind: "render-" bumps the shared attempt counter, "extract-" reuses it
+	attempt     *int
 }
 
 func (l *sceneLabeler) Complete(ctx context.Context, system, user string) (render.Result, error) {
-	kind := "extract-"
-	if system == l.sys {
-		l.attempt++
-		kind = "render-"
+	if l.kind == "render-" {
+		*l.attempt++
 	}
-	return label(l.c, kind+l.scene+"-a"+strconv.Itoa(l.attempt)).Complete(ctx, system, user)
+	return label(l.c, l.kind+l.scene+"-a"+strconv.Itoa(*l.attempt)).Complete(ctx, system, user)
 }
 
-// Novel renders scenes (already in discourse order) with RenderVerified and writes <out>/novel/<scene>.<backend>.md
+// Novel renders scenes (already in discourse order) with RenderVerified2 and writes <out>/novel/<scene>.<backend>.md
 // and the concatenation <out>/novel.md. A scene that fails verification keeps its last render; a scene whose
 // call fails gets no file. Neither stops the rest.
-func Novel(ctx context.Context, c render.Completer, work string, scenes []render.Scene, b render.Backend, out string) ([]SceneResult, error) {
+func Novel(ctx context.Context, cs render.Completers, work string, scenes []render.Scene, b render.Backend, out string) ([]SceneResult, error) {
 	dir := filepath.Join(out, "novel")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, err
@@ -48,11 +45,8 @@ func Novel(ctx context.Context, c render.Completer, work string, scenes []render
 	var rs []SceneResult
 	var novel strings.Builder
 	for _, s := range scenes {
-		sys, _, err := b.Prompt(s)
-		if err != nil {
-			return rs, err
-		}
-		r, n, err := render.RenderVerified(ctx, &sceneLabeler{c: c, scene: s.ID, sys: sys}, work, s, b, render.VerifyOpts{K: 1, Retries: 2})
+		n0 := 0
+		r, n, err := render.RenderVerified2(ctx, render.Completers{Render: &sceneLabeler{c: cs.Render, scene: s.ID, kind: "render-", attempt: &n0}, Extract: &sceneLabeler{c: cs.Extract, scene: s.ID, kind: "extract-", attempt: &n0}}, work, s, b, render.VerifyOpts{K: 1, Retries: 2})
 		sr := SceneResult{ID: s.ID, Attempts: n, Err: err}
 		if err == nil {
 			sr.Pass = render.Passed(r)

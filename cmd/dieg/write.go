@@ -143,7 +143,7 @@ func shownScenes(ctx context.Context, dir string) (string, []render.Scene, error
 // counter counts the calls that actually reach the model, to check calls.jsonl against.
 type counter struct {
 	c render.Completer
-	n atomic.Int64
+	n *atomic.Int64
 }
 
 func (k *counter) Complete(ctx context.Context, system, user string) (render.Result, error) {
@@ -151,7 +151,7 @@ func (k *counter) Complete(ctx context.Context, system, user string) (render.Res
 	return k.c.Complete(ctx, system, user)
 }
 
-// cmdWrite runs `dieg write <idea.txt | "아이템 문장"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir]`.
+// cmdWrite runs `dieg write <idea.txt | "아이템 문장"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M]`.
 // Exit 1 when the code is not clean after the rounds (nothing rendered), 3 when a rendered scene failed verification.
 // --scenes N renders only the first N shown scenes (to fit a call budget).
 func cmdWrite(args []string) int {
@@ -169,6 +169,13 @@ func cmdWrite(args []string) int {
 				return usage()
 			}
 			*map[string]*int{"--rounds": &o.Rounds, "--scenes": &limit}[a] = n
+		case (a == "--code-model" || a == "--render-model" || a == "--extract-model") && i+1 < len(args):
+			i++
+			if err := render.ValidModel(args[i]); err != nil {
+				fmt.Fprintln(os.Stderr, "dieg:", err)
+				return 2
+			}
+			*map[string]*string{"--code-model": &o.CodeModel, "--render-model": &o.RenderModel, "--extract-model": &o.ExtractModel}[a] = args[i]
 		case (a == "-o" || a == "--backend" || a == "--styles") && i+1 < len(args):
 			i++
 			*map[string]*string{"-o": &o.Out, "--backend": &o.Backend, "--styles": &styles}[a] = args[i]
@@ -215,8 +222,13 @@ func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
 		return 1, err
 	}
 	defer f.Close()
-	k := &counter{c: render.NewClaudeCLI()}
+	k := &counter{c: render.NewClaudeCLIWith(o.CodeModel, "high"), n: new(atomic.Int64)}
 	m := render.NewMeter(k, f)
+	// render and extract run on their own models but log into the same Meter and count in the same counter.
+	cs := render.Completers{
+		Render:  m.With(&counter{c: render.NewClaudeCLIWith(o.RenderModel, "medium"), n: k.n}),
+		Extract: m.With(&counter{c: render.NewClaudeCLIWith(o.ExtractModel, "low"), n: k.n}),
+	}
 	o.Reserved = corpusWorks()
 	ctx := context.Background()
 	summary := func(res write.Result, scenes int, failed []string) {
@@ -250,7 +262,7 @@ func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
 	if limit > 0 && limit < len(ss) {
 		ss = ss[:limit]
 	}
-	rs, err := write.Novel(ctx, m, work, ss, b, o.Out)
+	rs, err := write.Novel(ctx, cs, work, ss, b, o.Out)
 	if err != nil {
 		summary(res, len(rs), nil)
 		return 1, err

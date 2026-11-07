@@ -34,14 +34,18 @@ func (d Diag) Blocking() bool { return d.Severity == "error" || d.Severity == "w
 type Checker func(ctx context.Context, dir string) (diags []Diag, err error)
 
 type Opts struct {
-	Rounds   int
-	Backend  string
-	Render   bool // not used by Loop (it never renders); the CLI reads it
-	Out      string
-	Reserved []string // work ids the model must not take (corpus works); listed in the prompt
+	Rounds                               int
+	Backend                              string
+	Render                               bool // not used by Loop (it never renders); the CLI reads it
+	Out                                  string
+	Reserved                             []string // work ids the model must not take (corpus works); listed in the prompt
+	CodeModel, RenderModel, ExtractModel string   // model per role; DefaultOpts fills them
 }
 
-func DefaultOpts() Opts { return Opts{Rounds: 4, Backend: "ko-haera", Render: true} }
+func DefaultOpts() Opts {
+	return Opts{Rounds: 4, Backend: "ko-haera", Render: true,
+		CodeModel: "claude-opus-5-5", RenderModel: "claude-sonnet-5-5", ExtractModel: "claude-sonnet-5-5"}
+}
 
 // Result: Rounds used, whether the last code is clean, its diagnostics (the blocking ones and any info),
 // and Dir = <out>/story holding the last well-formed code.

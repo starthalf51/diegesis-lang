@@ -18,6 +18,13 @@ func Passed(r Render) bool {
 // 사용자 프롬프트 끝에 피드백으로 붙는다. 상한에 닿으면 마지막 렌더를 nil 오류로 돌려준다(통과 여부는 Passed 로 본다).
 // Completer 오류는 그대로 돌려준다.
 func RenderVerified(ctx context.Context, c Completer, work string, s Scene, b Backend, o VerifyOpts) (Render, int, error) {
+	return RenderVerified2(ctx, Completers{c, c}, work, s, b, o)
+}
+
+// Completers 는 역할별 모델: 렌더 호출은 Render, 재추출 호출은 Extract 로 간다.
+type Completers struct{ Render, Extract Completer }
+
+func RenderVerified2(ctx context.Context, cs Completers, work string, s Scene, b Backend, o VerifyOpts) (Render, int, error) {
 	if o.K < 1 {
 		o.K = 1
 	}
@@ -25,7 +32,7 @@ func RenderVerified(ctx context.Context, c Completer, work string, s Scene, b Ba
 	extra := ""
 	for n := 1; ; n++ {
 		var err error
-		if r, err = renderWith(ctx, c, work, s, b, o.K, extra); err != nil {
+		if r, err = renderWith(ctx, cs.Render, cs.Extract, work, s, b, o.K, extra); err != nil {
 			return r, n, err
 		}
 		if Passed(r) || n > o.Retries {

@@ -70,3 +70,16 @@ func TestVerifyMissingWithinBudget(t *testing.T) {
 		t.Fatalf("n=%d err=%v %+v", n, err, got.Report)
 	}
 }
+
+func TestRenderVerified2UsesBoth(t *testing.T) {
+	s, b, good, bad := verifyFixture(t)
+	rc := &recorder{replies: []string{"산문1", "산문2"}}
+	xc := &recorder{replies: []string{bad, good}}
+	got, n, err := RenderVerified2(ctx, Completers{Render: rc, Extract: xc}, "w", s, b, VerifyOpts{K: 1, Retries: 2})
+	if err != nil || n != 2 || !Passed(got) {
+		t.Fatal(n, err, got.Report)
+	}
+	if len(rc.prompts) != 2 || len(xc.prompts) != 2 {
+		t.Fatalf("render calls %d, extract calls %d", len(rc.prompts), len(xc.prompts))
+	}
+}
