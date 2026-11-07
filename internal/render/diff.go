@@ -156,7 +156,7 @@ func (s Scene) authored(n NewEvent) bool {
 			if ev == "" || s.resolve(a.Actor) != ev {
 				continue
 			}
-			if n.Action != "" && strings.EqualFold(n.Action, a.Action) || n.Action == "" && shared {
+			if n.Action != "" && strings.EqualFold(n.Action, a.Action) && (len(evT) == 0 || len(a.Targets) == 0 || shared) || n.Action == "" && shared {
 				return true
 			}
 		}

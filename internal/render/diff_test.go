@@ -167,3 +167,17 @@ func TestDiffAmbiguousNameNoMatch(t *testing.T) {
 		t.Fatalf("%+v", r)
 	}
 }
+
+func TestDiffDoesActionNeedsTarget(t *testing.T) {
+	s := Scene{Cast: []Entity{{ID: "mina"}, {ID: "letter"}, {ID: "body"}},
+		Beats: []Beat{{Acts: []Act{{Actor: "mina", Verb: "does", Action: "hide", Targets: []string{"letter"}}}}}}
+	for name, c := range map[string]struct {
+		t    string
+		want int
+	}{"other target": {"body", 1}, "same target": {"letter", 0}} {
+		e := Extracted{NewEvents: []NewEvent{{Actor: "mina", Verb: "does", Action: "hide", Targets: []string{c.t}}}}
+		if r := Diff(s, e); len(r.Hallucinated) != c.want {
+			t.Errorf("%s %+v", name, r)
+		}
+	}
+}

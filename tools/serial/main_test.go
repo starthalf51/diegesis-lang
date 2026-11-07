@@ -67,7 +67,7 @@ func TestSerialDryRun(t *testing.T) {
 			t.Error("-dry left runDieg swapped to fakeDieg")
 		}
 	}()
-	out, s, rd := dry(t, "-eps", "3", "-rev-after", "2", "-price", "claude-opus-5-5=1:2,claude-sonnet-5-5=1:1")
+	out, s, rd := dry(t, "-eps", "3", "-rev-after", "2", "-price", "claude-opus-5-5=1:2,claude-sonnet-5-5=1:1,claude-haiku-5-5=1:1")
 	for _, f := range []string{"plan/plan.md", "plan/calls.jsonl", "a/outline.md", "a/summary.md", "a/eps/e03.md", "a/prompts/ep-2.txt", "a/prompts/rev1-pick.txt",
 		"a/calls.jsonl", "b/calls.jsonl", "b/novel/e1a.ko-haera.md", "b-idea.txt", "judge/prompt1.txt", "judge/mapping.txt", "judge/run1.txt",
 		"judge/quotes.md", "judge/revision.md", "judge/calls.jsonl", "metrics.csv", "summary.json"} {
@@ -100,8 +100,8 @@ func TestSerialDryRun(t *testing.T) {
 	if s.Plan_uncharged.Calls != 2 || s.Judge.Calls != 1 || s.Cut_at_episode != 3 || s.Judge_status != "ok" {
 		t.Errorf("plan %+v judge %+v cut %d status %q", s.Plan_uncharged, s.Judge, s.Cut_at_episode, s.Judge_status)
 	}
-	// per model: B has 4 code calls on opus and 8 render/extract calls on sonnet; price-weighted = weighted*in + output*out.
-	if b := s.B_total_including_cut_work.ByModel; b["claude-opus-5-5"].Calls != 4 || b["claude-sonnet-5-5"].Calls != 8 || len(s.A_total_including_cut_work.ByModel) != 1 {
+	// per model: B has 4 code calls on opus and 4 render calls on haiku and 4 extract calls on sonnet; price-weighted = weighted*in + output*out.
+	if b := s.B_total_including_cut_work.ByModel; b["claude-opus-5-5"].Calls != 4 || b["claude-haiku-5-5"].Calls != 4 || b["claude-sonnet-5-5"].Calls != 4 || len(s.A_total_including_cut_work.ByModel) != 1 {
 		t.Errorf("per-model %+v / %+v", s.B_total_including_cut_work.ByModel, s.A_total_including_cut_work.ByModel)
 	}
 	if s.A_total_including_cut_work.PriceWeighted == nil || *s.A_total_including_cut_work.PriceWeighted != 820+2*110 || s.B_total_including_cut_work.PriceWeighted == nil || *s.B_total_including_cut_work.PriceWeighted != 298+2*40+596+80 {

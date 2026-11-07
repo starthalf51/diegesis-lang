@@ -87,6 +87,7 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 - 뼈대 모드는 기본 켜짐, `--skeleton=false` 로 끈다. `Scene.FreeDialogue`(코퍼스 렌더 경로)는 옵트인이라 코퍼스 장면의 렌더 프롬프트·캐시는 바이트 단위로 그대로다. 실행 사이에 모드를 바꾸면 모든 장면의 해시가 바뀌어 전부 다시 렌더된다.
 - **동작 변경:** `dieg render --verify` 의 기본 모델이 sonnet 이 되었다(`--render-model`·`--extract-model` 로 바꾼다).
 - **동작 변경(플랜 5):** 기본 렌더 모델이 haiku 가 되었다(`write`·`continue`·`revise`·`render --verify` 모두. 렌더러 A/B, `examples/renderer-ab`). 재추출은 sonnet 그대로다.
+- **동작 변경(플랜 5, 검증기):** `ExtractHash` 가 바뀌어 다음 `dieg render-check` 는 캐시된 장면을 전부 다시 추출한다(장면당 K=3, 코퍼스 16장면이면 약 48회 호출). 산문 캐시는 유효하고 추출 캐시만 무효다.
 - 비용 측정: 뼈대 모드만으로는 코드 출력 토큰이 약 2% 줄었다(출력의 대부분이 추론 토큰). `--code-effort medium` 은 high 대비 코드 출력이 약 55% 적었고 깨끗해지는 라운드 수는 늘지 않았다(스모크 1회 기준).
 
 ## 계층형 렌더러 (`--renderer layered`, 기본 아님)
@@ -107,7 +108,7 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 
 연재(12화 계획, 11화에서 잘림, 수정 2회)는 [`examples/serial/README.md`](examples/serial/README.md) 에 있다. 가설은 서지 않았다: 오류는 원 수치로 B 3 대 A 4 지만 1만 자당으로는 B 1.24 대 A 0.89 (미충족), 가중 입력 토큰은 B 가 A 의 1.89배 (가격 기준은 단가표가 없어 미정), 수정 잔여는 B 4 대 A 1 (미충족). 아이템 1개·판정 1회다.
 
-렌더러·렌더 모델 A/B(장면 2개, n=2)는 [`examples/renderer-ab/README.md`](examples/renderer-ab/README.md) 에 있다. 단일+haiku 는 단일+sonnet 과 통과율이 같고 가중 토큰은 약 절반이다. 계층형은 호출이 3~4배인데 통과율이 오르지 않았다. 그래서 기본은 단일 렌더러+haiku 렌더다(결정은 가중치와 무관하다. haiku 의 비용 우위는 가중치에 따라 달라진다: haiku 출력이 sonnet 의 2.3배). 표본이 작아 통계가 아니라 사례다.
+렌더러·렌더 모델 A/B(장면 2개, n=2)는 [`examples/renderer-ab/README.md`](examples/renderer-ab/README.md) 에 있다. 단일+haiku 는 단일+sonnet 과 통과율이 같고 가중 토큰은 약 절반이다. 계층형은 호출이 3~4배인데 통과율이 오르지 않았다. 그래서 기본은 단일 렌더러+haiku 렌더다(결정은 가중치와 무관하다. haiku 의 비용 우위는 가중치에 따라 달라진다: A/B 에서 출력 합계는 +44%(S-son 12,725 대 S-hai 18,368 토큰, `examples/renderer-ab/README.md`), 연재 run2 에서는 호출당 약 2.3배(3,819 대 1,630)). 표본이 작아 통계가 아니라 사례다.
 
 연재 재측정(run2, 같은 아이템, 10화에서 잘림)은 [`examples/serial/README.md`](examples/serial/README.md) 의 "run2" 에 있다. (a) 오류: 이 표본에서 충족(B 3 대 A 8)이지만 A 의 run 간 흔들림이 차이와 비슷해 n=1 잡음 범위 안이다. (b) 비용: 가정한 가중치(s=0.6, h=0.2)에서 B 가 A 의 약 1.12배라 미충족. (c) 수정 잔여: 동률이라 미충족. 다음 후보는 haiku 렌더 effort low 와 하네스 `modelOf` 수정이다.
 
