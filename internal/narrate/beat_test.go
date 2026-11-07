@@ -16,7 +16,7 @@ type seqFake struct {
 func (f *seqFake) Complete(_ context.Context, _, user string) (render.Result, error) {
 	f.users = append(f.users, user)
 	r := f.replies[min(len(f.users)-1, len(f.replies)-1)]
-	return render.Result{Text: r}, nil
+	return render.Result{Text: r, StopReason: "end_turn"}, nil
 }
 
 func beatPlan(t *testing.T, acts ...render.Act) Plan {
@@ -103,5 +103,52 @@ func TestRealizeWithRetryGivesUp(t *testing.T) {
 	text, rep, n, err := realizeWithRetry(context.Background(), gen, ver, p, 0, "ko", "", 2)
 	if err != nil || n != 3 || text != "다" || BeatPassed(rep) || len(rep.Missing) == 0 {
 		t.Fatalf("%q %+v %d %v", text, rep, n, err)
+	}
+}
+
+func TestBeatPromptForbidsRepeatingPrevTail(t *testing.T) {
+	sys, _ := BeatPrompt(beatPlan(t, render.Act{Actor: "a", Verb: "sees", Fact: "f1"}), 0, "ko", "앞 문단", nil)
+	if !strings.Contains(sys, "직전 문단의 사건을 다시 쓰지 않는다") {
+		t.Fatal("직전 문단 반복 금지 문구 없음")
+	}
+}
+
+func TestRealizeWithRetryReverifiesExtractError(t *testing.T) {
+	p := beatPlan(t, render.Act{Actor: "a", Verb: "sees", Fact: "f1"})
+	gen := &seqFake{replies: []string{"글."}}
+	ver := &seqFake{replies: []string{"쓰레기", okJSON}}
+	text, rep, n, err := realizeWithRetry(context.Background(), gen, ver, p, 0, "ko", "", 2)
+	if err != nil || n != 1 || len(gen.users) != 1 || len(ver.users) != 2 || text != "글." || !BeatPassed(rep) {
+		t.Fatalf("%q %+v %d %d %v", text, rep, n, len(gen.users), err)
+	}
+}
+
+func TestRealizeWithRetryNegativeRetries(t *testing.T) {
+	p := beatPlan(t, render.Act{Actor: "a", Verb: "sees", Fact: "f1"})
+	gen := &seqFake{replies: []string{"글."}}
+	ver := &seqFake{replies: []string{missJSON}}
+	_, _, n, err := realizeWithRetry(context.Background(), gen, ver, p, 0, "ko", "", -3)
+	if err != nil || n != 1 {
+		t.Fatalf("%d %v", n, err)
+	}
+}
+
+type truncFake struct{ calls int }
+
+func (f *truncFake) Complete(_ context.Context, _, _ string) (render.Result, error) {
+	f.calls++
+	if f.calls == 1 {
+		return render.Result{Text: "잘린 글", StopReason: "max_tokens"}, nil
+	}
+	return render.Result{Text: "온전한 글.", StopReason: "end_turn"}, nil
+}
+
+func TestRealizeWithRetryTruncatedNotVerified(t *testing.T) {
+	p := beatPlan(t, render.Act{Actor: "a", Verb: "sees", Fact: "f1"})
+	gen := &truncFake{}
+	ver := &seqFake{replies: []string{okJSON}}
+	text, rep, n, err := realizeWithRetry(context.Background(), gen, ver, p, 0, "ko", "", 2)
+	if err != nil || n != 2 || text != "온전한 글." || len(ver.users) != 1 || !BeatPassed(rep) {
+		t.Fatalf("%q %+v %d %d %v", text, rep, n, len(ver.users), err)
 	}
 }

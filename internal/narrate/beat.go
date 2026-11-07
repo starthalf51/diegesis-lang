@@ -2,6 +2,7 @@ package narrate
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -30,7 +31,7 @@ func BeatPrompt(p Plan, i int, lang, prevTail string, fix *render.Report) (syste
 	if lang == "en" {
 		style = "plain past tense"
 	}
-	system = fmt.Sprintf("너는 소설의 한 비트를 쓴다. 이 비트의 행위만 순서대로 쓴다. 문체는 중립 평서(%s)로 쓰고, 문단은 %d개로 쓴다. 본문만 출력한다.", style, b.Paragraphs)
+	system = fmt.Sprintf("너는 소설의 한 비트를 쓴다. 이 비트의 행위만 순서대로 쓴다. 문체는 중립 평서(%s)로 쓰고, 문단은 %d개로 쓴다. 직전 문단은 흐름을 잇기 위해서만 주어진다. 직전 문단의 사건을 다시 쓰지 않는다. 본문만 출력한다.", style, b.Paragraphs)
 	var u strings.Builder
 	u.WriteString("## 이 비트의 행위\n")
 	for _, a := range b.Acts {
@@ -95,7 +96,7 @@ func beatFeedback(s render.Scene, lang string, r render.Report) string {
 		}
 	}
 	if r.ExtractError != "" {
-		b.WriteString("재추출에 실패했다. 더 분명하게 쓴다.\n")
+		b.WriteString("검증 결과를 읽지 못했다. 같은 내용을 더 분명한 문장으로 다시 쓴다.\n")
 	}
 	return b.String()
 }
@@ -115,11 +116,17 @@ func describeKey(s render.Scene, lang, key string) string {
 	return name(s, lang, p[0]) + " (" + p[1] + "): " + text(p[2])
 }
 
+// errTruncated: end_turn 으로 끝나지 않은(잘린) 생성.
+var errTruncated = errors.New("narrate: beat output truncated")
+
 func RealizeBeat(ctx context.Context, c render.Completer, p Plan, i int, lang, prevTail string, fix *render.Report) (string, error) {
 	sys, user := BeatPrompt(p, i, lang, prevTail, fix)
 	r, err := c.Complete(ctx, sys, user)
 	if err != nil {
 		return "", err
+	}
+	if r.StopReason != "end_turn" {
+		return strings.TrimSpace(r.Text), errTruncated
 	}
 	return strings.TrimSpace(r.Text), nil
 }
@@ -145,15 +152,27 @@ func BeatPassed(r render.Report) bool {
 }
 
 // realizeWithRetry: 통과하거나 1+retries 번 시도할 때까지. 상한을 넘기면 마지막 결과를 돌려준다(오류 아님).
+// 잘린 생성은 검증 없이 실패 시도로 센다. 재추출 파싱 실패는 같은 글로 한 번 더 검증한 뒤에야 재생성한다.
 func realizeWithRetry(ctx context.Context, gen, ver render.Completer, p Plan, i int, lang, prevTail string, retries int) (text string, rep render.Report, attempts int, err error) {
+	retries = max(retries, 0)
 	var fix *render.Report
 	for attempts < 1+retries {
 		attempts++
-		if text, err = RealizeBeat(ctx, gen, p, i, lang, prevTail, fix); err != nil {
+		text, err = RealizeBeat(ctx, gen, p, i, lang, prevTail, fix)
+		if errors.Is(err, errTruncated) {
+			rep, err = render.Report{ExtractError: "output truncated"}, nil
+			continue
+		}
+		if err != nil {
 			return
 		}
-		if rep, err = VerifyBeat(ctx, ver, p, i, lang, text); err != nil {
-			return
+		for try := 0; try < 2; try++ {
+			if rep, err = VerifyBeat(ctx, ver, p, i, lang, text); err != nil {
+				return
+			}
+			if rep.ExtractError == "" {
+				break
+			}
 		}
 		if BeatPassed(rep) {
 			return
