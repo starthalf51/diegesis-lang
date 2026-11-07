@@ -93,8 +93,9 @@ func TestReviseUncleanLeavesStory(t *testing.T) {
 	}
 }
 
-// Review Focus 2: only changed and added scenes are rendered; removed scenes lose their files.
-func TestReviseRendersOnlyChanged(t *testing.T) {
+// rerenderFixture: a backend, a scene maker (variant != "" changes the render request) and a novel dir whose prose
+// and hashes were made for the given scenes.
+func rerenderFixture(t *testing.T) (render.Backend, func(id, variant string) render.Scene, string) {
 	s, err := render.LoadScene("../render/testdata/scenes/chibi-jianggan.json")
 	if err != nil {
 		t.Fatal(err)
@@ -104,28 +105,37 @@ func TestReviseRendersOnlyChanged(t *testing.T) {
 		t.Fatal(err)
 	}
 	b := bs[0]
-	mk := func(id string, beat string) render.Scene {
+	mk := func(id, variant string) render.Scene {
 		x := s
-		x.ID = id
-		x.Title = id
-		x.Place += beat
+		x.ID, x.Title = id, id
+		x.Place += variant
 		return x
 	}
-	s1, s2, s2b, s4 := mk("s1", ""), mk("s2", ""), mk("s2", "CHANGED"), mk("s4", "")
-	before, err := SceneHashes([]render.Scene{s1, s2, mk("s3", "")}, b)
+	return b, mk, t.TempDir()
+}
+
+func seedNovel(t *testing.T, out string, b render.Backend, old ...render.Scene) {
+	hs, err := SceneHashes(old, b)
 	if err != nil {
 		t.Fatal(err)
 	}
-	out := t.TempDir()
 	os.MkdirAll(filepath.Join(out, "novel"), 0o755)
-	for _, n := range []string{"s1", "s2", "s3"} {
-		os.WriteFile(filepath.Join(out, "novel", n+"."+b.ID+".md"), []byte("old "+n), 0o644)
-		os.WriteFile(filepath.Join(out, "novel", n+"."+b.ID+".report.json"), []byte("{}"), 0o644)
+	for _, s := range old {
+		base := filepath.Join(out, "novel", s.ID+"."+b.ID)
+		os.WriteFile(base+".md", []byte("old "+s.ID), 0o644)
+		os.WriteFile(base+".report.json", []byte("{}"), 0o644)
+		os.WriteFile(base+".hash", []byte(hs[s.ID]+"\n"), 0o644)
 	}
-	all := []render.Scene{s1, s2b, s4}
+}
+
+// Review Focus 2: only changed and added scenes are rendered; removed scenes lose their files.
+func TestReviseRendersOnlyChanged(t *testing.T) {
+	b, mk, out := rerenderFixture(t)
+	s1, s2, s2b, s4 := mk("s1", ""), mk("s2", ""), mk("s2", "CHANGED"), mk("s4", "")
+	seedNovel(t, out, b, s1, s2, mk("s3", ""))
 	rc := &fakeLLM{replies: []string{"산문"}}
 	xc := &fakeLLM{replies: []string{"{}"}}
-	rr, err := Rerender(ctx, render.Completers{Render: rc, Extract: xc}, "w", all, before, b, out, false, 0)
+	rr, err := Rerender(ctx, render.Completers{Render: rc, Extract: xc}, "w", []render.Scene{s1, s2b, s4}, b, out, false, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,9 +160,9 @@ func TestReviseRendersOnlyChanged(t *testing.T) {
 			t.Error("a changed/added scene was not rendered")
 		}
 	}
-	for _, n := range []string{"s3." + b.ID + ".md", "s3." + b.ID + ".report.json"} {
-		if _, err := os.Stat(filepath.Join(out, "novel", n)); err == nil {
-			t.Error(n, "left behind")
+	for _, e := range []string{".md", ".report.json", ".hash"} {
+		if _, err := os.Stat(filepath.Join(out, "novel", "s3."+b.ID+e)); err == nil {
+			t.Error("s3", e, "left behind")
 		}
 	}
 	if got, _ := os.ReadFile(filepath.Join(out, "novel", "s1."+b.ID+".md")); string(got) != "old s1" {
@@ -161,4 +171,88 @@ func TestReviseRendersOnlyChanged(t *testing.T) {
 	if nv, _ := os.ReadFile(filepath.Join(out, "novel.md")); strings.Contains(string(nv), "old s3") || !strings.Contains(string(nv), "old s1") {
 		t.Errorf("novel.md %q", nv)
 	}
+}
+
+// A --scenes cap (or a --no-render revise) leaves stale prose; the next run renders the backlog, then nothing.
+func TestRerenderPicksUpBacklog(t *testing.T) {
+	b, mk, out := rerenderFixture(t)
+	seedNovel(t, out, b, mk("s1", ""), mk("s2", ""), mk("s3", ""))
+	now := []render.Scene{mk("s1", "X"), mk("s2", "X"), mk("s3", "X")}
+	run := func(limit int) RerenderResult {
+		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
+		rr, err := Rerender(ctx, cs, "w", now, b, out, false, limit)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return rr
+	}
+	if rr := run(1); len(rr.Changed) != 3 || len(rr.Scenes) != 1 || rr.Scenes[0].ID != "s1" {
+		t.Fatalf("first run %+v", rr)
+	}
+	if rr := run(0); len(rr.Changed) != 2 || len(rr.Scenes) != 2 {
+		t.Fatalf("second run %+v", rr)
+	}
+	if rr := run(0); len(rr.Changed)+len(rr.Added) != 0 || len(rr.Scenes) != 0 {
+		t.Fatalf("third run %+v", rr)
+	}
+}
+
+func TestSwapDir(t *testing.T) {
+	dir, files := scene3(t)
+	if err := swapDir(dir, map[string]string{"cast.dieg.md": "NEW\n"}); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := os.ReadFile(filepath.Join(dir, "cast.dieg.md")); string(got) != "NEW\n" {
+		t.Error("not swapped")
+	}
+	for _, x := range []string{".new", ".old"} {
+		if _, err := os.Stat(dir + x); err == nil {
+			t.Error(x, "left behind")
+		}
+	}
+	// second rename fails: the old dir comes back
+	dir, files = scene3(t)
+	n := 0
+	rename = func(a, b string) error {
+		if n++; n == 2 {
+			return os.ErrPermission
+		}
+		return os.Rename(a, b)
+	}
+	defer func() { rename = os.Rename }()
+	if err := swapDir(dir, map[string]string{"cast.dieg.md": "NEW\n"}); err == nil {
+		t.Fatal("no error")
+	}
+	unchanged(t, dir, files)
+	if _, err := os.Stat(dir + ".new"); err == nil {
+		t.Error(".new left behind")
+	}
+}
+
+// An error after a check ran leaves PG on a rejected candidate; ReviseLoop re-checks story/ itself.
+func TestReviseErrorReloadsStory(t *testing.T) {
+	dir, files := scene3(t)
+	f := &errAfter{ok: "=== FILE: ep01/s2.dieg.md ===\nBROKEN\n" + End}
+	var dirs []string
+	chk := func(_ context.Context, d string) ([]Diag, error) {
+		dirs = append(dirs, d)
+		return []Diag{{Severity: "error", Rule: "x", Msg: "bad"}}, nil
+	}
+	_, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 3, Out: filepath.Dir(dir)})
+	if err == nil || len(dirs) != 2 || dirs[1] != dir {
+		t.Fatalf("err=%v checks=%v", err, dirs)
+	}
+	unchanged(t, dir, files)
+}
+
+type errAfter struct {
+	ok string
+	n  int
+}
+
+func (e *errAfter) Complete(context.Context, string, string) (render.Result, error) {
+	if e.n++; e.n > 1 {
+		return render.Result{}, os.ErrClosed
+	}
+	return render.Result{Text: e.ok, StopReason: "end_turn"}, nil
 }

@@ -58,6 +58,11 @@ func Novel(ctx context.Context, cs render.Completers, work string, scenes []rend
 			if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".md"), []byte(r.Prose+"\n"), 0o644); err != nil {
 				return rs, err
 			}
+			if h, err := render.RenderHash(s, b); err == nil { // what Rerender compares to find stale prose
+				if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".hash"), []byte(h+"\n"), 0o644); err != nil {
+					return rs, err
+				}
+			}
 		}
 		rs = append(rs, sr)
 	}

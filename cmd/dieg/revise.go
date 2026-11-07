@@ -64,16 +64,6 @@ func runRevise(request, styles string, limit int, o write.Opts) (int, error) {
 		return 1, fmt.Errorf("%s: no story/ dir (make one with dieg write -o %s)", o.Out, o.Out)
 	}
 	ctx := context.Background()
-	var before map[string]string
-	if o.Render { // hash the render requests of the story as it is now
-		_, old, err := shownScenes(ctx, story)
-		if err != nil {
-			return 1, err
-		}
-		if before, err = write.SceneHashes(old, b); err != nil {
-			return 1, err
-		}
-	}
 	f, err := os.OpenFile(filepath.Join(o.Out, "calls.jsonl"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return 1, err
@@ -113,7 +103,7 @@ func runRevise(request, styles string, limit int, o write.Opts) (int, error) {
 		summary(res, write.RerenderResult{}, nil)
 		return 1, err
 	}
-	rr, err := write.Rerender(ctx, cs, work, all, before, b, o.Out, o.Skeleton, limit)
+	rr, err := write.Rerender(ctx, cs, work, all, b, o.Out, o.Skeleton, limit)
 	if err != nil {
 		summary(res, rr, nil)
 		return 1, err

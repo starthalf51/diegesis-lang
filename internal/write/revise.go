@@ -47,11 +47,11 @@ func ChangedScenes(before, after map[string]string) (changed, added, removed []s
 	return
 }
 
-// readTree reads every file under dir into a path -> content map.
+// readTree reads every .dieg.md file under dir into a path -> content map.
 func readTree(dir string) (map[string]string, error) {
 	m := map[string]string{}
 	err := filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
+		if err != nil || d.IsDir() || !strings.HasSuffix(p, ".dieg.md") {
 			return err
 		}
 		b, err := os.ReadFile(p)
@@ -68,7 +68,7 @@ func readTree(dir string) (map[string]string, error) {
 // which the checker checks; the next round starts from that candidate. Only when the candidate is clean is it
 // swapped into storyDir; otherwise storyDir is untouched. A DELETE of a missing path is a "bundle" diagnostic.
 // <out>/diags-revise.txt holds the last well-formed round's diagnostics. ReviseLoop never renders.
-func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir, request string, refs Refs, o Opts) (Result, error) {
+func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir, request string, refs Refs, o Opts) (_ Result, rerr error) {
 	if o.Rounds <= 0 {
 		o.Rounds = DefaultOpts().Rounds
 	}
@@ -84,7 +84,12 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 	}
 	res := Result{Dir: storyDir}
 	var lastDiags, diags []Diag
-	wellFormed := false
+	wellFormed, checked := false, false
+	defer func() { // an error after a check ran leaves PG on a rejected candidate: put it back on story/
+		if rerr != nil && checked {
+			check(ctx, storyDir)
+		}
+	}()
 	for r := 1; r <= o.Rounds; r++ {
 		l := "revise-r1"
 		if r > 1 {
@@ -127,6 +132,7 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 			if err := WriteFiles(rdir, next); err != nil {
 				return res, err
 			}
+			checked = true
 			if res.Diags, err = check(ctx, rdir); err != nil {
 				return res, fmt.Errorf("round %d check: %w", r, err)
 			}
@@ -142,7 +148,7 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 		diags = blocking(res.Diags)
 	}
 	if res.Clean {
-		if err := WriteFiles(storyDir, cur); err != nil {
+		if err := swapDir(storyDir, cur); err != nil {
 			return res, err
 		}
 	}
@@ -154,6 +160,33 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 		sb.WriteString(x.String() + "\n")
 	}
 	return res, os.WriteFile(filepath.Join(o.Out, "diags-revise.txt"), []byte(sb.String()), 0o644)
+}
+
+var rename = os.Rename // a variable so a test can fail a step
+
+// swapDir replaces dir by files without a window in which dir is half written: write dir.new, move dir to
+// dir.old, move dir.new in, drop dir.old. If a step fails the old dir is put back.
+func swapDir(dir string, files map[string]string) error {
+	nw, old := dir+".new", dir+".old"
+	if err := safeToEmpty(old); err != nil {
+		return err
+	}
+	if err := os.RemoveAll(old); err != nil {
+		return err
+	}
+	if err := WriteFiles(nw, files); err != nil {
+		return err
+	}
+	if err := rename(dir, old); err != nil {
+		os.RemoveAll(nw)
+		return err
+	}
+	if err := rename(nw, dir); err != nil {
+		rename(old, dir)
+		os.RemoveAll(nw)
+		return err
+	}
+	return os.RemoveAll(old)
 }
 
 func packMap(m map[string]string) string {
@@ -224,30 +257,54 @@ type RerenderResult struct {
 	Scenes                  []SceneResult
 }
 
-// Rerender renders only the changed and added scenes of all (every shown scene of the revised story, discourse
-// order) against the before hashes, deletes the novel files of removed scenes, and rebuilds novel.md. limit > 0
-// caps the re-renders to the first limit targets.
-func Rerender(ctx context.Context, cs render.Completers, work string, all []render.Scene, before map[string]string, b render.Backend, out string, skeleton bool, limit int) (RerenderResult, error) {
-	after, err := SceneHashes(all, b)
+// Rerender brings the prose in out/novel up to date with all (every shown scene of the story, discourse order):
+// a scene is stale when its stored <scene>.<backend>.hash is missing (Added) or differs from its current RenderHash
+// (Changed). Stale scenes are rendered (limit > 0 caps this run to the first limit; the rest stay stale and the next
+// run picks them up), prose files of scenes no longer in all are deleted (Removed), and novel.md is rebuilt.
+// A scene whose render call failed gets no hash, so it is retried; one that rendered but failed verification keeps
+// its hash (its report.json says so).
+func Rerender(ctx context.Context, cs render.Completers, work string, all []render.Scene, b render.Backend, out string, skeleton bool, limit int) (RerenderResult, error) {
+	cur := make([]render.Scene, len(all))
+	copy(cur, all)
+	live := map[string]bool{}
+	for i := range cur {
+		cur[i].FreeDialogue = skeleton // Novel renders (and hashes) with this
+		live[fileID(cur[i].ID)] = true
+	}
+	after, err := SceneHashes(cur, b)
 	if err != nil {
 		return RerenderResult{}, err
 	}
+	dir := filepath.Join(out, "novel")
+	before := map[string]string{}
+	for _, s := range cur {
+		if h, err := os.ReadFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".hash")); err == nil {
+			before[s.ID] = strings.TrimSpace(string(h))
+		}
+	}
 	rr := RerenderResult{}
-	rr.Changed, rr.Added, rr.Removed = ChangedScenes(before, after)
-	for _, id := range rr.Removed {
-		for _, ext := range []string{".md", ".report.json"} {
-			if err := os.Remove(filepath.Join(out, "novel", fileID(id)+"."+b.ID+ext)); err != nil && !os.IsNotExist(err) {
-				return rr, err
+	rr.Changed, rr.Added, _ = ChangedScenes(before, after)
+	if ents, err := os.ReadDir(dir); err == nil {
+		for _, e := range ents {
+			id, ok := strings.CutSuffix(e.Name(), "."+b.ID+".md")
+			if !ok || live[id] {
+				continue
+			}
+			rr.Removed = append(rr.Removed, id)
+			for _, ext := range []string{".md", ".report.json", ".hash"} {
+				if err := os.Remove(filepath.Join(dir, id+"."+b.ID+ext)); err != nil && !os.IsNotExist(err) {
+					return rr, err
+				}
 			}
 		}
 	}
-	ss := Only(all, append(append([]string(nil), rr.Changed...), rr.Added...))
+	ss := Only(cur, append(append([]string(nil), rr.Changed...), rr.Added...))
 	if limit > 0 && limit < len(ss) {
 		ss = ss[:limit]
 	}
 	rr.Scenes, err = Novel(ctx, cs, work, ss, b, out, skeleton)
 	if err == nil {
-		err = Concat(out, all, b.ID)
+		err = Concat(out, cur, b.ID)
 	}
 	return rr, err
 }
