@@ -17,7 +17,7 @@ const DigestCap = 8000
 const hiddenMark = " [독자 비공개]"
 
 // StateDigest is the story state at the last shown scene of the loaded work, in Korean, for writing the next
-// episode: modules and scene order, who is alive, what is true or false, who believes something false, setups,
+// episode: modules and scene order, who is alive, who believes something false, setups,
 // and which withheld facts the reader still does not know ([독자 비공개], Review Focus 4). It only reads existing
 // tables and SQL functions. Every list is ordered, so the same load gives the same text.
 func StateDigest(ctx context.Context, pool *pgxpool.Pool, work string) (string, error) {
@@ -114,7 +114,7 @@ func StateDigest(ctx context.Context, pool *pgxpool.Pool, work string) (string, 
 		SELECT lint_short(e.id), render_name($1, e.id, 'ko'),
 		       CASE WHEN p.id IS NULL THEN '생존'
 		            WHEN $2 <> '' AND precedes($1, p.id, $2) = 'yes' THEN '사망'
-		            ELSE '사망(시점이 마지막 장면 뒤이거나 정해지지 않음)' END
+		            ELSE '미정(사망 시점이 마지막 장면 뒤이거나 정해지지 않음)' END
 		  FROM entity e LEFT JOIN point p ON p.work_id = $1 AND p.id = e.id || '.died' AND p.kind = 'died'
 		 WHERE e.work_id = $1 AND e.kind = 'character' ORDER BY e.id`, work, pt)
 	if err != nil {
@@ -126,6 +126,7 @@ func StateDigest(ctx context.Context, pool *pgxpool.Pool, work string) (string, 
 	}
 
 	// a false belief still held at the last scene's point: char_knows says yes, truth_at says the opposite.
+	// The liar of that proposition is not deceived by it (as metric_active_deceptions).
 	bel, err := q(`
 		WITH b AS (
 		  SELECT DISTINCT bl.entity_id, z.base, (z.val = bl.value) bv
@@ -141,6 +142,8 @@ func StateDigest(ctx context.Context, pool *pgxpool.Pool, work string) (string, 
 		                  WHERE d.work_id = $1 AND (SELECT base FROM prop_norm($1, d.prop_id)) = b.base), '')
 		  FROM b
 		 WHERE $2 <> '' AND truth_at($1, b.base, $2) = NOT b.bv AND char_knows($1, b.entity_id, b.base, b.bv, $2) = 'yes'
+		   AND NOT EXISTS (SELECT 1 FROM deception d WHERE d.work_id = $1 AND d.liar_id = b.entity_id
+		                      AND (SELECT base FROM prop_norm($1, d.prop_id)) = b.base)
 		 ORDER BY 1, 2`, work, pt)
 	if err != nil {
 		return "", err
@@ -158,7 +161,9 @@ func StateDigest(ctx context.Context, pool *pgxpool.Pool, work string) (string, 
 	}
 
 	var open string
-	_ = pool.QueryRow(ctx, `SELECT n::text FROM metric_open_setups($1) ORDER BY ord DESC LIMIT 1`, work).Scan(&open)
+	if err := pool.QueryRow(ctx, `SELECT n::text FROM metric_open_setups($1) ORDER BY ord DESC LIMIT 1`, work).Scan(&open); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return "", err
+	}
 	sus, err := q(`
 		SELECT substr(s.id, length($1) + 2), coalesce(nullif(s.text, ''), (SELECT f.text FROM fact f WHERE f.work_id = $1 AND f.id = s.prop_id), ''),
 		       coalesce(lint_short(s.scene_id), ''),
@@ -181,17 +186,8 @@ func StateDigest(ctx context.Context, pool *pgxpool.Pool, work string) (string, 
 		}
 	}
 
-	facts, err := q(`
-		SELECT lint_short(f.id), f.text, CASE f.truth WHEN 'true' THEN '참' WHEN 'false' THEN '거짓' ELSE '미정' END
-		  FROM fact f WHERE f.work_id = $1 AND f.def IS NULL ORDER BY f.src_id NULLS LAST, f.id`, work)
-	if err != nil {
-		return "", err
-	}
-	add(&tail, "", "## 사실 (참·거짓)")
-	for _, f := range facts {
-		add(&tail, fmt.Sprintf("- %s「%s」: %s%s", f[0], f[1], f[2], mark(f[0])))
-	}
-	// resolved come last, newest payoff first (the query order), so trimming the tail drops the oldest first.
+	// Facts and their truth are in the cast files the prompt carries, so the digest does not repeat them.
+	// Resolved setups are the tail, newest payoff first (the query order), so trimming drops the oldest first.
 	add(&tail, "", "## 회수된 복선")
 	add(&tail, resolved...)
 
@@ -199,7 +195,7 @@ func StateDigest(ctx context.Context, pool *pgxpool.Pool, work string) (string, 
 }
 
 // capDigest joins head and tail within DigestCap characters.
-// ponytail: over the cap, tail lines go from the end — oldest resolved setups first, then the last-declared facts;
+// ponytail: over the cap, tail lines (resolved setups) go from the end, oldest first;
 // head (hidden facts, deaths, false beliefs, open setups) is never trimmed except by a final hard cut. If big serials
 // hit the hard cut, rank head lines by recency too.
 func capDigest(head, tail []string) string {

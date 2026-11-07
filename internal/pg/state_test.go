@@ -48,6 +48,14 @@ func TestStateDigestMacbeth(t *testing.T) {
 	if !ok || !strings.Contains(sec, "\n- ") {
 		t.Errorf("no false belief:\n%s", d)
 	}
+	for _, liar := range []string{"- lady_macbeth: murder_plot", "- macbeth: murder_plot"} {
+		if l := lineWith(d, liar); l != "" {
+			t.Errorf("liar listed as deceived: %s", l)
+		}
+	}
+	if strings.Contains(d, "## 사실") {
+		t.Error("digest repeats the cast's fact list")
+	}
 	if testing.Verbose() {
 		t.Log(d)
 	}
@@ -77,5 +85,28 @@ event s9 "later"
 	}
 	if lineWith(d, "- p", "[독자 비공개]") == "" {
 		t.Errorf("p is not marked hidden:\n%s", d)
+	}
+}
+
+// The liar is not deceived by their own lie, even after hearing it back.
+func TestStateDigestLiarNotDeceived(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, `scene s1
+  enter a, b
+  a lies b: np
+  b says a: np
+`)
+	d, err := write.StateDigest(context.Background(), pool, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lineWith(d, "- b: p", "← a 의 기만") == "" {
+		t.Errorf("b's false belief missing:\n%s", d)
+	}
+	if l := lineWith(d, "- a: p"); l != "" {
+		t.Errorf("liar listed as deceived: %s", l)
+	}
+	if d2, _ := write.StateDigest(context.Background(), pool, id); d2 != d {
+		t.Error("digest is not deterministic")
 	}
 }
