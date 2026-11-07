@@ -89,12 +89,27 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 - **동작 변경(플랜 5):** 기본 렌더 모델이 haiku 가 되었다(`write`·`continue`·`revise`·`render --verify` 모두. 렌더러 A/B, `examples/renderer-ab`). 재추출은 sonnet 그대로다.
 - 비용 측정: 뼈대 모드만으로는 코드 출력 토큰이 약 2% 줄었다(출력의 대부분이 추론 토큰). `--code-effort medium` 은 high 대비 코드 출력이 약 55% 적었고 깨끗해지는 라운드 수는 늘지 않았다(스모크 1회 기준).
 
+## 계층형 렌더러 (`--renderer layered`, 기본 아님)
+
+`internal/narrate` 의 렌더러다. 장면을 통째로 쓰는 대신 네 층으로 나눠 층마다 검증한다.
+
+1. **설계(plan)** — 순수 코드, 호출 0. 행위를 비트로 묶고 행위마다 형식(대사·생각·지각·행동·서술)과 양상(사실·믿음·거짓)을 정한다. 비트마다 금지 목록(숨김 사실, 시점 인물이 모르는 사실)을 붙이고, 모든 행위가 정확히 한 번씩 들어갔는지 검사한다.
+2. **비트 생성+검증** — 비트마다 중립 문체로 쓰고 그 비트만 다시 추출해 대조한다. 실패한 비트만 `--beat-retries` 까지 다시 쓴다.
+3. **문체(restyle)** — 백엔드 어투로 바꾸고 어투 비율(`MinToneShare`)을 결정적으로 검사한다. 실패하면 1회 재시도 뒤 이전 결과를 유지한다.
+4. **연결+최종 대조(stitch)** — 비트 사이 이음새만 다듬고 장면 전체를 재추출해 `render.Passed` 로 대조한다. 실패하면 stitched → styled → plain 순으로 되돌아가 나은 쪽을 쓴다.
+
+문체만 바꿀 때는 1·2층을 재사용해 호출이 3회로 끝난다(전체 재렌더 19회). 그러나 A/B 에서 통과율이 오르지 않았고 호출은 3~4배라 기본은 `single` 이다. 측정은 아래.
+
 ## 측정 결과
 
 직접 쓰기(A) 대 `dieg write`(B)는 [`examples/bench/README.md`](examples/bench/README.md) 에 있다.
 짧은 아이템에서 B 는 캐시 가중 input 토큰이 A 의 2.7–2.8배라 "더 싸다"는 지지되지 않고, 일관성(오류 수)은 3:1 과 2:2 로 섞여 있다. 아이템 3개·판정 1회라 통계가 아니라 사례다.
 
 연재(12화 계획, 11화에서 잘림, 수정 2회)는 [`examples/serial/README.md`](examples/serial/README.md) 에 있다. 가설은 서지 않았다: 오류는 원 수치로 B 3 대 A 4 지만 1만 자당으로는 B 1.24 대 A 0.89 (미충족), 가중 입력 토큰은 B 가 A 의 1.89배 (가격 기준은 단가표가 없어 미정), 수정 잔여는 B 4 대 A 1 (미충족). 아이템 1개·판정 1회다.
+
+렌더러·렌더 모델 A/B(장면 2개, n=2)는 [`examples/renderer-ab/README.md`](examples/renderer-ab/README.md) 에 있다. 단일+haiku 는 단일+sonnet 과 통과율이 같고 가중 토큰은 약 절반이다. 계층형은 호출이 3~4배인데 통과율이 오르지 않았다. 그래서 기본은 단일 렌더러+haiku 렌더다(결정은 가중치와 무관하다. haiku 의 비용 우위는 가중치에 따라 달라진다: haiku 출력이 sonnet 의 2.3배). 표본이 작아 통계가 아니라 사례다.
+
+연재 재측정(run2, 같은 아이템, 10화에서 잘림)은 [`examples/serial/README.md`](examples/serial/README.md) 의 "run2" 에 있다. (a) 오류: 이 표본에서 충족(B 3 대 A 8)이지만 A 의 run 간 흔들림이 차이와 비슷해 n=1 잡음 범위 안이다. (b) 비용: 가정한 가중치(s=0.6, h=0.2)에서 B 가 A 의 약 1.12배라 미충족. (c) 수정 잔여: 동률이라 미충족. 다음 후보는 haiku 렌더 effort low 와 하네스 `modelOf` 수정이다.
 
 ## 대시보드(Grafana)
 
@@ -135,7 +150,7 @@ go vet ./...
 
 ## 버전
 
-[SemVer](https://semver.org/lang/ko/)(`MAJOR.MINOR.PATCH`)를 따른다. 1.0 전(0.x)에는 문법과 IR 이 MINOR 판에서 바뀔 수 있다. 판은 git 태그(`v0.4.0`)로 붙이고 `dieg version` 이 출력한다.
+[SemVer](https://semver.org/lang/ko/)(`MAJOR.MINOR.PATCH`)를 따른다. 1.0 전(0.x)에는 문법과 IR 이 MINOR 판에서 바뀔 수 있다. 판은 git 태그(`v0.5.0`)로 붙이고 `dieg version` 이 출력한다.
 
 | 판 | 내용 |
 |---|---|
@@ -143,3 +158,4 @@ go vet ./...
 | v0.2.0 | 플랜 2: 정답 셋 3편, 시간 변이, 속성, 독자 모델, 패턴 9종, 지표, Grafana 대시보드 |
 | v0.3.0 | 플랜 3: 거짓 사실 표시, 검증 렌더, 호출 계량(Meter), 사물 위치·거짓 공개 린트, `dieg write`, 직접 쓰기 대 Diegesis 측정 |
 | v0.4.0 | 플랜 4: 역할별 모델·`--code-effort`, 뼈대 모드(`--skeleton`), `dieg continue`, `dieg revise`, 연재 측정 하네스(`tools/serial`). `render --verify` 기본 모델 sonnet |
+| v0.5.0 | 플랜 5: 계층형 렌더러(`--renderer layered`, 옵트인), 기본 렌더 모델 haiku, 검증기가 저작된 사실 없는 행위·등장을 환각으로 세지 않음, stays-gone 규칙(`attr X.status = gone`), 연재 공정 재측정(run2) |
