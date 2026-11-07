@@ -52,6 +52,7 @@ dieg write "아이템 한 문장" -o out/story1
 | `--backend id` | 렌더 문체 |
 | `--scenes N` | 앞 N개 보이는 장면만 렌더(호출 예산용) |
 | `--no-render` | 코드만 쓰고 렌더하지 않는다 |
+| `--force` | (write) 이미 `<out>/story` 가 있어도 지우고 새로 쓴다. 없으면 write 는 거부하고 continue/revise 를 권한다 |
 | `--styles dir` | 문체 폴더(기본 `styles`) |
 
 출력: `story/`(Diegesis 코드), `novel/`(장면별 산문), `novel.md`(합친 소설), `calls.jsonl`(호출마다 토큰 기록), `diags.txt`(남은 진단).
@@ -79,10 +80,10 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 | `--code-effort e` | 코딩 추론 효과 `low`/`medium`/`high`(기본 `medium`) |
 | `--skeleton` | 뼈대 모드: 코드는 대사를 쓰지 않고 렌더러가 대사를 쓴다 |
 
-- 없는 모델 ID·효과 값은 첫 호출에서 실패한다(조용히 기본값으로 바뀌지 않는다).
-- 뼈대 모드는 `FreeDialogue` 옵트인이다. 코퍼스 장면의 렌더 프롬프트·캐시는 바이트 단위로 그대로다.
+- 없는 모델 ID·효과 값은 플래그 파싱 단계에서 exit 2 로 끝난다(호출 전, 조용히 기본값으로 바뀌지 않는다).
+- 뼈대 모드는 기본 켜짐, `--skeleton=false` 로 끈다. `Scene.FreeDialogue`(코퍼스 렌더 경로)는 옵트인이라 코퍼스 장면의 렌더 프롬프트·캐시는 바이트 단위로 그대로다. 실행 사이에 모드를 바꾸면 모든 장면의 해시가 바뀌어 전부 다시 렌더된다.
 - **동작 변경:** `dieg render --verify` 의 기본 모델이 sonnet 이 되었다(`--render-model`·`--extract-model` 로 바꾼다).
-- 비용 측정: 뼈대 모드만으로는 코드 출력 토큰이 약 2% 줄었다(출력의 대부분이 추론 토큰). `--code-effort medium` 은 high 대비 코드 출력이 약 55% 적었고 깨끗해지는 라운드 수는 늘지 않았다.
+- 비용 측정: 뼈대 모드만으로는 코드 출력 토큰이 약 2% 줄었다(출력의 대부분이 추론 토큰). `--code-effort medium` 은 high 대비 코드 출력이 약 55% 적었고 깨끗해지는 라운드 수는 늘지 않았다(스모크 1회 기준).
 
 ## 측정 결과
 

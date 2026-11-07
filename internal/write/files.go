@@ -167,13 +167,18 @@ func safeToEmpty(dir string) error {
 
 // WriteFiles empties dir, then writes the files. Every path is re-validated, so nothing lands outside dir.
 func WriteFiles(dir string, files map[string]string) error {
-	if err := safeToEmpty(dir); err != nil {
-		return err
-	}
 	for p := range files {
 		if err := validPath(p); err != nil {
 			return err
 		}
+	}
+	return writeTree(dir, files)
+}
+
+// writeTree is WriteFiles without the extension check, for a revise tree that carries the user's other files.
+func writeTree(dir string, files map[string]string) error {
+	if err := safeToEmpty(dir); err != nil {
+		return err
 	}
 	if err := os.RemoveAll(dir); err != nil {
 		return err

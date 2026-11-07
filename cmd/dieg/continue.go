@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"diegesis/internal/pg"
+	"diegesis/internal/render"
 	"diegesis/internal/write"
 )
 
@@ -113,6 +114,9 @@ func runContinue(ep int, brief, styles string, limit int, o write.Opts) (int, er
 	res, err := write.ContinueLoop(ctx, m, writeChecker(o.Reserved), story, ep, brief, refs, o)
 	if err != nil {
 		summary(res, 0, nil)
+		if _, lerr := load(story, io.Discard); lerr != nil { // the checker may have loaded a rejected round
+			fmt.Fprintln(os.Stderr, "dieg: reload:", lerr)
+		}
 		return 1, err
 	}
 	if !res.Clean { // the checker loaded a rejected round; put PG back on the story as it is on disk
@@ -128,9 +132,46 @@ func runContinue(ep int, brief, styles string, limit int, o write.Opts) (int, er
 		summary(res, 0, nil)
 		return 1, err
 	}
-	ss := write.Only(all, res.Scenes)
-	if limit > 0 && limit < len(ss) {
-		ss = ss[:limit]
+	return renderContinued(ctx, cs, work, all, b, o, res, limit, func(res write.Result, rr write.RerenderResult, backlog int, failed []string) {
+		summary(res, len(rr.Scenes), failed)
+		fmt.Printf("continue: backlog=%d (stale scenes of earlier episodes picked up)\n", backlog)
+	})
+}
+
+// renderContinued renders the new episode and any stale backlog (a --scenes/--no-render leftover) through
+// write.Rerender, so the new scenes count as added and share one --scenes cap with the backlog; novel.md is rebuilt.
+// summary gets the number of backlog scenes: stale scenes that are not in the new episode.
+func renderContinued(ctx context.Context, cs render.Completers, work string, all []render.Scene, b render.Backend, o write.Opts,
+	res write.Result, limit int, summary func(write.Result, write.RerenderResult, int, []string)) (int, error) {
+	rr, err := write.Rerender(ctx, cs, work, all, b, o.Out, o.Skeleton, limit)
+	newEp := map[string]bool{}
+	for _, id := range res.Scenes {
+		newEp[id] = true
 	}
-	return renderAll(ctx, cs, work, ss, b, o, res, summary, all)
+	backlog := 0
+	for _, id := range append(append([]string(nil), rr.Changed...), rr.Added...) {
+		if !newEp[id] {
+			backlog++
+		}
+	}
+	if err != nil {
+		summary(res, rr, backlog, nil)
+		return 1, err
+	}
+	var failed []string
+	for _, r := range rr.Scenes {
+		if !r.Pass {
+			failed = append(failed, r.ID)
+		}
+		fmt.Fprintf(os.Stderr, "%s: attempts=%d pass=%t missing=%v hallucinated=%v leaked=%v %s\n", r.ID, r.Attempts, r.Pass,
+			r.Report.Missing, r.Report.Hallucinated, r.Report.Leaked, r.Report.ExtractError)
+		if r.Err != nil {
+			fmt.Fprintf(os.Stderr, "dieg: %s: %v\n", r.ID, r.Err)
+		}
+	}
+	summary(res, rr, backlog, failed)
+	if len(failed) > 0 {
+		return 3, nil
+	}
+	return 0, nil
 }

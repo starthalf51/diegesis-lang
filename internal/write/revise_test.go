@@ -256,3 +256,76 @@ func (e *errAfter) Complete(context.Context, string, string) (render.Result, err
 	}
 	return render.Result{Text: e.ok, StopReason: "end_turn"}, nil
 }
+
+// Fix 2: files that are not .dieg.md survive a revise untouched and are not shown to the model.
+func TestReviseKeepsNonDiegFiles(t *testing.T) {
+	dir, _ := scene3(t)
+	os.WriteFile(filepath.Join(dir, "notes.md"), []byte("keep me\n"), 0o644)
+	os.WriteFile(filepath.Join(dir, "ep01", "meta.yaml"), []byte("a: 1\n"), 0o644)
+	s2 := "---\nmodule: t.scenes\nimport: [t.cast]\nscene: \"s2\"\n---\n\n```sl\nenter a\nNEW\n```\n"
+	f := &fakeLLM{replies: []string{"=== FILE: ep01/s2.dieg.md ===\n" + s2 + "=== FILE: notes.md ===\nOVERWRITE\n" + End, "=== FILE: ep01/s2.dieg.md ===\n" + s2 + End}}
+	chk := func(context.Context, string) ([]Diag, error) { return nil, nil }
+	res, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 3, Out: filepath.Dir(dir)})
+	if err != nil || !res.Clean {
+		t.Fatalf("%+v %v", res, err)
+	}
+	for p, want := range map[string]string{"notes.md": "keep me\n", "ep01/meta.yaml": "a: 1\n"} {
+		if got, _ := os.ReadFile(filepath.Join(dir, filepath.FromSlash(p))); string(got) != want {
+			t.Errorf("%s = %q", p, got)
+		}
+	}
+	if strings.Contains(f.prompts[0], "keep me") || strings.Contains(f.prompts[0], "a: 1") {
+		t.Error("non-dieg file shown to the model")
+	}
+	if res.Rounds != 2 {
+		t.Errorf("model overwrite of notes.md should be a bundle error; rounds=%d", res.Rounds)
+	}
+}
+
+// Minor: a new path equal to an existing one up to case is a bundle error.
+func TestReviseRejectsCaseCollision(t *testing.T) {
+	dir, files := scene3(t)
+	f := &fakeLLM{replies: []string{"=== FILE: EP01/S2.dieg.md ===\nx\n" + End}}
+	chk := func(context.Context, string) ([]Diag, error) { return nil, nil }
+	res, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 1, Out: filepath.Dir(dir)})
+	if err != nil || res.Clean {
+		t.Fatalf("%+v %v", res, err)
+	}
+	unchanged(t, dir, files)
+}
+
+// Minor: revision k never overwrites revision k-1's rounds; labels carry the ordinal.
+func TestReviseRevOrdinal(t *testing.T) {
+	dir, _ := scene3(t)
+	out := filepath.Dir(dir)
+	chk := func(context.Context, string) ([]Diag, error) { return nil, nil }
+	for i := 1; i <= 2; i++ {
+		s2 := "---\nmodule: t.scenes\nimport: [t.cast]\nscene: \"s2\"\n---\n\n```sl\nenter a\nV" + string(rune('0'+i)) + "\n```\n"
+		f := &fakeLLM{replies: []string{"=== FILE: ep01/s2.dieg.md ===\n" + s2 + End}}
+		if _, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 1, Out: out}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, p := range []string{"rev1-r1.raw.txt", "rev2-r1.raw.txt"} {
+		if _, err := os.Stat(filepath.Join(out, "rounds", p)); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func TestSwapDirDoubleFailureNamesOld(t *testing.T) {
+	d := filepath.Join(t.TempDir(), "story")
+	WriteFiles(d, map[string]string{"a.dieg.md": "x"})
+	n := 0
+	rename = func(a, b string) error {
+		if n++; n > 1 {
+			return os.ErrPermission
+		}
+		return os.Rename(a, b)
+	}
+	defer func() { rename = os.Rename }()
+	err := swapDir(d, map[string]string{"b.dieg.md": "y"})
+	if err == nil || !strings.Contains(err.Error(), "previous story kept at "+d+".old") {
+		t.Fatalf("%v", err)
+	}
+}

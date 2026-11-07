@@ -151,13 +151,13 @@ func (k *counter) Complete(ctx context.Context, system, user string) (render.Res
 	return k.c.Complete(ctx, system, user)
 }
 
-// cmdWrite runs `dieg write <idea.txt | "아이템 문장"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high]`.
+// cmdWrite runs `dieg write <idea.txt | "아이템 문장"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--force]`.
 // Exit 1 when the code is not clean after the rounds (nothing rendered), 3 when a rendered scene failed verification.
 // --scenes N renders only the first N shown scenes (to fit a call budget).
 func cmdWrite(args []string) int {
 	o := write.DefaultOpts()
 	var idea, styles = "", "styles"
-	limit := 0
+	limit, force := 0, false
 	for i := 0; i < len(args); i++ {
 		j, ok, code := commonFlag(args, i, &o, &styles, &limit)
 		switch a := args[i]; {
@@ -165,6 +165,8 @@ func cmdWrite(args []string) int {
 			return code
 		case ok:
 			i = j
+		case a == "--force":
+			force = true
 		case (a == "-o") && i+1 < len(args):
 			i++
 			o.Out = args[i]
@@ -180,7 +182,7 @@ func cmdWrite(args []string) int {
 	if b, err := os.ReadFile(idea); err == nil {
 		idea = string(b)
 	}
-	code, err := runWrite(idea, styles, limit, o)
+	code, err := runWrite(idea, styles, limit, o, force)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
@@ -248,7 +250,7 @@ func summaryLine(cmd string, m *render.Meter, k *counter, out string) func(write
 	}
 }
 
-func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
+func runWrite(idea, styles string, limit int, o write.Opts, force bool) (int, error) {
 	b, err := backend(styles, o.Backend) // fail before spending calls
 	if err != nil {
 		return 1, err
@@ -259,6 +261,9 @@ func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
 	}
 	if err := notUnderCorpus(o.Out); err != nil {
 		return 1, err
+	}
+	if _, err := os.Stat(filepath.Join(o.Out, "story")); err == nil && !force {
+		return 1, fmt.Errorf("%s/story already exists: write would delete it (all episodes, calls.jsonl). Use dieg continue / dieg revise on it, or pass --force to start over", o.Out)
 	}
 	if err := os.MkdirAll(o.Out, 0o755); err != nil {
 		return 1, err

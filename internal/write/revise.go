@@ -47,11 +47,11 @@ func ChangedScenes(before, after map[string]string) (changed, added, removed []s
 	return
 }
 
-// readTree reads every .dieg.md file under dir into a path -> content map.
+// readTree reads every regular file under dir into a path -> content map.
 func readTree(dir string) (map[string]string, error) {
 	m := map[string]string{}
 	err := filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !strings.HasSuffix(p, ".dieg.md") {
+		if err != nil || !d.Type().IsRegular() {
 			return err
 		}
 		b, err := os.ReadFile(p)
@@ -64,7 +64,7 @@ func readTree(dir string) (map[string]string, error) {
 
 // ReviseLoop edits the code in storyDir to satisfy request. The prompt carries the whole current code (an edit has
 // to stay consistent with the past episodes) and the model answers with only the files it changes or adds, plus
-// "=== DELETE: <path> ===" lines. Each well-formed round is applied to a candidate copy, <out>/rounds/revise-r<r>/,
+// "=== DELETE: <path> ===" lines. Each well-formed round is applied to a candidate copy, <out>/rounds/rev<k>-r<r>/,
 // which the checker checks; the next round starts from that candidate. Only when the candidate is clean is it
 // swapped into storyDir; otherwise storyDir is untouched. A DELETE of a missing path is a "bundle" diagnostic.
 // <out>/diags-revise.txt holds the last well-formed round's diagnostics. ReviseLoop never renders.
@@ -90,17 +90,18 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 			check(ctx, storyDir)
 		}
 	}()
+	rev := "rev" + strconv.Itoa(1+countRevs(o.Out)) // revision k never overwrites revision k-1's rounds
 	for r := 1; r <= o.Rounds; r++ {
-		l := "revise-r1"
+		l := rev + "-code-r1"
 		if r > 1 {
-			l = "revise-fix-r" + strconv.Itoa(r)
+			l = rev + "-fix-r" + strconv.Itoa(r)
 		}
 		out, err := label(c, l).Complete(ctx, System, RevisePrompt(request, packMap(cur), diags, refs, o.Reserved, o.Skeleton))
 		if err != nil {
 			return res, fmt.Errorf("round %d: %w", r, err)
 		}
 		res.Rounds = r
-		rdir := filepath.Join(o.Out, "rounds", "revise-r"+strconv.Itoa(r))
+		rdir := filepath.Join(o.Out, "rounds", rev+"-r"+strconv.Itoa(r))
 		if err := os.MkdirAll(filepath.Dir(rdir), 0o755); err != nil {
 			return res, err
 		}
@@ -108,8 +109,11 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 			return res, err
 		}
 		files, dels, perr := ParseBundle(out.Text)
+		if perr == nil {
+			perr = checkAgainst(cur, files)
+		}
 		for _, d := range dels {
-			if _, ok := cur[d]; perr == nil && !ok {
+			if _, ok := cur[d]; perr == nil && (!ok || !strings.HasSuffix(d, ".dieg.md")) {
 				perr = fmt.Errorf("DELETE %q: no such file in the current code", d)
 			}
 		}
@@ -129,7 +133,7 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 			for p, c := range files {
 				next[p] = c
 			}
-			if err := WriteFiles(rdir, next); err != nil {
+			if err := writeTree(rdir, next); err != nil {
 				return res, err
 			}
 			checked = true
@@ -174,7 +178,7 @@ func swapDir(dir string, files map[string]string) error {
 	if err := os.RemoveAll(old); err != nil {
 		return err
 	}
-	if err := WriteFiles(nw, files); err != nil {
+	if err := writeTree(nw, files); err != nil {
 		return err
 	}
 	if err := rename(dir, old); err != nil {
@@ -182,16 +186,53 @@ func swapDir(dir string, files map[string]string) error {
 		return err
 	}
 	if err := rename(nw, dir); err != nil {
-		rename(old, dir)
+		if rerr := rename(old, dir); rerr != nil {
+			return fmt.Errorf("%w (restoring failed: %v; previous story kept at %s)", err, rerr, old)
+		}
 		os.RemoveAll(nw)
 		return err
 	}
 	return os.RemoveAll(old)
 }
 
+// countRevs is the number of revision dirs (rounds/rev<k>-r*) an earlier revise left in out.
+func countRevs(out string) int {
+	ents, _ := os.ReadDir(filepath.Join(out, "rounds"))
+	n := 0
+	for _, e := range ents {
+		if e.IsDir() && strings.HasPrefix(e.Name(), "rev") {
+			n++
+		}
+	}
+	return n
+}
+
+// checkAgainst rejects a model file that overwrites a file the model does not own (anything but .dieg.md) or that
+// equals an existing path up to case.
+func checkAgainst(cur, files map[string]string) error {
+	lower := map[string]string{}
+	for p := range cur {
+		lower[strings.ToLower(p)] = p
+	}
+	for p := range files {
+		if prev, ok := lower[strings.ToLower(p)]; ok {
+			if prev != p {
+				return fmt.Errorf("file %q differs only in case from existing %q", p, prev)
+			}
+			if !strings.HasSuffix(p, ".dieg.md") {
+				return fmt.Errorf("file %q is not Diegesis code and cannot be changed", p)
+			}
+		}
+	}
+	return nil
+}
+
 func packMap(m map[string]string) string {
 	var ps []string
 	for p := range m {
+		if !strings.HasSuffix(p, ".dieg.md") {
+			continue // the user's other files pass through, unseen by the model
+		}
 		ps = append(ps, p)
 	}
 	sort.Strings(ps)
