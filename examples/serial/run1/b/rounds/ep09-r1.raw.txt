@@ -1,0 +1,115 @@
+=== FILE: ep09/cast.dieg.md ===
+---
+module: haejin.cast
+mode: authored
+---
+
+# 여울섬 — 9화 추가 선언
+
+```sl
+fact youngho_climbs "계단 열세 번째 칸에 새 못을 박고 밤마다 버려진 등대를 오르내린 사람은 백영호다" true
+fact youngho_wants_light "백영호는 등대가 헐리기 전에 꼭대기에 한 번 더 올라 그날 밤을 마주하고 싶었다" true
+fact light_went_out_eleven "그날 밤 등대 불은 밤 열한 시 무렵에 꺼졌다" true
+fact light_back_one "등대 불은 새벽 한 시 무렵에야 다시 켜졌다" true
+# 백영호의 반쪽 고백 — 술에 취해 잠든 부끄러움을 감추려고 지어낸 말이다(youngho_fell_asleep 과 반대)
+fact youngho_off_by_order "백영호는 도경태의 지시를 받고 등대 불을 두 시간 동안 일부러 껐다" false
+fact youngho_shaking "고백하는 백영호의 손이 술잔을 쥔 채 떨린다" true
+fact seoyun_shaken "서윤은 삼십 년 동안 들어 온 이야기가 무너지는 것을 느낀다" true
+fact eleventh_tide_eleven_pm "노래의 '열한 물때에 불이 잔다'는 해진호가 가라앉은 밤 열한 시에 등대 불이 꺼졌다는 뜻이다" true
+
+youngho believes youngho_climbs
+youngho believes youngho_wants_light
+youngho believes light_went_out_eleven
+youngho believes light_back_one
+youngho believes youngho_shaking
+seoyun believes seoyun_shaken
+```
+=== FILE: ep09/s23.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s23
+location: baek_house
+when: after s22 by 0d..1d
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, youngho
+seoyun sees nail_bag
+seoyun asks youngho: nail_bag
+youngho says seoyun: youngho_climbs
+payoff haejin.scenes/nail_bag_hint
+seoyun believes youngho_climbs
+youngho says seoyun: youngho_wants_light
+seoyun says youngho: memorial_day
+seoyun sees youngho_shaking
+youngho says seoyun: light_off_two_hours
+youngho lies seoyun: youngho_off_by_order
+seoyun thinks: seoyun_shaken
+exit youngho
+exit seoyun
+```
+=== FILE: ep09/s24.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s24
+location: baek_house
+when: after s23 by 0m..10m
+pov: seoyun close
+render:
+  pace: medium
+  tension: 0.8
+mode: authored
+---
+
+```sl
+lasts 15m..30m
+enter seoyun, youngho
+seoyun asks youngho: light_off_two_hours
+youngho says seoyun: light_went_out_eleven
+youngho says seoyun: light_back_one
+seoyun believes light_went_out_eleven
+seoyun says youngho: father_died
+youngho says seoyun: ledger_recorded
+youngho says seoyun: stay_away
+seoyun thinks: light_went_out_eleven
+exit seoyun
+exit youngho
+```
+=== FILE: ep09/s25.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s25
+location: malsun_house
+when: after s24 by 10m..1h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.9
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter malsun, seoyun
+seoyun sees sewing_box
+malsun says seoyun: box_untouchable
+malsun says seoyun: song_line
+seoyun thinks: light_went_out_eleven
+seoyun believes eleventh_tide_eleven_pm because s24
+seoyun thinks: eleventh_tide_eleven_pm
+seoyun says malsun: eleventh_tide_eleven_pm
+malsun says seoyun: haenyeo_past
+seoyun thinks: light_off_two_hours
+exit seoyun
+exit malsun
+```
+=== END ===

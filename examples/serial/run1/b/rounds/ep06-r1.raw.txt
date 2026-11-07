@@ -1,0 +1,117 @@
+=== FILE: ep06/cast.dieg.md ===
+---
+module: haejin.cast
+mode: authored
+---
+
+# 여울섬 — 6화 추가 선언
+
+```sl
+place mainland_hospital "the mainland hospital"
+  name ko "육지 병원"
+
+character clerk "the night records clerk" extra
+  name ko "육지 병원 원무과 야간 직원"
+  believes kyungtae_no_record
+  believes log_complete
+
+artifact admission_log "the old admission register"
+  name ko "삼십 년 전 입원 대장"
+  contains kyungtae_no_record, log_complete
+
+fact youngho_scoffed "서윤이 이장은 그날 밤 육지 병원에 있었다고 하자 백영호는 코웃음을 쳤다" true
+fact nail_bag "폐가 툇마루에 녹슬지 않은 새 못이 든 봉지가 놓여 있다" true
+fact stay_away "서윤은 다시는 섬 끝 폐가에 찾아오지 말아야 한다" true
+fact minjae_will_check "민재는 육지 병원에 가서 사고 날 밤의 입원 기록을 직접 확인해 보겠다고 한다" true
+fact kyungtae_no_record "삼십 년 전 해진호가 가라앉은 밤의 육지 병원 입원 대장에는 도경태의 이름이 없다" true
+fact log_complete "그 무렵의 입원 대장은 한 장도 빠지지 않고 남아 있다" true
+
+youngho believes stay_away
+minjae believes minjae_will_check
+```
+=== FILE: ep06/s14.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "14"
+location: baek_house
+when: after 13 by 0m..2h
+pov: seoyun close
+render:
+  pace: medium
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, youngho
+seoyun says youngho: seoyun_reporting
+seoyun asks youngho: official_story
+youngho lies seoyun: official_story
+seoyun says youngho: kyungtae_alibi
+seoyun sees youngho_scoffed
+seoyun sees nail_bag
+setup nail_bag_hint hint: nail_bag
+youngho orders seoyun: stay_away
+youngho does shut_door
+seoyun thinks: youngho_scoffed
+exit all
+```
+=== FILE: ep06/s15.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "15"
+location: malsun_house
+when: after 14 by 30m..3h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, malsun
+mention minjae
+seoyun sees sewing_box
+malsun says seoyun: box_untouchable
+setup box_hint hint: "반짇고리 안에는 오말순이 오래 감춰 둔 무언가가 있다"
+seoyun does call_minjae
+seoyun says minjae: youngho_scoffed
+seoyun says minjae: kyungtae_alibi
+minjae says seoyun: minjae_will_check
+seoyun thinks: memorial_day
+exit all
+```
+=== FILE: ep06/s16.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "16"
+location: mainland_hospital
+when: after 15 by 1h..4h
+pov: minjae close
+render:
+  pace: medium
+  tension: 0.8
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter minjae, clerk
+minjae asks clerk: kyungtae_alibi
+clerk shows minjae admission_log
+minjae reads admission_log
+clerk says minjae: log_complete
+clerk says minjae: kyungtae_no_record
+minjae thinks: kyungtae_no_record
+minjae doubts kyungtae_alibi
+setup no_record_hint hint: kyungtae_no_record
+minjae does stare_at_register
+exit all
+```
+=== END ===

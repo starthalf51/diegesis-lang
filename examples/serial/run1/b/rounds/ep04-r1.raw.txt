@@ -1,0 +1,112 @@
+=== FILE: ep04/cast.dieg.md ===
+---
+module: haejin.cast
+mode: authored
+---
+
+# 여울섬 — 4화 추가 선언
+
+```sl
+fact minjae_wants_photos "민재는 투표 전에 버려진 등대를 사진으로 남겨 두고 싶어 한다" true
+fact stairs_rotten "등대 나선 계단은 녹이 슬고 군데군데 디딤판이 삭아 있다" true
+fact nail_trivial "새 못 하나쯤은 누가 삭은 디딤판을 대충 고쳐 놓은 것일 뿐이다" false
+fact lens_broken "등대 꼭대기의 큰 렌즈는 한쪽 귀퉁이가 깨져 떨어져 나가 있다" true
+fact lens_grooves "깨진 렌즈의 유리는 손가락 마디만큼 두껍고 둥근 홈이 겹겹이 패어 있다" true
+fact shard_from_lens "정수아가 바닷가에서 주운 유리 조각은 등대 렌즈에서 떨어져 나온 것이다" true
+fact fresh_footprints "등대 꼭대기 바닥에 쌓인 먼지 위에 얼마 되지 않은 발자국이 찍혀 있다" true
+
+minjae believes minjae_wants_photos
+minjae believes vote_in_twelve_days
+minjae believes demolition_after_vote
+```
+=== FILE: ep04/s9.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s9"
+location: lighthouse
+when: after s8 by 0d..1d
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, minjae
+minjae says seoyun: minjae_wants_photos
+seoyun sees stairs_rotten
+seoyun says minjae: memorial_day
+minjae says seoyun: grandma_memory_failing
+seoyun sees stair_nail, new_nail
+seoyun believes nail_trivial
+seoyun thinks: nail_trivial
+seoyun does step_over
+minjae asks seoyun
+seoyun does climb_on
+exit seoyun, minjae
+```
+=== FILE: ep04/s10.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s10"
+location: lighthouse
+when: after s9 by 0m..10m
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, minjae
+seoyun sees lens_broken
+seoyun sees lens_grooves
+seoyun believes shard_from_lens
+seoyun doubts shard_ordinary
+seoyun thinks: shard_from_lens
+payoff haejin.scenes/shard_hint
+reveal shard_from_lens
+minjae does photograph_lens
+minjae sees fresh_footprints
+minjae says seoyun: fresh_footprints
+seoyun sees fresh_footprints
+minjae believes someone_climbs
+minjae says seoyun: someone_climbs
+exit seoyun, minjae
+```
+=== FILE: ep04/s11.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s11"
+location: lighthouse
+when: after s10 by 0m..10m
+pov: seoyun close
+render:
+  pace: medium
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 15m..30m
+enter seoyun, minjae
+seoyun does descend
+seoyun says minjae: shard_from_lens
+minjae says seoyun: vote_in_twelve_days
+minjae says seoyun: demolition_after_vote
+seoyun sees stair_nail
+seoyun does pass_by
+seoyun believes seoyun_will_ask
+seoyun thinks: seoyun_will_ask
+seoyun sees lighthouse_dark_now
+minjae asks seoyun
+exit seoyun, minjae
+```
+=== END ===

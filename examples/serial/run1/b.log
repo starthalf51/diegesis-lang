@@ -1,0 +1,70 @@
+s1: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+write: rounds=1 clean=true scenes=2 failed=0[] calls=7 tokens in=14 out=13762 cache_read=6162 cache_write=25736 → examples\serial\run1\b
+s2: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s3: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=7 tokens in=14 out=11631 cache_read=6162 cache_write=28680 → examples\serial\run1\b
+s4: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: rounds=2 clean=true scenes=2 failed=0[] calls=6 tokens in=12 out=10971 cache_read=4108 cache_write=43644 → examples\serial\run1\b
+s6: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s7: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=2[s9 s10] calls=13 tokens in=26 out=16834 cache_read=12324 cache_write=38638 → examples\serial\run1\b
+s9: attempts=3 pass=false missing=[] hallucinated=[서윤이 새 못이 박힌 열세 번째 계단을 크게 한 걸음으로 넘어 올라간다] leaked=[] 
+s10: attempts=3 pass=false missing=[seoyun|assert|shard_from_lens] hallucinated=[extra-act:minjae|perceive|fresh_footprints extra-act:seoyun|perceive|shard_from_lens] leaked=[] 
+serial: dieg continue exit 3
+s3: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+revise: rounds=1 clean=true changed=s10,s3,s4,s6,s7,s9 added=s11,s5,s8 removed= failed=3[s5 s9 s10] calls=39 tokens in=78 out=43538 cache_read=39026 cache_write=89466 → examples\serial\run1\b
+s4: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s5: attempts=3 pass=false missing=[] hallucinated=[extra-act:seoyun|perceive|new_nail extra-act:taeo|perceive|new_nail] leaked=[] 
+s6: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s7: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+s8: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s9: attempts=3 pass=false missing=[] hallucinated=[서윤과 태오가 등대 탑 위로 계단을 계속 올라간다 서윤이 열세 번째 계단 칸의 새 못을 발견하고도 대수롭지 않게 여겨 그냥 넘어간다] leaked=[] 
+s10: attempts=3 pass=false missing=[] hallucinated=[extra-act:seoyun|perceive|fresh_footprints] leaked=[] 
+s11: attempts=3 pass=true missing=[] hallucinated=[] leaked=[] 
+serial: dieg revise exit 3
+s12: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=7 tokens in=14 out=10234 cache_read=6162 cache_write=29834 → examples\serial\run1\b
+s13: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+continue: rounds=2 clean=true scenes=2 failed=1[s14] calls=10 tokens in=20 out=19054 cache_read=8216 cache_write=55962 → examples\serial\run1\b
+s14: attempts=3 pass=false missing=[] hallucinated=[Seoyun leaves the abandoned house. Youngho shuts the door in Seoyun's face, ending the conversation.] leaked=[] 
+s15: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+serial: dieg continue exit 3
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+s17: attempts=3 pass=false missing=[minjae|assert|log_complete minjae|read|kyungtae_no_record] hallucinated=[extra-act:minjae|perceive|kyungtae_no_record 민재가 옛 입원 대장을 휴대전화로 사진 찍는다.] leaked=[] 
+continue: rounds=2 clean=true scenes=2 failed=2[s17 s18] calls=14 tokens in=28 out=23753 cache_read=12324 cache_write=65989 → examples\serial\run1\b
+s18: attempts=3 pass=false missing=[haeun|read|ticket_date] hallucinated=[extra-act:haeun|perceive|ticket_date 하은이 서랍에서 발견한 배표를 몰래 주머니에 넣는다.] leaked=[] 
+serial: dieg continue exit 3
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+s20: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=7 tokens in=14 out=11990 cache_read=6162 cache_write=34310 → examples\serial\run1\b
+s21: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+s12: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+revise: rounds=1 clean=true changed=s12,s13,s14,s15 added=s16,s19,s22 removed= failed=4[s14 s16 s19 s22] calls=31 tokens in=62 out=36245 cache_read=32344 cache_write=81747 → examples\serial\run1\b
+s13: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s14: attempts=3 pass=false missing=[seoyun|assert|youngho_scoffed] hallucinated=[extra-act:seoyun|perceive|youngho_scoffed 영호가 문을 쾅 닫고 서윤을 쫓아냈다] leaked=[] 
+s15: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s16: attempts=3 pass=false missing=[minjae|read|kyungtae_no_record] hallucinated=[extra-act:minjae|perceive|kyungtae_no_record] leaked=[] 
+s19: attempts=3 pass=false missing=[haeun|assert|ticket_date] hallucinated=[Haeun hides the old ferry ticket in her pocket instead of telling Seoyun about it.] leaked=[] 
+s22: attempts=3 pass=false missing=[seoyun|read|ticket_date] hallucinated=[extra-act:haeun|assert|ticket_date extra-act:seoyun|perceive|ticket_date] leaked=[] 
+serial: dieg revise exit 3
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+s23: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=7 tokens in=14 out=11984 cache_read=6162 cache_write=34564 → examples\serial\run1\b
+s24: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+s26: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=1[s27] calls=9 tokens in=18 out=12256 cache_read=8216 cache_write=38131 → examples\serial\run1\b
+s27: attempts=3 pass=false missing=[] hallucinated=[서윤이 새 못을 뽑아 그 아래를 살폈지만 장부 쪽을 찾지 못했다.] leaked=[] 
+serial: dieg continue exit 3
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+continue: rounds=1 clean=true scenes=2 failed=1[s30] calls=11 tokens in=22 out=17189 cache_read=10270 cache_write=42412 → examples\serial\run1\b
+s29: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+s30: attempts=3 pass=false missing=[malsun|assert|box_untouchable] hallucinated=[extra-act:seoyun|perceive|box_untouchable 오말순이 움켜쥐었던 반짇고리를 열어 보인다.] leaked=[] 
+serial: dieg continue exit 3

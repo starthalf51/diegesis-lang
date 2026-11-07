@@ -1,0 +1,149 @@
+{
+  "A": {
+    "Calls": 33,
+    "RealTokens": 329448,
+    "CacheWeighted": 411794,
+    "Output": 185283,
+    "Errs": 0
+  },
+  "A_total_including_cut_work": {
+    "Calls": 35,
+    "Errs": 0,
+    "RealTokens": 349495,
+    "CacheWeighted": 436851,
+    "Output": 199122,
+    "ByModel": {
+      "claude-opus-5-5": {
+        "Calls": 35,
+        "RealTokens": 349495,
+        "CacheWeighted": 436851,
+        "Output": 199122
+      }
+    }
+  },
+  "B": {
+    "Calls": 168,
+    "RealTokens": 767087,
+    "CacheWeighted": 777491,
+    "Output": 239441,
+    "Errs": 0
+  },
+  "B_total_including_cut_work": {
+    "Calls": 168,
+    "Errs": 0,
+    "RealTokens": 767087,
+    "CacheWeighted": 777491,
+    "Output": 239441,
+    "ByModel": {
+      "claude-opus-5-5": {
+        "Calls": 16,
+        "RealTokens": 331304,
+        "CacheWeighted": 414122,
+        "Output": 86702
+      },
+      "claude-sonnet-5-5": {
+        "Calls": 152,
+        "RealTokens": 435783,
+        "CacheWeighted": 363369,
+        "Output": 152739
+      }
+    }
+  },
+  "b_missing_scenes": {},
+  "chars_per_episode": {
+    "A": [
+      4116,
+      3835,
+      3700,
+      4459,
+      3771,
+      3944,
+      4102,
+      4504,
+      4446,
+      4283,
+      3664
+    ],
+    "B": [
+      2132,
+      1683,
+      1514,
+      4072,
+      1672,
+      1401,
+      1881,
+      4840,
+      1592,
+      1894,
+      1472
+    ]
+  },
+  "cut_at_episode": 11,
+  "episodes": 12,
+  "judge": {
+    "Calls": 1,
+    "Errs": 0,
+    "RealTokens": 77415,
+    "CacheWeighted": 96768,
+    "Output": 35206,
+    "ByModel": {
+      "claude-opus-5-5": {
+        "Calls": 1,
+        "RealTokens": 77415,
+        "CacheWeighted": 96768,
+        "Output": 35206
+      }
+    }
+  },
+  "judge_status": "ok",
+  "length_target": "화당 약 5000자, 장면당 약 2500자",
+  "plan_uncharged": {
+    "Calls": 1,
+    "Errs": 0,
+    "RealTokens": 2172,
+    "CacheWeighted": 626,
+    "Output": 2003,
+    "ByModel": {
+      "claude-opus-5-5": {
+        "Calls": 1,
+        "RealTokens": 2172,
+        "CacheWeighted": 626,
+        "Output": 2003
+      }
+    }
+  },
+  "rev_after": [
+    4,
+    8
+  ],
+  "revisions": [
+    {
+      "after_ep": 4,
+      "A": {
+        "calls": 3,
+        "cache_weighted": 32418
+      },
+      "B": {
+        "calls": 39,
+        "cache_weighted": 115813
+      },
+      "AResidual": 1,
+      "BResidual": 3
+    },
+    {
+      "after_ep": 8,
+      "A": {
+        "calls": 7,
+        "cache_weighted": 123461
+      },
+      "B": {
+        "calls": 31,
+        "cache_weighted": 105481
+      },
+      "AResidual": 1,
+      "BResidual": 1
+    }
+  ],
+  "scenes_per_episode": 2,
+  "stopped_by": "call budget reached (204 used + 22 reserved of 219)"
+}

@@ -1,0 +1,106 @@
+=== FILE: ep02/cast.dieg.md ===
+---
+module: haejin.cast
+mode: authored
+---
+
+# 여울섬 — 2화 추가 선언
+
+```sl
+fact memorial_day "며칠 뒤면 해진호 사고로 돌아가신 서윤 아버지의 기일이다" true
+fact seoyun_will_ask "서윤은 아버지 기일을 앞두고 이장에게 사고 날 밤의 일을 직접 묻기로 한다" true
+fact kyungtae_hand_paused "서윤이 아버지 이야기를 꺼내자 도경태는 담배를 쥔 손을 잠시 멈췄다" true
+fact new_nail "버려진 등대 계단 열세 번째 칸에 녹슬지 않은 새 못이 박혀 있다" true
+
+seoyun believes memorial_day
+```
+=== FILE: ep02/s3.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s3"
+location: malsun_house
+when: after s2 by 0d..1d
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.4
+mode: authored
+---
+
+```sl
+lasts 30m..50m
+enter seoyun, malsun, minjae
+malsun says: song_line
+seoyun sees sewing_box
+seoyun asks malsun: song_line
+malsun says seoyun: haenyeo_past
+seoyun says malsun: memorial_day
+seoyun does reach sewing_box
+malsun says seoyun: box_untouchable
+minjae whispers seoyun: grandma_memory_failing
+seoyun thinks: song_line
+seoyun believes seoyun_will_ask
+seoyun says minjae: seoyun_will_ask
+exit all
+```
+=== FILE: ep02/s4.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s4"
+location: dock
+when: after s3 by 0h..3h
+pov: seoyun close
+render:
+  pace: medium
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter kyungtae, seoyun
+seoyun sees kyungtae
+seoyun says kyungtae: memorial_day
+seoyun says kyungtae: father_died
+seoyun sees kyungtae_hand_paused
+kyungtae lies seoyun: official_story
+seoyun asks kyungtae
+kyungtae lies seoyun: kyungtae_alibi
+seoyun believes kyungtae_alibi
+kyungtae says seoyun: demolition_after_vote
+seoyun thinks: kyungtae_alibi
+exit kyungtae
+exit seoyun
+```
+=== FILE: ep02/s5.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s5"
+location: lighthouse
+when: after s4 by 1h..4h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 30m..60m
+enter seoyun, minjae
+seoyun sees lighthouse_dark_now
+seoyun says minjae: kyungtae_alibi
+seoyun says minjae: memorial_day
+seoyun sees stair_nail, new_nail
+minjae sees stair_nail, new_nail
+setup nail_hint hint: new_nail
+minjae says seoyun: new_nail
+seoyun thinks: lighthouse_dark_now
+seoyun thinks: song_line
+seoyun thinks: kyungtae_alibi
+exit all
+```
+=== END ===

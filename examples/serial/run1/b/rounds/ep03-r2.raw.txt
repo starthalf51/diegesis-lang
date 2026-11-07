@@ -1,0 +1,114 @@
+=== FILE: ep03/cast.dieg.md ===
+---
+module: haejin.cast
+mode: authored
+---
+
+# 여울섬 — 3화 추가 선언
+
+```sl
+place beach "the beach below the lighthouse"
+  name ko "등대 아래 바닷가"
+
+fact haeun_teaches "도하은은 여울섬 분교에서 아이들을 가르친다" true
+fact sua_on_beach "정수아는 아침마다 등대 아래 바닷가에 나가 파도에 밀려온 것을 줍는다" true
+fact sua_found_shard "정수아는 그 유리 조각을 등대 아래 바닷가 자갈 틈에서 주웠다" true
+fact shard_thick "유리 조각은 손가락 마디만큼 두껍고 한쪽 면에 둥근 홈이 겹겹이 패어 있다" true
+fact shard_ordinary "그 유리 조각은 바다에 쓸려 온 흔한 병 조각일 뿐이다" false
+fact sua_keeps_shards "정수아는 바닷가에서 주운 것을 과자 상자에 모아 둔다" true
+fact sua_saw_figure "며칠 전 밤 정수아는 누군가 손전등을 들고 버려진 등대로 올라가는 것을 보았다" true
+fact someone_climbs "요즘 누군가 버려진 등대를 몰래 오르내린다" true
+
+haeun believes haeun_teaches
+haeun believes sua_on_beach
+sua believes sua_found_shard
+sua believes sua_keeps_shards
+sua believes sua_saw_figure
+sua believes lighthouse_dark_now
+```
+=== FILE: ep03/s6.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s6"
+location: school
+when: after s5 by 0d..1d
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.3
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun
+seoyun sees school
+enter haeun
+haeun says seoyun: haeun_teaches
+seoyun tells haeun: memorial_day
+haeun reads vote_notice
+haeun says seoyun: vote_in_twelve_days
+haeun says seoyun: demolition_after_vote
+haeun says seoyun: sua_on_beach
+seoyun says haeun:
+exit seoyun, haeun
+```
+=== FILE: ep03/s7.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s7"
+location: school
+when: after s6 by 0m..10m
+pov: seoyun close
+render:
+  pace: medium
+  tension: 0.4
+mode: authored
+---
+
+```sl
+lasts 15m..30m
+enter seoyun, haeun
+enter sua
+sua shows glass_shard to seoyun
+sua tells seoyun: sua_found_shard
+seoyun sees glass_shard, shard_thick
+seoyun believes shard_ordinary
+seoyun says sua: shard_ordinary
+seoyun does give_back glass_shard to sua
+setup shard_hint hint: shard_thick
+sua says seoyun: sua_keeps_shards
+haeun says sua:
+exit all
+```
+=== FILE: ep03/s8.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s8"
+location: beach
+when: after s7 by 0m..30m
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, sua
+seoyun sees lighthouse
+sua says seoyun: lighthouse_dark_now
+sua tells seoyun: sua_saw_figure
+seoyun thinks: new_nail
+seoyun believes someone_climbs
+seoyun thinks: someone_climbs
+payoff haejin.scenes/nail_hint
+exit sua
+seoyun sees lighthouse
+exit seoyun
+```
+=== END ===

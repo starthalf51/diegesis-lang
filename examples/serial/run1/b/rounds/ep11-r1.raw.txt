@@ -1,0 +1,121 @@
+=== FILE: ep11/cast.dieg.md ===
+---
+module: haejin.cast
+mode: authored
+---
+
+# 여울섬 — 11화 추가 선언
+
+```sl
+thing mangsari "Malsun's old net bag"
+  name ko "오말순의 낡은 망사리"
+  attr mangsari.at = malsun_house
+
+fact shard_fits "정수아의 유리 조각이 깨진 등대 렌즈의 이가 빠진 자리에 꼭 맞는다" true
+fact lens_broken_that_night "렌즈 귀퉁이는 해진호가 가라앉은 밤 꺼진 불을 서둘러 다시 켜려던 누군가가 깨뜨렸다" true
+fact box_contents "반짇고리 안에는 오말순이 오래 감춰 둔 그물바늘과 망사리를 깁던 낡은 실 한 타래가 들어 있다" true
+fact mangsari_stitched "오말순은 그 그물바늘로 낡은 망사리 안감에 무언가를 기워 넣었다" true
+fact page_kyungtae_relit "찢긴 장부 쪽에는 새벽 한 시 무렵 도경태가 등대에 올라와 불을 다시 켜다 렌즈 귀퉁이를 깨뜨렸다고 적혀 있다" true
+
+malsun believes malsun_keeps_page
+malsun believes box_contents
+malsun believes mangsari_stitched
+```
+=== FILE: ep11/s29.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s29
+location: lighthouse
+when: after s28 by 8h..20h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, sua
+sua shows glass_shard
+sua says seoyun: sua_found_shard
+seoyun sees lens_broken, lens_grooves
+sua does hand_over glass_shard to seoyun
+seoyun does fit_shard glass_shard
+seoyun sees shard_fits
+sua sees shard_fits
+seoyun doubts shard_ordinary
+sua doubts shard_ordinary
+sua believes shard_from_lens
+sua says seoyun: shard_from_lens
+seoyun believes shard_from_lens
+seoyun believes lens_broken_that_night
+seoyun thinks: lens_broken_that_night
+exit seoyun, sua
+```
+=== FILE: ep11/s30.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s30
+location: malsun_house
+when: after s29 by 30m..3h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, malsun
+seoyun says malsun: shard_fits
+malsun does grip sewing_box
+malsun thinks: box_untouchable
+malsun says seoyun: haenyeo_past
+malsun does open sewing_box
+seoyun sees sewing_box, box_contents
+payoff haejin.scenes/box_hint
+malsun says seoyun: mangsari_stitched
+seoyun sees mangsari
+seoyun doubts page_under_nail
+seoyun believes page_elsewhere
+seoyun thinks: page_elsewhere
+exit seoyun, malsun
+```
+=== FILE: ep11/s31.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s31
+location: malsun_house
+when: after s30 by 0m..10m
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.9
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, malsun
+malsun does take_down mangsari
+seoyun does unpick mangsari
+seoyun sees ledger_page, ledger_recorded
+seoyun sees light_went_out_eleven, light_back_one
+seoyun sees youngho_fell_asleep
+seoyun sees page_kyungtae_relit
+payoff haejin.scenes/torch_hint
+malsun says seoyun: malsun_keeps_page
+seoyun doubts youngho_off_by_order
+seoyun doubts kyungtae_alibi
+seoyun doubts official_story
+seoyun believes kyungtae_broke_lens
+seoyun thinks: kyungtae_broke_lens
+malsun thinks: song_line
+exit seoyun, malsun
+```
+=== END ===

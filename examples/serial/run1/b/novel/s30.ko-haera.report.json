@@ -1,0 +1,11 @@
+{
+  "missing": [
+    "malsun|assert|box_untouchable"
+  ],
+  "hallucinated": [
+    "extra-act:seoyun|perceive|box_untouchable",
+    "오말순이 움켜쥐었던 반짇고리를 열어 보인다."
+  ],
+  "leaked": [],
+  "extract_error": ""
+}
