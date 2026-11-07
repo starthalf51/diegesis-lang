@@ -1,0 +1,60 @@
+write: rounds=1 clean=true scenes=2 failed=0[] calls=13 tokens in=26 out=34056 cache_read=13985 cache_write=34469 → examples\serial\run2\b
+s1: attempts=3 pass=true missing=[] hallucinated=[] leaked=[] 
+s2: attempts=3 pass=true missing=[] hallucinated=[] leaked=[] 
+s3: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=5 tokens in=10 out=12658 cache_read=4294 cache_write=25374 → examples\serial\run2\b
+s4: attempts=1 pass=true missing=[seoyun|assert|song_lyric] hallucinated=[] leaked=[] 
+continue: backlog=0 (stale scenes of earlier episodes picked up)
+s5: attempts=1 pass=true missing=[seoyun|assert|song_lyric] hallucinated=[] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=5 tokens in=10 out=10964 cache_read=4294 cache_write=24402 → examples\serial\run2\b
+s6: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: backlog=1 (stale scenes of earlier episodes picked up)
+s7: attempts=3 pass=false missing=[] hallucinated=[서윤이 불을 켜 둔 채 방문을 닫고 마당으로 나선다. 서윤이 솜이불을 말순의 무릎 위로 덮어 준다.] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=1[s7] calls=9 tokens in=18 out=16380 cache_read=8588 cache_write=30268 → examples\serial\run2\b
+s8: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: backlog=2 (stale scenes of earlier episodes picked up)
+serial: dieg continue exit 3
+s7b: attempts=3 pass=false missing=[] hallucinated=[민재가 여객선에 올라 섬을 떠난다.] leaked=[] 
+revise: rounds=2 clean=true changed=s8 added=s10,s11,s7b,s7c,s9 removed= failed=3[s7b s9 s10] calls=32 tokens in=64 out=64119 cache_read=32205 cache_write=91463 → examples\serial\run2\b
+s7c: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s8: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+s9: attempts=3 pass=false missing=[] hallucinated=[태일이 녹슨 잠금쇠를 돌려 철문의 빗장을 걸었다.] leaked=[] 
+s10: attempts=3 pass=false missing=[] hallucinated=[extra-act:seoyun|perceive|nail_new] leaked=[] 
+s11: attempts=3 pass=true missing=[] hallucinated=[] leaked=[] 
+serial: dieg revise exit 3
+s12: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: rounds=3 clean=true scenes=2 failed=0[] calls=7 tokens in=14 out=19873 cache_read=4294 cache_write=68643 → examples\serial\run2\b
+s13: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: backlog=0 (stale scenes of earlier episodes picked up)
+continue: rounds=3 clean=true scenes=2 failed=0[] calls=9 tokens in=18 out=21295 cache_read=6441 cache_write=74962 → examples\serial\run2\b
+s14: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: backlog=1 (stale scenes of earlier episodes picked up)
+s15: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=1[s16] calls=9 tokens in=18 out=21187 cache_read=8588 cache_write=35547 → examples\serial\run2\b
+s16: attempts=3 pass=false missing=[seoyun|read|logbook_kept_daily] hallucinated=[extra-act:seoyun|perceive|logbook_kept_daily 서윤이 쇠지렛대로 녹슨 자물쇠를 부수고 등대 문을 연다.] leaked=[] 
+continue: backlog=2 (stale scenes of earlier episodes picked up)
+s17: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+serial: dieg continue exit 3
+s18: attempts=3 pass=false missing=[haeun|assert|record_1993] hallucinated=[extra-act:haeun|perceive|record_1993 도하은이 해진호 사고 기록이 든 상자를 한쪽으로 밀어 놓았다.] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=2[s18 s19] calls=13 tokens in=26 out=37172 cache_read=12882 cache_write=44082 → examples\serial\run2\b
+s19: attempts=3 pass=false missing=[haeun|assert|admit_date_off] hallucinated=[extra-act:haeun|perceive|admit_date_off] leaked=[] 
+continue: backlog=3 (stale scenes of earlier episodes picked up)
+serial: dieg continue exit 3
+s13: attempts=3 pass=false missing=[] hallucinated=[extra-act:seoyun|perceive|nails_match 백영호가 한서윤과 윤유진의 팔을 잡고 문 밖으로 거세게 밀어냈다.] leaked=[] 
+revise: rounds=1 clean=true changed=s13,s14,s15,s16 added=s20,s21,s22,s23 removed= failed=3[s13 s14 s16] calls=35 tokens in=70 out=79090 cache_read=36499 cache_write=90353 → examples\serial\run2\b
+s14: attempts=3 pass=false missing=[] hallucinated=[extra-act:jihwan|assert|vote_in_12] leaked=[] 
+s15: attempts=3 pass=true missing=[] hallucinated=[] leaked=[] 
+s16: attempts=3 pass=false missing=[seoyun|read|logbook_kept_daily] hallucinated=[extra-act:seoyun|perceive|logbook_kept_daily 서윤이 녹슨 자물쇠를 비틀어 부수고 등대 문을 연다.] leaked=[] 
+s20: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s21: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s22: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s23: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 
+serial: dieg revise exit 3
+s24: attempts=3 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=11 tokens in=22 out=26421 cache_read=10735 cache_write=42319 → examples\serial\run2\b
+continue: backlog=0 (stale scenes of earlier episodes picked up)
+s25: attempts=2 pass=true missing=[seoyun|read|song_lyric] hallucinated=[] leaked=[] 
+continue: rounds=1 clean=true scenes=2 failed=0[] calls=7 tokens in=14 out=20082 cache_read=6441 cache_write=35009 → examples\serial\run2\b
+s26: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+continue: backlog=1 (stale scenes of earlier episodes picked up)
+s27: attempts=2 pass=true missing=[] hallucinated=[] leaked=[] 

@@ -1,6 +1,9 @@
 package render
 
-import "sort"
+import (
+	"sort"
+	"strings"
+)
 
 // Report is the diff verdict. ExtractError is set by the runner, never by Diff.
 type Report struct {
@@ -56,7 +59,9 @@ func Diff(s Scene, e Extracted) Report {
 		check(id)
 	}
 	for _, n := range e.NewEvents {
-		hall[n] = true
+		if !s.authored(n) {
+			hall[n.Label()] = true
+		}
 	}
 	want := map[string]int{}
 	for _, b := range s.Beats {
@@ -100,4 +105,90 @@ func (m set) sorted() []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+// authored reports whether a new_event merely restates an act the IR itself authors without a fact
+// (e.g. `does hide ferry_ticket`, `exit all`). Such an event is not invented content, so ADR-019
+// (no unauthored plot) is not loosened. Only `does` and presence events can be dropped; an assert,
+// perceive or other event is always a hallucination, and so is an event that names no actor and no
+// target. A `does` event needs a matching action word, or (with no action word) a shared target.
+func (s Scene) authored(n NewEvent) bool {
+	vc := VerbClass(n.Verb)
+	if vc != "act" && vc != "presence" {
+		return false
+	}
+	ev := s.resolve(n.Actor)
+	var evT []string
+	for _, t := range n.Targets {
+		if r := s.resolve(t); r != "" {
+			evT = append(evT, r)
+		}
+	}
+	if ev == "" && len(evT) == 0 {
+		return false
+	}
+	for _, b := range s.Beats {
+		for _, a := range b.Acts {
+			if a.Fact != "" && VerbClass(a.Verb) != "presence" || VerbClass(a.Verb) != vc {
+				continue
+			}
+			tg := map[string]bool{}
+			for _, t := range a.Targets {
+				tg[s.resolve(t)] = true
+			}
+			shared := false
+			for _, t := range evT {
+				shared = shared || tg[t]
+			}
+			if vc == "presence" {
+				if a.Verb != n.Verb {
+					continue
+				}
+				if a.Actor == "" { // exit all: empty actor, targets = the cast; any target of it matches
+					if tg[ev] && ev != "" || shared {
+						return true
+					}
+				} else if ev != "" && s.resolve(a.Actor) == ev && (len(evT) == 0 || shared) {
+					return true
+				}
+				continue
+			}
+			if ev == "" || s.resolve(a.Actor) != ev {
+				continue
+			}
+			if n.Action != "" && strings.EqualFold(n.Action, a.Action) && (len(evT) == 0 || len(a.Targets) == 0 || shared) || n.Action == "" && shared {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// resolve maps an id or a cast name to a lowercase canonical id. A name shared by several cast
+// entries is ambiguous and resolves to "" (never matches); unknown strings stay as lowercase text.
+func (s Scene) resolve(x string) string {
+	if x == "" {
+		return ""
+	}
+	hit := ""
+	for _, e := range s.Cast {
+		if strings.EqualFold(e.ID, x) {
+			return strings.ToLower(e.ID)
+		}
+		for _, ns := range e.Names {
+			for _, n := range ns {
+				if strings.EqualFold(n, x) {
+					if hit != "" && hit != strings.ToLower(e.ID) {
+						return ""
+					}
+					hit = strings.ToLower(e.ID)
+					break
+				}
+			}
+		}
+	}
+	if hit != "" {
+		return hit
+	}
+	return strings.ToLower(x)
 }

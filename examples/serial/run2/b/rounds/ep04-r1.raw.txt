@@ -1,0 +1,109 @@
+=== FILE: ep04/cast.dieg.md ===
+---
+module: yeoulseom.cast
+mode: authored
+---
+
+# 여울섬 — 4화 추가 선언
+
+```sl
+fact lighthouse_closed "여울섬 등대는 몇 년째 출입이 막힌 채 폐쇄되어 있다" true
+fact door_lock_rusted "등대 문의 자물쇠는 녹이 슬어 힘주어 비틀면 풀린다" true
+fact spiral_stairs "등대 안의 나선 계단은 좁고 가파르게 꼭대기까지 이어진다" true
+fact nail_new "등대 계단 열세 번째 칸에만 녹슬지 않은 새 못이 박혀 있다" true
+fact other_nails_rusted "다른 계단 칸의 못은 모두 붉게 녹슬어 있다" true
+fact step_recent "누군가 최근에 열세 번째 계단 칸을 뜯었다가 다시 박았다" true
+fact lens_chipped "등불실 렌즈의 한 귀퉁이가 깨져 떨어져 나가 있다" true
+fact lamp_room_steps "등불실 먼지 위에 창가까지 이어진 발자국 하나가 나 있다" true
+
+minjae believes lighthouse_closed
+```
+=== FILE: ep04/s9.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s9"
+location: lighthouse
+when: after s8 by 0d..1d
+pov: seoyun
+render:
+  pace: medium
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 10m..20m
+enter seoyun, minjae
+seoyun sees lighthouse
+minjae says seoyun: lighthouse_closed
+minjae says seoyun: vote_in_12
+seoyun thinks: father_died
+seoyun doubts official_cause
+minjae does twist_lock
+seoyun sees door_lock_rusted
+minjae asks seoyun
+seoyun sees spiral_stairs
+seoyun says minjae
+exit all
+```
+=== FILE: ep04/s10.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s10"
+location: lighthouse
+when: after s9 by 0m..5m
+pov: seoyun
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 10m..20m
+enter seoyun, minjae
+seoyun does count_steps
+seoyun sees new_nail
+seoyun sees nail_new
+seoyun sees other_nails_rusted
+seoyun says minjae: nail_new
+minjae sees nail_new
+seoyun believes step_recent
+seoyun thinks: step_recent
+setup nail_step hint: nail_new
+seoyun asks minjae: step_recent
+minjae says seoyun: lighthouse_closed
+exit all
+```
+=== FILE: ep04/s11.dieg.md ===
+---
+module: yeoulseom.scenes
+import: [yeoulseom.cast]
+scene: "s11"
+location: lighthouse
+when: after s10 by 0m..10m
+pov: seoyun
+render:
+  pace: slow
+  tension: 0.8
+mode: authored
+---
+
+```sl
+lasts 15m..30m
+enter seoyun, minjae
+seoyun sees lamp_room_steps
+seoyun says minjae: lamp_room_steps
+seoyun sees lens_chipped
+minjae sees lens_chipped
+payoff yeoulseom.scenes/shard_seen
+seoyun thinks: lens_chipped
+minjae says seoyun: official_cause
+seoyun doubts official_cause
+seoyun thinks: nail_new
+seoyun does look_at_sea
+exit all
+```
+=== END ===

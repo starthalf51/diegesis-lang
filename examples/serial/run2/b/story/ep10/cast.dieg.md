@@ -1,0 +1,41 @@
+---
+module: yeoulseom.cast
+mode: authored
+---
+
+# 여울섬 — 10화 추가 선언
+
+강민재는 3화에 육지로 떠나 퇴장했고 다시 나오지 않는다. 서윤을 돕는 자리는 분교 교사 윤유진이 맡는다.
+
+진상 수정: 그 밤 등대 렌즈를 깨뜨려 불을 꺼뜨린 사람은 이장 도경태다. 도경태는 술병을 들고 등불실에 올라와 백영호에게 술을 권했다. 백영호가 취해 눈을 붙인 사이 도경태가 렌즈를 깨뜨렸다. 그 뒤 도경태는 백영호에게 술에 취해 쓰러지며 렌즈를 깨뜨렸다고 말하고 다니라 했다. 백영호는 삼십 년 동안 그 말을 지켜 왔다. 수아가 갯가에서 주운 유리 조각이 깨진 렌즈 귀퉁이에 들어맞자, 백영호는 비로소 입을 연다.
+
+렌즈는 등불실에 머무는 물건이다. 수아의 유리 조각은 인물이 들고 다니므로 위치를 적지 않는다.
+
+```sl
+thing lamp_lens "lighthouse lens"
+  name ko "등불실 렌즈"
+
+fact shard_kept "수아는 갯가에서 주운 유리 조각을 필통에 넣어 지금까지 간직해 왔다" true
+fact sua_comes "수아는 서윤을 따라 등대에 가겠다고 조른다" true
+fact fit_before_visit "서윤은 이장을 찾아가기 전에 유리 조각을 등대 렌즈에 맞춰 보기로 한다" true
+fact shard_fits "수아의 유리 조각은 등불실 렌즈의 깨진 귀퉁이에 꼭 들어맞는다" true
+fact youngho_not_off "백영호는 그 밤 등대 불을 제 손으로 끄지 않았다" true
+fact gt_bottle "해진호가 가라앉은 밤 도경태는 술병을 들고 등불실에 올라와 백영호에게 술을 권했다" true
+fact gt_broke_lens "해진호가 가라앉은 밤 등대 렌즈를 깨뜨려 불을 꺼뜨린 사람은 이장 도경태다" true
+fact gt_silenced "도경태는 백영호에게 술에 취해 쓰러지며 렌즈를 깨뜨렸다고 말하고 다니라 했고, 백영호는 삼십 년 동안 그 말을 지켰다" true
+fact youngho_will_testify "백영호는 투표 전에 마을 사람들 앞에서 그 밤의 일을 말하겠다고 한다" true
+fact shard_proof "유리 조각과 백영호의 증언이 이장을 마주할 증거가 된다" true
+fact visit_with_shard "서윤은 유리 조각을 들고 이장의 집으로 찾아간다" true
+
+sua believes shard_kept
+sua believes sua_comes
+youngho believes youngho_not_off
+youngho believes gt_bottle
+youngho believes gt_broke_lens
+youngho believes gt_silenced
+youngho believes gyeongtae_on_island
+```
+
+```sl
+attr lamp_lens.at = lighthouse
+```

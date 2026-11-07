@@ -1,0 +1,11 @@
+{
+  "missing": [
+    "seoyun|read|logbook_kept_daily"
+  ],
+  "hallucinated": [
+    "extra-act:seoyun|perceive|logbook_kept_daily",
+    "서윤이 녹슨 자물쇠를 비틀어 부수고 등대 문을 연다."
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

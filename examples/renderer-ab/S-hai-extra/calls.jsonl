@@ -1,0 +1,6 @@
+{"t":"2026-11-07T07:10:10Z","label":"render-45.88.ko-haera","input":2,"output":7516,"cache_read":0,"cache_write":2960,"stop":"end_turn","err":"","ms":40614}
+{"t":"2026-11-07T07:10:51Z","label":"extract-45.88.ko-haera","input":2,"output":927,"cache_read":746,"cache_write":2185,"stop":"end_turn","err":"","ms":10881}
+{"t":"2026-11-07T07:11:01Z","label":"render-45.88.ko-haera","input":2,"output":3753,"cache_read":1292,"cache_write":1753,"stop":"end_turn","err":"","ms":24533}
+{"t":"2026-11-07T07:11:26Z","label":"extract-45.88.ko-haera","input":2,"output":949,"cache_read":746,"cache_write":2239,"stop":"end_turn","err":"","ms":11604}
+{"t":"2026-11-07T07:11:38Z","label":"render-45.88.ko-haera","input":2,"output":4504,"cache_read":1292,"cache_write":1839,"stop":"end_turn","err":"","ms":26588}
+{"t":"2026-11-07T07:12:04Z","label":"extract-45.88.ko-haera","input":2,"output":481,"cache_read":746,"cache_write":2423,"stop":"end_turn","err":"","ms":8107}

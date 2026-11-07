@@ -43,7 +43,7 @@ const (
 	judgeReserve = 2 // calls kept for the judge (two halves at most)
 	// lengthLine goes to both arms (A's prompts, B's idea file and --brief) so length does not skew the cost.
 	lengthLine   = "화당 약 5000자, 장면당 약 2500자"
-	opus, sonnet = "claude-opus-5-5", "claude-sonnet-5-5"
+	opus, sonnet, haiku = "claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"
 )
 
 // stepReserve is the worst case for one dieg step (code rounds + render/extract retries of a few scenes).
@@ -129,9 +129,12 @@ type Totals struct {
 }
 
 // modelOf maps a call label to its model. calls.jsonl records no model, so this assumes dieg's default roles
-// (code-/fix- on opus; render-/extract- on sonnet) and opus for every harness call.
+// (code-/fix- on opus; render- on haiku; extract- on sonnet) and opus for every harness call.
 func modelOf(label string) string {
-	if strings.HasPrefix(label, "render-") || strings.HasPrefix(label, "extract-") {
+	if strings.HasPrefix(label, "render-") {
+		return haiku
+	}
+	if strings.HasPrefix(label, "extract-") {
 		return sonnet
 	}
 	return opus
@@ -376,6 +379,11 @@ func runInterleaved(ctx context.Context, t *tracker, a *armA, briefs []string) e
 		k := c.revisionAfter(e)
 		if k < 0 {
 			continue
+		}
+		// The replan needs neither arm's output, so it goes first: if it is blocked or fails, revision k reaches
+		// neither arm and the run is cut cleanly at e. briefs is shared with A and B: both see the new directions.
+		if err := replan(ctx, t, briefs, k, e); err != nil {
+			return err
 		}
 		commit, err := a.revise(k, e) // stages A's rewrites; applied only if B's revise also succeeds
 		if err != nil {

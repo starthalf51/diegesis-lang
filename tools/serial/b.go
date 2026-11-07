@@ -17,7 +17,7 @@ func runBEpisode(ctx context.Context, t *tracker, briefs []string, e int) error 
 	c := t.c
 	b := filepath.Join(c.out, "b")
 	sc := strconv.Itoa(perEp)
-	args := []string{"continue", b, "--ep", strconv.Itoa(e), "--brief", briefs[e] + " (" + lengthLine + ")", "--scenes", sc}
+	args := []string{"continue", b, "--ep", strconv.Itoa(e), "--brief", confirmedRevisions(t.applied()) + briefs[e] + " (" + lengthLine + ")", "--scenes", sc}
 	if e == 1 {
 		idea := filepath.Join(c.out, "b-idea.txt")
 		if err := write(idea, strings.TrimSpace(c.idea)+fmt.Sprintf("\n\n## 연재 설정\n총 %d화, 화당 장면 %d개(%s). 지금은 1화만 쓴다.\n1화 방향: %s", c.eps, perEp, lengthLine, briefs[1])); err != nil {

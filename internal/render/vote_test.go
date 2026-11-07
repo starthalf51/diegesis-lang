@@ -42,9 +42,9 @@ func TestExtractKMajority(t *testing.T) {
 	s := voteScene()
 	act := func(actor, verb, fact string) ExtractedAct { return ExtractedAct{Actor: actor, Verb: verb, Fact: fact} }
 	runs := []Extracted{
-		{Acts: []ExtractedAct{act("a", "says", "f1"), act("a", "tells", "f1"), act("a", "says", "f2")}, FactsStated: []string{"f1", "f2"}, NewEvents: []string{"x happens"}},
-		{Acts: []ExtractedAct{act("a", "hails", "f1"), act("a", "says", "f1")}, FactsStated: []string{"f1"}, NewEvents: []string{}},
-		{Acts: []ExtractedAct{act("a", "says", "f1"), act("b", "sees", "f2"), act("b", "aside", "w")}, FactsStated: []string{"f1", "f2"}, NewEvents: []string{"y happens"}},
+		{Acts: []ExtractedAct{act("a", "says", "f1"), act("a", "tells", "f1"), act("a", "says", "f2")}, FactsStated: []string{"f1", "f2"}, NewEvents: []NewEvent{{Text: "x happens"}}},
+		{Acts: []ExtractedAct{act("a", "hails", "f1"), act("a", "says", "f1")}, FactsStated: []string{"f1"}, NewEvents: []NewEvent{}},
+		{Acts: []ExtractedAct{act("a", "says", "f1"), act("b", "sees", "f2"), act("b", "aside", "w")}, FactsStated: []string{"f1", "f2"}, NewEvents: []NewEvent{{Text: "y happens"}}},
 	}
 	f := &fakeCompleter{}
 	for _, e := range runs {
@@ -176,5 +176,15 @@ func TestScoreRevotesFromExtractions(t *testing.T) {
 	r := Score(s, Render{Extractions: []Extracted{e, e, empty}, Extracted: empty})
 	if len(r.Report.Missing) != 0 || !reflect.DeepEqual(keys(s, r.Extracted), keys(s, e)) {
 		t.Errorf("not re-voted: %+v", r)
+	}
+}
+
+func TestVoteAuthoredEventCannotHideInvention(t *testing.T) {
+	s := Scene{Cast: []Entity{{ID: "a"}}, Beats: []Beat{{Acts: []Act{{Actor: "a", Verb: "does", Action: "hide"}}}}}
+	auth := NewEvent{Actor: "a", Verb: "does", Action: "hide"}
+	inv := NewEvent{Text: "someone dies"}
+	got := Vote(s, []Extracted{{NewEvents: []NewEvent{auth}}, {NewEvents: []NewEvent{inv}}, {NewEvents: []NewEvent{inv}}})
+	if len(got.NewEvents) != 1 || got.NewEvents[0].Text != "someone dies" {
+		t.Fatalf("%+v", got.NewEvents)
 	}
 }

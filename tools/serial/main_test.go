@@ -67,7 +67,7 @@ func TestSerialDryRun(t *testing.T) {
 			t.Error("-dry left runDieg swapped to fakeDieg")
 		}
 	}()
-	out, s, rd := dry(t, "-eps", "3", "-rev-after", "2", "-price", "claude-opus-5-5=1:2,claude-sonnet-5-5=1:1")
+	out, s, rd := dry(t, "-eps", "3", "-rev-after", "2", "-price", "claude-opus-5-5=1:2,claude-sonnet-5-5=1:1,claude-haiku-5-5=1:1")
 	for _, f := range []string{"plan/plan.md", "plan/calls.jsonl", "a/outline.md", "a/summary.md", "a/eps/e03.md", "a/prompts/ep-2.txt", "a/prompts/rev1-pick.txt",
 		"a/calls.jsonl", "b/calls.jsonl", "b/novel/e1a.ko-haera.md", "b-idea.txt", "judge/prompt1.txt", "judge/mapping.txt", "judge/run1.txt",
 		"judge/quotes.md", "judge/revision.md", "judge/calls.jsonl", "metrics.csv", "summary.json"} {
@@ -97,11 +97,11 @@ func TestSerialDryRun(t *testing.T) {
 	if s.B.Calls != 12 || s.B.RealTokens != 12*152 || s.B.CacheWeighted != 894 {
 		t.Errorf("B %+v", s.B)
 	}
-	if s.Plan_uncharged.Calls != 1 || s.Judge.Calls != 1 || s.Cut_at_episode != 3 || s.Judge_status != "ok" {
+	if s.Plan_uncharged.Calls != 2 || s.Judge.Calls != 1 || s.Cut_at_episode != 3 || s.Judge_status != "ok" {
 		t.Errorf("plan %+v judge %+v cut %d status %q", s.Plan_uncharged, s.Judge, s.Cut_at_episode, s.Judge_status)
 	}
-	// per model: B has 4 code calls on opus and 8 render/extract calls on sonnet; price-weighted = weighted*in + output*out.
-	if b := s.B_total_including_cut_work.ByModel; b["claude-opus-5-5"].Calls != 4 || b["claude-sonnet-5-5"].Calls != 8 || len(s.A_total_including_cut_work.ByModel) != 1 {
+	// per model: B has 4 code calls on opus and 4 render calls on haiku and 4 extract calls on sonnet; price-weighted = weighted*in + output*out.
+	if b := s.B_total_including_cut_work.ByModel; b["claude-opus-5-5"].Calls != 4 || b["claude-haiku-5-5"].Calls != 4 || b["claude-sonnet-5-5"].Calls != 4 || len(s.A_total_including_cut_work.ByModel) != 1 {
 		t.Errorf("per-model %+v / %+v", s.B_total_including_cut_work.ByModel, s.A_total_including_cut_work.ByModel)
 	}
 	if s.A_total_including_cut_work.PriceWeighted == nil || *s.A_total_including_cut_work.PriceWeighted != 820+2*110 || s.B_total_including_cut_work.PriceWeighted == nil || *s.B_total_including_cut_work.PriceWeighted != 298+2*40+596+80 {
@@ -236,3 +236,79 @@ func TestSerialStepReserve(t *testing.T) {
 		t.Errorf("cut %d, B %d, judge %q/%d, used %d: %+v", s.Cut_at_episode, s.B_total_including_cut_work.Calls, s.Judge_status, s.Judge.Calls, used, s)
 	}
 }
+
+// After revision 1 both arms take the remaining episodes' direction from one shared replan call, which is charged to
+// the plan bucket and to neither arm.
+func TestReplanAfterRevision(t *testing.T) {
+	out, s, rd := dry(t, "-eps", "3", "-rev-after", "2")
+	if p := rd("a/prompts/ep-3.txt"); !strings.Contains(p, "재계획 방향 3") || strings.Contains(p, "이 화의 방향: 가짜 방향 3") {
+		t.Errorf("A ep3 did not use the replanned brief:\n%s", p)
+	}
+	if b := rd("b/argv/3.txt"); !strings.Contains(b, "재계획 방향 3") || strings.Contains(b, "가짜 방향 3") {
+		t.Errorf("B ep3 did not use the replanned brief:\n%s", b)
+	}
+	if b := rd("b/argv/2.txt"); !strings.Contains(b, "가짜 방향 2") {
+		t.Errorf("episodes up to the revision keep the original brief:\n%s", b)
+	}
+	if !strings.Contains(rd("plan/calls.jsonl"), `"replan-1"`) || s.Plan_uncharged.Calls != 2 {
+		t.Errorf("replan not metered under plan: %+v", s.Plan_uncharged)
+	}
+	if strings.Contains(rd("a/calls.jsonl"), "replan") || strings.Contains(rd("b/calls.jsonl"), "replan") || s.A.Calls != 11 || s.B.Calls != 12 {
+		t.Errorf("replan charged to an arm: A %d B %d", s.A.Calls, s.B.Calls)
+	}
+	_ = out
+}
+
+// The precedence rule and the confirmed-revision list are one text for A's prompt and B's --brief.
+func TestBriefPrecedenceSymmetric(t *testing.T) {
+	_, _, rd := dry(t, "-eps", "3", "-rev-after", "2")
+	want := confirmedRevisions(1)
+	if !strings.Contains(want, precedenceRule) || !strings.Contains(want, revReqs[0]) {
+		t.Fatalf("helper lacks rule or revision: %q", want)
+	}
+	if !strings.Contains(rd("a/prompts/ep-3.txt"), want) || !strings.Contains(rd("b/argv/3.txt"), want) {
+		t.Error("A prompt and B brief do not carry the same rule + revision list")
+	}
+	if z := confirmedRevisions(0); !strings.Contains(rd("b/argv/2.txt"), z) || !strings.Contains(rd("a/prompts/ep-2.txt"), z) {
+		t.Error("before any revision both arms carry the same block with an empty list")
+	}
+}
+
+// The replan runs first. plan 1, outline 1, ep1 5, ep2 5 = 12; replan 1 = 13; A revise 4 = 17; B revise 3 = 20.
+// Budget 21: B's revise is refused, so neither arm is revised. Budget 22: revised; A ep3 would need 20+3 > 22.
+func TestSerialReplanReserve(t *testing.T) {
+	stepReserve = 3
+	defer func() { stepReserve = 20 }()
+	for budget, wantRev := range map[int]int{21: 0, 22: 1} {
+		out, s, _ := dry(t, "-eps", "3", "-rev-after", "2", "-budget", strconv.Itoa(budget))
+		used := s.Plan_uncharged.Calls + s.A_total_including_cut_work.Calls + s.B_total_including_cut_work.Calls + s.Judge.Calls
+		bc, _ := os.ReadFile(filepath.Join(out, "b/calls.jsonl"))
+		if len(s.Revisions) != wantRev || s.Plan_uncharged.Calls != 2 || s.Cut_at_episode != 2 || s.Judge_status != "ok" || used > int64(budget) ||
+			(wantRev == 0 && s.B_total_including_cut_work.Calls != 6) || len(bc) == 0 {
+			t.Errorf("budget %d: revs %d plan %d cut %d judge %q used %d B %d", budget, len(s.Revisions), s.Plan_uncharged.Calls, s.Cut_at_episode, s.Judge_status, used, s.B_total_including_cut_work.Calls)
+		}
+	}
+}
+
+// A replan blocked by the budget, or garbage twice, means revision 1 reaches neither arm: both arms are cut at the
+// same episode and the judge still runs inside the budget.
+func TestSerialReplanBlocked(t *testing.T) {
+	stepReserve = 3
+	defer func() { stepReserve = 20; fakeReplanBad = false }()
+	// plan 1, outline 1, ep1 5, ep2 5 = 12; the replan needs 12+3 <= budget.
+	for name, c := range map[string]struct {
+		bad    bool
+		budget int
+		plan   int64
+	}{"budget": {false, 14, 1}, "garbage": {true, 220, 3}} {
+		fakeReplanBad = c.bad
+		out, s, _ := dry(t, "-eps", "3", "-rev-after", "2", "-budget", strconv.Itoa(c.budget))
+		ac, _ := os.ReadFile(filepath.Join(out, "a/calls.jsonl"))
+		used := s.Plan_uncharged.Calls + s.A_total_including_cut_work.Calls + s.B_total_including_cut_work.Calls + s.Judge.Calls
+		if len(s.Revisions) != 0 || s.Plan_uncharged.Calls != c.plan || s.Cut_at_episode != 2 || s.Judge_status != "ok" || used > int64(c.budget) ||
+			strings.Contains(string(ac), "rev1") || s.B_total_including_cut_work.Calls != 6 || s.A_total_including_cut_work.Calls != 5 {
+			t.Errorf("%s: revs %d plan %d cut %d judge %q used %d A %d B %d", name, len(s.Revisions), s.Plan_uncharged.Calls, s.Cut_at_episode, s.Judge_status, used, s.A_total_including_cut_work.Calls, s.B_total_including_cut_work.Calls)
+		}
+	}
+}
+

@@ -1,0 +1,55 @@
+# 이야기 상태 요약 (작품 ID `yeoulseom`)
+
+마지막 장면: s20(서술 위치 22, 시점 haeun close)
+
+## 모듈과 파일 (이미 있는 파일은 고치지 않는다)
+- yeoulseom.cast: cast.dieg.md, ep02/cast.dieg.md, ep03/cast.dieg.md, ep04/cast.dieg.md, ep05/cast.dieg.md, ep06/cast.dieg.md, ep07/cast.dieg.md (import: -)
+- yeoulseom.scenes: ep01/s1.dieg.md, ep01/s2.dieg.md, ep02/s3.dieg.md, ep02/s4.dieg.md, ep02/s5.dieg.md, ep03/s6.dieg.md, ep03/s7.dieg.md, ep03/s7b.dieg.md, ep03/s7c.dieg.md, ep03/s8.dieg.md, ep04/s9.dieg.md, ep04/s10.dieg.md, ep04/s11.dieg.md, ep05/s12.dieg.md, ep05/s13.dieg.md, ep05/s14.dieg.md, ep06/s15.dieg.md, ep06/s16.dieg.md, ep06/s17.dieg.md, ep07/s18.dieg.md, ep07/s19.dieg.md, ep07/s20.dieg.md (import: yeoulseom.cast)
+
+## 장면 순서
+s1 s2 s3 s4 s5 s6 s7 s7b s7c s8 s9 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20
+
+## 독자에게 아직 숨긴 사실 (인물이 알아도 독자는 모른다 — 서술로 밝히지 않는다)
+- 없음
+
+## 인물 (마지막 장면 기준)
+- gicheol 문기철: 생존
+- gyeongtae 도경태: 생존
+- haeun 도하은: 생존
+- jihwan 류지환: 생존
+- malsun 오말순: 생존
+- minjae 강민재: 생존
+- seoyun 한서윤: 생존
+- sua 정수아: 생존
+- taeil 서태일: 생존
+- youngho 백영호: 생존
+- yujin 윤유진: 생존
+
+## 거짓 믿음 (마지막 장면에서 인물이 사실과 반대로 믿는 것)
+- gicheol: hospital_alibi「사고 날 밤 도경태는 육지 병원에 입원해 있었다」 가 참이라고 믿는다(실제는 반대) ← gyeongtae 의 기만
+- haeun: hospital_alibi「사고 날 밤 도경태는 육지 병원에 입원해 있었다」 가 참이라고 믿는다(실제는 반대) ← gyeongtae 의 기만
+- haeun: official_cause「해진호 사고는 기상 악화로 인한 단순 사고였다」 가 참이라고 믿는다(실제는 반대) ← gyeongtae 의 기만
+- haeun: records_moldy「섬 기록물이 습기에 상해 육지 보관소로 보내야 한다」 가 참이라고 믿는다(실제는 반대) ← jihwan 의 기만
+- jihwan: hospital_alibi「사고 날 밤 도경태는 육지 병원에 입원해 있었다」 가 참이라고 믿는다(실제는 반대) ← gyeongtae 의 기만
+- malsun: hospital_alibi「사고 날 밤 도경태는 육지 병원에 입원해 있었다」 가 참이라고 믿는다(실제는 반대)
+- malsun: official_cause「해진호 사고는 기상 악화로 인한 단순 사고였다」 가 참이라고 믿는다(실제는 반대)
+- minjae: hospital_alibi「사고 날 밤 도경태는 육지 병원에 입원해 있었다」 가 참이라고 믿는다(실제는 반대)
+- minjae: official_cause「해진호 사고는 기상 악화로 인한 단순 사고였다」 가 참이라고 믿는다(실제는 반대)
+- seoyun: hospital_alibi「사고 날 밤 도경태는 육지 병원에 입원해 있었다」 가 참이라고 믿는다(실제는 반대) ← gyeongtae 의 기만
+- seoyun: official_cause「해진호 사고는 기상 악화로 인한 단순 사고였다」 가 참이라고 믿는다(실제는 반대) ← gyeongtae, youngho 의 기만
+- seoyun: records_moldy「섬 기록물이 습기에 상해 육지 보관소로 보내야 한다」 가 참이라고 믿는다(실제는 반대) ← jihwan 의 기만
+- seoyun: step_by_youngho「등대 열세 번째 계단 칸을 최근에 뜯었다가 다시 박은 사람은 백영호다」 가 거짓이라고 믿는다(실제는 반대) ← youngho 의 기만
+- taeil: official_cause「해진호 사고는 기상 악화로 인한 단순 사고였다」 가 참이라고 믿는다(실제는 반대)
+- yujin: hospital_alibi「사고 날 밤 도경태는 육지 병원에 입원해 있었다」 가 참이라고 믿는다(실제는 반대)
+- yujin: official_cause「해진호 사고는 기상 악화로 인한 단순 사고였다」 가 참이라고 믿는다(실제는 반대) ← youngho 의 기만
+- yujin: records_moldy「섬 기록물이 습기에 상해 육지 보관소로 보내야 한다」 가 참이라고 믿는다(실제는 반대) ← jihwan 의 기만
+- yujin: step_by_youngho「등대 열세 번째 계단 칸을 최근에 뜯었다가 다시 박은 사람은 백영호다」 가 거짓이라고 믿는다(실제는 반대) ← youngho 의 기만
+
+## 열린 복선 (`payoff <모듈>/<id>` 로 회수; 마지막 위치의 열린 수: 1)
+- yeoulseom.scenes/drawer_papers「도경태의 입원 서류에 적힌 입원 날짜는 해진호 사고 다음 날이다」(심은 장면 s19) — 열림
+
+## 회수된 복선
+- yeoulseom.scenes/night_register「기록물 상자 하나에 해진호 사고 날 밤의 섬 출입 기록이 들어 있다」(심은 장면 s14) — 회수됨: s18
+- yeoulseom.scenes/nail_step「등대 계단 열세 번째 칸에만 녹슬지 않은 새 못이 박혀 있다」(심은 장면 s10) — 회수됨: s13
+- yeoulseom.scenes/shard_seen「수아가 갯가에서 주운 두껍고 뿌연 유리 조각」(심은 장면 s6) — 회수됨: s11
+- yeoulseom.scenes/eleven_tide「외할머니가 흥얼거리는 옛 노래에 '열한 물때에 불이 잔다'는 구절이 있다」(심은 장면 s1) — 회수됨: s8
