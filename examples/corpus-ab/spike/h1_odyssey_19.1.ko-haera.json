@@ -1,0 +1,20 @@
+{
+  "Pair": "odyssey/19.1.ko-haera",
+  "Calls": 4,
+  "PassedBefore": false,
+  "PassedAfter": false,
+  "BeforeMissing": [
+    "odysseus|assert|beggar_is_odysseus",
+    "odysseus|assert|odysseus_home"
+  ],
+  "BeforeHall": [],
+  "BeforeLeak": [],
+  "AfterMissing": [
+    "odysseus|assert|beggar_is_odysseus",
+    "odysseus|assert|odysseus_home"
+  ],
+  "AfterHall": [],
+  "AfterLeak": [],
+  "CharsBefore": 1309,
+  "CharsAfter": 1309
+}

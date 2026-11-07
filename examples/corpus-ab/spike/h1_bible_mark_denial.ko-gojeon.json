@@ -1,0 +1,28 @@
+{
+  "Pair": "bible/mark_denial.ko-gojeon",
+  "Calls": 4,
+  "PassedBefore": false,
+  "PassedAfter": false,
+  "BeforeMissing": [
+    "mark_maid|perceive|peter_with_jesus",
+    "peter|assert|not peter_with_jesus"
+  ],
+  "BeforeHall": [
+    "Peter moves away from the fire to the gateway.",
+    "extra-act:mark_maid|assert|peter_with_jesus",
+    "extra-act:peter|act|not peter_with_jesus"
+  ],
+  "BeforeLeak": [],
+  "AfterMissing": [
+    "mark_maid|perceive|peter_with_jesus"
+  ],
+  "AfterHall": [
+    "extra-act:mark_bystanders|assert|peter_with_jesus",
+    "extra-act:mark_maid|assert|peter_with_jesus",
+    "extra-act:mark_maid|assert|peter_with_jesus",
+    "extra-act:peter|act|not peter_with_jesus"
+  ],
+  "AfterLeak": [],
+  "CharsBefore": 376,
+  "CharsAfter": 376
+}

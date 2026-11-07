@@ -52,10 +52,10 @@ type Run struct {
 	Passed                           bool
 	Calls, RenderCalls, ExtractCalls int
 	RenderUsage, ExtractUsage        render.Usage
-	Attempts                         int   `json:",omitempty"`
-	BeatAttempts                     []int `json:",omitempty"`
-	BeatFailed                       []int `json:",omitempty"`
-	StyleOK                          bool  `json:",omitempty"`
+	Attempts                         int    `json:",omitempty"`
+	BeatAttempts                     []int  `json:",omitempty"`
+	BeatFailed                       []int  `json:",omitempty"`
+	StyleOK                          bool   `json:",omitempty"`
 	FinalFrom                        string `json:",omitempty"`
 	Chars                            int
 	Missing, Hallucinated, Leaked    []string
@@ -116,6 +116,7 @@ func main() {
 	budget := flag.Int("budget", 100, "max real calls")
 	out := flag.String("out", "examples/corpus-ab/p1", "output dir")
 	pairs := flag.String("pairs", "", "comma list work/scene.backend (default: all, in order)")
+	spike := flag.String("spike", "", "h1|h2: spike.go")
 	flag.Parse()
 	ctx := context.Background()
 	bs, err := render.LoadBackends("styles")
@@ -127,6 +128,10 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+	}
+	if *spike != "" {
+		runSpike(ctx, *spike, *budget, *out, scs, bs, *pairs)
+		return
 	}
 	type job struct {
 		sc scene

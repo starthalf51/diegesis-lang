@@ -1,0 +1,23 @@
+{
+  "Pair": "chibi/45.88.ko-hapsho",
+  "Calls": 4,
+  "PassedBefore": false,
+  "PassedAfter": false,
+  "BeforeMissing": [
+    "jiang_gan|read|commanders_traitors"
+  ],
+  "BeforeHall": [
+    "Chiang Kan pockets the letter from Tsʻai Mao and Chang Yün."
+  ],
+  "BeforeLeak": [],
+  "AfterMissing": [
+    "jiang_gan|read|commanders_traitors"
+  ],
+  "AfterHall": [
+    "Chiang Kan pockets the letter from Tsʻai Mao and Chang Yün."
+  ],
+  "AfterLeak": [],
+  "CharsBefore": 962,
+  "CharsAfter": 982,
+  "EditChars": 28
+}

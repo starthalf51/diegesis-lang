@@ -1,0 +1,16 @@
+{
+  "Pair": "bible/mark_denial.ko-hapsho",
+  "Calls": 3,
+  "PassedBefore": false,
+  "PassedAfter": true,
+  "BeforeMissing": [],
+  "BeforeHall": [
+    "extra-act:peter|assert|not peter_knows_jesus"
+  ],
+  "BeforeLeak": [],
+  "AfterMissing": [],
+  "AfterHall": [],
+  "AfterLeak": [],
+  "CharsBefore": 455,
+  "CharsAfter": 455
+}
