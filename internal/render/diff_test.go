@@ -67,7 +67,7 @@ func TestDiffKeysAndFailClosed(t *testing.T) {
 	}
 	r := Diff(s, e)
 	// a says w 는 원본에 없는 사실 액트라 누출이자 초과 액트(R4)다.
-	if want := []string{"extra-act:a|assert|w", "unknown-fact:yy", "unknown-fact:zz", "x"};!reflect.DeepEqual(r.Hallucinated, want) {
+	if want := []string{"extra-act:a|assert|w", "unknown-fact:yy", "unknown-fact:zz", "x"}; !reflect.DeepEqual(r.Hallucinated, want) {
 		t.Fatalf("halluc %v", r.Hallucinated)
 	}
 	if !reflect.DeepEqual(r.Leaked, []string{"w"}) || len(r.Missing) != 0 {
@@ -125,6 +125,45 @@ func TestDiffDropsExitAll(t *testing.T) {
 func TestDiffKeepsUnauthoredEvent(t *testing.T) {
 	e := Extracted{NewEvents: []NewEvent{{Actor: "seoyun", Verb: "does", Action: "hide", Targets: []string{"ferry_ticket"}}}}
 	if r := Diff(factlessScene(), e); len(r.Hallucinated) != 1 {
+		t.Fatalf("%+v", r)
+	}
+}
+
+func TestDiffPresenceDirectionAndEmpty(t *testing.T) {
+	s := Scene{Cast: []Entity{{ID: "x"}}, Beats: []Beat{{Acts: []Act{{Verb: "enter", Targets: []string{"x"}}}}}}
+	if r := Diff(s, Extracted{NewEvents: []NewEvent{{Verb: "exit", Targets: []string{"x"}}}}); len(r.Hallucinated) != 1 {
+		t.Fatalf("enter vs exit %+v", r)
+	}
+	s.Beats[0].Acts[0].Verb = "exit"
+	if r := Diff(s, Extracted{NewEvents: []NewEvent{{Verb: "exit", Targets: []string{"x"}}}}); len(r.Hallucinated) != 0 {
+		t.Fatalf("exit %+v", r)
+	}
+	if r := Diff(s, Extracted{NewEvents: []NewEvent{{Verb: "exit"}}}); len(r.Hallucinated) != 1 {
+		t.Fatalf("empty %+v", r)
+	}
+}
+
+func TestDiffOnlyActAndPresenceDrop(t *testing.T) {
+	s := Scene{Cast: []Entity{{ID: "a"}, {ID: "sewing_box"}}, Beats: []Beat{{Acts: []Act{
+		{Actor: "a", Verb: "says"}, {Actor: "a", Verb: "does", Action: "reach", Targets: []string{"sewing_box"}}}}}}
+	for name, c := range map[string]struct {
+		e    NewEvent
+		want int
+	}{
+		"assert":      {NewEvent{Actor: "a", Verb: "says", Text: "t"}, 1},
+		"bare does":   {NewEvent{Actor: "a", Verb: "does"}, 1},
+		"target only": {NewEvent{Actor: "a", Verb: "does", Targets: []string{"sewing_box"}}, 0},
+	} {
+		if r := Diff(s, Extracted{NewEvents: []NewEvent{c.e}}); len(r.Hallucinated) != c.want {
+			t.Errorf("%s %+v", name, r)
+		}
+	}
+}
+
+func TestDiffAmbiguousNameNoMatch(t *testing.T) {
+	s := Scene{Cast: []Entity{{ID: "a", Names: map[string][]string{"ko": {"민"}}}, {ID: "b", Names: map[string][]string{"ko": {"민"}}}},
+		Beats: []Beat{{Acts: []Act{{Actor: "a", Verb: "does", Action: "hide"}}}}}
+	if r := Diff(s, Extracted{NewEvents: []NewEvent{{Actor: "민", Verb: "does", Action: "hide"}}}); len(r.Hallucinated) != 1 {
 		t.Fatalf("%+v", r)
 	}
 }

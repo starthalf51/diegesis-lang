@@ -109,38 +109,54 @@ func (m set) sorted() []string {
 
 // authored reports whether a new_event merely restates an act the IR itself authors without a fact
 // (e.g. `does hide ferry_ticket`, `exit all`). Such an event is not invented content, so ADR-019
-// (no unauthored plot) is not loosened: anything not authored in the IR stays a hallucination.
+// (no unauthored plot) is not loosened. Only `does` and presence events can be dropped; an assert,
+// perceive or other event is always a hallucination, and so is an event that names no actor and no
+// target. A `does` event needs a matching action word, or (with no action word) a shared target.
 func (s Scene) authored(n NewEvent) bool {
-	ev := s.resolve(n.Actor)
 	vc := VerbClass(n.Verb)
+	if vc != "act" && vc != "presence" {
+		return false
+	}
+	ev := s.resolve(n.Actor)
+	var evT []string
+	for _, t := range n.Targets {
+		if r := s.resolve(t); r != "" {
+			evT = append(evT, r)
+		}
+	}
+	if ev == "" && len(evT) == 0 {
+		return false
+	}
 	for _, b := range s.Beats {
 		for _, a := range b.Acts {
-			ac := VerbClass(a.Verb)
-			if a.Fact != "" && ac != "presence" || ac != vc {
+			if a.Fact != "" && VerbClass(a.Verb) != "presence" || VerbClass(a.Verb) != vc {
 				continue
 			}
 			tg := map[string]bool{}
 			for _, t := range a.Targets {
 				tg[s.resolve(t)] = true
 			}
-			if a.Actor == "" && a.Verb == "exit" && n.Verb == "exit" && tg[ev] {
-				return true // exit all: empty actor, targets = the cast
+			shared := false
+			for _, t := range evT {
+				shared = shared || tg[t]
 			}
-			if s.resolve(a.Actor) != ev {
-				continue
-			}
-			switch {
-			case vc == "act" && n.Action != "":
-				if strings.EqualFold(n.Action, a.Action) {
-					return true
+			if vc == "presence" {
+				if a.Verb != n.Verb {
+					continue
 				}
-			case (vc == "act" || vc == "presence") && len(n.Targets) > 0:
-				for _, t := range n.Targets {
-					if tg[s.resolve(t)] {
+				if a.Actor == "" { // exit all: empty actor, targets = the cast; any target of it matches
+					if tg[ev] && ev != "" || shared {
 						return true
 					}
+				} else if ev != "" && s.resolve(a.Actor) == ev && (len(evT) == 0 || shared) {
+					return true
 				}
-			default:
+				continue
+			}
+			if ev == "" || s.resolve(a.Actor) != ev {
+				continue
+			}
+			if n.Action != "" && strings.EqualFold(n.Action, a.Action) || n.Action == "" && shared {
 				return true
 			}
 		}
@@ -148,8 +164,13 @@ func (s Scene) authored(n NewEvent) bool {
 	return false
 }
 
-// resolve maps an id or any cast name to a lowercase canonical id; unknown strings stay as lowercase text.
+// resolve maps an id or a cast name to a lowercase canonical id. A name shared by several cast
+// entries is ambiguous and resolves to "" (never matches); unknown strings stay as lowercase text.
 func (s Scene) resolve(x string) string {
+	if x == "" {
+		return ""
+	}
+	hit := ""
 	for _, e := range s.Cast {
 		if strings.EqualFold(e.ID, x) {
 			return strings.ToLower(e.ID)
@@ -157,10 +178,17 @@ func (s Scene) resolve(x string) string {
 		for _, ns := range e.Names {
 			for _, n := range ns {
 				if strings.EqualFold(n, x) {
-					return strings.ToLower(e.ID)
+					if hit != "" && hit != strings.ToLower(e.ID) {
+						return ""
+					}
+					hit = strings.ToLower(e.ID)
+					break
 				}
 			}
 		}
+	}
+	if hit != "" {
+		return hit
 	}
 	return strings.ToLower(x)
 }

@@ -48,7 +48,7 @@ func ExtractK(ctx context.Context, c Completer, s Scene, lang, prose string, k i
 //   - 액트: 키(actor|동사류|정규 사실)마다, 과반의 재추출이 그 이상 뽑은 개수만 채택한다(멀티셋 중앙값).
 //   - facts_stated: 과반이 말한 사실(정규 명제로 셈)만 채택한다.
 //   - 숨긴 사실은 한 번이라도 나오면(액트든 facts_stated 든) facts_stated 에 넣는다 — 누출 판정은 fail-closed.
-//   - new_events: 자유 문장이라 맞대지 못한다. 과반이 그 이상 낸 개수만큼, 그만큼 낸 첫 재추출의 문장을 쓴다.
+//   - new_events: 자유 문장이라 맞대지 못한다. IR 에 지은이가 쓴 사실 없는 행위를 다시 말한 것은 먼저 뺀다. 남은 것 중 과반이 그 이상 낸 개수만큼, 그만큼 낸 첫 재추출의 문장을 쓴다.
 func Vote(s Scene, xs []Extracted) Extracted {
 	out := Extracted{Acts: []ExtractedAct{}, FactsStated: []string{}, NewEvents: []NewEvent{}}
 	if len(xs) == 0 {
@@ -111,10 +111,19 @@ func Vote(s Scene, xs []Extracted) Extracted {
 		}
 	}
 	sort.Strings(out.FactsStated)
-	n := majority(len(xs), need, func(i int) int { return len(xs[i].NewEvents) })
-	for _, x := range xs {
-		if len(x.NewEvents) >= n {
-			out.NewEvents = append(out.NewEvents, x.NewEvents[:n]...)
+	// authored restatements are dropped first, so they cannot hide a majority invention
+	kept := make([][]NewEvent, len(xs))
+	for i, x := range xs {
+		for _, ev := range x.NewEvents {
+			if !s.authored(ev) {
+				kept[i] = append(kept[i], ev)
+			}
+		}
+	}
+	n := majority(len(xs), need, func(i int) int { return len(kept[i]) })
+	for _, k := range kept {
+		if len(k) >= n {
+			out.NewEvents = append(out.NewEvents, k[:n]...)
 			break
 		}
 	}

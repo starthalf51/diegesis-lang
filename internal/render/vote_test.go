@@ -178,3 +178,13 @@ func TestScoreRevotesFromExtractions(t *testing.T) {
 		t.Errorf("not re-voted: %+v", r)
 	}
 }
+
+func TestVoteAuthoredEventCannotHideInvention(t *testing.T) {
+	s := Scene{Cast: []Entity{{ID: "a"}}, Beats: []Beat{{Acts: []Act{{Actor: "a", Verb: "does", Action: "hide"}}}}}
+	auth := NewEvent{Actor: "a", Verb: "does", Action: "hide"}
+	inv := NewEvent{Text: "someone dies"}
+	got := Vote(s, []Extracted{{NewEvents: []NewEvent{auth}}, {NewEvents: []NewEvent{inv}}, {NewEvents: []NewEvent{inv}}})
+	if len(got.NewEvents) != 1 || got.NewEvents[0].Text != "someone dies" {
+		t.Fatalf("%+v", got.NewEvents)
+	}
+}
