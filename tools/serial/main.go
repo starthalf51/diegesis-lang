@@ -384,6 +384,9 @@ func runInterleaved(ctx context.Context, t *tracker, a *armA, briefs []string) e
 		if err := runBRevise(ctx, t, k, e); err != nil {
 			return err
 		}
+		if err := replan(ctx, t, briefs, k, e); err != nil { // briefs is shared with A and B: both see the new directions
+			return err
+		}
 		commit()
 		t.revDone[k] = true
 	}

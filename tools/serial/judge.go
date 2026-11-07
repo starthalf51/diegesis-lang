@@ -235,6 +235,11 @@ type fake struct{ eps int }
 func (f fake) Complete(_ context.Context, _, user string) (render.Result, error) {
 	t := "가짜 화. 종이 울렸다.\n* * *\n둘째 장면이다."
 	switch {
+	case strings.Contains(user, "화별 방향 재생성"):
+		t = ""
+		for i := 1; i <= f.eps; i++ {
+			t += fmt.Sprintf("%d화: 재계획 방향 %d\n", i, i)
+		}
 	case strings.Contains(user, "시리즈 계획"):
 		t = ""
 		for i := 1; i <= f.eps; i++ {
@@ -290,7 +295,10 @@ func fakeDieg(ctx context.Context, out string, args []string) error {
 	case "write", "continue":
 		ep := "1"
 		if args[0] == "continue" {
-			ep = args[3] // continue <dir> --ep N
+			ep = args[3] // continue <dir> --ep N --brief X
+			if err := write(filepath.Join(dir, "argv", ep+".txt"), args[5]); err != nil {
+				return err
+			}
 		}
 		if err := put("e"+ep+"a", "가짜 장면이다. 종이 울렸다. "+strings.Repeat("가", 10*len(ep))); err != nil {
 			return err

@@ -97,7 +97,7 @@ func TestSerialDryRun(t *testing.T) {
 	if s.B.Calls != 12 || s.B.RealTokens != 12*152 || s.B.CacheWeighted != 894 {
 		t.Errorf("B %+v", s.B)
 	}
-	if s.Plan_uncharged.Calls != 1 || s.Judge.Calls != 1 || s.Cut_at_episode != 3 || s.Judge_status != "ok" {
+	if s.Plan_uncharged.Calls != 2 || s.Judge.Calls != 1 || s.Cut_at_episode != 3 || s.Judge_status != "ok" {
 		t.Errorf("plan %+v judge %+v cut %d status %q", s.Plan_uncharged, s.Judge, s.Cut_at_episode, s.Judge_status)
 	}
 	// per model: B has 4 code calls on opus and 8 render/extract calls on sonnet; price-weighted = weighted*in + output*out.
@@ -236,3 +236,56 @@ func TestSerialStepReserve(t *testing.T) {
 		t.Errorf("cut %d, B %d, judge %q/%d, used %d: %+v", s.Cut_at_episode, s.B_total_including_cut_work.Calls, s.Judge_status, s.Judge.Calls, used, s)
 	}
 }
+
+// After revision 1 both arms take the remaining episodes' direction from one shared replan call, which is charged to
+// the plan bucket and to neither arm.
+func TestReplanAfterRevision(t *testing.T) {
+	out, s, rd := dry(t, "-eps", "3", "-rev-after", "2")
+	if p := rd("a/prompts/ep-3.txt"); !strings.Contains(p, "재계획 방향 3") || strings.Contains(p, "이 화의 방향: 가짜 방향 3") {
+		t.Errorf("A ep3 did not use the replanned brief:\n%s", p)
+	}
+	if b := rd("b/argv/3.txt"); !strings.Contains(b, "재계획 방향 3") || strings.Contains(b, "가짜 방향 3") {
+		t.Errorf("B ep3 did not use the replanned brief:\n%s", b)
+	}
+	if b := rd("b/argv/2.txt"); !strings.Contains(b, "가짜 방향 2") {
+		t.Errorf("episodes up to the revision keep the original brief:\n%s", b)
+	}
+	if !strings.Contains(rd("plan/calls.jsonl"), `"replan-1"`) || s.Plan_uncharged.Calls != 2 {
+		t.Errorf("replan not metered under plan: %+v", s.Plan_uncharged)
+	}
+	if strings.Contains(rd("a/calls.jsonl"), "replan") || strings.Contains(rd("b/calls.jsonl"), "replan") || s.A.Calls != 11 || s.B.Calls != 12 {
+		t.Errorf("replan charged to an arm: A %d B %d", s.A.Calls, s.B.Calls)
+	}
+	_ = out
+}
+
+// The precedence rule and the confirmed-revision list are one text for A's prompt and B's --brief.
+func TestBriefPrecedenceSymmetric(t *testing.T) {
+	_, _, rd := dry(t, "-eps", "3", "-rev-after", "2")
+	want := confirmedRevisions(1)
+	if !strings.Contains(want, precedenceRule) || !strings.Contains(want, revReqs[0]) {
+		t.Fatalf("helper lacks rule or revision: %q", want)
+	}
+	if !strings.Contains(rd("a/prompts/ep-3.txt"), want) || !strings.Contains(rd("b/argv/3.txt"), want) {
+		t.Error("A prompt and B brief do not carry the same rule + revision list")
+	}
+	if strings.Contains(rd("b/argv/2.txt"), precedenceRule) || strings.Contains(rd("a/prompts/ep-2.txt"), "## 확정된 수정") {
+		t.Error("rule shown before any revision was applied")
+	}
+}
+
+// The replan call needs headroom: a revision that would leave no call for it must not start, and one that fits
+// replans; either way the judge runs inside the budget and both arms stop at the same episode.
+func TestSerialReplanReserve(t *testing.T) {
+	stepReserve = 3
+	defer func() { stepReserve = 20 }()
+	// plan 1, outline 1, ep1 5, ep2 5 = 12; A revise 4 = 16; B revise 3 = 19; replan 1 = 20; A ep3 needs 20+3 > 22.
+	for budget, wantRev := range map[int]int{21: 0, 22: 1} {
+		_, s, _ := dry(t, "-eps", "3", "-rev-after", "2", "-budget", strconv.Itoa(budget))
+		used := s.Plan_uncharged.Calls + s.A_total_including_cut_work.Calls + s.B_total_including_cut_work.Calls + s.Judge.Calls
+		if len(s.Revisions) != wantRev || s.Plan_uncharged.Calls != int64(1+wantRev) || s.Cut_at_episode != 2 || s.Judge_status != "ok" || used > int64(budget) {
+			t.Errorf("budget %d: revs %d plan %d cut %d judge %q used %d", budget, len(s.Revisions), s.Plan_uncharged.Calls, s.Cut_at_episode, s.Judge_status, used)
+		}
+	}
+}
+
