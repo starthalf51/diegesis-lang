@@ -1,0 +1,33 @@
+{
+  "Mode": "single",
+  "Pair": "odyssey/19.1.ko-haera",
+  "Work": "odyssey",
+  "Scene": "19.1",
+  "Backend": "ko-haera",
+  "Beats": 10,
+  "Acts": 29,
+  "Passed": false,
+  "Calls": 6,
+  "RenderCalls": 3,
+  "ExtractCalls": 3,
+  "RenderUsage": {
+    "input": 6,
+    "output": 20990,
+    "cache_read": 3876,
+    "cache_write": 6551
+  },
+  "ExtractUsage": {
+    "input": 6,
+    "output": 3339,
+    "cache_read": 2517,
+    "cache_write": 7617
+  },
+  "Attempts": 3,
+  "Chars": 1309,
+  "Missing": [
+    "odysseus|assert|beggar_is_odysseus",
+    "odysseus|assert|odysseus_home"
+  ],
+  "Hallucinated": [],
+  "Leaked": []
+}

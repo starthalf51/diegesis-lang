@@ -1,0 +1,34 @@
+{
+  "Mode": "single",
+  "Pair": "chibi/45.88.ko-hapsho",
+  "Work": "chibi",
+  "Scene": "45.88",
+  "Backend": "ko-hapsho",
+  "Beats": 10,
+  "Acts": 24,
+  "Passed": false,
+  "Calls": 6,
+  "RenderCalls": 3,
+  "ExtractCalls": 3,
+  "RenderUsage": {
+    "input": 6,
+    "output": 19841,
+    "cache_read": 4959,
+    "cache_write": 5198
+  },
+  "ExtractUsage": {
+    "input": 6,
+    "output": 2781,
+    "cache_read": 2517,
+    "cache_write": 6390
+  },
+  "Attempts": 3,
+  "Chars": 962,
+  "Missing": [
+    "jiang_gan|read|commanders_traitors"
+  ],
+  "Hallucinated": [
+    "Chiang Kan pockets the letter from Tsʻai Mao and Chang Yün."
+  ],
+  "Leaked": []
+}

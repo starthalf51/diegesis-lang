@@ -1,0 +1,32 @@
+{
+  "Mode": "single",
+  "Pair": "macbeth/1.3.ko-hapsho",
+  "Work": "macbeth",
+  "Scene": "1.3",
+  "Backend": "ko-hapsho",
+  "Beats": 11,
+  "Acts": 26,
+  "Passed": true,
+  "Calls": 4,
+  "RenderCalls": 2,
+  "ExtractCalls": 2,
+  "RenderUsage": {
+    "input": 4,
+    "output": 18145,
+    "cache_read": 3306,
+    "cache_write": 4291
+  },
+  "ExtractUsage": {
+    "input": 4,
+    "output": 1932,
+    "cache_read": 1678,
+    "cache_write": 5572
+  },
+  "Attempts": 2,
+  "Chars": 1204,
+  "Missing": [
+    "macbeth|assert|holds(king,macbeth)"
+  ],
+  "Hallucinated": [],
+  "Leaked": []
+}
