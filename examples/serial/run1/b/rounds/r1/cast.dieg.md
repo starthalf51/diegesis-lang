@@ -1,0 +1,113 @@
+---
+module: haejin.cast
+mode: authored
+---
+
+# 여울섬 — 등장인물과 선언
+
+```sl
+work haejin "여울섬의 불"
+  unit day
+  start 2026-04-01
+  name ko "여울섬의 불"
+
+character seoyun "Han Seoyun" major
+  name ko "한서윤"
+  attr seoyun.age = 29
+  believes father_died
+  believes official_story
+character malsun "Oh Malsun" major
+  name ko "오말순"
+  attr malsun.age = 78
+  believes haenyeo_past
+  believes box_untouchable
+  believes song_line
+character minjae "Kang Minjae" major
+  name ko "강민재"
+  attr minjae.age = 29
+  believes grandma_memory_failing
+  believes father_died
+character kyungtae "Do Kyungtae" major
+  name ko "도경태"
+  attr kyungtae.age = 63
+  believes kyungtae_on_island
+  believes light_off_two_hours
+  believes kyungtae_ordered
+  believes vote_in_twelve_days
+  believes demolition_after_vote
+  believes father_died
+character haeun "Do Haeun" major
+  name ko "도하은"
+  attr haeun.age = 31
+character youngho "Baek Youngho" major
+  name ko "백영호"
+  attr youngho.age = 70
+  believes light_off_two_hours
+  believes kyungtae_ordered
+  believes ledger_recorded
+character jihwan "Ryu Jihwan" minor
+  name ko "류지환"
+  attr jihwan.age = 35
+  believes vote_in_twelve_days
+  believes demolition_after_vote
+character kicheol "Moon Kicheol" minor
+  name ko "문기철"
+  attr kicheol.age = 58
+character sua "Jeong Sua" minor
+  name ko "정수아"
+  attr sua.age = 13
+
+parent malsun of seoyun
+
+place dock "Yeoul Island dock"
+  name ko "여울섬 선착장"
+place malsun_house "Malsun's house"
+  name ko "오말순의 집"
+place lighthouse "Yeoul Island lighthouse"
+  name ko "여울섬 등대"
+place baek_house "the abandoned house at the island's end"
+  name ko "섬 끝 폐가"
+place clinic "the island health post"
+  name ko "여울섬 보건지소"
+place school "the island branch school"
+  name ko "여울섬 분교"
+place minbak "Moon's guesthouse"
+  name ko "문기철의 민박집"
+
+role village_head "village head"
+  name ko "이장"
+  held kyungtae from start
+
+thing sewing_box "Malsun's sewing box"
+  name ko "오말순의 반짇고리"
+  attr sewing_box.at = malsun_house
+thing stair_nail "the new nail on the thirteenth step"
+  name ko "등대 계단 열세 번째 칸의 새 못"
+  attr stair_nail.at = lighthouse
+thing glass_shard "a thick glass shard"
+  name ko "두꺼운 유리 조각"
+thing ledger_page "the torn ledger page"
+  name ko "찢긴 등대 근무 장부 쪽"
+
+artifact vote_notice "notice of the island vote"
+  name ko "주민 투표 공고문"
+  contains vote_in_twelve_days, demolition_after_vote
+
+fact father_died "삼십 년 전 해진호가 여울섬 앞바다에서 침몰해 서윤의 아버지를 포함한 열한 명이 죽었다" true
+fact official_story "해진호 사고는 기상 악화로 인한 단순 사고였다" false
+fact vote_in_twelve_days "섬을 리조트 개발사에 팔지 정하는 주민 투표가 열이틀 뒤에 열린다" true
+fact demolition_after_vote "투표가 가결되면 등대와 폐가를 포함한 섬 건물은 바로 철거된다" true
+fact grandma_memory_failing "오말순은 치매 초기라 기억이 자꾸 흐려진다" true
+fact haenyeo_past "오말순은 평생 여울섬 바다에서 물질을 한 해녀였다" true
+fact box_untouchable "반짇고리는 아무도 손대면 안 된다" true
+fact lighthouse_dark_now "섬 끝 등대는 지금 불이 꺼진 채 버려져 있다" true
+fact song_line "오말순이 흥얼거리는 옛 노래에는 '열한 물때에 불이 잔다'는 구절이 있다" true
+fact kyungtae_alibi "사고 날 밤 도경태는 육지 병원에 입원해 있었다" false
+fact kyungtae_on_island "사고 날 밤 도경태는 섬에 있었다" true
+
+# 비밀 — 1화에서는 어떤 행위도 이 사실들을 말하지 않는다
+fact light_off_two_hours "해진호가 침몰한 밤 등대 불은 두 시간 동안 꺼져 있었다" true
+fact kyungtae_ordered "백영호는 도경태의 지시로 등대 불을 껐다" true
+fact ledger_recorded "등대 불을 끈 일은 등대 근무 장부에 적혔고 그 쪽은 찢겨 사라졌다" true
+fact malsun_keeps_page "오말순은 찢긴 장부 쪽을 삼십 년 동안 보관해 왔다" true
+```

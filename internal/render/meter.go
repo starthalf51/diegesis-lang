@@ -28,6 +28,9 @@ func NewMeter(inner Completer, w io.Writer) *Meter {
 // Label returns a copy that shares the recorder and total but tags its calls.
 func (m *Meter) Label(l string) *Meter { return &Meter{inner: m.inner, label: l, s: m.s} }
 
+// With returns a copy that shares the recorder and total but calls inner (a different model).
+func (m *Meter) With(inner Completer) *Meter { return &Meter{inner: inner, label: m.label, s: m.s} }
+
 func (m *Meter) Complete(ctx context.Context, system, user string) (Result, error) {
 	start := time.Now()
 	r, err := m.inner.Complete(ctx, system, user)

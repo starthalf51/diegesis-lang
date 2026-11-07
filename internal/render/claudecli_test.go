@@ -80,3 +80,25 @@ func TestCLICompleteErrors(t *testing.T) {
 		t.Errorf("refusal: r=%+v err=%v", r, err)
 	}
 }
+
+func TestClaudeArgsModel(t *testing.T) {
+	a := strings.Join(NewClaudeCLIWith("claude-sonnet-5-5", "medium").Args("s"), " ")
+	if !strings.Contains(a, "--model claude-sonnet-5-5") || !strings.Contains(a, "--effort medium") {
+		t.Fatal(a)
+	}
+	d := NewClaudeCLIWith("", "")
+	if d.Model != "claude-opus-5-5" || d.Effort != "high" {
+		t.Fatal(d.Model, d.Effort)
+	}
+}
+
+func TestValidModel(t *testing.T) {
+	if ValidModel("claude-sonet-5-5") == nil {
+		t.Fatal("typo accepted")
+	}
+	for _, m := range KnownModels {
+		if err := ValidModel(m); err != nil {
+			t.Fatal(m, err)
+		}
+	}
+}

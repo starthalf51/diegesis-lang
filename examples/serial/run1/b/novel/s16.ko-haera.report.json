@@ -1,0 +1,10 @@
+{
+  "missing": [
+    "minjae|read|kyungtae_no_record"
+  ],
+  "hallucinated": [
+    "extra-act:minjae|perceive|kyungtae_no_record"
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

@@ -1,0 +1,10 @@
+{
+  "missing": [
+    "haeun|assert|ticket_date"
+  ],
+  "hallucinated": [
+    "Haeun hides the old ferry ticket in her pocket instead of telling Seoyun about it."
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

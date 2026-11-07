@@ -1,0 +1,103 @@
+=== FILE: ep10/cast.dieg.md ===
+---
+module: haejin.cast
+mode: authored
+---
+
+# 여울섬 — 10화 추가 선언
+
+```sl
+fact ledger_torn "그날 밤 등대 불이 꺼진 일은 등대 근무 장부에 적혔지만 그 쪽은 찢겨 사라졌다" true
+# 서윤의 짐작 — 실제로 장부 쪽은 오말순이 갖고 있다(malsun_keeps_page)
+fact page_under_nail "찢긴 장부 쪽은 등대 계단 열세 번째 칸의 새 못 아래에 숨겨져 있다" false
+fact empty_groove "새 못을 뽑아낸 열세 번째 디딤판 밑에는 손바닥만 한 홈이 파여 있지만 그 안은 텅 비어 있다" true
+fact page_elsewhere "찢긴 장부 쪽은 등대가 아닌 다른 곳에 있다" true
+fact malsun_grips_box "장부 이야기가 나오자 오말순은 반짇고리를 무릎으로 끌어당겨 두 손으로 감싼다" true
+
+youngho believes ledger_torn
+malsun believes ledger_torn
+```
+=== FILE: ep10/s26.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s26
+location: baek_house
+when: after s25 by 0m..30m
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 15m..30m
+enter seoyun, youngho
+seoyun sees youngho, youngho_shaking
+seoyun asks youngho: ledger_torn
+youngho says seoyun: ledger_torn
+youngho says seoyun: youngho_climbs
+seoyun thinks: page_under_nail
+seoyun believes page_under_nail
+youngho says seoyun: stay_away
+seoyun thinks: seoyun_shaken
+exit seoyun
+exit youngho
+```
+=== FILE: ep10/s27.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s27
+location: lighthouse
+when: after s26 by 20m..1h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.85
+mode: authored
+---
+
+```sl
+lasts 15m..40m
+enter seoyun
+seoyun sees stairs_rotten
+seoyun sees stair_nail, new_nail
+seoyun thinks: page_under_nail
+seoyun does pull_nail stair_nail
+seoyun sees empty_groove
+seoyun doubts page_under_nail
+seoyun doubts nail_trivial
+seoyun thinks: page_elsewhere
+seoyun believes page_elsewhere
+exit seoyun
+```
+=== FILE: ep10/s28.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s28
+location: malsun_house
+when: after s27 by 30m..2h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, malsun, taeo
+taeo says seoyun: grandma_memory_failing
+exit taeo
+seoyun tells malsun: ledger_torn
+seoyun sees malsun, malsun_grips_box
+seoyun sees sewing_box
+malsun says seoyun: box_untouchable
+malsun says seoyun: song_line
+seoyun thinks: page_elsewhere
+exit all
+```
+=== END ===

@@ -161,7 +161,7 @@ func TestNovelLabelsAndFiles(t *testing.T) {
 	out := t.TempDir()
 	// Every extraction is unparseable, so verification never passes: 3 renders + 3 extractions, then give up.
 	m := render.NewMeter(&fakeLLM{replies: []string{"산문1", "not json", "산문2", "not json", "산문3", "not json"}}, &buf)
-	rs, err := Novel(ctx, m, "w", []render.Scene{s}, bs[0], out)
+	rs, err := Novel(ctx, render.Completers{Render: m, Extract: m}, "w", []render.Scene{s}, bs[0], out, false)
 	if err != nil || len(rs) != 1 || rs[0].Pass || rs[0].Attempts != 3 {
 		t.Fatalf("%+v %v", rs, err)
 	}
@@ -221,10 +221,25 @@ func TestFileIDAndPromptRules(t *testing.T) {
 	if got := fileID(`a/b?c`); got != "a_b_c" {
 		t.Errorf("fileID %q", got)
 	}
-	p := CodePrompt("idea", testRefs(t), nil)
+	p := CodePrompt("idea", testRefs(t), nil, false)
 	for _, w := range []string{"8–12", "exit all", "road_cut"} {
 		if !strings.Contains(p, w) {
 			t.Errorf("prompt lacks %q", w)
 		}
+	}
+}
+
+func TestSkeletonCodePrompt(t *testing.T) {
+	r := testRefs(t)
+	on := CodePrompt("idea", r, nil, true)
+	off := CodePrompt("idea", r, nil, false)
+	if !strings.Contains(on, "인용 문자열을 쓰지 않는다") || strings.Contains(off, "인용 문자열을 쓰지 않는다") {
+		t.Error("skeleton instruction only in skeleton mode")
+	}
+	if !strings.Contains(off, "인용 문자열(대사·생각)이 선언된 사실을 말하면") {
+		t.Error("non-skeleton keeps the current quote rule")
+	}
+	if !strings.Contains(on, "8–12") || !strings.Contains(on, "exit all") {
+		t.Error("skeleton keeps the other rules")
 	}
 }

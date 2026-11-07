@@ -1,0 +1,12 @@
+{
+  "missing": [
+    "minjae|assert|log_complete",
+    "minjae|read|kyungtae_no_record"
+  ],
+  "hallucinated": [
+    "extra-act:minjae|perceive|kyungtae_no_record",
+    "민재가 옛 입원 대장을 휴대전화로 사진 찍는다."
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

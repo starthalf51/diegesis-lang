@@ -1,0 +1,11 @@
+{
+  "missing": [
+    "seoyun|read|ticket_date"
+  ],
+  "hallucinated": [
+    "extra-act:haeun|assert|ticket_date",
+    "extra-act:seoyun|perceive|ticket_date"
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

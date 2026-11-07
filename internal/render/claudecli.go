@@ -22,6 +22,30 @@ func NewClaudeCLI() *ClaudeCLI {
 	return &ClaudeCLI{Bin: "claude", Model: "claude-opus-5-5", Effort: "high", Timeout: 10 * time.Minute, Run: execRun}
 }
 
+// NewClaudeCLIWith 는 model/effort 를 덮어쓴 CLI. 빈 문자열은 NewClaudeCLI 의 기본값.
+func NewClaudeCLIWith(model, effort string) *ClaudeCLI {
+	c := NewClaudeCLI()
+	if model != "" {
+		c.Model = model
+	}
+	if effort != "" {
+		c.Effort = effort
+	}
+	return c
+}
+
+// KnownModels 는 --*-model 이 받는 ID. 오타는 조용히 기본값이 되지 않고 ValidModel 에서 막힌다.
+var KnownModels = []string{"claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5", "claude-fable-5-1"}
+
+func ValidModel(m string) error {
+	for _, k := range KnownModels {
+		if m == k {
+			return nil
+		}
+	}
+	return fmt.Errorf("unknown model %q (known: %s)", m, strings.Join(KnownModels, ", "))
+}
+
 func execRun(ctx context.Context, name string, args []string, stdin, dir string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Dir = dir

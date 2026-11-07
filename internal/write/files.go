@@ -14,6 +14,7 @@ import (
 const (
 	hdrPre  = "=== FILE: "
 	hdrPost = " ==="
+	delPre  = "=== DELETE: "
 )
 
 func validPath(p string) error {
@@ -60,9 +61,19 @@ func dropWrapperFence(body []string) []string {
 // ParseFiles splits a bundle into files. Text before the first header (chatter, an opening ``` fence) is
 // ignored, as unpack.sh does; text after the End line is dropped. Without End, an unbalanced trailing fence
 // line is stripped from the last file. Each content is trimmed of surrounding blank lines and ends with exactly
-// one newline.
+// one newline. A bundle with a DELETE header is refused: write and continue never delete (Review Focus 1).
 func ParseFiles(text string) (map[string]string, error) {
-	files := map[string]string{}
+	files, deletes, err := ParseBundle(text)
+	if err == nil && len(deletes) > 0 {
+		return nil, fmt.Errorf("%q headers are not allowed here: this command never deletes files (%s)", delPre+"<path>"+hdrPost, strings.Join(deletes, ", "))
+	}
+	return files, err
+}
+
+// ParseBundle is ParseFiles plus "=== DELETE: <path> ===" header lines (no body), whose paths get the same
+// validation. A path may not be both written and deleted.
+func ParseBundle(text string) (files map[string]string, deletes []string, err error) {
+	files = map[string]string{}
 	lower := map[string]string{}
 	var cur string
 	var body []string
@@ -78,40 +89,54 @@ func ParseFiles(text string) (map[string]string, error) {
 		files[cur] = c + "\n"
 		return nil
 	}
+	hdr := func(l, pre string) (string, bool) {
+		if strings.HasPrefix(l, pre) && strings.HasSuffix(l, hdrPost) && len(l) >= len(pre)+len(hdrPost) {
+			return strings.TrimSuffix(strings.TrimPrefix(l, pre), hdrPost), true
+		}
+		return "", false
+	}
 	for _, l := range strings.Split(text, "\n") {
 		l = strings.TrimRight(l, "\r")
 		if strings.TrimSpace(l) == End {
 			break
 		}
-		if strings.HasPrefix(l, hdrPre) && strings.HasSuffix(l, hdrPost) && len(l) >= len(hdrPre)+len(hdrPost) {
-			if err := flush(); err != nil {
-				return nil, err
-			}
-			cur = strings.TrimSuffix(strings.TrimPrefix(l, hdrPre), hdrPost)
-			if err := validPath(cur); err != nil {
-				return nil, err
-			}
-			if _, dup := files[cur]; dup {
-				return nil, fmt.Errorf("duplicate file %q", cur)
-			}
-			low := strings.ToLower(cur)
-			if prev, ok := lower[low]; ok {
-				return nil, fmt.Errorf("files %q and %q differ only in case", prev, cur)
-			}
-			lower[low] = cur
-			files[cur] = "" // reserve so a repeat is caught before flush
-			body = nil
+		p, isFile := hdr(l, hdrPre)
+		d, isDel := hdr(l, delPre)
+		if !isFile && !isDel {
+			body = append(body, l)
 			continue
 		}
-		body = append(body, l)
+		if err := flush(); err != nil {
+			return nil, nil, err
+		}
+		cur, body = "", nil
+		p += d
+		if err := validPath(p); err != nil {
+			return nil, nil, err
+		}
+		low := strings.ToLower(p)
+		if prev, ok := lower[low]; ok {
+			if prev == p {
+				return nil, nil, fmt.Errorf("duplicate file %q", p)
+			}
+			return nil, nil, fmt.Errorf("files %q and %q differ only in case", prev, p)
+		}
+		lower[low] = p
+		if isDel {
+			deletes = append(deletes, p)
+			continue
+		}
+		cur = p
+		files[cur] = "" // reserve so a repeat is caught before flush
 	}
 	if err := flush(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	if len(files) == 0 {
-		return nil, fmt.Errorf("no %q header found", hdrPre+"<path>"+hdrPost)
+	if len(files) == 0 && len(deletes) == 0 {
+		return nil, nil, fmt.Errorf("no %q header found", hdrPre+"<path>"+hdrPost)
 	}
-	return files, nil
+	sort.Strings(deletes)
+	return files, deletes, nil
 }
 
 // safeToEmpty refuses dirs whose RemoveAll would destroy more than a generated bundle: "", ".", a filesystem
@@ -142,13 +167,18 @@ func safeToEmpty(dir string) error {
 
 // WriteFiles empties dir, then writes the files. Every path is re-validated, so nothing lands outside dir.
 func WriteFiles(dir string, files map[string]string) error {
-	if err := safeToEmpty(dir); err != nil {
-		return err
-	}
 	for p := range files {
 		if err := validPath(p); err != nil {
 			return err
 		}
+	}
+	return writeTree(dir, files)
+}
+
+// writeTree is WriteFiles without the extension check, for a revise tree that carries the user's other files.
+func writeTree(dir string, files map[string]string) error {
+	if err := safeToEmpty(dir); err != nil {
+		return err
 	}
 	if err := os.RemoveAll(dir); err != nil {
 		return err
@@ -166,12 +196,17 @@ func WriteFiles(dir string, files map[string]string) error {
 }
 
 // PackFiles bundles every file under dir in sorted path order, for feeding back to the model.
-func PackFiles(dir string) (string, error) {
+func PackFiles(dir string) (string, error) { return packFiles(dir, nil) }
+
+// packFiles is PackFiles over the paths keep accepts (nil keeps all).
+func packFiles(dir string, keep func(rel string) bool) (string, error) {
 	var paths []string
 	err := filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
 		if err == nil && !d.IsDir() {
 			rel, _ := filepath.Rel(dir, p)
-			paths = append(paths, filepath.ToSlash(rel))
+			if rel = filepath.ToSlash(rel); keep == nil || keep(rel) {
+				paths = append(paths, rel)
+			}
 		}
 		return err
 	})

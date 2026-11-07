@@ -1,0 +1,11 @@
+{
+  "missing": [
+    "seoyun|assert|youngho_scoffed"
+  ],
+  "hallucinated": [
+    "extra-act:seoyun|perceive|youngho_scoffed",
+    "영호가 문을 쾅 닫고 서윤을 쫓아냈다"
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

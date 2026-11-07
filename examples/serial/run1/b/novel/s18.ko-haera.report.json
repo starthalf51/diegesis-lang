@@ -1,0 +1,11 @@
+{
+  "missing": [
+    "haeun|read|ticket_date"
+  ],
+  "hallucinated": [
+    "extra-act:haeun|perceive|ticket_date",
+    "하은이 서랍에서 발견한 배표를 몰래 주머니에 넣는다."
+  ],
+  "leaked": [],
+  "extract_error": ""
+}

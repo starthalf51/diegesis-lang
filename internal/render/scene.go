@@ -43,19 +43,20 @@ type Directives struct {
 }
 
 type Scene struct {
-	ID          string     `json:"id"`
-	Title       string     `json:"title"`
-	Place       string     `json:"place"`
-	Previously  string     `json:"previously"`
-	Cast        []Entity   `json:"cast"`
-	OnStage     []string   `json:"on_stage"` // entity IDs on stage at scene start
-	Facts       []Fact     `json:"facts"`
-	Beats       []Beat     `json:"beats"`
-	Directives  Directives `json:"directives"`
-	POVBeliefs  []string   `json:"pov_beliefs"`
-	ReaderKnows []string   `json:"reader_knows"`
-	Withheld    []string   `json:"withheld"`
-	Narration   string     `json:"narration"` // "first-person" | "third-person" (default)
+	ID           string     `json:"id"`
+	Title        string     `json:"title"`
+	Place        string     `json:"place"`
+	Previously   string     `json:"previously"`
+	Cast         []Entity   `json:"cast"`
+	OnStage      []string   `json:"on_stage"` // entity IDs on stage at scene start
+	Facts        []Fact     `json:"facts"`
+	Beats        []Beat     `json:"beats"`
+	Directives   Directives `json:"directives"`
+	POVBeliefs   []string   `json:"pov_beliefs"`
+	ReaderKnows  []string   `json:"reader_knows"`
+	Withheld     []string   `json:"withheld"`
+	Narration    string     `json:"narration"`               // "first-person" | "third-person" (default)
+	FreeDialogue bool       `json:"free_dialogue,omitempty"` // renderer may write dialogue for speech acts (skeleton mode)
 }
 
 var verbs = map[string]bool{

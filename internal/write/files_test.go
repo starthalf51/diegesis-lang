@@ -125,3 +125,20 @@ func TestResetRun(t *testing.T) {
 		t.Error("empty out: want refusal")
 	}
 }
+
+func TestParseFilesRejectsDeleteBundleAllowsIt(t *testing.T) {
+	text := "=== FILE: a.dieg.md ===\nx\n=== DELETE: b.dieg.md ===\n" + End
+	if _, err := ParseFiles(text); err == nil || !strings.Contains(err.Error(), "DELETE") {
+		t.Errorf("ParseFiles accepted a DELETE bundle: %v", err)
+	}
+	files, dels, err := ParseBundle(text)
+	if err != nil || len(files) != 1 || len(dels) != 1 || dels[0] != "b.dieg.md" {
+		t.Errorf("%v %v %v", files, dels, err)
+	}
+	for _, bad := range []string{"=== DELETE: ../x ===\n", "=== DELETE: /x.md ===\n", "=== DELETE: x.txt ===\n",
+		"=== FILE: a.md ===\nx\n=== DELETE: a.md ===\n"} {
+		if _, _, err := ParseBundle(bad + End); err == nil {
+			t.Errorf("accepted %q", bad)
+		}
+	}
+}

@@ -1,0 +1,41 @@
+# 이야기 상태 요약 (작품 ID `haejin`)
+
+마지막 장면: s13(서술 위치 13, 시점 seoyun close)
+
+## 모듈과 파일 (이미 있는 파일은 고치지 않는다)
+- haejin.cast: cast.dieg.md, ep02/cast.dieg.md, ep03/cast.dieg.md, ep04/cast.dieg.md, ep05/cast.dieg.md (import: -)
+- haejin.scenes: ep01/s1.dieg.md, ep01/s2.dieg.md, ep02/s3.dieg.md, ep02/s4.dieg.md, ep02/s5.dieg.md, ep03/s6.dieg.md, ep03/s7.dieg.md, ep03/s8.dieg.md, ep04/s9.dieg.md, ep04/s10.dieg.md, ep04/s11.dieg.md, ep05/s12.dieg.md, ep05/s13.dieg.md (import: haejin.cast)
+
+## 장면 순서
+s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13
+
+## 독자에게 아직 숨긴 사실 (인물이 알아도 독자는 모른다 — 서술로 밝히지 않는다)
+- 없음
+
+## 인물 (마지막 장면 기준)
+- haeun 도하은: 생존
+- jihwan 류지환: 생존
+- kicheol 문기철: 생존
+- kyungtae 도경태: 생존
+- malsun 오말순: 생존
+- minjae 강민재: 생존
+- seoyun 한서윤: 생존
+- sua 정수아: 생존
+- taeo 윤태오: 생존
+- youngho 백영호: 생존
+
+## 거짓 믿음 (마지막 장면에서 인물이 사실과 반대로 믿는 것)
+- haeun: shard_ordinary「그 유리 조각은 바다에 쓸려 온 흔한 병 조각일 뿐이다」 가 참이라고 믿는다(실제는 반대)
+- seoyun: kyungtae_alibi「사고 날 밤 도경태는 육지 병원에 입원해 있었다」 가 참이라고 믿는다(실제는 반대) ← kyungtae 의 기만
+- seoyun: nail_trivial「새 못 하나쯤은 누가 삭은 디딤판을 대충 고쳐 놓은 것일 뿐이다」 가 참이라고 믿는다(실제는 반대)
+- seoyun: official_story「해진호 사고는 기상 악화로 인한 단순 사고였다」 가 참이라고 믿는다(실제는 반대) ← kyungtae 의 기만
+- seoyun: shard_ordinary「그 유리 조각은 바다에 쓸려 온 흔한 병 조각일 뿐이다」 가 참이라고 믿는다(실제는 반대)
+- sua: shard_ordinary「그 유리 조각은 바다에 쓸려 온 흔한 병 조각일 뿐이다」 가 참이라고 믿는다(실제는 반대)
+- taeo: kyungtae_alibi「사고 날 밤 도경태는 육지 병원에 입원해 있었다」 가 참이라고 믿는다(실제는 반대)
+
+## 열린 복선 (`payoff <모듈>/<id>` 로 회수; 마지막 위치의 열린 수: 0)
+
+## 회수된 복선
+- haejin.scenes/song_tide「오말순이 흥얼거리는 옛 노래에는 '열한 물때에 불이 잔다'는 구절이 있다」(심은 장면 s2) — 회수됨: s12
+- haejin.scenes/shard_hint「유리 조각은 손가락 마디만큼 두껍고 한쪽 면에 둥근 홈이 겹겹이 패어 있다」(심은 장면 s7) — 회수됨: s10
+- haejin.scenes/nail_hint「버려진 등대 계단 열세 번째 칸에 녹슬지 않은 새 못이 박혀 있다」(심은 장면 s5) — 회수됨: s8

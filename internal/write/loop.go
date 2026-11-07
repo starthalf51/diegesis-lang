@@ -34,14 +34,21 @@ func (d Diag) Blocking() bool { return d.Severity == "error" || d.Severity == "w
 type Checker func(ctx context.Context, dir string) (diags []Diag, err error)
 
 type Opts struct {
-	Rounds   int
-	Backend  string
-	Render   bool // not used by Loop (it never renders); the CLI reads it
-	Out      string
-	Reserved []string // work ids the model must not take (corpus works); listed in the prompt
+	Rounds                               int
+	Backend                              string
+	Render                               bool // not used by Loop (it never renders); the CLI reads it
+	Out                                  string
+	Reserved                             []string // work ids the model must not take (corpus works); listed in the prompt
+	CodeModel, RenderModel, ExtractModel string   // model per role; DefaultOpts fills them
+	Skeleton                             bool     // code carries events only; the renderer writes the dialogue
+	CodeEffort                           string   // claude --effort for coding calls: low, medium or high
+	Digest                               string   // ContinueLoop only: the PG state digest of the story so far
 }
 
-func DefaultOpts() Opts { return Opts{Rounds: 4, Backend: "ko-haera", Render: true} }
+func DefaultOpts() Opts {
+	return Opts{Rounds: 4, Backend: "ko-haera", Render: true, Skeleton: true, CodeEffort: "medium",
+		CodeModel: "claude-opus-5-5", RenderModel: "claude-sonnet-5-5", ExtractModel: "claude-sonnet-5-5"}
+}
 
 // Result: Rounds used, whether the last code is clean, its diagnostics (the blocking ones and any info),
 // and Dir = <out>/story holding the last well-formed code.
@@ -50,6 +57,7 @@ type Result struct {
 	Clean  bool
 	Diags  []Diag
 	Dir    string
+	Scenes []string // ContinueLoop only: scene ids the accepted episode files declare, in file order
 }
 
 // label tags c's calls when c is a Meter.
@@ -80,7 +88,7 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 	var last map[string]string // last well-formed bundle
 	var lastDiags []Diag       // its diagnostics
 	var bundle string
-	user := CodePrompt(idea, refs, o.Reserved)
+	user := CodePrompt(idea, refs, o.Reserved, o.Skeleton)
 	for r := 1; r <= o.Rounds; r++ {
 		l := "code-r" + strconv.Itoa(r)
 		if r > 1 {
@@ -123,7 +131,7 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 		if res.Clean {
 			break
 		}
-		user = FixPrompt(idea, refs, o.Reserved, bundle, blocking(res.Diags))
+		user = FixPrompt(idea, refs, o.Reserved, o.Skeleton, bundle, blocking(res.Diags))
 	}
 	if last != nil {
 		if err := WriteFiles(res.Dir, last); err != nil {

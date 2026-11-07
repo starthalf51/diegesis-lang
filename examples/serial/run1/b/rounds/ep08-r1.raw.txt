@@ -1,0 +1,109 @@
+=== FILE: ep08/cast.dieg.md ===
+---
+module: haejin.cast
+mode: authored
+---
+
+# 여울섬 — 8화 추가 선언
+
+```sl
+fact compensation_offer "개발사는 투표가 가결되면 섬 집집마다 보상금을 넉넉히 치르겠다고 약속했다" true
+fact votes_nearly_enough "류지환이 세어 본 찬성표가 벌써 과반에 거의 이르렀다" true
+fact kicheol_debt "문기철은 보상금을 받으면 민박집을 지으며 진 빚을 갚을 수 있다" true
+
+jihwan believes compensation_offer
+jihwan believes votes_nearly_enough
+kicheol believes kicheol_debt
+```
+=== FILE: ep08/s20.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s20
+location: minbak
+when: after s19 by 0d..1d
+pov: haeun close
+render:
+  pace: medium
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 30m..50m
+enter kicheol, jihwan
+enter haeun
+jihwan tells kicheol: compensation_offer
+kicheol asks jihwan
+jihwan says kicheol: demolition_after_vote
+kicheol says jihwan: kicheol_debt
+kicheol thinks: island_dark_that_night
+jihwan tells kicheol, haeun: votes_nearly_enough
+jihwan says haeun: villagers_dislike_digging
+haeun reads ferry_ticket
+haeun believes kyungtae_on_island
+haeun thinks: kyungtae_never_spoke
+exit jihwan
+exit kicheol, haeun
+```
+=== FILE: ep08/s21.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s21
+location: malsun_house
+when: after s20 by 0d..1d
+pov: seoyun close
+render:
+  pace: medium
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, malsun
+enter jihwan
+jihwan tells malsun: compensation_offer
+malsun says jihwan: haenyeo_past
+malsun sees sewing_box
+malsun says seoyun: box_untouchable
+jihwan says seoyun: write_after_vote
+seoyun says jihwan: seoyun_reporting
+exit jihwan
+seoyun thinks: memorial_day
+enter haeun
+haeun asks seoyun
+exit all
+```
+=== FILE: ep08/s22.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: s22
+location: beach
+when: after s21 by 0d..1d
+pov: haeun close
+render:
+  pace: slow
+  tension: 0.9
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter haeun, seoyun
+haeun says seoyun: kyungtae_never_spoke
+seoyun says haeun: kyungtae_alibi
+haeun shows ferry_ticket
+seoyun reads ferry_ticket
+haeun tells seoyun: kyungtae_on_island
+payoff haejin.scenes/ticket_hidden
+seoyun doubts kyungtae_alibi
+seoyun believes kyungtae_on_island
+seoyun thinks: father_died
+seoyun says haeun: seoyun_will_meet_kyungtae
+haeun thinks: kyungtae_on_island
+exit all
+```
+=== END ===

@@ -1,0 +1,132 @@
+=== FILE: ep07/cast.dieg.md ===
+---
+module: haejin.cast
+mode: authored
+---
+
+# 여울섬 — 7화 추가 선언
+
+```sl
+place kyungtae_house "the village head's house"
+  name ko "이장 도경태의 집"
+
+thing father_desk "Kyungtae's old desk"
+  name ko "도경태의 낡은 책상"
+  attr father_desk.at = kyungtae_house
+
+artifact ferry_ticket "the old ferry ticket"
+  name ko "삼십 년 전 배표"
+  contains ticket_date
+
+parent kyungtae of haeun
+
+fact haeun_looking_for "하은은 분교 아이들에게 보여 줄 옛 섬 사진을 찾으러 아버지 책상 서랍을 연다" true
+fact ticket_in_drawer "아버지 책상 맨 아래 서랍 안쪽 틈에 누렇게 바랜 배표 한 장이 끼여 있다" true
+fact ticket_date "배표에는 해진호가 가라앉은 날 저녁, 육지에서 여울섬으로 들어오는 배의 날짜와 시각이 찍혀 있다" true
+fact haeun_cannot_tell "하은은 배표 이야기를 서윤에게 차마 꺼내지 못한다" true
+fact kyungtae_never_spoke "아버지는 사고 날 밤 이야기를 집에서 한 번도 꺼낸 적이 없다" true
+fact minjae_will_tell "민재는 이 기록을 서윤에게 알려야 한다고 생각한다" true
+fact seoyun_will_meet_kyungtae "서윤은 기일 전에 이장을 다시 찾아가 그날 밤 이야기를 들을 생각이다" true
+
+haeun believes haeun_looking_for
+haeun believes kyungtae_never_spoke
+haeun believes haeun_cannot_tell
+minjae believes minjae_will_tell
+seoyun believes seoyun_will_meet_kyungtae
+```
+=== FILE: ep07/s17.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s17"
+location: mainland_hospital
+when: after s16 by 0d..1d
+pov: minjae close
+render:
+  pace: slow
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter minjae, clerk
+clerk shows admission_log
+minjae reads admission_log
+minjae asks clerk: log_complete
+clerk says minjae: log_complete
+minjae believes kyungtae_no_record
+minjae thinks: kyungtae_no_record
+payoff haejin.scenes/no_record_hint
+minjae does photograph admission_log
+minjae thinks: minjae_will_tell
+clerk does close_register admission_log
+minjae says clerk
+exit minjae, clerk
+```
+=== FILE: ep07/s18.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s18"
+location: kyungtae_house
+when: after s17 by 0h..12h
+pov: haeun close
+render:
+  pace: slow
+  tension: 0.8
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter haeun
+haeun thinks: haeun_looking_for
+haeun does open_drawer father_desk
+beat ticket:
+  haeun sees father_desk, ticket_in_drawer
+  haeun reads ferry_ticket
+haeun believes kyungtae_on_island because @s18.ticket
+haeun thinks: kyungtae_on_island
+setup ticket_hidden hint: ticket_date
+haeun does pocket ferry_ticket
+enter kyungtae
+kyungtae asks haeun
+haeun says kyungtae: haeun_looking_for
+kyungtae says haeun: demolition_after_vote
+exit kyungtae
+exit haeun
+```
+=== FILE: ep07/s19.dieg.md ===
+---
+module: haejin.scenes
+import: [haejin.cast]
+scene: "s19"
+location: school
+when: after s18 by 0d..1d
+pov: haeun close
+render:
+  pace: medium
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter haeun
+haeun does touch_pocket ferry_ticket
+enter seoyun
+seoyun says haeun: memorial_day
+seoyun says haeun: seoyun_will_meet_kyungtae
+seoyun says haeun: kyungtae_alibi
+haeun doubts kyungtae_alibi
+haeun thinks: ticket_date
+seoyun asks haeun
+haeun says seoyun: kyungtae_never_spoke
+haeun thinks: haeun_cannot_tell
+haeun does hide ferry_ticket
+seoyun says haeun: seoyun_reporting
+exit seoyun
+exit haeun
+```
+=== END ===
