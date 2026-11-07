@@ -62,9 +62,18 @@ func lastPara(t string) string {
 // 연결한 글이 대조를 통과하지 못하면 연결 전 글로, 그것도 못하면(문체가 글을 바꿨을 때) 문체 전 글로 다시 대조해 가장 나은 쪽을 쓴다(FinalFrom).
 // 오류는 설계 실패와 비트 생성·검증·최종 대조의 Completer 오류뿐이다.
 func RenderLayered(ctx context.Context, r Roles, work string, s render.Scene, b render.Backend, o Opts) (render.Render, LayerStats, error) {
+	texts, st, err := Beats(ctx, r, s, b, o)
+	if err != nil {
+		return render.Render{}, st, err
+	}
+	return Finish(ctx, r, work, s, b, o, texts, st)
+}
+
+// Beats 는 [1]·[2] 만 돈다. 비트 글은 b.Lang 의 중립 문체라 같은 언어의 다른 백엔드로 Finish 에 다시 넘길 수 있다(문체 교체).
+func Beats(ctx context.Context, r Roles, s render.Scene, b render.Backend, o Opts) ([]string, LayerStats, error) {
 	p, err := PlanScene(s, o.Plan)
 	if err != nil {
-		return render.Render{}, LayerStats{}, err
+		return nil, LayerStats{}, err
 	}
 	st := LayerStats{Beats: len(p.Beats), BeatAttempts: []int{}, BeatFailed: []int{}}
 	var texts []string
@@ -74,7 +83,7 @@ func RenderLayered(ctx context.Context, r Roles, work string, s render.Scene, b 
 		text, rep, att, err := realizeWithRetry(ctx, attemptLabel{r.Beat, "beat-" + id, &n, true},
 			attemptLabel{r.Verify, "bverify-" + id, &n, false}, p, i, b.Lang, prev, o.BeatRetries)
 		if err != nil {
-			return render.Render{}, st, fmt.Errorf("%s beat %d: %w", s.ID, i+1, err)
+			return nil, st, fmt.Errorf("%s beat %d: %w", s.ID, i+1, err)
 		}
 		st.BeatAttempts = append(st.BeatAttempts, att)
 		if !BeatPassed(rep) {
@@ -85,6 +94,11 @@ func RenderLayered(ctx context.Context, r Roles, work string, s render.Scene, b 
 			prev = lastPara(text)
 		}
 	}
+	return texts, st, nil
+}
+
+// Finish 는 Beats 의 글로 [3] 문체 → [4] 연결 → 최종 대조를 돈다. st 는 Beats 가 돌려준 것이다.
+func Finish(ctx context.Context, r Roles, work string, s render.Scene, b render.Backend, o Opts, texts []string, st LayerStats) (render.Render, LayerStats, error) {
 	plain := strings.Join(texts, "\n\n")
 
 	styled, ok, err := Restyle(ctx, lab(r.Style, "style-"+s.ID), plain, b)

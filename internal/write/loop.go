@@ -49,7 +49,7 @@ type Opts struct {
 
 func DefaultOpts() Opts {
 	return Opts{Rounds: 4, Backend: "ko-haera", Render: true, Skeleton: true, CodeEffort: "medium", Renderer: "single", BeatRetries: 2,
-		CodeModel: "claude-opus-5-5", RenderModel: "claude-sonnet-5-5", ExtractModel: "claude-sonnet-5-5"}
+		CodeModel: "claude-opus-5-5", RenderModel: "claude-haiku-5-5", ExtractModel: "claude-sonnet-5-5"}
 }
 
 // Result: Rounds used, whether the last code is clean, its diagnostics (the blocking ones and any info),

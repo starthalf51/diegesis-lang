@@ -1,0 +1,305 @@
+{
+  "Used": 117,
+  "Scenes": [
+    "macbeth/1.3 (acts 26, beats 11)",
+    "chibi/45.88 (acts 24, beats 10)",
+    "haejin/s3 (acts 12, beats 4)",
+    "haejin/s19 (acts 12, beats 4)"
+  ],
+  "Arms": [
+    {
+      "Arm": "S-son",
+      "Renderer": "single",
+      "Model": "claude-sonnet-5-5",
+      "N": 2,
+      "Passed": 1,
+      "PassRate": 0.5,
+      "AvgCalls": 6,
+      "Tokens": {
+        "claude-sonnet-5-5": {
+          "In": 36252,
+          "Out": 12725
+        }
+      },
+      "Weighted": 149815.5,
+      "AvgTone": 1,
+      "AvgChars": 689.5,
+      "BeatRetries": 0,
+      "NewEvents": 2,
+      "FactHall": 1,
+      "Errs": 0
+    },
+    {
+      "Arm": "L-son",
+      "Renderer": "layered",
+      "Model": "claude-sonnet-5-5",
+      "N": 2,
+      "Passed": 0,
+      "PassRate": 0,
+      "AvgCalls": 18,
+      "Tokens": {
+        "claude-sonnet-5-5": {
+          "In": 74205,
+          "Out": 27413
+        }
+      },
+      "Weighted": 316905,
+      "AvgTone": 0.9907407407407407,
+      "AvgChars": 1443.5,
+      "BeatRetries": 6,
+      "NewEvents": 3,
+      "FactHall": 1,
+      "Errs": 0
+    },
+    {
+      "Arm": "L-hai",
+      "Renderer": "layered",
+      "Model": "claude-haiku-5-5",
+      "N": 2,
+      "Passed": 1,
+      "PassRate": 0.5,
+      "AvgCalls": 17,
+      "Tokens": {
+        "claude-haiku-5-5": {
+          "In": 30409,
+          "Out": 50226
+        },
+        "claude-sonnet-5-5": {
+          "In": 41697,
+          "Out": 4074
+        }
+      },
+      "Weighted": 233870,
+      "AvgTone": 1,
+      "AvgChars": 1469,
+      "BeatRetries": 5,
+      "NewEvents": 1,
+      "FactHall": 0,
+      "Errs": 0
+    },
+    {
+      "Arm": "S-hai",
+      "Renderer": "single",
+      "Model": "claude-haiku-5-5",
+      "N": 2,
+      "Passed": 1,
+      "PassRate": 0.5,
+      "AvgCalls": 4,
+      "Tokens": {
+        "claude-haiku-5-5": {
+          "In": 13069,
+          "Out": 16526
+        },
+        "claude-sonnet-5-5": {
+          "In": 12428,
+          "Out": 1842
+        }
+      },
+      "Weighted": 80306.5,
+      "AvgTone": 1,
+      "AvgChars": 1047.5,
+      "BeatRetries": 0,
+      "NewEvents": 2,
+      "FactHall": 0,
+      "Errs": 0
+    }
+  ],
+  "Extra": [
+    {
+      "Arm": "L-hai-swap",
+      "Scene": "haejin/s3",
+      "Backend": "ko-hapsho",
+      "Passed": true,
+      "Calls": 3,
+      "RenderCalls": 2,
+      "ExtractCalls": 1,
+      "RenderModel": "claude-haiku-5-5",
+      "RenderUsage": {
+        "input": 4,
+        "output": 9211,
+        "cache_read": 0,
+        "cache_write": 7040
+      },
+      "ExtractUsage": {
+        "input": 2,
+        "output": 436,
+        "cache_read": 746,
+        "cache_write": 3249
+      },
+      "Tone": 1,
+      "Chars": 1549,
+      "StyleOK": true,
+      "FinalFrom": "stitched",
+      "Missing": [],
+      "Leaked": [],
+      "NewEvents": [],
+      "FactHalluc": []
+    },
+    {
+      "Arm": "S-son-hapsho",
+      "Scene": "haejin/s3",
+      "Backend": "ko-hapsho",
+      "Passed": true,
+      "Calls": 6,
+      "RenderCalls": 3,
+      "ExtractCalls": 3,
+      "RenderModel": "claude-sonnet-5-5",
+      "RenderUsage": {
+        "input": 6,
+        "output": 5565,
+        "cache_read": 3338,
+        "cache_write": 7550
+      },
+      "ExtractUsage": {
+        "input": 6,
+        "output": 1607,
+        "cache_read": 2238,
+        "cache_write": 6193
+      },
+      "Attempts": 3,
+      "Tone": 1,
+      "Chars": 820,
+      "Missing": [],
+      "Leaked": [],
+      "NewEvents": [],
+      "FactHalluc": []
+    },
+    {
+      "Arm": "S-son-extra",
+      "Scene": "chibi/45.88",
+      "Backend": "ko-haera",
+      "Passed": false,
+      "Calls": 6,
+      "RenderCalls": 3,
+      "ExtractCalls": 3,
+      "RenderModel": "claude-sonnet-5-5",
+      "RenderUsage": {
+        "input": 6,
+        "output": 6049,
+        "cache_read": 2584,
+        "cache_write": 6440
+      },
+      "ExtractUsage": {
+        "input": 6,
+        "output": 2899,
+        "cache_read": 2238,
+        "cache_write": 5715
+      },
+      "Attempts": 3,
+      "Tone": 1,
+      "Chars": 743,
+      "Missing": [],
+      "Leaked": [],
+      "NewEvents": [
+        "Chiang Kan flees the tent.",
+        "Chiang Kan steals the letter naming Tsʻai Mao and Chang Yün.",
+        "Chou Yü pretends to be drunk."
+      ],
+      "FactHalluc": []
+    },
+    {
+      "Arm": "S-hai-extra",
+      "Scene": "chibi/45.88",
+      "Backend": "ko-haera",
+      "Passed": false,
+      "Calls": 6,
+      "RenderCalls": 3,
+      "ExtractCalls": 3,
+      "RenderModel": "claude-haiku-5-5",
+      "RenderUsage": {
+        "input": 6,
+        "output": 15773,
+        "cache_read": 2584,
+        "cache_write": 6552
+      },
+      "ExtractUsage": {
+        "input": 6,
+        "output": 2357,
+        "cache_read": 2238,
+        "cache_write": 6847
+      },
+      "Attempts": 3,
+      "Tone": 1,
+      "Chars": 1111,
+      "Missing": [
+        "jiang_gan|assert|commanders_traitors",
+        "zhou_yu|assert|jiang_gan_envoy"
+      ],
+      "Leaked": [],
+      "NewEvents": [
+        "Jiang Gan flees the camp after the officer announces Zhang Yun and Tsai Mao have come.",
+        "Jiang Gan steals the letter and hides it in his sleeve."
+      ],
+      "FactHalluc": []
+    },
+    {
+      "Arm": "S-son-extra",
+      "Scene": "macbeth/1.3",
+      "Backend": "ko-haera",
+      "Passed": false,
+      "Calls": 6,
+      "RenderCalls": 3,
+      "ExtractCalls": 3,
+      "RenderModel": "claude-sonnet-5-5",
+      "RenderUsage": {
+        "input": 6,
+        "output": 10179,
+        "cache_read": 3876,
+        "cache_write": 6404
+      },
+      "ExtractUsage": {
+        "input": 6,
+        "output": 3696,
+        "cache_read": 2238,
+        "cache_write": 8864
+      },
+      "Attempts": 3,
+      "Tone": 1,
+      "Chars": 1380,
+      "Missing": [
+        "macbeth|assert|holds(king,macbeth)",
+        "macbeth|assert|holds(king,macbeth)"
+      ],
+      "Leaked": [],
+      "NewEvents": [
+        "Ross and Angus arrive and announce that Macbeth is named Thane of Cawdor.",
+        "The three witches vanish into the mist."
+      ],
+      "FactHalluc": []
+    },
+    {
+      "Arm": "S-hai-extra",
+      "Scene": "macbeth/1.3",
+      "Backend": "ko-haera",
+      "Skipped": "budget: used 117 + est 6 \u003e 119",
+      "Passed": false,
+      "Calls": 0,
+      "RenderCalls": 0,
+      "ExtractCalls": 0,
+      "RenderModel": "claude-haiku-5-5",
+      "RenderUsage": {
+        "input": 0,
+        "output": 0,
+        "cache_read": 0,
+        "cache_write": 0
+      },
+      "ExtractUsage": {
+        "input": 0,
+        "output": 0,
+        "cache_read": 0,
+        "cache_write": 0
+      },
+      "Tone": 0,
+      "Chars": 0,
+      "Missing": null,
+      "Leaked": null,
+      "NewEvents": null,
+      "FactHalluc": null
+    }
+  ],
+  "Decision": {
+    "Renderer": "single",
+    "RenderModel": "claude-haiku-5-5",
+    "Why": "최고 통과율 S-hai 50% (가중 토큰 80306); S-hai 50% vs S-son 50% → claude-haiku-5-5"
+  }
+}

@@ -1,0 +1,657 @@
+[
+  {
+    "Arm": "S-son",
+    "Scene": "haejin/s3",
+    "Backend": "ko-haera",
+    "Passed": false,
+    "Calls": 6,
+    "RenderCalls": 3,
+    "ExtractCalls": 3,
+    "RenderModel": "claude-sonnet-5-5",
+    "RenderUsage": {
+      "input": 6,
+      "output": 5959,
+      "cache_read": 2616,
+      "cache_write": 7149
+    },
+    "ExtractUsage": {
+      "input": 6,
+      "output": 1625,
+      "cache_read": 2238,
+      "cache_write": 6377
+    },
+    "Attempts": 3,
+    "Tone": 1,
+    "Chars": 662,
+    "Missing": [
+      "seoyun|assert|song_line"
+    ],
+    "Leaked": [],
+    "NewEvents": [
+      "Seoyun reaches toward the sewing box but withdraws her hand after Malsun's warning.",
+      "The three leave Malsun's house."
+    ],
+    "FactHalluc": [
+      "extra-act:seoyun|perceive|song_line"
+    ]
+  },
+  {
+    "Arm": "L-son",
+    "Scene": "haejin/s3",
+    "Backend": "ko-haera",
+    "Passed": false,
+    "Calls": 20,
+    "RenderCalls": 10,
+    "ExtractCalls": 10,
+    "RenderModel": "claude-sonnet-5-5",
+    "RenderUsage": {
+      "input": 20,
+      "output": 11768,
+      "cache_read": 808,
+      "cache_write": 16024
+    },
+    "ExtractUsage": {
+      "input": 20,
+      "output": 2531,
+      "cache_read": 7460,
+      "cache_write": 15917
+    },
+    "Tone": 1,
+    "Chars": 1409,
+    "Beats": 4,
+    "BeatAttempts": [
+      1,
+      3,
+      3,
+      1
+    ],
+    "BeatRetries": 4,
+    "StyleOK": true,
+    "FinalFrom": "unstitched",
+    "Missing": [],
+    "Leaked": [],
+    "NewEvents": [
+      "Seoyun touches the sewing box lid and is stopped by Malsun's warning."
+    ],
+    "FactHalluc": [
+      "extra-act:seoyun|assert|memorial_day"
+    ]
+  },
+  {
+    "Arm": "L-hai",
+    "Scene": "haejin/s3",
+    "Backend": "ko-haera",
+    "Passed": true,
+    "Calls": 19,
+    "RenderCalls": 10,
+    "ExtractCalls": 9,
+    "RenderModel": "claude-haiku-5-5",
+    "RenderUsage": {
+      "input": 20,
+      "output": 28925,
+      "cache_read": 0,
+      "cache_write": 17236
+    },
+    "ExtractUsage": {
+      "input": 18,
+      "output": 1950,
+      "cache_read": 6714,
+      "cache_write": 13416
+    },
+    "Tone": 1,
+    "Chars": 1477,
+    "Beats": 4,
+    "BeatAttempts": [
+      2,
+      2,
+      3,
+      1
+    ],
+    "BeatRetries": 4,
+    "StyleOK": true,
+    "FinalFrom": "stitched",
+    "Missing": [],
+    "Leaked": [],
+    "NewEvents": [],
+    "FactHalluc": []
+  },
+  {
+    "Arm": "L-hai-swap",
+    "Scene": "haejin/s3",
+    "Backend": "ko-hapsho",
+    "Passed": true,
+    "Calls": 3,
+    "RenderCalls": 2,
+    "ExtractCalls": 1,
+    "RenderModel": "claude-haiku-5-5",
+    "RenderUsage": {
+      "input": 4,
+      "output": 9211,
+      "cache_read": 0,
+      "cache_write": 7040
+    },
+    "ExtractUsage": {
+      "input": 2,
+      "output": 436,
+      "cache_read": 746,
+      "cache_write": 3249
+    },
+    "Tone": 1,
+    "Chars": 1549,
+    "StyleOK": true,
+    "FinalFrom": "stitched",
+    "Missing": [],
+    "Leaked": [],
+    "NewEvents": [],
+    "FactHalluc": []
+  },
+  {
+    "Arm": "S-son",
+    "Scene": "haejin/s19",
+    "Backend": "ko-haera",
+    "Passed": true,
+    "Calls": 6,
+    "RenderCalls": 3,
+    "ExtractCalls": 3,
+    "RenderModel": "claude-sonnet-5-5",
+    "RenderUsage": {
+      "input": 6,
+      "output": 3714,
+      "cache_read": 3924,
+      "cache_write": 5857
+    },
+    "ExtractUsage": {
+      "input": 6,
+      "output": 1427,
+      "cache_read": 2238,
+      "cache_write": 5829
+    },
+    "Attempts": 3,
+    "Tone": 1,
+    "Chars": 717,
+    "Missing": [],
+    "Leaked": [],
+    "NewEvents": [],
+    "FactHalluc": []
+  },
+  {
+    "Arm": "L-son",
+    "Scene": "haejin/s19",
+    "Backend": "ko-haera",
+    "Passed": false,
+    "Calls": 16,
+    "RenderCalls": 8,
+    "ExtractCalls": 8,
+    "RenderModel": "claude-sonnet-5-5",
+    "RenderUsage": {
+      "input": 16,
+      "output": 11036,
+      "cache_read": 808,
+      "cache_write": 13356
+    },
+    "ExtractUsage": {
+      "input": 16,
+      "output": 2078,
+      "cache_read": 5968,
+      "cache_write": 13792
+    },
+    "Tone": 0.9814814814814815,
+    "Chars": 1478,
+    "Beats": 4,
+    "BeatAttempts": [
+      1,
+      1,
+      1,
+      3
+    ],
+    "BeatRetries": 2,
+    "BeatFailed": [
+      4
+    ],
+    "StyleOK": true,
+    "FinalFrom": "stitched",
+    "Missing": [],
+    "Leaked": [],
+    "NewEvents": [
+      "Haeun secretly hides the ticket deeper in her coat so Seoyun cannot see it.",
+      "Seoyun closes her notebook and leaves, and Haeun follows."
+    ],
+    "FactHalluc": []
+  },
+  {
+    "Arm": "L-hai",
+    "Scene": "haejin/s19",
+    "Backend": "ko-haera",
+    "Passed": false,
+    "Calls": 15,
+    "RenderCalls": 7,
+    "ExtractCalls": 8,
+    "RenderModel": "claude-haiku-5-5",
+    "RenderUsage": {
+      "input": 14,
+      "output": 21301,
+      "cache_read": 808,
+      "cache_write": 12331
+    },
+    "ExtractUsage": {
+      "input": 16,
+      "output": 2124,
+      "cache_read": 5968,
+      "cache_write": 15565
+    },
+    "Tone": 1,
+    "Chars": 1461,
+    "Beats": 4,
+    "BeatAttempts": [
+      1,
+      2,
+      1,
+      1
+    ],
+    "BeatRetries": 1,
+    "StyleOK": true,
+    "FinalFrom": "unstitched",
+    "Missing": [],
+    "Leaked": [],
+    "NewEvents": [
+      "Haeun hides the old ferry ticket deep in a desk drawer instead of showing it to Seoyun."
+    ],
+    "FactHalluc": []
+  },
+  {
+    "Arm": "S-son",
+    "Scene": "chibi/45.88",
+    "Backend": "ko-haera",
+    "Skipped": "budget: used 85 + scene est 82 \u003e 119",
+    "Passed": false,
+    "Calls": 0,
+    "RenderCalls": 0,
+    "ExtractCalls": 0,
+    "RenderModel": "claude-sonnet-5-5",
+    "RenderUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "ExtractUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "Tone": 0,
+    "Chars": 0,
+    "Missing": null,
+    "Leaked": null,
+    "NewEvents": null,
+    "FactHalluc": null
+  },
+  {
+    "Arm": "L-son",
+    "Scene": "chibi/45.88",
+    "Backend": "ko-haera",
+    "Skipped": "budget: used 85 + scene est 82 \u003e 119",
+    "Passed": false,
+    "Calls": 0,
+    "RenderCalls": 0,
+    "ExtractCalls": 0,
+    "RenderModel": "claude-sonnet-5-5",
+    "RenderUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "ExtractUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "Tone": 0,
+    "Chars": 0,
+    "Missing": null,
+    "Leaked": null,
+    "NewEvents": null,
+    "FactHalluc": null
+  },
+  {
+    "Arm": "L-hai",
+    "Scene": "chibi/45.88",
+    "Backend": "ko-haera",
+    "Skipped": "budget: used 85 + scene est 82 \u003e 119",
+    "Passed": false,
+    "Calls": 0,
+    "RenderCalls": 0,
+    "ExtractCalls": 0,
+    "RenderModel": "claude-haiku-5-5",
+    "RenderUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "ExtractUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "Tone": 0,
+    "Chars": 0,
+    "Missing": null,
+    "Leaked": null,
+    "NewEvents": null,
+    "FactHalluc": null
+  },
+  {
+    "Arm": "S-son",
+    "Scene": "macbeth/1.3",
+    "Backend": "ko-haera",
+    "Skipped": "budget: used 85 + scene est 88 \u003e 119",
+    "Passed": false,
+    "Calls": 0,
+    "RenderCalls": 0,
+    "ExtractCalls": 0,
+    "RenderModel": "claude-sonnet-5-5",
+    "RenderUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "ExtractUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "Tone": 0,
+    "Chars": 0,
+    "Missing": null,
+    "Leaked": null,
+    "NewEvents": null,
+    "FactHalluc": null
+  },
+  {
+    "Arm": "L-son",
+    "Scene": "macbeth/1.3",
+    "Backend": "ko-haera",
+    "Skipped": "budget: used 85 + scene est 88 \u003e 119",
+    "Passed": false,
+    "Calls": 0,
+    "RenderCalls": 0,
+    "ExtractCalls": 0,
+    "RenderModel": "claude-sonnet-5-5",
+    "RenderUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "ExtractUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "Tone": 0,
+    "Chars": 0,
+    "Missing": null,
+    "Leaked": null,
+    "NewEvents": null,
+    "FactHalluc": null
+  },
+  {
+    "Arm": "L-hai",
+    "Scene": "macbeth/1.3",
+    "Backend": "ko-haera",
+    "Skipped": "budget: used 85 + scene est 88 \u003e 119",
+    "Passed": false,
+    "Calls": 0,
+    "RenderCalls": 0,
+    "ExtractCalls": 0,
+    "RenderModel": "claude-haiku-5-5",
+    "RenderUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "ExtractUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "Tone": 0,
+    "Chars": 0,
+    "Missing": null,
+    "Leaked": null,
+    "NewEvents": null,
+    "FactHalluc": null
+  },
+  {
+    "Arm": "S-hai",
+    "Scene": "haejin/s3",
+    "Backend": "ko-haera",
+    "Passed": true,
+    "Calls": 2,
+    "RenderCalls": 1,
+    "ExtractCalls": 1,
+    "RenderModel": "claude-haiku-5-5",
+    "RenderUsage": {
+      "input": 2,
+      "output": 5433,
+      "cache_read": 0,
+      "cache_write": 3205
+    },
+    "ExtractUsage": {
+      "input": 2,
+      "output": 434,
+      "cache_read": 746,
+      "cache_write": 2745
+    },
+    "Attempts": 1,
+    "Tone": 1,
+    "Chars": 1200,
+    "Missing": [],
+    "Leaked": [],
+    "NewEvents": [],
+    "FactHalluc": []
+  },
+  {
+    "Arm": "S-hai",
+    "Scene": "haejin/s19",
+    "Backend": "ko-haera",
+    "Passed": false,
+    "Calls": 6,
+    "RenderCalls": 3,
+    "ExtractCalls": 3,
+    "RenderModel": "claude-haiku-5-5",
+    "RenderUsage": {
+      "input": 6,
+      "output": 11093,
+      "cache_read": 3924,
+      "cache_write": 5932
+    },
+    "ExtractUsage": {
+      "input": 6,
+      "output": 1408,
+      "cache_read": 2238,
+      "cache_write": 6691
+    },
+    "Attempts": 3,
+    "Tone": 1,
+    "Chars": 895,
+    "Missing": [],
+    "Leaked": [],
+    "NewEvents": [
+      "Haeun and Seoyun leave the classroom together.",
+      "Haeun hides the ferry ticket deeper in her shirt's inner pocket and closes the drawer."
+    ],
+    "FactHalluc": []
+  },
+  {
+    "Arm": "S-son-hapsho",
+    "Scene": "haejin/s3",
+    "Backend": "ko-hapsho",
+    "Passed": true,
+    "Calls": 6,
+    "RenderCalls": 3,
+    "ExtractCalls": 3,
+    "RenderModel": "claude-sonnet-5-5",
+    "RenderUsage": {
+      "input": 6,
+      "output": 5565,
+      "cache_read": 3338,
+      "cache_write": 7550
+    },
+    "ExtractUsage": {
+      "input": 6,
+      "output": 1607,
+      "cache_read": 2238,
+      "cache_write": 6193
+    },
+    "Attempts": 3,
+    "Tone": 1,
+    "Chars": 820,
+    "Missing": [],
+    "Leaked": [],
+    "NewEvents": [],
+    "FactHalluc": []
+  },
+  {
+    "Arm": "S-son-extra",
+    "Scene": "chibi/45.88",
+    "Backend": "ko-haera",
+    "Passed": false,
+    "Calls": 6,
+    "RenderCalls": 3,
+    "ExtractCalls": 3,
+    "RenderModel": "claude-sonnet-5-5",
+    "RenderUsage": {
+      "input": 6,
+      "output": 6049,
+      "cache_read": 2584,
+      "cache_write": 6440
+    },
+    "ExtractUsage": {
+      "input": 6,
+      "output": 2899,
+      "cache_read": 2238,
+      "cache_write": 5715
+    },
+    "Attempts": 3,
+    "Tone": 1,
+    "Chars": 743,
+    "Missing": [],
+    "Leaked": [],
+    "NewEvents": [
+      "Chiang Kan flees the tent.",
+      "Chiang Kan steals the letter naming Tsʻai Mao and Chang Yün.",
+      "Chou Yü pretends to be drunk."
+    ],
+    "FactHalluc": []
+  },
+  {
+    "Arm": "S-hai-extra",
+    "Scene": "chibi/45.88",
+    "Backend": "ko-haera",
+    "Passed": false,
+    "Calls": 6,
+    "RenderCalls": 3,
+    "ExtractCalls": 3,
+    "RenderModel": "claude-haiku-5-5",
+    "RenderUsage": {
+      "input": 6,
+      "output": 15773,
+      "cache_read": 2584,
+      "cache_write": 6552
+    },
+    "ExtractUsage": {
+      "input": 6,
+      "output": 2357,
+      "cache_read": 2238,
+      "cache_write": 6847
+    },
+    "Attempts": 3,
+    "Tone": 1,
+    "Chars": 1111,
+    "Missing": [
+      "jiang_gan|assert|commanders_traitors",
+      "zhou_yu|assert|jiang_gan_envoy"
+    ],
+    "Leaked": [],
+    "NewEvents": [
+      "Jiang Gan flees the camp after the officer announces Zhang Yun and Tsai Mao have come.",
+      "Jiang Gan steals the letter and hides it in his sleeve."
+    ],
+    "FactHalluc": []
+  },
+  {
+    "Arm": "S-son-extra",
+    "Scene": "macbeth/1.3",
+    "Backend": "ko-haera",
+    "Passed": false,
+    "Calls": 6,
+    "RenderCalls": 3,
+    "ExtractCalls": 3,
+    "RenderModel": "claude-sonnet-5-5",
+    "RenderUsage": {
+      "input": 6,
+      "output": 10179,
+      "cache_read": 3876,
+      "cache_write": 6404
+    },
+    "ExtractUsage": {
+      "input": 6,
+      "output": 3696,
+      "cache_read": 2238,
+      "cache_write": 8864
+    },
+    "Attempts": 3,
+    "Tone": 1,
+    "Chars": 1380,
+    "Missing": [
+      "macbeth|assert|holds(king,macbeth)",
+      "macbeth|assert|holds(king,macbeth)"
+    ],
+    "Leaked": [],
+    "NewEvents": [
+      "Ross and Angus arrive and announce that Macbeth is named Thane of Cawdor.",
+      "The three witches vanish into the mist."
+    ],
+    "FactHalluc": []
+  },
+  {
+    "Arm": "S-hai-extra",
+    "Scene": "macbeth/1.3",
+    "Backend": "ko-haera",
+    "Skipped": "budget: used 117 + est 6 \u003e 119",
+    "Passed": false,
+    "Calls": 0,
+    "RenderCalls": 0,
+    "ExtractCalls": 0,
+    "RenderModel": "claude-haiku-5-5",
+    "RenderUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "ExtractUsage": {
+      "input": 0,
+      "output": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "Tone": 0,
+    "Chars": 0,
+    "Missing": null,
+    "Leaked": null,
+    "NewEvents": null,
+    "FactHalluc": null
+  }
+]

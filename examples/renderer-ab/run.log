@@ -1,0 +1,21 @@
+examples/serial/run1/b/story/ep06/s15.dieg.md:25:1: warn offstage-speaker: "minjae" says but is not on stage (waived)
+renderer-ab: S-son        haejin/s3        ko-haera  pass=false calls=6 used=6 
+renderer-ab: L-son        haejin/s3        ko-haera  pass=false calls=20 used=26 
+renderer-ab: L-hai        haejin/s3        ko-haera  pass=true calls=19 used=45 
+renderer-ab: L-hai-swap   haejin/s3        ko-hapsho pass=true calls=3 used=48 
+renderer-ab: S-son        haejin/s19       ko-haera  pass=true calls=6 used=54 
+renderer-ab: L-son        haejin/s19       ko-haera  pass=false calls=16 used=70 
+renderer-ab: L-hai        haejin/s19       ko-haera  pass=false calls=15 used=85 
+renderer-ab: S-son        chibi/45.88      ko-haera  pass=false calls=0 used=85 budget: used 85 + scene est 82 > 119
+renderer-ab: L-son        chibi/45.88      ko-haera  pass=false calls=0 used=85 budget: used 85 + scene est 82 > 119
+renderer-ab: L-hai        chibi/45.88      ko-haera  pass=false calls=0 used=85 budget: used 85 + scene est 82 > 119
+renderer-ab: S-son        macbeth/1.3      ko-haera  pass=false calls=0 used=85 budget: used 85 + scene est 88 > 119
+renderer-ab: L-son        macbeth/1.3      ko-haera  pass=false calls=0 used=85 budget: used 85 + scene est 88 > 119
+renderer-ab: L-hai        macbeth/1.3      ko-haera  pass=false calls=0 used=85 budget: used 85 + scene est 88 > 119
+renderer-ab: S-hai        haejin/s3        ko-haera  pass=true calls=2 used=87 
+renderer-ab: S-hai        haejin/s19       ko-haera  pass=false calls=6 used=93 
+renderer-ab: S-son-hapsho haejin/s3        ko-hapsho pass=true calls=6 used=99 
+renderer-ab: S-son-extra  chibi/45.88      ko-haera  pass=false calls=6 used=105 
+renderer-ab: S-hai-extra  chibi/45.88      ko-haera  pass=false calls=6 used=111 
+renderer-ab: S-son-extra  macbeth/1.3      ko-haera  pass=false calls=6 used=117 
+renderer-ab: S-hai-extra  macbeth/1.3      ko-haera  pass=false calls=0 used=117 budget: used 117 + est 6 > 119
