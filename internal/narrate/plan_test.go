@@ -51,7 +51,7 @@ func sizes(p Plan) []int {
 
 func TestPlanCoversEveryActOnce(t *testing.T) {
 	p, err := PlanScene(testScene(7, []int{4, 3}), PlanOpts{})
-	if err != nil || fmt.Sprint(sizes(p)) != "[4 3]" {
+	if err != nil || fmt.Sprint(sizes(p)) != "[3 1 3]" {
 		t.Fatalf("named beats: %v %v", sizes(p), err)
 	}
 	p, err = PlanScene(testScene(7, nil), PlanOpts{})
@@ -146,5 +146,43 @@ func TestBeatSceneOnlyItsActs(t *testing.T) {
 	}
 	if len(bs.Facts) != 1 || bs.Facts[0].ID != "f2" {
 		t.Fatalf("%+v", bs.Facts)
+	}
+}
+
+func TestNamedBeatSplit(t *testing.T) {
+	s := testScene(7, []int{7})
+	p, err := PlanScene(s, PlanOpts{})
+	if err != nil || fmt.Sprint(sizes(p)) != "[3 3 1]" || p.Beats[0].ID != "b0.1" || p.Beats[2].ID != "b0.3" {
+		t.Fatalf("%v %v %v", sizes(p), p.Beats, err)
+	}
+}
+
+func TestBeatSceneKeepsWithheld(t *testing.T) {
+	s := testScene(0, []int{1, 1})
+	s.Beats[0].Acts = []render.Act{{Actor: "a", Verb: "says", Fact: "f1"}}
+	s.Beats[1].Acts = []render.Act{{Actor: "a", Verb: "says", Fact: "f2"}}
+	s.Withheld = []string{"x"}
+	p, _ := PlanScene(s, PlanOpts{})
+	bs := p.BeatScene(1)
+	has := false
+	for _, f := range bs.Facts {
+		has = has || f.ID == "x"
+	}
+	if len(bs.Withheld) != 1 || bs.Withheld[0] != "x" || !has {
+		t.Fatalf("%+v %+v", bs.Withheld, bs.Facts)
+	}
+}
+
+func TestWithheldReferencedByAct(t *testing.T) {
+	s := testScene(0, []int{1, 1})
+	s.Beats[0].Acts = []render.Act{{Actor: "a", Verb: "says", Fact: "x"}}
+	s.Beats[1].Acts = []render.Act{{Actor: "a", Verb: "does"}}
+	s.Withheld = []string{"x"}
+	p, err := PlanScene(s, PlanOpts{})
+	if err != nil || len(p.Notes) != 1 || len(p.Beats[0].Acts) != 1 {
+		t.Fatalf("%v %v", p.Notes, err)
+	}
+	if len(p.Beats[0].Forbidden) != 0 || len(p.Beats[1].Forbidden) != 1 {
+		t.Fatalf("%v %v", p.Beats[0].Forbidden, p.Beats[1].Forbidden)
 	}
 }

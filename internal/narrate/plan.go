@@ -46,6 +46,7 @@ type Plan struct {
 	Scene       render.Scene
 	Beats       []Beat
 	TargetChars int
+	Notes       []string
 }
 
 type PlanOpts struct{ TargetChars, MaxActsPerBeat int }
@@ -74,14 +75,26 @@ func PlanScene(s render.Scene, o PlanOpts) (Plan, error) {
 	if o.MaxActsPerBeat <= 0 {
 		o.MaxActsPerBeat = 3
 	}
-	// 지은이가 비트에 이름을 붙였으면 그대로, 모두 무명이면 행위를 MaxActsPerBeat 씩 자른다.
+	// 비트에 하나라도 이름이 있으면 지은이 비트를 쓰되 MaxActsPerBeat 를 넘으면 name.1, name.2 … 로 쪼갠다.
+	// 모두 무명이면 행위를 모아 MaxActsPerBeat 씩 자른다.
 	named := false
 	for _, b := range s.Beats {
 		named = named || b.ID != ""
 	}
 	var groups []render.Beat
 	if named {
-		groups = s.Beats
+		for i, b := range s.Beats {
+			if b.ID == "" {
+				b.ID = fmt.Sprintf("b%d", i)
+			}
+			if len(b.Acts) <= o.MaxActsPerBeat {
+				groups = append(groups, b)
+				continue
+			}
+			for j := 0; j < len(b.Acts); j += o.MaxActsPerBeat {
+				groups = append(groups, render.Beat{ID: fmt.Sprintf("%s.%d", b.ID, j/o.MaxActsPerBeat+1), Acts: b.Acts[j:min(j+o.MaxActsPerBeat, len(b.Acts))]})
+			}
+		}
 	} else {
 		var all []render.Act
 		for _, b := range s.Beats {
@@ -92,36 +105,13 @@ func PlanScene(s render.Scene, o PlanOpts) (Plan, error) {
 		}
 	}
 
-	covered := map[string]bool{} // 장면의 어느 행위든 다루는 사실
-	for _, g := range groups {
-		for _, a := range g.Acts {
-			covered[a.Fact] = true
-		}
-	}
-	known := map[string]bool{}
-	for _, id := range s.POVBeliefs {
-		known[id] = true
-	}
-	var forbidden []string
-	for _, id := range s.Withheld {
-		if f, ok := s.FactByID(id); ok {
-			forbidden = append(forbidden, f.Text)
-		}
-	}
-	if s.Directives.POV != "" {
-		// ponytail: 시점 인물이 모르는 사실 = POVBeliefs 에 없는 참 사실 근사. 정밀화는 PG 독자 모델로.
-		for _, f := range s.Facts {
-			if f.True && !known[f.ID] && !covered[f.ID] && !contains(s.Withheld, f.ID) {
-				forbidden = append(forbidden, f.Text)
-			}
-		}
-	}
-
 	para := max(1, int(math.Round(float64(o.TargetChars)/float64(max(1, len(groups)))/350)))
 	p := Plan{Scene: s, TargetChars: o.TargetChars}
 	for _, g := range groups {
-		b := Beat{ID: g.ID, Paragraphs: para, Forbidden: forbidden, Allowed: allowed}
+		b := Beat{ID: g.ID, Paragraphs: para, Allowed: append([]string(nil), allowed...)}
+		used := map[string]bool{}
 		for _, a := range g.Acts {
+			used[a.Fact] = true
 			ba := BeatAct{Act: a, Form: formOf(a, s.FreeDialogue), Modality: ModFact}
 			if f, ok := s.FactByID(a.Fact); ok {
 				ba.FactText = f.Text
@@ -134,9 +124,50 @@ func PlanScene(s render.Scene, o PlanOpts) (Plan, error) {
 			}
 			b.Acts = append(b.Acts, ba)
 		}
+		for _, id := range p.forbidIDs(used) {
+			if f, ok := s.FactByID(id); ok {
+				b.Forbidden = append(b.Forbidden, f.Text)
+			}
+		}
+		for _, id := range s.Withheld {
+			if used[id] {
+				p.Notes = append(p.Notes, fmt.Sprintf("숨김 사실 %q 를 비트 %s 의 행위가 다룬다: 행위는 두고 그 비트에서만 금지하지 않는다", id, g.ID))
+			}
+		}
 		p.Beats = append(p.Beats, b)
 	}
 	return p, CheckPlan(p)
+}
+
+// forbidIDs: 숨김 사실 + (시점 인물이 있으면) 시점 인물이 모르고 장면 어느 행위도 다루지 않는 참 사실. used 에 있는 사실은 뺀다.
+func (p Plan) forbidIDs(used map[string]bool) []string {
+	s := p.Scene
+	covered := map[string]bool{}
+	for _, b := range s.Beats {
+		for _, a := range b.Acts {
+			covered[a.Fact] = true
+		}
+	}
+	var ids []string
+	seen := map[string]bool{}
+	add := func(id string) {
+		if !seen[id] && !used[id] {
+			seen[id] = true
+			ids = append(ids, id)
+		}
+	}
+	for _, id := range s.Withheld {
+		add(id)
+	}
+	if s.Directives.POV != "" {
+		// ponytail: 시점 인물이 모르는 사실 = POVBeliefs 에 없는 참 사실 근사. 정밀화는 PG 독자 모델로.
+		for _, f := range s.Facts {
+			if f.True && !contains(s.POVBeliefs, f.ID) && !covered[f.ID] {
+				add(f.ID)
+			}
+		}
+	}
+	return ids
 }
 
 func contains(l []string, s string) bool {
@@ -185,8 +216,16 @@ func (p Plan) BeatScene(i int) render.Scene {
 	}
 	s.Beats = []render.Beat{b}
 	s.Facts = nil
+	forbid := p.forbidIDs(use)
+	keepF := map[string]bool{}
+	for id := range use {
+		keepF[id] = true
+	}
+	for _, id := range forbid {
+		keepF[id] = true // 금지 사실도 항목은 있어야 Diff 가 누출(Leaked)로 보고한다
+	}
 	for _, f := range p.Scene.Facts {
-		if use[f.ID] {
+		if keepF[f.ID] {
 			s.Facts = append(s.Facts, f)
 		}
 	}
@@ -198,6 +237,6 @@ func (p Plan) BeatScene(i int) render.Scene {
 		}
 		return
 	}
-	s.POVBeliefs, s.ReaderKnows, s.Withheld = keep(s.POVBeliefs), keep(s.ReaderKnows), keep(s.Withheld)
+	s.POVBeliefs, s.ReaderKnows, s.Withheld = keep(s.POVBeliefs), keep(s.ReaderKnows), forbid
 	return s
 }
