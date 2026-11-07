@@ -123,6 +123,7 @@ cd deploy && docker compose up -d   # ro-init 이 sl_ro 에 비밀번호를 걸�
 - `pattern`·`tag`·`attr` 는 문장 키워드다. 자리에 따라 키워드로 읽히니(`pattern dramatic-irony`, `fact x "X" tag identity`,
   `attr hamlet.age = 30`) 인물·사실 이름으로 쓰지 않는다.
   사물의 위치는 `attr bell.at = tower` 로 적는다(`X.at` 규약). 그 사물을 다루는 장면의 장소가 다르면 `object-location` 이 경고한다.
+  인물이 이야기에서 떠나면 `attr X.status = gone`, 돌아오면 `attr X.status = present` 로 적는다. 떠난 뒤의 행위·등장은 `stays-gone` 이 경고한다.
 - `enacts` = 공연·재연. 무대 위 모두가 보지만 단언이 아니라 믿음을 만들지 않는다(예: 햄릿 3.2 극중극).
 
 ## 테스트
