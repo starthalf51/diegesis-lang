@@ -128,15 +128,20 @@ func (f fakeC) Complete(context.Context, string, string) (render.Result, error) 
 }
 
 func TestRendererFlagValidation(t *testing.T) {
+	// 0 calls: every run opens <dir>/calls.jsonl before its first call, so the dir must stay empty.
 	for _, bad := range [][]string{{"--renderer", "foo"}, {"--beat-retries", "-1"}, {"--beat-retries", "x"}} {
-		if c := cmdWrite(append([]string{"idea", "-o", t.TempDir()}, bad...)); c != 2 {
-			t.Errorf("write %v exit %d", bad, c)
-		}
-		if c := cmdContinue(append([]string{t.TempDir(), "--ep", "2"}, bad...)); c != 2 {
-			t.Errorf("continue %v exit %d", bad, c)
-		}
-		if c := cmdRevise(append([]string{t.TempDir(), "요청"}, bad...)); c != 2 {
-			t.Errorf("revise %v exit %d", bad, c)
+		for name, run := range map[string]func(dir string) int{
+			"write":    func(d string) int { return cmdWrite(append([]string{"idea", "-o", d}, bad...)) },
+			"continue": func(d string) int { return cmdContinue(append([]string{d, "--ep", "2"}, bad...)) },
+			"revise":   func(d string) int { return cmdRevise(append([]string{d, "요청"}, bad...)) },
+		} {
+			dir := t.TempDir()
+			if c := run(dir); c != 2 {
+				t.Errorf("%s %v exit %d", name, bad, c)
+			}
+			if es, _ := os.ReadDir(dir); len(es) != 0 {
+				t.Errorf("%s %v wrote %v", name, bad, es)
+			}
 		}
 	}
 }

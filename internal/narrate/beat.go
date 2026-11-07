@@ -31,12 +31,26 @@ func BeatPrompt(p Plan, i int, lang, prevTail string, fix *render.Report) (syste
 	if lang == "en" {
 		style = "plain past tense"
 	}
-	system = fmt.Sprintf("너는 소설의 한 비트를 쓴다. 이 비트의 행위만 순서대로 쓴다. 문체는 중립 평서(%s)로 쓰고, 문단은 %d개로 쓴다. 직전 문단은 흐름을 잇기 위해서만 주어진다. 직전 문단의 사건을 다시 쓰지 않는다. 본문만 출력한다.", style, b.Paragraphs)
+	system = fmt.Sprintf("너는 소설의 한 비트를 쓴다. 이 비트의 행위만 순서대로 쓴다. 문체는 중립 평서(%s)로 쓰고, 분량은 약 %d자, 문단 %d개로 쓴다. 직전 문단은 흐름을 잇기 위해서만 주어진다. 직전 문단의 사건을 다시 쓰지 않는다. 등장·퇴장: 누가 들고 나는지만 쓴다. 이유·계획을 지어내지 않는다. 본문만 출력한다.", style, b.Chars, b.Paragraphs)
 	var u strings.Builder
 	u.WriteString("## 이 비트의 행위\n")
 	for _, a := range b.Acts {
-		who := name(p.Scene, lang, a.Act.Actor)
-		fmt.Fprintf(&u, "- [%s] %s %s: %s", a.Form, who, a.Act.Verb, formGuide[a.Form])
+		parts := []string{}
+		if a.Act.Actor != "" {
+			parts = append(parts, name(p.Scene, lang, a.Act.Actor))
+		}
+		parts = append(parts, a.Act.Verb)
+		if a.Act.Action != "" {
+			parts = append(parts, "("+a.Act.Action+")")
+		}
+		if len(a.Act.Targets) > 0 {
+			ts := make([]string, len(a.Act.Targets))
+			for k, t := range a.Act.Targets {
+				ts[k] = name(p.Scene, lang, t)
+			}
+			parts = append(parts, "→ "+strings.Join(ts, ", "))
+		}
+		fmt.Fprintf(&u, "- [%s] %s: %s", a.Form, strings.Join(parts, " "), formGuide[a.Form])
 		if a.FactText != "" {
 			fmt.Fprintf(&u, " — %s", a.FactText)
 		}

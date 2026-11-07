@@ -312,14 +312,13 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 		cur[i].FreeDialogue = o.Skeleton // Novel renders (and hashes) with this
 		live[fileID(cur[i].ID)] = true
 	}
-	after, err := SceneHashes(cur, b)
-	if err != nil {
-		return RerenderResult{}, err
-	}
-	for id, h := range after { // the stored hash carries the renderer mode (sceneHash)
-		if o.Renderer == "layered" {
-			after[id] = "layered:" + h
+	after := map[string]string{} // what Novel stores: the hash carries the renderer mode
+	for _, s := range cur {
+		h, err := sceneHash(s, b, o.Renderer)
+		if err != nil {
+			return RerenderResult{}, fmt.Errorf("scene %s: %w", s.ID, err)
 		}
+		after[s.ID] = h
 	}
 	dir := filepath.Join(out, "novel")
 	before := map[string]string{}
@@ -348,6 +347,7 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 	if limit > 0 && limit < len(ss) {
 		ss = ss[:limit]
 	}
+	var err error
 	rr.Scenes, err = Novel(ctx, cs, work, ss, b, out, o)
 	if err == nil {
 		err = Concat(out, cur, b.ID)

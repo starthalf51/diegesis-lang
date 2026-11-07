@@ -2,6 +2,7 @@ package narrate
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -150,5 +151,58 @@ func TestRealizeWithRetryTruncatedNotVerified(t *testing.T) {
 	text, rep, n, err := realizeWithRetry(context.Background(), gen, ver, p, 0, "ko", "", 2)
 	if err != nil || n != 2 || text != "온전한 글." || len(ver.users) != 1 || !BeatPassed(rep) {
 		t.Fatalf("%q %+v %d %d %v", text, rep, n, len(ver.users), err)
+	}
+}
+
+func presencePlan(t *testing.T) Plan {
+	t.Helper()
+	s := render.Scene{
+		Cast: []render.Entity{{ID: "a", Names: map[string][]string{"ko": {"가온"}}}, {ID: "b", Names: map[string][]string{"ko": {"나루"}}},
+			{ID: "k", Names: map[string][]string{"ko": {"열쇠"}}}},
+		OnStage: []string{"a", "b"},
+		Facts:   []render.Fact{{ID: "f1", Text: "문이 열렸다", True: true}},
+		Beats: []render.Beat{{ID: "b", Acts: []render.Act{
+			{Actor: "a", Verb: "shows", Targets: []string{"b"}, Fact: "f1"},
+			{Actor: "a", Verb: "does", Action: "give", Targets: []string{"k", "b"}},
+			{Verb: "exit", Targets: []string{"a", "b"}},
+		}}},
+	}
+	p, err := PlanScene(s, PlanOpts{TargetChars: 1200})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return p
+}
+
+func TestBeatPromptTargetsAndPresence(t *testing.T) {
+	sys, user := BeatPrompt(presencePlan(t), 0, "ko", "", nil)
+	var lines []string
+	for _, l := range strings.Split(user, "\n") {
+		if strings.HasPrefix(l, "- [") {
+			lines = append(lines, l)
+		}
+	}
+	if len(lines) != 3 {
+		t.Fatalf("%q", lines)
+	}
+	if !strings.Contains(lines[0], "나루") || !strings.Contains(lines[1], "열쇠") || !strings.Contains(lines[1], "나루") {
+		t.Errorf("show/give 대상 없음: %q", lines[:2])
+	}
+	if !strings.Contains(lines[2], "가온") || !strings.Contains(lines[2], "나루") {
+		t.Errorf("exit all 에 인물 없음: %q", lines[2])
+	}
+	if !strings.Contains(sys, "등장·퇴장: 누가 들고 나는지만 쓴다. 이유·계획을 지어내지 않는다") {
+		t.Error("등장·퇴장 규칙 없음")
+	}
+}
+
+func TestBeatPromptLength(t *testing.T) {
+	p := presencePlan(t)
+	if p.Beats[0].Chars != 1200 {
+		t.Fatalf("chars %d", p.Beats[0].Chars)
+	}
+	sys, _ := BeatPrompt(p, 0, "ko", "", nil)
+	if want := fmt.Sprintf("약 1200자, 문단 %d개", p.Beats[0].Paragraphs); !strings.Contains(sys, want) {
+		t.Errorf("no %q in %s", want, sys)
 	}
 }

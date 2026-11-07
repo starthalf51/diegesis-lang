@@ -38,6 +38,7 @@ type Beat struct {
 	ID         string
 	Acts       []BeatAct
 	Paragraphs int
+	Chars      int // 목표 분량: TargetChars / 비트 수
 	Forbidden  []string
 	Allowed    []string
 }
@@ -108,7 +109,7 @@ func PlanScene(s render.Scene, o PlanOpts) (Plan, error) {
 	para := max(1, int(math.Round(float64(o.TargetChars)/float64(max(1, len(groups)))/350)))
 	p := Plan{Scene: s, TargetChars: o.TargetChars}
 	for _, g := range groups {
-		b := Beat{ID: g.ID, Paragraphs: para, Allowed: append([]string(nil), allowed...)}
+		b := Beat{ID: g.ID, Paragraphs: para, Chars: o.TargetChars / len(groups), Allowed: append([]string(nil), allowed...)}
 		used := map[string]bool{}
 		for _, a := range g.Acts {
 			used[a.Fact] = true

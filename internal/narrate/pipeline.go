@@ -27,7 +27,7 @@ type LayerStats struct {
 	BeatFailed   []int  `json:"beat_failed"`
 	StyleOK      bool   `json:"style_ok"`
 	Stitched     bool   `json:"stitched"`
-	FinalFrom    string `json:"final_from"` // "stitched" | "unstitched"
+	FinalFrom    string `json:"final_from"` // "stitched" | "unstitched" | "plain"(문체 전)
 }
 
 func lab(c render.Completer, l string) render.Completer {
@@ -59,14 +59,14 @@ func lastPara(t string) string {
 
 // RenderLayered: [1] 설계 → [2] 비트마다 생성·검증·재시도 → [3] 문체 → [4] 연결 → 장면 전체 재추출 1회로 최종 대조.
 // 실패한 비트도 장면에 넣고 BeatFailed 에 남긴다. 문체·연결 호출이 실패하면 그 층을 건너뛴다.
-// 연결한 글이 대조를 통과하지 못하면 연결 전 글로 다시 대조해 나은 쪽을 쓴다(FinalFrom).
+// 연결한 글이 대조를 통과하지 못하면 연결 전 글로, 그것도 못하면(문체가 글을 바꿨을 때) 문체 전 글로 다시 대조해 가장 나은 쪽을 쓴다(FinalFrom).
 // 오류는 설계 실패와 비트 생성·검증·최종 대조의 Completer 오류뿐이다.
 func RenderLayered(ctx context.Context, r Roles, work string, s render.Scene, b render.Backend, o Opts) (render.Render, LayerStats, error) {
 	p, err := PlanScene(s, o.Plan)
 	if err != nil {
 		return render.Render{}, LayerStats{}, err
 	}
-	st := LayerStats{Beats: len(p.Beats)}
+	st := LayerStats{Beats: len(p.Beats), BeatAttempts: []int{}, BeatFailed: []int{}}
 	var texts []string
 	prev := ""
 	for i := range p.Beats {
@@ -93,26 +93,31 @@ func RenderLayered(ctx context.Context, r Roles, work string, s render.Scene, b 
 	}
 	st.StyleOK = ok
 
-	cand, from := styled, "unstitched"
+	// 후보를 바깥 층부터 대조한다: 연결본 → 연결 전(문체본) → 문체 전(비트 원문). 통과하면 멈추고, 아니면 가장 나은 것.
+	type cand struct{ text, from string }
+	var cs []cand
 	if o.Stitch && len(texts) > 1 {
 		if t, err := Stitch(ctx, lab(r.Stitch, "stitch-"+s.ID), []string{styled}, b.Lang); err == nil && t != "" {
-			cand, from, st.Stitched = t, "stitched", true
+			cs, st.Stitched = append(cs, cand{t, "stitched"}), true
 		}
 	}
-	res, err := finalCheck(ctx, r.Verify, work, s, b, cand)
-	if err != nil {
-		return res, st, err
+	cs = append(cs, cand{styled, "unstitched"})
+	if styled != plain {
+		cs = append(cs, cand{plain, "plain"})
 	}
-	if st.Stitched && !render.Passed(res) {
-		alt, err := finalCheck(ctx, r.Verify, work, s, b, styled)
+	var res render.Render
+	for k, c := range cs {
+		alt, err := finalCheck(ctx, r.Verify, work, s, b, c.text)
 		if err != nil {
-			return res, st, err
+			return alt, st, err
 		}
-		if badness(alt) < badness(res) {
-			res, from = alt, "unstitched"
+		if k == 0 || badness(alt) < badness(res) {
+			res, st.FinalFrom = alt, c.from
+		}
+		if render.Passed(res) {
+			break
 		}
 	}
-	st.FinalFrom = from
 	return res, st, nil
 }
 

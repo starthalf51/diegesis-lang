@@ -17,6 +17,7 @@ import (
 type pipeFake struct {
 	fail       map[int]bool
 	stitchAdds string
+	styleAdds  string
 }
 
 var pipeFacts = []string{"f1", "f3", "f4"}
@@ -36,7 +37,7 @@ func (f *pipeFake) Complete(_ context.Context, system, user string) (render.Resu
 		}
 		return ok("?")
 	case strings.Contains(system, "문체를 바꾼다"):
-		return ok(strings.TrimPrefix(user, "## 바꿀 글\n"))
+		return ok(strings.TrimPrefix(user, "## 바꿀 글\n") + f.styleAdds)
 	case strings.Contains(system, "이음새만 다듬는다"):
 		return ok(strings.TrimPrefix(user, "## 비트\n") + f.stitchAdds)
 	}
@@ -142,5 +143,24 @@ func TestRenderLayeredStyleErrorKeepsText(t *testing.T) {
 		render.Backend{ID: "ko-haera", Lang: "ko", Tone: "haera"}, DefaultOpts())
 	if err != nil || st.StyleOK || !render.Passed(r) || !strings.Contains(r.Prose, "B1 가온이") {
 		t.Fatalf("%v %+v %q", err, st, r.Prose)
+	}
+}
+
+// 문체 층이 사실을 더하면 연결본·문체본 모두 떨어지고 문체 전 글을 쓴다.
+func TestRenderLayeredStyleAddsFactFallsBackToPlain(t *testing.T) {
+	r, st, labels := pipeRun(t, &pipeFake{styleAdds: " 그는 환각을 보았다."})
+	if !render.Passed(r) || st.FinalFrom != "plain" || strings.Contains(r.Prose, "환각") || !st.Stitched {
+		t.Fatalf("%+v %+v %q", r.Report, st, r.Prose)
+	}
+	if n := strings.Count(strings.Join(labels, " "), "final-s"); n != 3 {
+		t.Fatalf("final checks %d: %v", n, labels)
+	}
+}
+
+func TestLayerStatsEmptyFailedIsArray(t *testing.T) {
+	_, st, _ := pipeRun(t, &pipeFake{})
+	b, _ := json.Marshal(st)
+	if !strings.Contains(string(b), `"beat_failed":[]`) {
+		t.Fatal(string(b))
 	}
 }
