@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand/v2"
-	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"diegesis/internal/render"
 )
@@ -48,49 +47,9 @@ const judgeTail = `
 
 var sceneSep = "\n* * *\n"
 
-// novelA joins a/eps/e01..n.md under "### 화 e" headers.
-func novelA(c cfg) (string, error) {
-	var b strings.Builder
-	for e := 1; e <= c.eps; e++ {
-		s, err := os.ReadFile(epPath(c.out, e))
-		if err != nil {
-			return "", err
-		}
-		fmt.Fprintf(&b, "### 화 %d\n\n%s\n\n", e, strings.TrimSpace(string(s)))
-	}
-	return b.String(), nil
-}
-
-// novelB regroups b/novel.md (one "## <title>" block per scene, discourse order) into episodes of perEp scenes
-// separated like A's, with the titles dropped so they do not tell the arms apart. A failed scene shifts the
-// grouping; that is B's real output and stays in.
-func novelB(c cfg) (string, error) {
-	s, err := os.ReadFile(filepath.Join(c.out, "b", "novel.md"))
-	if err != nil {
-		return "", err
-	}
-	var scenes []string
-	for _, l := range strings.Split(string(s), "\n") {
-		if strings.HasPrefix(l, "## ") {
-			scenes = append(scenes, "")
-		} else if len(scenes) > 0 {
-			scenes[len(scenes)-1] += l + "\n"
-		}
-	}
-	var b strings.Builder
-	for i, sc := range scenes {
-		if i%perEp == 0 {
-			fmt.Fprintf(&b, "### 화 %d\n\n", i/perEp+1)
-		} else {
-			b.WriteString(sceneSep)
-		}
-		b.WriteString(strings.TrimSpace(sc) + "\n")
-		if i%perEp == perEp-1 || i == len(scenes)-1 {
-			b.WriteString("\n")
-		}
-	}
-	return b.String(), nil
-}
+// judgeMaxChars: above this many characters a single judge prompt is split into two halves of episodes
+// (12 episodes x 2 arms x ~5000 characters is about 120k, so the full run normally fits in one call).
+var judgeMaxChars = 150000
 
 type claim struct {
 	Category string   `json:"category"`
@@ -108,112 +67,167 @@ type revJudge struct {
 	} `json:"episodes"`
 }
 
-// judgeResult: Residual[arm][revision] = episodes marked applied=false.
-type judgeResult struct{ Residual map[string]map[int]int }
-
 func norm(s string) string {
 	s = strings.NewReplacer("“", `"`, "”", `"`, "‘", "'", "’", "'").Replace(s)
 	return strings.Join(strings.Fields(s), "")
 }
 
-// runJudge builds the blind prompt (X/Y at random, kept in judge/mapping.txt), calls once, and writes
-// judge/quotes.md (claims with quote found/not) and judge/revision.md (per-episode revision marks).
-func runJudge(ctx context.Context, t *tracker) (judgeResult, error) {
+// judgeOutcome: Status "ok" or "unknown: <why>". resid[arm][revision] = episodes marked applied=false; a revision
+// the judge did not mark for an arm has no entry, which reads "unknown", never 0.
+type judgeOutcome struct {
+	Status, stop string
+	resid        map[string]map[int]int
+}
+
+func (j *judgeOutcome) residual(arm string, rev int) any {
+	if j == nil || j.resid == nil {
+		return "unknown"
+	}
+	if n, ok := j.resid[arm][rev]; ok {
+		return n
+	}
+	return "unknown"
+}
+
+// runJudge builds the blind prompt for episodes 1..cut of both arms (X/Y at random, kept in judge/mapping.txt),
+// calls once (twice when the prompt is too large: eps 1..mid, mid+1..cut), and writes judge/quotes.md and
+// judge/revision.md. It never fails the run: on any problem the raw output stays in judge/ and the marks are "unknown".
+func runJudge(ctx context.Context, t *tracker) judgeOutcome {
 	c := t.c
-	res := judgeResult{map[string]map[int]int{"A": {}, "B": {}}}
+	fail := func(f string, a ...any) judgeOutcome {
+		return judgeOutcome{Status: "unknown: " + fmt.Sprintf(f, a...)}
+	}
+	if t.cut == 0 {
+		return fail("no episode completed by both arms")
+	}
 	dir := filepath.Join(c.out, "judge")
-	na, err := novelA(c)
-	if err != nil {
-		return res, err
+	ea, eb := make([]string, t.cut+1), make([]string, t.cut+1)
+	for e := 1; e <= t.cut; e++ {
+		ea[e], eb[e] = aEpText(c, e), t.bEpText(e)
 	}
-	nb, err := novelB(c)
-	if err != nil {
-		return res, err
-	}
-	x := "A"
+	x, y := "A", "B"
 	if rand.IntN(2) == 1 {
-		x = "B"
+		x, y = "B", "A"
 	}
-	nx, ny, y := na, nb, "B"
-	if x == "B" {
-		nx, ny, y = nb, na, "A"
+	if err := write(filepath.Join(dir, "mapping.txt"), "X="+x+"\nY="+y); err != nil {
+		return fail("%v", err)
 	}
+	armOf := map[string]string{"X": x, "Y": y}
 	var reqs strings.Builder
 	for k, after := range c.revAfter {
-		fmt.Fprintf(&reqs, "수정 %d (%d화 뒤에 받음): %s\n", k+1, after, revReqs[k])
+		if t.revDone[k] {
+			fmt.Fprintf(&reqs, "수정 %d (%d화 뒤에 받음): %s\n", k+1, after, revReqs[k])
+		}
 	}
-	prompt := judgeHead + reqs.String() + judgeTail + "\n## 소설 X\n\n" + nx + "\n## 소설 Y\n\n" + ny
-	if err := write(filepath.Join(dir, "mapping.txt"), "X="+x+"\nY="+y); err != nil {
-		return res, err
+	text := func(arm string, lo, hi int) string {
+		src := ea
+		if arm == "B" {
+			src = eb
+		}
+		var b strings.Builder
+		for e := lo; e <= hi; e++ {
+			fmt.Fprintf(&b, "### 화 %d\n\n%s\n\n", e, src[e])
+		}
+		return b.String()
 	}
-	if err := write(filepath.Join(dir, "prompt.txt"), prompt); err != nil {
-		return res, err
+	build := func(lo, hi int) string {
+		part := ""
+		if lo != 1 || hi != t.cut {
+			part = fmt.Sprintf("\n(이 요청은 전체 %d화 중 %d~%d화만 담는다. 수정 반영 표시는 이 화들에 대해서만 한다.)\n", t.cut, lo, hi)
+		}
+		return judgeHead + reqs.String() + part + judgeTail + "\n## 소설 X\n\n" + text(armOf["X"], lo, hi) + "\n## 소설 Y\n\n" + text(armOf["Y"], lo, hi)
 	}
-	if err := t.check(); err != nil {
-		return res, err
+	ranges := [][2]int{{1, t.cut}}
+	if utf8.RuneCountInString(build(1, t.cut)) > judgeMaxChars && t.cut >= 2 {
+		ranges = [][2]int{{1, t.cut / 2}, {t.cut/2 + 1, t.cut}}
 	}
 	m, f, err := meter(c.judge, dir)
 	if err != nil {
-		return res, err
+		return fail("%v", err)
 	}
 	defer f.Close()
-	text, err := call(ctx, m, "judge", prompt)
-	if err != nil {
-		return res, err
-	}
-	if err := write(filepath.Join(dir, "run1.txt"), text); err != nil {
-		return res, err
-	}
-	j := strings.TrimSpace(text)
-	if i, k := strings.Index(j, "{"), strings.LastIndex(j, "}"); i >= 0 && k > i {
-		j = j[i : k+1]
-	}
-	var got struct {
-		X, Y     []claim
-		Revision map[string][]revJudge
-	}
-	if err := json.Unmarshal([]byte(j), &got); err != nil {
-		return res, fmt.Errorf("judge output: %w", err)
-	}
-	armOf := map[string]string{"X": x, "Y": y}
-	src := map[string]string{"A": norm(na), "B": norm(nb)}
+	out := judgeOutcome{Status: "ok", resid: map[string]map[int]int{"A": {}, "B": {}}}
 	var q, r strings.Builder
 	q.WriteString("# 판정 지적과 인용 대조 (자동)\n\n인용이 원문에 그대로 있는지만 본다. 지적이 맞는지는 사람이 가린다.\n")
 	r.WriteString("# 수정 반영 일관성 (판정자 표시, 미검증)\n")
-	for _, xy := range []string{"X", "Y"} {
-		a, cl := armOf[xy], got.X
-		if xy == "Y" {
-			cl = got.Y
+	src := map[string]string{"A": norm(text("A", 1, t.cut)), "B": norm(text("B", 1, t.cut))}
+	for i, rg := range ranges {
+		prompt := build(rg[0], rg[1])
+		if err := write(filepath.Join(dir, fmt.Sprintf("prompt%d.txt", i+1)), prompt); err != nil {
+			return fail("%v", err)
 		}
-		fmt.Fprintf(&q, "\n## %s (= %s) — %d건\n", xy, a, len(cl))
-		for i, c := range cl {
-			fmt.Fprintf(&q, "\n%s%d. [%s] 화/장면 %v — %s\n", a, i+1, c.Category, c.Scene, c.Why)
-			for _, qu := range c.Quotes {
-				mark := "없음"
-				if strings.Contains(src[a], norm(qu)) {
-					mark = "있음"
-				}
-				fmt.Fprintf(&q, "   - (%s) %s\n", mark, qu)
-			}
+		if err := t.check(0); err != nil {
+			return fail("%v", err)
 		}
-		fmt.Fprintf(&r, "\n## %s (= %s)\n", xy, a)
-		for _, rv := range got.Revision[xy] {
-			var bad []string
-			for _, e := range rv.Episodes {
-				if !e.Applied {
-					bad = append(bad, strconv.Itoa(e.Ep))
-					fmt.Fprintf(&r, "- 수정 %d, %d화: 미반영 — %s\n", rv.Revision, e.Ep, e.Note)
+		raw, err := call(ctx, m, fmt.Sprintf("judge-%d", i+1), prompt)
+		if err != nil {
+			return fail("%v", err)
+		}
+		if err := write(filepath.Join(dir, fmt.Sprintf("run%d.txt", i+1)), raw); err != nil {
+			return fail("%v", err)
+		}
+		j := strings.TrimSpace(raw)
+		if a, b := strings.Index(j, "{"), strings.LastIndex(j, "}"); a >= 0 && b > a {
+			j = j[a : b+1]
+		}
+		var keys map[string]json.RawMessage
+		var got struct {
+			X, Y     []claim
+			Revision map[string][]revJudge
+		}
+		if err := json.Unmarshal([]byte(j), &keys); err != nil {
+			return fail("judge output %d: %v (raw in judge/run%d.txt)", i+1, err, i+1)
+		}
+		if keys["X"] == nil || keys["Y"] == nil {
+			return fail("judge output %d lacks X or Y (raw in judge/run%d.txt)", i+1, i+1)
+		}
+		if err := json.Unmarshal([]byte(j), &got); err != nil {
+			return fail("judge output %d: %v (raw in judge/run%d.txt)", i+1, err, i+1)
+		}
+		for _, xy := range []string{"X", "Y"} {
+			a, cl := armOf[xy], got.X
+			if xy == "Y" {
+				cl = got.Y
+			}
+			fmt.Fprintf(&q, "\n## 부분 %d: %s (= %s) — %d건\n", i+1, xy, a, len(cl))
+			for n, c := range cl {
+				fmt.Fprintf(&q, "\n%s%d. [%s] 화/장면 %v — %s\n", a, n+1, c.Category, c.Scene, c.Why)
+				for _, qu := range c.Quotes {
+					mark := "없음"
+					if strings.Contains(src[a], norm(qu)) {
+						mark = "있음"
+					}
+					fmt.Fprintf(&q, "   - (%s) %s\n", mark, qu)
 				}
 			}
-			res.Residual[a][rv.Revision] = len(bad)
-			fmt.Fprintf(&r, "- 수정 %d: 표시된 화 %d개, 잔여 불일치 %d개 [%s]\n", rv.Revision, len(rv.Episodes), len(bad), strings.Join(bad, ","))
+			fmt.Fprintf(&r, "\n## 부분 %d: %s (= %s)\n", i+1, xy, a)
+			for _, rv := range got.Revision[xy] {
+				bad := 0
+				for _, e := range rv.Episodes {
+					if !e.Applied {
+						bad++
+						fmt.Fprintf(&r, "- 수정 %d, %d화: 미반영 — %s\n", rv.Revision, e.Ep, e.Note)
+					}
+				}
+				out.resid[a][rv.Revision] += bad
+				fmt.Fprintf(&r, "- 수정 %d: 표시된 화 %d개, 잔여 불일치 %d개\n", rv.Revision, len(rv.Episodes), bad)
+			}
 		}
 	}
 	if err := write(filepath.Join(dir, "revision.md"), r.String()); err != nil {
-		return res, err
+		return fail("%v", err)
 	}
-	return res, write(filepath.Join(dir, "quotes.md"), q.String())
+	if err := write(filepath.Join(dir, "quotes.md"), q.String()); err != nil {
+		return fail("%v", err)
+	}
+	return out
 }
+
+// fakeJudge selects a judge failure for tests: "garbage", "noY" (no Y key), "norev" (no revision marks for Y).
+var fakeJudge string
+
+// fakeSkip names a scene (e.g. "e2b") the fake dieg does not render, like a scene that failed verification.
+var fakeSkip string
 
 // fake answers every model call for -dry and the test, keyed on the prompt's title.
 type fake struct{ eps int }
@@ -231,14 +245,24 @@ func (f fake) Complete(_ context.Context, _, user string) (render.Result, error)
 	case strings.Contains(user, "누적 요약 갱신"):
 		t = "가짜 요약"
 	case strings.Contains(user, "연속성 오류 판정"):
+		y := `[{"revision": 1, "episodes": [{"ep": 1, "applied": false, "note": "x"}, {"ep": 2, "applied": false, "note": "y"}]}]`
+		if fakeJudge == "norev" {
+			y = `[]`
+		}
 		t = "```json\n" + `{"X": [{"category": "timeline", "scene": 1, "quotes": ["종이 울렸다.", "지어낸 인용"], "why": "가짜"}], "Y": [],
-"revision": {"X": [{"revision": 1, "episodes": [{"ep": 1, "applied": true}, {"ep": 2, "applied": false, "note": "남음"}]}], "Y": [{"revision": 1, "episodes": [{"ep": 1, "applied": false, "note": "x"}, {"ep": 2, "applied": false, "note": "y"}]}]}}` + "\n```"
+"revision": {"X": [{"revision": 1, "episodes": [{"ep": 1, "applied": true}, {"ep": 2, "applied": false, "note": "남음"}]}], "Y": ` + y + `}}` + "\n```"
+		switch fakeJudge {
+		case "garbage":
+			t = "판정 불가"
+		case "noY":
+			t = `{"X": []}`
+		}
 	}
 	return render.Result{Text: t, StopReason: "end_turn", Usage: render.Usage{Input: 2, Output: 10, CacheRead: 100, CacheWrite: 50}}, nil
 }
 
-// fakeDieg stands in for the dieg CLI: 3 metered calls per invocation into b/calls.jsonl and a novel.md that
-// write creates (2 scenes), continue extends (2 scenes) and revise edits (scene 1 rewritten).
+// fakeDieg stands in for the dieg CLI: 3 metered calls per invocation into b/calls.jsonl and scene files in
+// b/novel/ that write creates (e1a, e1b), continue adds (e<N>a, e<N>b) and revise edits (e1a rewritten).
 func fakeDieg(ctx context.Context, out string, args []string) error {
 	dir := filepath.Join(out, "b")
 	m, f, err := meter(fake{}, dir)
@@ -251,14 +275,24 @@ func fakeDieg(ctx context.Context, out string, args []string) error {
 			return err
 		}
 	}
-	p := filepath.Join(dir, "novel.md")
-	old, _ := os.ReadFile(p)
-	s := string(old)
+	put := func(id, s string) error {
+		if id == fakeSkip {
+			return nil
+		}
+		return write(filepath.Join(dir, "novel", id+".ko-haera.md"), s)
+	}
 	switch args[0] {
 	case "write", "continue":
-		s += "## 첫 장면\n\n가짜 장면이다. 종이 울렸다.\n\n## 둘째 장면\n\n가짜 장면이다.\n\n"
+		ep := "1"
+		if args[0] == "continue" {
+			ep = args[3] // continue <dir> --ep N
+		}
+		if err := put("e"+ep+"a", "가짜 장면이다. 종이 울렸다. "+strings.Repeat("가", 10*len(ep))); err != nil {
+			return err
+		}
+		return put("e"+ep+"b", "가짜 장면이다. "+ep)
 	case "revise":
-		s = strings.Replace(s, "가짜 장면이다. 종이 울렸다.", "수정된 장면이다.", 1)
+		return put("e1a", "수정된 장면이다.")
 	}
-	return os.WriteFile(p, []byte(s), 0o644)
+	return nil
 }

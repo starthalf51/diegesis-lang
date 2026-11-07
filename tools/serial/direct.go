@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"diegesis/internal/render"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -39,7 +41,7 @@ func parseBriefs(text string, n int) ([]string, error) {
 
 func runPlan(ctx context.Context, t *tracker) ([]string, error) {
 	c := t.c
-	if err := t.check(); err != nil {
+	if err := t.check(judgeReserve); err != nil {
 		return nil, err
 	}
 	m, f, err := meter(c.a, filepath.Join(c.out, "plan"))
@@ -57,7 +59,7 @@ func runPlan(ctx context.Context, t *tracker) ([]string, error) {
 	return parseBriefs(text, c.eps)
 }
 
-const aHead = "## 연재 규칙\n- 화당 장면 %d개. 장면 사이는 한 줄 `* * *` 로 나눈다. 해라체 서술, 화당 5000자 안팎. 제목·머리말·설명 없이 산문만 출력한다.\n" +
+const aHead = "## 연재 규칙\n- 화당 장면 %d개. 장면 사이는 한 줄 `* * *` 로 나눈다. 해라체 서술, 화당 약 5000자, 장면당 약 2500자. 제목·머리말·설명 없이 산문만 출력한다.\n" +
 	"- 인물의 이름·나이·관계·물건·시각, 누가 무엇을 아는가는 처음 정한 대로 지킨다. 요약의 `확정된 수정` 은 개요보다 우선한다.\n"
 
 func OutlinePrompt(idea string, briefs []string) string {
@@ -131,140 +133,120 @@ func readEp(out string, ep int) string {
 	return string(b)
 }
 
+func aEpText(c cfg, ep int) string { return strings.TrimSpace(readEp(c.out, ep)) }
+
 var numRE = regexp.MustCompile(`\d+`)
 
-// runA: outline, then per episode 2 calls (write, summary update); after episode revAfter[k], a revision =
-// 1 pick call + one rewrite per picked episode + 1 summary refresh.
-func runA(ctx context.Context, t *tracker, briefs []string) error {
-	c := t.c
-	m, f, err := meter(c.a, filepath.Join(c.out, "a"))
+// armA is the direct arm's state. Its calls go through step, which checks the budget first.
+type armA struct {
+	t       *tracker
+	ctx     context.Context
+	m       *render.Meter
+	cl      io.Closer
+	briefs  []string
+	outline string
+	summary string
+}
+
+func newArmA(ctx context.Context, t *tracker, briefs []string) (*armA, error) {
+	m, cl, err := meter(t.c.a, filepath.Join(t.c.out, "a"))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer f.Close()
-	step := func(label, prompt string) (string, error) {
-		if err := t.check(); err != nil {
-			return "", err
-		}
-		if err := write(filepath.Join(c.out, "a", "prompts", label+".txt"), prompt); err != nil {
-			return "", err
-		}
-		return call(ctx, m, label, prompt)
+	a := &armA{t: t, ctx: ctx, m: m, cl: cl, briefs: briefs}
+	if a.outline, err = a.step("outline", OutlinePrompt(t.c.idea, briefs)); err != nil {
+		return nil, err
 	}
-	outline, err := step("outline", OutlinePrompt(c.idea, briefs))
-	if err != nil {
-		return err
-	}
-	if err := write(filepath.Join(c.out, "a", "outline.md"), outline); err != nil {
-		return err
+	if err := write(filepath.Join(t.c.out, "a", "outline.md"), a.outline); err != nil {
+		return nil, err
 	}
 	t.record("A", "outline")
-	summary := ""
-	for e := 1; e <= c.eps; e++ {
-		prev := ""
-		if e > 1 {
-			prev = readEp(c.out, e-1)
-		}
-		text, err := step(fmt.Sprintf("ep-%d", e), EpisodePrompt(c.idea, outline, summary, prev, briefs[e], e, c.eps))
-		if err != nil {
-			return err
-		}
-		if err := write(epPath(c.out, e), text); err != nil {
-			return err
-		}
-		if summary, err = step(fmt.Sprintf("sum-%d", e), SummaryPrompt(summary, "", map[int]string{e: text})); err != nil {
-			return err
-		}
-		if err := write(filepath.Join(c.out, "a", "summary.md"), summary); err != nil {
-			return err
-		}
-		t.record("A", fmt.Sprintf("ep%d", e))
-		k := c.revisionAfter(e)
-		if k < 0 {
-			continue
-		}
-		req, n := revReqs[k], k+1
-		err = t.revStep("A", n, func() error {
-			picked, err := step(fmt.Sprintf("rev%d-pick", n), PickPrompt(req, summary, e))
-			if err != nil {
-				return err
-			}
-			var eps []int
-			seen := map[int]bool{}
-			for _, s := range numRE.FindAllString(picked, -1) {
-				if i, _ := strconv.Atoi(s); i >= 1 && i <= e && !seen[i] {
-					seen[i] = true
-					eps = append(eps, i)
-				}
-			}
-			if len(eps) == 0 {
-				return fmt.Errorf("rev%d-pick: no episode in %q", n, picked)
-			}
-			sort.Ints(eps)
-			redone := map[int]string{}
-			for _, i := range eps {
-				prev := ""
-				if i > 1 {
-					prev = readEp(c.out, i-1)
-				}
-				text, err := step(fmt.Sprintf("rev%d-ep-%d", n, i), RewritePrompt(c.idea, outline, summary, req, readEp(c.out, i), prev, briefs[i], i))
-				if err != nil {
-					return err
-				}
-				if err := write(epPath(c.out, i), text); err != nil {
-					return err
-				}
-				redone[i] = text
-			}
-			if summary, err = step(fmt.Sprintf("rev%d-sum", n), SummaryPrompt(summary, req, redone)); err != nil {
-				return err
-			}
-			return write(filepath.Join(c.out, "a", "summary.md"), summary)
-		})
-		if err != nil {
-			return err
-		}
+	return a, nil
+}
+
+func (a *armA) step(label, prompt string) (string, error) {
+	if err := a.t.check(judgeReserve); err != nil {
+		return "", err
 	}
+	if err := write(filepath.Join(a.t.c.out, "a", "prompts", label+".txt"), prompt); err != nil {
+		return "", err
+	}
+	return call(a.ctx, a.m, label, prompt)
+}
+
+// episode writes episode e (2 calls: write + summary update).
+func (a *armA) episode(e int) error {
+	c := a.t.c
+	prev := ""
+	if e > 1 {
+		prev = readEp(c.out, e-1)
+	}
+	text, err := a.step(fmt.Sprintf("ep-%d", e), EpisodePrompt(c.idea, a.outline, a.summary, prev, a.briefs[e], e, c.eps))
+	if err != nil {
+		return err
+	}
+	if err := write(epPath(c.out, e), text); err != nil {
+		return err
+	}
+	sum, err := a.step(fmt.Sprintf("sum-%d", e), SummaryPrompt(a.summary, "", map[int]string{e: text}))
+	if err != nil {
+		return err
+	}
+	a.summary = sum
+	if err := write(filepath.Join(c.out, "a", "summary.md"), sum); err != nil {
+		return err
+	}
+	a.t.record("A", fmt.Sprintf("ep%d", e))
 	return nil
 }
 
-// runB drives the dieg CLI: write (ep1), continue (ep2..), revise at the same points as A. The idea file carries
-// ep1's brief; later briefs go through --brief. dieg appends to b/calls.jsonl itself.
-func runB(ctx context.Context, t *tracker, briefs []string) error {
-	c := t.c
-	b := filepath.Join(c.out, "b")
-	if err := os.MkdirAll(c.out, 0o755); err != nil {
-		return err
-	}
-	idea := filepath.Join(c.out, "b-idea.txt")
-	if err := write(idea, strings.TrimSpace(c.idea)+fmt.Sprintf("\n\n## 연재 설정\n총 %d화, 화당 장면 %d개. 지금은 1화만 쓴다.\n1화 방향: %s", c.eps, perEp, briefs[1])); err != nil {
-		return err
-	}
-	sc := strconv.Itoa(perEp)
-	for e := 1; e <= c.eps; e++ {
-		if err := t.check(); err != nil {
+// revise runs revision k after episode e: 1 pick call, one rewrite per picked episode, 1 summary refresh. Nothing
+// is applied until the returned commit runs, so an aborted revision leaves A's episodes as they were.
+func (a *armA) revise(k, e int) (commit func(), err error) {
+	c, n, req := a.t.c, k+1, revReqs[k]
+	redone := map[int]string{}
+	var newSummary string
+	err = a.t.revStep("A", n, func() error {
+		picked, err := a.step(fmt.Sprintf("rev%d-pick", n), PickPrompt(req, a.summary, e))
+		if err != nil {
 			return err
 		}
-		args := []string{"write", idea, "-o", b, "--scenes", sc}
-		if e > 1 {
-			args = []string{"continue", b, "--ep", strconv.Itoa(e), "--brief", briefs[e], "--scenes", sc}
-		}
-		if err := runDieg(ctx, c.out, args); err != nil {
-			return fmt.Errorf("dieg %s (ep %d): %w (see %s)", args[0], e, err, filepath.Join(c.out, "b.log"))
-		}
-		t.record("B", fmt.Sprintf("ep%d", e))
-		if k := c.revisionAfter(e); k >= 0 {
-			err := t.revStep("B", k+1, func() error {
-				if err := t.check(); err != nil {
-					return err
-				}
-				// no --scenes: every scene whose render request changed must be re-rendered
-				return runDieg(ctx, c.out, []string{"revise", b, revReqs[k]})
-			})
-			if err != nil {
-				return fmt.Errorf("dieg revise (rev %d): %w (see %s)", k+1, err, filepath.Join(c.out, "b.log"))
+		var eps []int
+		seen := map[int]bool{}
+		for _, s := range numRE.FindAllString(picked, -1) {
+			if i, _ := strconv.Atoi(s); i >= 1 && i <= e && !seen[i] {
+				seen[i] = true
+				eps = append(eps, i)
 			}
 		}
+		if len(eps) == 0 {
+			return fmt.Errorf("rev%d-pick: no episode in %q", n, picked)
+		}
+		sort.Ints(eps)
+		for _, i := range eps {
+			prev := ""
+			if i > 1 { // the revised previous episode when it was just rewritten
+				if prev = redone[i-1]; prev == "" {
+					prev = readEp(c.out, i-1)
+				}
+			}
+			text, err := a.step(fmt.Sprintf("rev%d-ep-%d", n, i), RewritePrompt(c.idea, a.outline, a.summary, req, readEp(c.out, i), prev, a.briefs[i], i))
+			if err != nil {
+				return err
+			}
+			redone[i] = text
+		}
+		newSummary, err = a.step(fmt.Sprintf("rev%d-sum", n), SummaryPrompt(a.summary, req, redone))
+		return err
+	})
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return func() {
+		for i, text := range redone {
+			write(epPath(c.out, i), text)
+		}
+		a.summary = newSummary
+		write(filepath.Join(c.out, "a", "summary.md"), newSummary)
+	}, nil
 }
