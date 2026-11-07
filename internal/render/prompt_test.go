@@ -159,3 +159,28 @@ func TestPromptMarksFalseFacts(t *testing.T) {
 		t.Error("system prompt lacks the false-fact rule")
 	}
 }
+
+const oldDialogueRule = "- Dialogue may only use the provided `quote` strings. Speech acts without a quote are reported speech; never invent quoted dialogue.\n"
+const newDialogueRule = "- A speech act may be voiced as dialogue you write. It must say only that act's fact (or, without a fact, only small talk that states no fact). Use a provided quote verbatim when there is one.\n"
+
+func TestPromptFreeDialogue(t *testing.T) {
+	s := mustLoad(t, "testdata/scenes/holmes-scandal-opening.json")
+	off, _, err := BuildPrompt(s, VariantIROnly, "en", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.FreeDialogue = true
+	on, _, err := BuildPrompt(s, VariantIROnly, "en", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(off, oldDialogueRule) || strings.Contains(off, newDialogueRule) {
+		t.Error("false must keep the old rule")
+	}
+	if !strings.Contains(on, newDialogueRule) || strings.Contains(on, oldDialogueRule) {
+		t.Error("true must swap in the new rule")
+	}
+	if strings.Replace(off, oldDialogueRule, newDialogueRule, 1) != on {
+		t.Error("only the rule line may differ")
+	}
+}

@@ -78,14 +78,18 @@ func refsBlock(r Refs) string {
 }
 
 // CodePrompt is round 1: instructions, the idea, then the references.
-func CodePrompt(idea string, r Refs, reserved []string) string {
-	return fmt.Sprintf(task, strings.Join(reserved, ", ")) + "\n## 아이디어\n\n" + strings.TrimSpace(idea) + "\n" + refsBlock(r)
+func CodePrompt(idea string, r Refs, reserved []string, skeleton bool) string {
+	t := task
+	if skeleton {
+		t = strings.Replace(t, quoteRule, skeletonRule, 1)
+	}
+	return fmt.Sprintf(t, strings.Join(reserved, ", ")) + "\n## 아이디어\n\n" + strings.TrimSpace(idea) + "\n" + refsBlock(r)
 }
 
 // FixPrompt is rounds 2…: round 1's prompt, the current bundle, and the diagnostics verbatim.
-func FixPrompt(idea string, r Refs, reserved []string, bundle string, diags []Diag) string {
+func FixPrompt(idea string, r Refs, reserved []string, skeleton bool, bundle string, diags []Diag) string {
 	var b strings.Builder
-	b.WriteString(CodePrompt(idea, r, reserved))
+	b.WriteString(CodePrompt(idea, r, reserved, skeleton))
 	b.WriteString("\n# 네가 앞서 쓴 코드\n\n")
 	if bundle == "" {
 		b.WriteString("(아직 형식에 맞는 코드가 없다)\n")
@@ -104,3 +108,8 @@ func FixPrompt(idea string, r Refs, reserved []string, bundle string, diags []Di
 `)
 	return b.String()
 }
+
+// quoteRule is the non-skeleton quote instruction; skeletonRule replaces it in skeleton mode.
+const quoteRule = "- 인용 문자열(대사·생각)이 선언된 사실을 말하면 반드시 그 사실을 단다: `doha says seojin: road_cut \"길이 끊겼대.\"`.\n  사실을 달지 않은 인용에는 선언된 사실을 담지 않는다. 재추출이 그것을 코드에 없는 사실 행위로 세어 렌더가 실패한다.\n"
+
+const skeletonRule = "- 뼈대 모드: 행위에 인용 문자열을 쓰지 않는다(`doha says seojin: road_cut` 처럼 쓴다). 대사는 렌더러가 쓴다. 예외는 원작의 상징적 대사가 아이템에 명시된 경우뿐이다.\n  말·생각 행위(says, lies, thinks, tells)는 반드시 사실을 달거나, 아무 사실도 전하지 않는 행위로 둔다. 렌더러는 그 사실만 말한다.\n"

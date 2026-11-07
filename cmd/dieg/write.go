@@ -162,6 +162,8 @@ func cmdWrite(args []string) int {
 		switch a := args[i]; {
 		case a == "--no-render":
 			o.Render = false
+		case a == "--skeleton" || a == "--skeleton=true" || a == "--skeleton=false":
+			o.Skeleton = a != "--skeleton=false"
 		case (a == "--rounds" || a == "--scenes") && i+1 < len(args):
 			i++
 			n, err := strconv.Atoi(args[i])
@@ -262,7 +264,7 @@ func runWrite(idea, styles string, limit int, o write.Opts) (int, error) {
 	if limit > 0 && limit < len(ss) {
 		ss = ss[:limit]
 	}
-	rs, err := write.Novel(ctx, cs, work, ss, b, o.Out)
+	rs, err := write.Novel(ctx, cs, work, ss, b, o.Out, o.Skeleton)
 	if err != nil {
 		summary(res, len(rs), nil)
 		return 1, err

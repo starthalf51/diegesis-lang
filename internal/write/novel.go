@@ -37,7 +37,7 @@ func (l *sceneLabeler) Complete(ctx context.Context, system, user string) (rende
 // Novel renders scenes (already in discourse order) with RenderVerified2 and writes <out>/novel/<scene>.<backend>.md
 // and the concatenation <out>/novel.md. A scene that fails verification keeps its last render; a scene whose
 // call fails gets no file. Neither stops the rest.
-func Novel(ctx context.Context, cs render.Completers, work string, scenes []render.Scene, b render.Backend, out string) ([]SceneResult, error) {
+func Novel(ctx context.Context, cs render.Completers, work string, scenes []render.Scene, b render.Backend, out string, skeleton bool) ([]SceneResult, error) {
 	dir := filepath.Join(out, "novel")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, err
@@ -45,6 +45,7 @@ func Novel(ctx context.Context, cs render.Completers, work string, scenes []rend
 	var rs []SceneResult
 	var novel strings.Builder
 	for _, s := range scenes {
+		s.FreeDialogue = skeleton
 		n0 := 0
 		r, n, err := render.RenderVerified2(ctx, render.Completers{Render: &sceneLabeler{c: cs.Render, scene: s.ID, kind: "render-", attempt: &n0}, Extract: &sceneLabeler{c: cs.Extract, scene: s.ID, kind: "extract-", attempt: &n0}}, work, s, b, render.VerifyOpts{K: 1, Retries: 2})
 		sr := SceneResult{ID: s.ID, Attempts: n, Err: err}

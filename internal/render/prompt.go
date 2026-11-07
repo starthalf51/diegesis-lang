@@ -43,7 +43,11 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	sb.WriteString("- Do not add any speech, even reported speech, that is not an act in the specification, and do not draw on any known version of this story.\n")
 	sb.WriteString("- Do not restate a fact through a character's thoughts or reactions unless an act gives it; convey each fact through the act that carries it.\n")
 	sb.WriteString("- An act with a fact (after the colon) must make that fact clear to the reader through that act and its actor. For a `sees` act, say that its actor sees or hears the thing, not only that it happens.\n")
-	sb.WriteString("- Dialogue may only use the provided `quote` strings. Speech acts without a quote are reported speech; never invent quoted dialogue.\n")
+	if s.FreeDialogue {
+		sb.WriteString("- A speech act may be voiced as dialogue you write. It must say only that act's fact (or, without a fact, only small talk that states no fact). Use a provided quote verbatim when there is one.\n")
+	} else {
+		sb.WriteString("- Dialogue may only use the provided `quote` strings. Speech acts without a quote are reported speech; never invent quoted dialogue.\n")
+	}
 	sb.WriteString("- Never state or imply any fact listed under \"Must not state or imply\", not even as a hint, a foreshadowing, or a character's guess.\n")
 	sb.WriteString("- A fact marked false is only what a character says, believes or pretends. Never state it in the narrator's own voice as what happened.\n")
 	sb.WriteString("- Stay in the stated point of view. Use the people's names in the scene's language.\n")
