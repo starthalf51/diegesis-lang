@@ -377,14 +377,16 @@ func runInterleaved(ctx context.Context, t *tracker, a *armA, briefs []string) e
 		if k < 0 {
 			continue
 		}
+		// The replan needs neither arm's output, so it goes first: if it is blocked or fails, revision k reaches
+		// neither arm and the run is cut cleanly at e. briefs is shared with A and B: both see the new directions.
+		if err := replan(ctx, t, briefs, k, e); err != nil {
+			return err
+		}
 		commit, err := a.revise(k, e) // stages A's rewrites; applied only if B's revise also succeeds
 		if err != nil {
 			return err
 		}
 		if err := runBRevise(ctx, t, k, e); err != nil {
-			return err
-		}
-		if err := replan(ctx, t, briefs, k, e); err != nil { // briefs is shared with A and B: both see the new directions
 			return err
 		}
 		commit()

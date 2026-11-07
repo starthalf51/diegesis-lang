@@ -223,6 +223,9 @@ func runJudge(ctx context.Context, t *tracker) judgeOutcome {
 // fakeJudge selects a judge failure for tests: "garbage", "noY" (no Y key), "norev" (no revision marks for Y).
 var fakeJudge string
 
+// fakeReplanBad makes the fake replan answer unparsable.
+var fakeReplanBad bool
+
 // fakeDiegCalls is how many metered calls one fake dieg invocation makes.
 var fakeDiegCalls = 3
 
@@ -239,6 +242,9 @@ func (f fake) Complete(_ context.Context, _, user string) (render.Result, error)
 		t = ""
 		for i := 1; i <= f.eps; i++ {
 			t += fmt.Sprintf("%d화: 재계획 방향 %d\n", i, i)
+		}
+		if fakeReplanBad {
+			t = "방향을 못 정하겠다"
 		}
 	case strings.Contains(user, "시리즈 계획"):
 		t = ""

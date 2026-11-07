@@ -73,7 +73,7 @@ func ReplanPrompt(idea string, briefs []string, from int, req string) string {
 	return b.String()
 }
 
-// replan runs the shared replan-<k+1> call after revision k and rewrites briefs[e+1..] in place, so A and B (which
+// replan runs the shared replan-<k+1> call BEFORE revision k reaches either arm (it needs neither arm's output) and rewrites briefs[e+1..] in place, so A and B (which
 // hold this same slice) both use the new directions. Like plan it goes to plan/calls.jsonl and is charged to no arm.
 func replan(ctx context.Context, t *tracker, briefs []string, k, e int) error {
 	if err := t.check(judgeReserve + 1); err != nil {
@@ -84,29 +84,40 @@ func replan(ctx context.Context, t *tracker, briefs []string, k, e int) error {
 		return err
 	}
 	defer f.Close()
-	label := fmt.Sprintf("replan-%d", k+1)
-	text, err := call(ctx, m, label, ReplanPrompt(t.c.idea, briefs, e+1, revReqs[k]))
-	if err != nil {
-		return err
+	// One retry on a bad answer. Two bad answers count as a blocked replan: errBudget, so the run is cut cleanly
+	// before revision k reaches either arm and the judge still runs.
+	for try, label := 0, fmt.Sprintf("replan-%d", k+1); ; try++ {
+		if try > 0 {
+			label += "b"
+			if err := t.check(judgeReserve + 1); err != nil {
+				return err
+			}
+		}
+		text, err := call(ctx, m, label, ReplanPrompt(t.c.idea, briefs, e+1, revReqs[k]))
+		var nb []string
+		if err == nil {
+			if err = write(filepath.Join(t.c.out, "plan", label+".md"), text); err != nil {
+				return err
+			}
+			if nb, err = parseBriefs(text, e+1, t.c.eps); err == nil {
+				copy(briefs[e+1:], nb[e+1:])
+				return nil
+			}
+		}
+		if try == 1 {
+			return fmt.Errorf("%w: replan failed twice (%v)", errBudget, err)
+		}
 	}
-	if err := write(filepath.Join(t.c.out, "plan", label+".md"), text); err != nil {
-		return err
-	}
-	nb, err := parseBriefs(text, e+1, t.c.eps)
-	if err != nil {
-		return err
-	}
-	copy(briefs[e+1:], nb[e+1:])
-	return nil
 }
 
 // confirmedRevisions is the text A's episode prompts and B's --brief share once n revisions are applied: the
-// precedence rule and the revision list. Empty before the first revision.
+// precedence rule and the revision list. Both arms always carry the block, empty list included, so they stay
+// byte-identical from episode 1.
 func confirmedRevisions(n int) string {
-	if n == 0 {
-		return ""
-	}
 	s := "## 확정된 수정\n" + precedenceRule + "\n"
+	if n == 0 {
+		s += "- (아직 없음)\n"
+	}
 	for k := 0; k < n; k++ {
 		s += fmt.Sprintf("- 수정 %d: %s\n", k+1, revReqs[k])
 	}
@@ -124,10 +135,10 @@ func (t *tracker) applied() (n int) {
 }
 
 // precedenceRule is shared word for word by A's prompts and B's --brief.
-const precedenceRule = "요약의 `확정된 수정` 은 개요보다 우선한다."
+const precedenceRule = "아래 `확정된 수정` 이 개요·화별 방향보다 우선한다."
 
 const aHead ="## 연재 규칙\n- 화당 장면 %d개. 장면 사이는 한 줄 `* * *` 로 나눈다. 해라체 서술, 화당 약 5000자, 장면당 약 2500자. 제목·머리말·설명 없이 산문만 출력한다.\n" +
-	"- 인물의 이름·나이·관계·물건·시각, 누가 무엇을 아는가는 처음 정한 대로 지킨다. " + precedenceRule + "\n"
+	"- 인물의 이름·나이·관계·물건·시각, 누가 무엇을 아는가는 처음 정한 대로 지킨다.\n"
 
 func OutlinePrompt(idea string, briefs []string) string {
 	var b strings.Builder
@@ -145,9 +156,7 @@ func EpisodePrompt(idea, outline, summary, prev, brief string, ep, n, applied in
 	var b strings.Builder
 	fmt.Fprintf(&b, "# 과제: 연재 소설 %d/%d화를 쓴다\n\n", ep, n)
 	fmt.Fprintf(&b, aHead, perEp)
-	if r := confirmedRevisions(applied); r != "" {
-		b.WriteString("\n" + r)
-	}
+	b.WriteString("\n" + confirmedRevisions(applied))
 	b.WriteString("\n## 아이디어\n" + strings.TrimSpace(idea) + "\n\n## 개요\n\n" + strings.TrimSpace(outline) + "\n")
 	if ep > 1 {
 		b.WriteString("\n## 누적 요약\n\n" + strings.TrimSpace(summary) + "\n")
@@ -216,7 +225,6 @@ type armA struct {
 	briefs  []string
 	outline string
 	summary string
-	hold    int // extra calls step keeps free: 1 during a revision, for the replan that follows it
 }
 
 func newArmA(ctx context.Context, t *tracker, briefs []string) (*armA, error) {
@@ -236,7 +244,7 @@ func newArmA(ctx context.Context, t *tracker, briefs []string) (*armA, error) {
 }
 
 func (a *armA) step(label, prompt string) (string, error) {
-	if err := a.t.check(judgeReserve + 1 + a.hold); err != nil {
+	if err := a.t.check(judgeReserve + 1); err != nil {
 		return "", err
 	}
 	if err := write(filepath.Join(a.t.c.out, "a", "prompts", label+".txt"), prompt); err != nil {
@@ -275,8 +283,6 @@ func (a *armA) episode(e int) error {
 // is applied until the returned commit runs, so an aborted revision leaves A's episodes as they were.
 func (a *armA) revise(k, e int) (commit func(), err error) {
 	c, n, req := a.t.c, k+1, revReqs[k]
-	a.hold = 1
-	defer func() { a.hold = 0 }()
 	redone := map[int]string{}
 	var newSummary string
 	err = a.t.revStep("A", n, func() error {

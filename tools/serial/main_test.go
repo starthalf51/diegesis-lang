@@ -269,22 +269,45 @@ func TestBriefPrecedenceSymmetric(t *testing.T) {
 	if !strings.Contains(rd("a/prompts/ep-3.txt"), want) || !strings.Contains(rd("b/argv/3.txt"), want) {
 		t.Error("A prompt and B brief do not carry the same rule + revision list")
 	}
-	if strings.Contains(rd("b/argv/2.txt"), precedenceRule) || strings.Contains(rd("a/prompts/ep-2.txt"), "## 확정된 수정") {
-		t.Error("rule shown before any revision was applied")
+	if z := confirmedRevisions(0); !strings.Contains(rd("b/argv/2.txt"), z) || !strings.Contains(rd("a/prompts/ep-2.txt"), z) {
+		t.Error("before any revision both arms carry the same block with an empty list")
 	}
 }
 
-// The replan call needs headroom: a revision that would leave no call for it must not start, and one that fits
-// replans; either way the judge runs inside the budget and both arms stop at the same episode.
+// The replan runs first. plan 1, outline 1, ep1 5, ep2 5 = 12; replan 1 = 13; A revise 4 = 17; B revise 3 = 20.
+// Budget 21: B's revise is refused, so neither arm is revised. Budget 22: revised; A ep3 would need 20+3 > 22.
 func TestSerialReplanReserve(t *testing.T) {
 	stepReserve = 3
 	defer func() { stepReserve = 20 }()
-	// plan 1, outline 1, ep1 5, ep2 5 = 12; A revise 4 = 16; B revise 3 = 19; replan 1 = 20; A ep3 needs 20+3 > 22.
 	for budget, wantRev := range map[int]int{21: 0, 22: 1} {
-		_, s, _ := dry(t, "-eps", "3", "-rev-after", "2", "-budget", strconv.Itoa(budget))
+		out, s, _ := dry(t, "-eps", "3", "-rev-after", "2", "-budget", strconv.Itoa(budget))
 		used := s.Plan_uncharged.Calls + s.A_total_including_cut_work.Calls + s.B_total_including_cut_work.Calls + s.Judge.Calls
-		if len(s.Revisions) != wantRev || s.Plan_uncharged.Calls != int64(1+wantRev) || s.Cut_at_episode != 2 || s.Judge_status != "ok" || used > int64(budget) {
-			t.Errorf("budget %d: revs %d plan %d cut %d judge %q used %d", budget, len(s.Revisions), s.Plan_uncharged.Calls, s.Cut_at_episode, s.Judge_status, used)
+		bc, _ := os.ReadFile(filepath.Join(out, "b/calls.jsonl"))
+		if len(s.Revisions) != wantRev || s.Plan_uncharged.Calls != 2 || s.Cut_at_episode != 2 || s.Judge_status != "ok" || used > int64(budget) ||
+			(wantRev == 0 && s.B_total_including_cut_work.Calls != 6) || len(bc) == 0 {
+			t.Errorf("budget %d: revs %d plan %d cut %d judge %q used %d B %d", budget, len(s.Revisions), s.Plan_uncharged.Calls, s.Cut_at_episode, s.Judge_status, used, s.B_total_including_cut_work.Calls)
+		}
+	}
+}
+
+// A replan blocked by the budget, or garbage twice, means revision 1 reaches neither arm: both arms are cut at the
+// same episode and the judge still runs inside the budget.
+func TestSerialReplanBlocked(t *testing.T) {
+	stepReserve = 3
+	defer func() { stepReserve = 20; fakeReplanBad = false }()
+	// plan 1, outline 1, ep1 5, ep2 5 = 12; the replan needs 12+3 <= budget.
+	for name, c := range map[string]struct {
+		bad    bool
+		budget int
+		plan   int64
+	}{"budget": {false, 14, 1}, "garbage": {true, 220, 3}} {
+		fakeReplanBad = c.bad
+		out, s, _ := dry(t, "-eps", "3", "-rev-after", "2", "-budget", strconv.Itoa(c.budget))
+		ac, _ := os.ReadFile(filepath.Join(out, "a/calls.jsonl"))
+		used := s.Plan_uncharged.Calls + s.A_total_including_cut_work.Calls + s.B_total_including_cut_work.Calls + s.Judge.Calls
+		if len(s.Revisions) != 0 || s.Plan_uncharged.Calls != c.plan || s.Cut_at_episode != 2 || s.Judge_status != "ok" || used > int64(c.budget) ||
+			strings.Contains(string(ac), "rev1") || s.B_total_including_cut_work.Calls != 6 || s.A_total_including_cut_work.Calls != 5 {
+			t.Errorf("%s: revs %d plan %d cut %d judge %q used %d A %d B %d", name, len(s.Revisions), s.Plan_uncharged.Calls, s.Cut_at_episode, s.Judge_status, used, s.A_total_including_cut_work.Calls, s.B_total_including_cut_work.Calls)
 		}
 	}
 }
