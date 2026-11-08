@@ -94,3 +94,22 @@ func TestRetcon2Dry(t *testing.T) {
 		t.Errorf("skipIDs = %v", sk)
 	}
 }
+
+// -rc-b-only: no A call, one judge call; B still runs.
+func TestRetcon2BOnlyDry(t *testing.T) {
+	saved := retcons
+	defer func() { retcons = saved }()
+	out := t.TempDir()
+	err := runRetcon(context.Background(), []string{"-rc-out", out, "-rc-src", "../../examples/serial/run3", "-rc-dry",
+		"-rc-list", "../../examples/value/retcon2/retcons.json", "-rc-only", "2", "-rc-b-only", "-rc-budget", "100"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(filepath.Join(out, "calls.jsonl"))
+	if n := strings.Count(string(b), "\n"); n != 4 { // 3 dieg + 1 judge
+		t.Errorf("calls %d, want 4\n%s", n, b)
+	}
+	if strings.Contains(string(b), "-A-") {
+		t.Error("A ran")
+	}
+}

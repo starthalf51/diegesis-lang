@@ -86,6 +86,7 @@ type rcState struct {
 	v2                  bool   // plan-7 benchmark: list from file, stamped full B base, s>=skipFrom never rendered, A limited to 1..maxEp
 	baseB               string // v2: stamped copy of the run3 B work (every retcon starts from it)
 	skipFrom            int    // v2: scenes numbered >= this are excluded from both arms
+	bOnly               bool   // v2: run arm B and its judge only
 	bReserve            int    // v2: calls kept free before a retcon starts for B's worst case
 }
 
@@ -567,10 +568,12 @@ func (s *rcState) one(ctx context.Context, r retcon) ([]rcResult, error) {
 		return nil, err
 	}
 	var res []rcResult
-	// A (all 12 episodes are revised/kept; the judge reads 1..maxEp, B's matching scenes)
-	finalA, errA := s.arm_A(ctx, r, dir)
-	if errA != nil {
-		return res, fmt.Errorf("%s A: %w", r.ID, errA)
+	var finalA map[int]string
+	if !s.bOnly { // rerun of B alone: A's results are those of the first run, same inputs
+		var errA error
+		if finalA, errA = s.arm_A(ctx, r, dir); errA != nil {
+			return res, fmt.Errorf("%s A: %w", r.ID, errA)
+		}
 	}
 	errB := s.arm_B(ctx, r, dir)
 	if errB != nil {
@@ -583,6 +586,10 @@ func (s *rcState) one(ctx context.Context, r retcon) ([]rcResult, error) {
 		return []rcResult{resA, resB}, err
 	}
 	var err error
+	if s.bOnly {
+		resB, err = s.judged(ctx, r, "B", dir, resB, joinUnits(idsB, afterB, "장면"))
+		return []rcResult{resB}, err
+	}
 	if resA, err = s.judged(ctx, r, "A", dir, resA, joinUnits(idsA, afterA, "화")); err != nil {
 		return []rcResult{resA, resB}, err
 	}
@@ -609,6 +616,7 @@ func runRetcon(ctx context.Context, args []string) error {
 	dry := fs.Bool("rc-dry", false, "fake every model call and the dieg subprocess; print the commands")
 	list := fs.String("rc-list", "", "plan-7 benchmark: retcon list JSON; B starts from the stamped full base, scenes >= -rc-skip-from are never rendered")
 	skipFrom := fs.Int("rc-skip-from", 32, "with -rc-list: scenes numbered >= this are excluded from both arms")
+	bOnly := fs.Bool("rc-b-only", false, "with -rc-list: run arm B only (A comes from an earlier run)")
 	bRes := fs.Int("rc-b-reserve", 45, "with -rc-list: calls that must be free before a retcon starts, for B's worst case")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -626,7 +634,7 @@ func runRetcon(ctx context.Context, args []string) error {
 			return err
 		}
 		retcons = rs
-		s.v2, s.skipFrom, s.bReserve = true, *skipFrom, *bRes
+		s.v2, s.skipFrom, s.bReserve, s.bOnly = true, *skipFrom, *bRes, *bOnly
 		s.baseB = filepath.Join(s.out, "base", "b")
 	}
 	if err := s.load(); err != nil {
@@ -695,6 +703,9 @@ func runRetcon(ctx context.Context, args []string) error {
 		need := 8 + stepReserve + 2
 		if s.v2 {
 			need = 10 + s.bReserve + 2
+			if s.bOnly {
+				need = s.bReserve + 1
+			}
 		}
 		if err := s.guard(need, 0); err != nil {
 			stop = fmt.Sprintf("%s not started: %v", r.ID, err)

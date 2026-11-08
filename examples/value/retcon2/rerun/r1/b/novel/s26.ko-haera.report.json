@@ -1,0 +1,17 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "서윤은 백영호가 거짓말을 했고 도경태가 램프 덮개를 닫아 불을 끈 밤을 이장이 덮게 둘 수 없다고 생각한다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 0.9696969696969697,
+    "Length": 0,
+    "Score": 0.9966329966329966
+  },
+  "patched": true
+}

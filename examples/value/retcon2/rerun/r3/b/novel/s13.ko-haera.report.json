@@ -1,0 +1,16 @@
+{
+  "missing": [
+    "haesol|assert|haesol_record_plan"
+  ],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "scores": {
+    "Coverage": 1,
+    "Kind": 0.8333333333333334,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 0.9629629629629628
+  },
+  "patched": true
+}

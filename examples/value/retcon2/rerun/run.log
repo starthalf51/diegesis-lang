@@ -1,0 +1,54 @@
+stamp: 31 of 35 scenes stamped (30 had a different IR hash) → examples\value\retcon2\rerun\base\b
+== R1 누가 일으켰나 (렌즈를 깬 사람) — 앞 스파이크 R1 그대로
+s21: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+revise: rounds=2 clean=true changed=s21,s22,s24,s25,s26,s27,s28 added= removed= state_stale=s22,s28 skipped=s32,s33,s34,s35 patched=7 failed=0[] calls=16 tokens in=32 out=38008 cache_read=13080 cache_write=147587 → examples\value\retcon2\rerun\r1\b
+s22: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s24: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s25: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s26: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s27: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s28: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+== R2 소품의 위치 (유리 조각을 주운 곳) — 앞 스파이크 R2 그대로
+s6: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+revise: rounds=1 clean=true changed=s10,s11,s17,s20,s21,s22,s24,s25,s27,s29,s6,s7,s8,s9 added= removed= state_stale=s7,s10,s11,s17,s20,s22,s25,s29 skipped=s32,s33,s34,s35 patched=14 failed=0[] calls=29 tokens in=58 out=28561 cache_read=25809 cache_write=165460 → examples\value\retcon2\rerun\r2\b
+s7: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s8: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s9: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s10: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s11: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s17: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s20: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s21: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s22: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s24: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s25: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s27: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s29: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+== R3 비밀을 안 시점 (앞당김) — 앞 스파이크 R3 그대로
+s12: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+revise: rounds=1 clean=true changed=s12,s13,s14,s15,s16,s17,s18,s19,s20,s21,s22,s23,s24,s25,s26,s27,s28,s29,s30,s31 added=s11b removed= state_stale=s12,s13,s14,s15,s16,s17,s19,s20,s21,s22,s23,s24,s25,s26,s27,s28,s29,s30,s31 skipped=s32,s33,s34,s35 patched=20 failed=0[] calls=48 tokens in=96 out=46673 cache_read=55796 cache_write=209650 → examples\value\retcon2\rerun\r3\b
+s13: attempts=1 pass=true missing=[haesol|assert|haesol_record_plan] hallucinated=[] leaked=[] 
+s14: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s15: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s16: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s17: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s18: attempts=1 pass=true missing=[haesol|read|gyeongtae_treated] hallucinated=[] leaked=[] 
+s19: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s20: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s21: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s22: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s23: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s24: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s25: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s26: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s27: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s28: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s29: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s30: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s31: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s11b: attempts=1 pass=true missing=[seoyun|assert|not hospital_alibi] hallucinated=[] leaked=[] 
+
+calls used 96/100 stop=""
+R1 B calls=16 w_in=185824 out=38008 priced=229394 | judge residual=0 introduced=0 quotes=0/0 | units 5/31 changed (affected 14), chars changed 363 collateral 0
+R2 B calls=29 w_in=209464 out=28561 priced=146293 | judge residual=0 introduced=0 quotes=0/0 | units 7/31 changed (affected 10), chars changed 144 collateral 0
+R3 B calls=48 w_in=267738 out=46673 priced=216196 | judge residual=0 introduced=1 quotes=3/3 | units 3/31 changed (affected 14), chars changed 113 collateral 33

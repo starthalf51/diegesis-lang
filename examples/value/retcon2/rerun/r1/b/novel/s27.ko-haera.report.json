@@ -1,0 +1,18 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "백영호는 다투던 끝에 도경태가 자신을 뿌리쳤다고 말한다.",
+    "해솔은 꾸러미를 출장소로 가져가겠다고 말한다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 1
+  },
+  "patched": true
+}

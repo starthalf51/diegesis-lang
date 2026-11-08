@@ -1,0 +1,17 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "해솔이 유리 조각을 감싸고 꾸러미를 출장소로 가져가겠다며 나간다.",
+    "서윤이 영호에게 함께 가자고 한다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 0.9859154929577465,
+    "Length": 0,
+    "Score": 0.9984350547730829
+  }
+}

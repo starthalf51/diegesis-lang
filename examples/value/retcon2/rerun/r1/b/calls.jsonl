@@ -1,0 +1,16 @@
+{"t":"2026-11-08T16:18:42Z","label":"rev1-code-r1","input":2,"output":12418,"cache_read":0,"cache_write":36662,"stop":"end_turn","err":"","ms":107325}
+{"t":"2026-11-08T16:20:40Z","label":"rev1-fix-r2","input":2,"output":3357,"cache_read":0,"cache_write":37083,"stop":"end_turn","err":"","ms":35202}
+{"t":"2026-11-08T16:21:37Z","label":"render-s21-a1","input":2,"output":1248,"cache_read":897,"cache_write":6257,"stop":"end_turn","err":"","ms":8811}
+{"t":"2026-11-08T16:21:45Z","label":"extract-s21-a1","input":2,"output":735,"cache_read":716,"cache_write":2632,"stop":"end_turn","err":"","ms":9296}
+{"t":"2026-11-08T16:21:55Z","label":"render-s22-a1","input":2,"output":1489,"cache_read":897,"cache_write":7694,"stop":"end_turn","err":"","ms":11916}
+{"t":"2026-11-08T16:22:07Z","label":"extract-s22-a1","input":2,"output":596,"cache_read":2505,"cache_write":357,"stop":"end_turn","err":"","ms":7961}
+{"t":"2026-11-08T16:22:15Z","label":"render-s24-a1","input":2,"output":1696,"cache_read":897,"cache_write":8180,"stop":"end_turn","err":"","ms":10150}
+{"t":"2026-11-08T16:22:25Z","label":"extract-s24-a1","input":2,"output":470,"cache_read":716,"cache_write":2193,"stop":"end_turn","err":"","ms":8644}
+{"t":"2026-11-08T16:22:34Z","label":"render-s25-a1","input":2,"output":1879,"cache_read":897,"cache_write":8793,"stop":"end_turn","err":"","ms":10900}
+{"t":"2026-11-08T16:22:44Z","label":"extract-s25-a1","input":2,"output":784,"cache_read":716,"cache_write":2919,"stop":"end_turn","err":"","ms":9530}
+{"t":"2026-11-08T16:22:54Z","label":"render-s26-a1","input":2,"output":1396,"cache_read":897,"cache_write":7983,"stop":"end_turn","err":"","ms":10240}
+{"t":"2026-11-08T16:23:04Z","label":"extract-s26-a1","input":2,"output":668,"cache_read":716,"cache_write":2158,"stop":"end_turn","err":"","ms":10848}
+{"t":"2026-11-08T16:23:15Z","label":"render-s27-a1","input":2,"output":7557,"cache_read":897,"cache_write":10691,"stop":"end_turn","err":"","ms":33347}
+{"t":"2026-11-08T16:23:49Z","label":"extract-s27-a1","input":2,"output":836,"cache_read":716,"cache_write":3396,"stop":"end_turn","err":"","ms":11628}
+{"t":"2026-11-08T16:24:00Z","label":"render-s28-a1","input":2,"output":2373,"cache_read":897,"cache_write":8433,"stop":"end_turn","err":"","ms":15063}
+{"t":"2026-11-08T16:24:15Z","label":"extract-s28-a1","input":2,"output":506,"cache_read":716,"cache_write":2156,"stop":"end_turn","err":"","ms":10058}
