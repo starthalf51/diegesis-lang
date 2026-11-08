@@ -95,12 +95,12 @@ func runContinue(ep int, brief, styles string, limit int, o write.Opts) (int, er
 	if err != nil {
 		return 1, err
 	}
-	o.Digest, err = write.StateDigest(ctx, pool, work)
+	o.Recap, err = write.StateDigest(ctx, pool, work)
 	pool.Close()
 	if err != nil {
 		return 1, err
 	}
-	if err := os.WriteFile(filepath.Join(o.Out, "digest-"+write.EpDir(ep)+".txt"), []byte(o.Digest), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(o.Out, "digest-"+write.EpDir(ep)+".txt"), []byte(o.Recap), 0o644); err != nil {
 		return 1, err
 	}
 	f, err := os.OpenFile(filepath.Join(o.Out, "calls.jsonl"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
@@ -132,6 +132,12 @@ func runContinue(ep int, brief, styles string, limit int, o write.Opts) (int, er
 		summary(res, 0, nil)
 		return 1, err
 	}
+	o, closeDigest, err := withDigest(ctx, work, o)
+	if err != nil {
+		summary(res, 0, nil)
+		return 1, err
+	}
+	defer closeDigest()
 	return renderContinued(ctx, cs, work, all, b, o, res, limit, func(res write.Result, rr write.RerenderResult, backlog int, failed []string) {
 		summary(res, len(rr.Scenes), failed)
 		fmt.Printf("continue: backlog=%d (stale scenes of earlier episodes picked up)\n", backlog)
@@ -143,7 +149,7 @@ func runContinue(ep int, brief, styles string, limit int, o write.Opts) (int, er
 // summary gets the number of backlog scenes: stale scenes that are not in the new episode.
 func renderContinued(ctx context.Context, cs render.Completers, work string, all []render.Scene, b render.Backend, o write.Opts,
 	res write.Result, limit int, summary func(write.Result, write.RerenderResult, int, []string)) (int, error) {
-	rr, err := write.Rerender(ctx, cs, work, all, b, o.Out, o, limit)
+	rr, err := write.Rerender(ctx, cs, work, all, b, o.Out, o, limit, nil) // continue: full render
 	newEp := map[string]bool{}
 	for _, id := range res.Scenes {
 		newEp[id] = true

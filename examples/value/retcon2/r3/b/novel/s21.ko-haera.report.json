@@ -1,0 +1,17 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "오말순이 해진호가 가라앉은 이튿날 아침 도경태가 피 묻은 천을 손에 감고 선착장에 서 있었다고 말한다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 1
+  },
+  "patched": true
+}

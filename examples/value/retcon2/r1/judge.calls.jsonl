@@ -1,0 +1,2 @@
+{"t":"2026-11-08T15:05:52Z","label":"r1-judge-A","input":2,"output":3978,"cache_read":0,"cache_write":48002,"stop":"end_turn","err":"","ms":36080}
+{"t":"2026-11-08T15:06:28Z","label":"r1-judge-B","input":2,"output":4294,"cache_read":0,"cache_write":44324,"stop":"end_turn","err":"","ms":34994}

@@ -1,0 +1,17 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "해솔이 꾸러미를 출장소로 가져가겠다고 말한다.",
+    "서윤이 백영호에게 함께 가자고 재촉한다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 0.9861111111111112,
+    "Length": 0,
+    "Score": 0.9984567901234568
+  }
+}

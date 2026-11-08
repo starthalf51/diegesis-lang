@@ -93,6 +93,17 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
   - `--render-effort` 기본이 `low` 가 되었다(`write`·`continue`·`revise`·`render --verify`, `examples/effort-ab`: 점수 0.9947→0.9997, 통과 6/6 동일, 호출당 출력 5124→4643 토큰. 토큰 이득은 macbeth 한 장면에 기댄다, n=6).
   - 계층형 렌더러를 삭제했다: `--renderer`·`--beat-retries` 는 없다(exit 2). 예전 `layered:` 장면 해시는 낡아 다시 렌더된다(ADR-029).
 - 비용 측정: 뼈대 모드만으로는 코드 출력 토큰이 약 2% 줄었다(출력의 대부분이 추론 토큰). `--code-effort medium` 은 high 대비 코드 출력이 약 55% 적었고 깨끗해지는 라운드 수는 늘지 않았다(스모크 1회 기준).
+- **동작 변경(플랜 7):**
+  - 생성 경로(`write`·`continue`·`revise`)는 렌더 프롬프트 끝에 PG 가 만든 **세계 상태 요약**(`## 이 시점의 세계 상태 (어기지 말 것)`)을 붙인다. "독자가 이미 아는 것" 절은 뺐고 감춘 사실은 걸러낸다. 끄려면 `--no-digest`. `.hash` 는 `<생성해시> <상태해시>` 두 칸이고 상태해시는 상태 부분만 덮는다. 상태 요약이 바뀐 장면도 낡은 것으로 센다(요약 줄 `state_stale=`).
+  - 예전(한 칸) `.hash` 는 그대로 읽힌다. 새 해시로 옮기려면 `dieg stamp <작품>` (모델 호출 없음). 생성 경로의 낡음 해시(`genHash`)는 `previously`(앞 장면 사실문)를 뺀다. 코퍼스 `RenderHash` 는 그대로다.
+  - `dieg revise` 는 카드 모드에서 바뀐 장면을 `{"edits":[{"old","new"}]}` 문장 패치로 고친다. `old` 는 장면 산문에서 정확히 한 번(겹치는 출현은 모호로 센다)만 맞아야 하고 다른 편집과 겹치면 안 된다. 패치도 카드 채점을 거치고, 실패하면 피드백과 함께 한 번 다시 시도한 뒤 전체 렌더로 되돌린다. 디스크 산문이 예전 IR 의 산문과 같을 때만 패치한다(해시 가드). 보고서에 `patched` 가 남고 요약 줄에 `patched=N` 이 나온다. `--verifier open` 에서는 패치하지 않는다.
+  - 새 경고 3개(`rules/relative-time-fact.sql`, `retell-known.sql`, `fact-conflict.sql`): 상대 시간 사실문, 이미 아는 것을 다시 말하기, 같은 사건의 두 원인. run3 B 이야기에서 B1·B9·B10 을 잡는다(`lens_not_switched` 는 놓친다. `retell-known` 은 run3 B 에서 12건 중 5건이 논쟁거리). 코퍼스는 새 적중 0(hamlet 의 예고된 2건 제외).
+  - `ReviseLoop` 는 수정 전 이야기의 기준선에 없던 **새 진단**만 막거나 고친다. 이미 있던 경고가 `revise` 를 막지 않는다.
+  - 추가: `dieg stamp`, `dieg revise --skip s1,s2`(그 장면은 다시 렌더하지 않음), 환경변수 `DIEG_CALL_CAP=N`(모델 호출 하드 상한).
+
+## 디제시스를 쓸 이유
+
+디제시스가 있을 이유는 이야기 한가운데의 변경을 빠짐없이 퍼뜨리는 것이다. 잰 표본(재설정 3건, 31장면 중 다시 렌더한 장면은 재설정마다 7·14·21개)에서 직접 쓰기는 모순 4개를 남겼고 디제시스는 0개를 남겼다. 상관없는 글자는 직접 쓰기가 945자, 디제시스가 33자 바꿨고, 비용(가격 가중)은 거의 같았다(1.02배. 호출은 93 대 15). 비용 자체는 이유가 아니다(`examples/value/cost-curve`: 길어져도 직접 쓰기가 비싸지지 않는다). 판정은 사전 기준으로 "약함"이다: 비용 조건이 2% 차로 빗나갔고 이는 단일 실행 잡음 안이다. 첫 실행(229호출)은 비용 2.42배, 남은 모순 B 2 대 A 4였는데 원인이 플랜 7 자신의 경고와 해시였고, 고쳐서 B 만 다시 쟀다. 첫 실행의 모순 우위는 세는 방식에 민감했다: 자리별로 세면 B 4 대 A 4 다. 공개: 재실행에서 상태만 바뀐 29장면의 패치는 사실상 빈 패치였다(변경 내역이 비어 모델이 `{"edits":[]}` 를 냈다; 지금은 고쳤다). 그래서 1.02배는 상태 변경을 실제로 퍼뜨리는 비용을 낮게 잡은 값이고, 다시 쟬 계획이다. n=3, 단일 실행이다. [`examples/value/retcon2`](examples/value/retcon2/README.md)
 
 ## 측정 결과
 
@@ -156,3 +167,4 @@ go vet ./...
 | v0.4.0 | 플랜 4: 역할별 모델·`--code-effort`, 뼈대 모드(`--skeleton`), `dieg continue`, `dieg revise`, 연재 측정 하네스(`tools/serial`). `render --verify` 기본 모델 sonnet |
 | v0.5.0 | 플랜 5: 계층형 렌더러(`--renderer layered`, 옵트인; v0.6.0 에서 삭제), 기본 렌더 모델 haiku, 검증기가 저작된 사실 없는 행위·등장을 환각으로 세지 않음, stays-gone 규칙(`attr X.status = gone`), 연재 공정 재측정(run2) |
 | v0.6.0 | 플랜 6: 기본 채점기 card(`--verifier open` 으로 예전 방식), 지어낸 사건은 경고만, 기본 `--render-effort low`, 계층형 렌더러(`--renderer`·`--beat-retries`) 삭제, 연재 run3 |
+| v0.7.0 | 플랜 7: 렌더 프롬프트에 세계 상태 요약(`--no-digest`), 상태 해시 낡음·`dieg stamp`, `revise` 문장 패치(`patched=N`), 경고 3개, `revise` 는 새 진단만 막음, `--skip`·`DIEG_CALL_CAP`, 수정 재측정(retcon2) |

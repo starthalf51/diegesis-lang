@@ -1,0 +1,16 @@
+{
+  "missing": [
+    "seoyun|assert|not hospital_alibi"
+  ],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "scores": {
+    "Coverage": 1,
+    "Kind": 0.8571428571428571,
+    "Tone": 0.9736842105263158,
+    "Length": 0,
+    "Score": 0.9653299916457809
+  },
+  "patched": true
+}

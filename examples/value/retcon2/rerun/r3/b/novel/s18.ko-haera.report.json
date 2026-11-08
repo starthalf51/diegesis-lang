@@ -1,0 +1,19 @@
+{
+  "missing": [
+    "haesol|read|gyeongtae_treated"
+  ],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "서윤은 장부를 덮고 옆구리에 끼워 가져간다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 0.875,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 0.9722222222222222
+  },
+  "patched": true
+}

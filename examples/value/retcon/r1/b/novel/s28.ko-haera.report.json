@@ -1,0 +1,13 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 0.9615384615384616,
+    "Length": 0,
+    "Score": 0.9957264957264957
+  }
+}

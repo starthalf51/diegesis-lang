@@ -1,0 +1,19 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "해솔이 두꺼운 유리 조각을 꺼내 백영호 쪽으로 밀어 보여 준다.",
+    "해솔이 그 유리 조각이 정수아가 방파제 끝에서 주운 것이며 깨진 등대 렌즈 귀퉁이에서 떨어져 나온 것이라고 말한다.",
+    "해솔이 꾸러미를 출장소로 가져가겠다고 말하고 떠난다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 1
+  },
+  "patched": true
+}

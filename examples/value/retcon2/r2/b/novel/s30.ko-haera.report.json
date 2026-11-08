@@ -1,0 +1,17 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "서윤이 가방에서 찢긴 등대 근무 장부 쪽을 꺼내 책상 위에 펼친다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 0.9666666666666667,
+    "Length": 0,
+    "Score": 0.9962962962962963
+  },
+  "patched": true
+}

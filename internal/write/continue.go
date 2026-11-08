@@ -16,7 +16,7 @@ import (
 
 // ContinueLoop writes episode ep into storyDir (the accumulated story/ code): it asks c for new files under
 // story/epNN/ only, writes them there, checks the whole storyDir (past + new) and feeds diagnostics back until clean
-// or o.Rounds is spent. The prompt carries the cast files and o.Digest, not the past scene code. A bundle with a
+// or o.Rounds is spent. The prompt carries the cast files and o.Recap, not the past scene code. A bundle with a
 // path outside epNN/ or one that already exists is a "bundle" diagnostic and consumes its round (Review Focus 1);
 // past files are never written. A rejected round's epNN/ is removed again, so after an unclean run storyDir is
 // as it was. Round r's raw output is <out>/rounds/epNN-r<r>.raw.txt and its files <out>/rounds/epNN-r<r>/;
@@ -44,7 +44,13 @@ func ContinueLoop(ctx context.Context, c render.Completer, check Checker, storyD
 	var last map[string]string
 	var lastDiags []Diag
 	var bundle string
-	first := ContinuePrompt(o.Digest, cast, brief, ep, refs, o.Reserved, o.Skeleton)
+	var fresh []Diag // the round's blocking diagnostics the story did not already have
+	// Diagnostics the story already has never block the new episode: only ones it adds do (see baseline).
+	freshOf, err := baseline(ctx, check, storyDir)
+	if err != nil {
+		return res, err
+	}
+	first := ContinuePrompt(o.Recap, cast, brief, ep, refs, o.Reserved, o.Skeleton)
 	user := first
 	for r := 1; r <= o.Rounds; r++ {
 		l := d + "-code-r" + strconv.Itoa(r)
@@ -70,8 +76,10 @@ func ContinueLoop(ctx context.Context, c render.Completer, check Checker, storyD
 		switch {
 		case out.StopReason != "end_turn":
 			res.Diags = bundleDiag(fmt.Sprintf("model output stopped early (%s); write every file and end with %s", out.StopReason, End))
+			fresh = res.Diags
 		case perr != nil:
 			res.Diags = bundleDiag(perr.Error())
+			fresh = res.Diags
 		default:
 			if err := WriteFiles(rdir, files); err != nil {
 				return res, err
@@ -93,10 +101,8 @@ func ContinueLoop(ctx context.Context, c render.Completer, check Checker, storyD
 				return res, fmt.Errorf("round %d check: %w", r, err)
 			}
 			last, lastDiags = files, res.Diags
-			res.Clean = true
-			for _, x := range res.Diags {
-				res.Clean = res.Clean && !x.Blocking()
-			}
+			fresh = freshOf(res.Diags)
+			res.Clean = len(fresh) == 0
 			if !res.Clean {
 				if err := os.RemoveAll(epPath); err != nil {
 					return res, err
@@ -106,7 +112,7 @@ func ContinueLoop(ctx context.Context, c render.Completer, check Checker, storyD
 		if res.Clean {
 			break
 		}
-		user = first + fixTail(bundle, blocking(res.Diags))
+		user = first + fixTail(bundle, fresh)
 	}
 	if res.Clean {
 		res.Scenes = sceneIDs(last)

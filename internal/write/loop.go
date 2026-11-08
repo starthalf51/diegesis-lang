@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -43,7 +44,10 @@ type Opts struct {
 	Skeleton                             bool     // code carries events only; the renderer writes the dialogue
 	CodeEffort                           string   // claude --effort for coding calls: low, medium or high
 	RenderEffort                         string   // claude --effort for render calls (default low)
-	Digest                               string   // ContinueLoop only: the PG state digest of the story so far
+	NoDigest                             bool     // CLI: --no-digest, leave o.Digest nil
+	Recap                                string   // ContinueLoop only: the PG state digest of the story so far (StateDigest)
+	Digest                               func(ctx context.Context, sceneID string) (text, state string, err error) // render path: per-scene PG world-state digest; text is appended to the render prompt, only the state-only part is hashed for staleness; nil = none
+	Skip                                 []string // Rerender: scene ids never rendered even if stale (CLI: revise --skip)
 	Verifier                             string   // "card" (default, render.ScoreCard checklist) or "open" (open re-extraction)
 }
 
@@ -158,4 +162,41 @@ func blocking(ds []Diag) []Diag {
 		}
 	}
 	return out
+}
+
+var (
+	actRef = regexp.MustCompile(`#a\d+`)
+	posRef = regexp.MustCompile(`:\d+(:\d+)?`)
+)
+
+// diagKey identifies a diagnostic across edits: rule, file and message with act numbers (#a3) and line:col positions
+// blanked, since inserting an act or a line renumbers them.
+func diagKey(d Diag) string {
+	return d.Rule + "|" + d.File + "|" + posRef.ReplaceAllString(actRef.ReplaceAllString(d.Msg, "#a"), "")
+}
+
+// baseline lints dir as it is (no model call) and returns fresh: the blocking diagnostics of a later check that the
+// untouched story did not already have. The baseline is a multiset on diagKey, so a second identical warn is new.
+func baseline(ctx context.Context, check Checker, dir string) (fresh func([]Diag) []Diag, err error) {
+	base, err := check(ctx, dir)
+	if err != nil {
+		return nil, fmt.Errorf("baseline check: %w", err)
+	}
+	return func(ds []Diag) (out []Diag) {
+		n := map[string]int{}
+		for _, d := range base {
+			n[diagKey(d)]++
+		}
+		for _, d := range ds {
+			if !d.Blocking() {
+				continue
+			}
+			if k := diagKey(d); n[k] > 0 {
+				n[k]--
+			} else {
+				out = append(out, d)
+			}
+		}
+		return
+	}, nil
 }

@@ -8,13 +8,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	"diegesis/internal/render"
 	"diegesis/internal/write"
 )
 
 // cmdRevise runs `dieg revise <story-dir> "요청" [--rounds N] [--scenes N] [--no-render] [--backend id] [--styles dir]
-// [--code-model M] [--render-model M] [--extract-model M] [--code-effort e]` on a dir made by `dieg write -o <story-dir>`.
+// [--skip s1,s2 (benchmark only: never render these scenes)] [--code-model M] [--render-model M] [--extract-model M] [--code-effort e]` on a dir made by `dieg write -o <story-dir>`.
 // The AI edits story/ to satisfy the request (checker + PG lint loop on a copy; story/ changes only when clean), then only
-// the scenes whose render request changed or that are new are re-rendered (--scenes N caps that), removed scenes lose
+// the scenes whose render request changed or that are new are re-rendered (--scenes N caps that; changed scenes are patched
+// sentence by sentence only with the card verifier, which is the default), removed scenes lose
 // their prose files, and novel.md is rebuilt. Exit codes as write.
 func cmdRevise(args []string) int {
 	o := write.DefaultOpts()
@@ -27,6 +29,9 @@ func cmdRevise(args []string) int {
 			return code
 		case ok:
 			i = j
+		case a == "--skip" && i+1 < len(args):
+			o.Skip = strings.Split(args[i+1], ",")
+			i++
 		case dir == "" && !strings.HasPrefix(a, "-"):
 			dir = a
 		case request == "" && !strings.HasPrefix(a, "--"):
@@ -72,10 +77,27 @@ func runRevise(request, styles string, limit int, o write.Opts) (int, error) {
 	m, cs, k := meters(o, f)
 	o.Reserved = corpusWorks()
 	summary := func(res write.Result, rr write.RerenderResult, failed []string) {
-		t := m.Total()
-		fmt.Printf("revise: rounds=%d clean=%t changed=%s added=%s removed=%s failed=%d%v calls=%d tokens in=%d out=%d cache_read=%d cache_write=%d → %s\n",
+		t, patched := m.Total(), 0
+		for _, s := range rr.Scenes {
+			if s.Patched {
+				patched++
+			}
+		}
+		fmt.Printf("revise: rounds=%d clean=%t changed=%s added=%s removed=%s state_stale=%s skipped=%s patched=%d failed=%d%v calls=%d tokens in=%d out=%d cache_read=%d cache_write=%d → %s\n",
 			res.Rounds, res.Clean, strings.Join(rr.Changed, ","), strings.Join(rr.Added, ","), strings.Join(rr.Removed, ","),
+			strings.Join(rr.StateStale, ","), strings.Join(rr.Skipped, ","), patched,
 			len(failed), failed, k.n.Load(), t.Input, t.Output, t.CacheRead, t.CacheWrite, o.Out)
+	}
+	var old map[string]render.Scene // pre-revision requests, for sentence-level patches (compile only, no model call)
+	if o.Render {
+		if _, prev, err := shownScenes(ctx, story); err != nil {
+			fmt.Fprintln(os.Stderr, "dieg: note: the story before the revision does not compile ("+err.Error()+"); changed scenes are re-rendered in full, not patched")
+		} else {
+			old = make(map[string]render.Scene, len(prev))
+			for _, s := range prev {
+				old[s.ID] = s
+			}
+		}
 	}
 	res, err := write.ReviseLoop(ctx, m, writeChecker(o.Reserved), story, request, refs, o)
 	if err != nil {
@@ -103,7 +125,13 @@ func runRevise(request, styles string, limit int, o write.Opts) (int, error) {
 		summary(res, write.RerenderResult{}, nil)
 		return 1, err
 	}
-	rr, err := write.Rerender(ctx, cs, work, all, b, o.Out, o, limit)
+	o, closeDigest, err := withDigest(ctx, work, o)
+	if err != nil {
+		summary(res, write.RerenderResult{}, nil)
+		return 1, err
+	}
+	defer closeDigest()
+	rr, err := write.Rerender(ctx, cs, work, all, b, o.Out, o, limit, old)
 	if err != nil {
 		summary(res, rr, nil)
 		return 1, err

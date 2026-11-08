@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -16,7 +17,7 @@ import (
 func SceneHashes(scenes []render.Scene, b render.Backend) (map[string]string, error) {
 	m := map[string]string{}
 	for _, s := range scenes {
-		h, err := render.RenderHash(s, b)
+		h, err := genHash(s, b)
 		if err != nil {
 			return nil, fmt.Errorf("scene %s: %w", s.ID, err)
 		}
@@ -85,6 +86,13 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 	res := Result{Dir: storyDir}
 	var lastDiags, diags []Diag
 	wellFormed, checked := false, false
+	// Diagnostics the untouched story already has never block a revision (and are not asked to be fixed): only ones a
+	// revision adds do (see baseline). One extra check, no model call.
+	fresh, err := baseline(ctx, check, storyDir)
+	if err != nil {
+		return res, err
+	}
+	checked = true
 	defer func() { // an error after a check ran leaves PG on a rejected candidate: put it back on story/
 		if rerr != nil && checked {
 			check(ctx, storyDir)
@@ -141,15 +149,12 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 				return res, fmt.Errorf("round %d check: %w", r, err)
 			}
 			cur, lastDiags, wellFormed = next, res.Diags, true
-			res.Clean = true
-			for _, x := range res.Diags {
-				res.Clean = res.Clean && !x.Blocking()
-			}
+			res.Clean = len(fresh(res.Diags)) == 0
 		}
 		if res.Clean {
 			break
 		}
-		diags = blocking(res.Diags)
+		diags = fresh(res.Diags)
 	}
 	if res.Clean {
 		if err := swapDir(storyDir, cur); err != nil {
@@ -295,7 +300,45 @@ func RevisePrompt(request, bundle string, diags []Diag, r Refs, reserved []strin
 // RerenderResult: the scene ids whose render request changed / is new / is gone, and the re-render outcomes.
 type RerenderResult struct {
 	Changed, Added, Removed []string
+	StateStale              []string // subset of Changed: IR hash unchanged, only the PG state digest differs
+	Skipped                 []string // stale scenes left alone because of Opts.Skip
 	Scenes                  []SceneResult
+}
+
+// Stamp upgrades legacy .hash files (IR hash only) of rendered scenes to "<current IR hash> <state digest hash>", so a
+// baseline rendered before digests existed can be compared for state staleness, and stores each scene's state text next to
+// it (state.txt). No model call. A hash that is neither the current generation hash nor the legacy full RenderHash is not
+// this scene's: it is left alone and counted in skipped.
+func Stamp(ctx context.Context, all []render.Scene, b render.Backend, out string, o Opts) (stamped, skipped int, err error) {
+	for _, s := range all {
+		p := filepath.Join(out, "novel", fileID(s.ID)+"."+b.ID+".hash")
+		h, rerr := os.ReadFile(p)
+		f := strings.Fields(string(h))
+		if rerr != nil || len(f) != 1 {
+			continue
+		}
+		s.FreeDialogue = o.Skeleton
+		ir, err := genHash(s, b)
+		if err != nil {
+			return stamped, skipped, err
+		}
+		if full, _ := render.RenderHash(s, b); f[0] != ir && f[0] != full { // not this scene's hash: the prose is of some other request
+			skipped++
+			continue
+		}
+		_, state, err := sceneDigest(ctx, o, s.ID)
+		if err != nil {
+			return stamped, skipped, err
+		}
+		if err := writeState(strings.TrimSuffix(p, ".hash"), o, state); err != nil {
+			return stamped, skipped, err
+		}
+		if err := os.WriteFile(p, []byte(stamp(ir, o, digestHash(state))+"\n"), 0o644); err != nil {
+			return stamped, skipped, err
+		}
+		stamped++
+	}
+	return stamped, skipped, nil
 }
 
 // Rerender brings the prose in out/novel up to date with all (every shown scene of the story, discourse order):
@@ -303,8 +346,9 @@ type RerenderResult struct {
 // (Changed). Stale scenes are rendered (limit > 0 caps this run to the first limit; the rest stay stale and the next
 // run picks them up), prose files of scenes no longer in all are deleted (Removed), and novel.md is rebuilt.
 // A scene whose render call failed gets no hash, so it is retried; one that rendered but failed verification keeps
-// its hash (its report.json says so).
-func Rerender(ctx context.Context, cs render.Completers, work string, all []render.Scene, b render.Backend, out string, o Opts, limit int) (RerenderResult, error) {
+// its hash (its report.json says so). A Changed scene that has an entry in old (its pre-revision request) and prose on
+// disk is patched sentence by sentence (card verifier only) instead of re-rendered; old == nil renders everything in full.
+func Rerender(ctx context.Context, cs render.Completers, work string, all []render.Scene, b render.Backend, out string, o Opts, limit int, old map[string]render.Scene) (RerenderResult, error) {
 	cur := make([]render.Scene, len(all))
 	copy(cur, all)
 	live := map[string]bool{}
@@ -314,21 +358,56 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 	}
 	after := map[string]string{} // what Novel stores
 	for _, s := range cur {
-		h, err := render.RenderHash(s, b)
+		h, err := genHash(s, b)
 		if err != nil {
 			return RerenderResult{}, fmt.Errorf("scene %s: %w", s.ID, err)
 		}
 		after[s.ID] = h
 	}
 	dir := filepath.Join(out, "novel")
-	before := map[string]string{}
+	before, beforeDig := map[string]string{}, map[string]string{}
 	for _, s := range cur {
 		if h, err := os.ReadFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".hash")); err == nil {
-			before[s.ID] = strings.TrimSpace(string(h))
+			f := strings.Fields(string(h))
+			before[s.ID] = strings.Join(f[:min(1, len(f))], "")
+			if full, err := render.RenderHash(s, b); err == nil && before[s.ID] == full { // legacy hash (with Previously) of an unchanged scene
+				before[s.ID] = after[s.ID]
+			}
+			if len(f) > 1 { // a legacy single-hash file means "digest unknown": never stale because of it
+				beforeDig[s.ID] = f[1]
+			}
 		}
 	}
 	rr := RerenderResult{}
 	rr.Changed, rr.Added, _ = ChangedScenes(before, after)
+	if o.Digest != nil {
+		for _, s := range cur {
+			if old, ok := beforeDig[s.ID]; ok && !slices.Contains(rr.Changed, s.ID) {
+				_, st, err := sceneDigest(ctx, o, s.ID)
+				if err != nil {
+					return RerenderResult{}, fmt.Errorf("scene %s digest: %w", s.ID, err)
+				}
+				if digestHash(st) != old {
+					rr.Changed = append(rr.Changed, s.ID)
+					rr.StateStale = append(rr.StateStale, s.ID)
+				}
+			}
+		}
+		sort.Strings(rr.Changed)
+	}
+	if len(o.Skip) > 0 { // never render these (e.g. scenes the benchmark leaves out)
+		keep := func(ids []string) (k []string) {
+			for _, id := range ids {
+				if slices.Contains(o.Skip, id) {
+					rr.Skipped = append(rr.Skipped, id)
+				} else {
+					k = append(k, id)
+				}
+			}
+			return
+		}
+		rr.Changed, rr.Added = keep(rr.Changed), keep(rr.Added)
+	}
 	if ents, err := os.ReadDir(dir); err == nil {
 		for _, e := range ents {
 			id, ok := strings.CutSuffix(e.Name(), "."+b.ID+".md")
@@ -336,7 +415,7 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 				continue
 			}
 			rr.Removed = append(rr.Removed, id)
-			for _, ext := range []string{".md", ".report.json", ".hash"} {
+			for _, ext := range []string{".md", ".report.json", ".hash", ".state.txt"} {
 				if err := os.Remove(filepath.Join(dir, id+"."+b.ID+ext)); err != nil && !os.IsNotExist(err) {
 					return rr, err
 				}
@@ -347,10 +426,38 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 	if limit > 0 && limit < len(ss) {
 		ss = ss[:limit]
 	}
+	var rest []render.Scene
 	var err error
-	rr.Scenes, err = Novel(ctx, cs, work, ss, b, out, o)
+	for _, s := range ss {
+		o2, has := old[s.ID]
+		if has && o.Verifier == "card" && slices.Contains(rr.Changed, s.ID) && proseMatches(o2, o, b, before[s.ID]) {
+			oldDig := ""
+			if slices.Contains(rr.StateStale, s.ID) {
+				oldDig = beforeDig[s.ID] // state-only change: patch from the stored state text
+			}
+			sr, ok, perr := patchScene(ctx, cs, work, o2, s, b, out, o, oldDig)
+			if perr != nil {
+				return rr, perr
+			}
+			if ok {
+				rr.Scenes = append(rr.Scenes, sr)
+				continue
+			}
+		}
+		rest = append(rest, s)
+	}
+	nr, err := Novel(ctx, cs, work, rest, b, out, o)
+	rr.Scenes = append(rr.Scenes, nr...)
 	if err == nil {
 		err = Concat(out, cur, b.ID)
 	}
 	return rr, err
+}
+
+// genHash is the staleness hash of the generation path: the render request without its Previously recap (the fact
+// texts of the three scenes before it). Without this a one-scene edit would stale the next three scenes; a scene
+// is re-rendered when its own request changes. render.RenderHash (the corpus path) is untouched.
+func genHash(s render.Scene, b render.Backend) (string, error) {
+	s.Previously = ""
+	return render.RenderHash(s, b)
 }

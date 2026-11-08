@@ -82,7 +82,7 @@ func TestReviseDelete(t *testing.T) {
 func TestReviseUncleanLeavesStory(t *testing.T) {
 	dir, files := scene3(t)
 	f := &fakeLLM{replies: []string{"=== FILE: ep01/s2.dieg.md ===\nBROKEN\n" + End}}
-	chk, _ := checks([]Diag{{File: "ep01/s2.dieg.md", Severity: "error", Rule: "x", Msg: "bad"}})
+	chk, _ := checks(nil, []Diag{{File: "ep01/s2.dieg.md", Severity: "error", Rule: "x", Msg: "bad"}})
 	res, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 2, Out: filepath.Dir(dir)})
 	if err != nil || res.Clean || res.Rounds != 2 {
 		t.Fatalf("%+v %v", res, err)
@@ -135,7 +135,7 @@ func TestReviseRendersOnlyChanged(t *testing.T) {
 	seedNovel(t, out, b, s1, s2, mk("s3", ""))
 	rc := &fakeLLM{replies: []string{"산문"}}
 	xc := &fakeLLM{replies: []string{"{}"}}
-	rr, err := Rerender(ctx, render.Completers{Render: rc, Extract: xc}, "w", []render.Scene{s1, s2b, s4}, b, out, Opts{}, 0)
+	rr, err := Rerender(ctx, render.Completers{Render: rc, Extract: xc}, "w", []render.Scene{s1, s2b, s4}, b, out, Opts{}, 0, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +180,7 @@ func TestRerenderPicksUpBacklog(t *testing.T) {
 	now := []render.Scene{mk("s1", "X"), mk("s2", "X"), mk("s3", "X")}
 	run := func(limit int) RerenderResult {
 		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
-		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{}, limit)
+		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{}, limit, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -236,10 +236,13 @@ func TestReviseErrorReloadsStory(t *testing.T) {
 	var dirs []string
 	chk := func(_ context.Context, d string) ([]Diag, error) {
 		dirs = append(dirs, d)
+		if len(dirs) == 1 { // baseline: the untouched story is clean
+			return nil, nil
+		}
 		return []Diag{{Severity: "error", Rule: "x", Msg: "bad"}}, nil
 	}
 	_, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 3, Out: filepath.Dir(dir)})
-	if err == nil || len(dirs) != 2 || dirs[1] != dir {
+	if err == nil || len(dirs) != 3 || dirs[2] != dir {
 		t.Fatalf("err=%v checks=%v", err, dirs)
 	}
 	unchanged(t, dir, files)
@@ -337,7 +340,7 @@ func TestLayeredHashIsStale(t *testing.T) {
 	now := []render.Scene{mk("s1", ""), mk("s2", "")}
 	run := func() RerenderResult {
 		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
-		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{}, 0)
+		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{}, 0, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -358,5 +361,101 @@ func TestLayeredHashIsStale(t *testing.T) {
 	}
 	if rr := run(); len(rr.Changed) != 0 {
 		t.Fatalf("after re-render %+v", rr)
+	}
+}
+
+// A warn the untouched story already has does not block a revision and is not put into the fix prompt.
+func TestReviseIgnoresPreexistingWarn(t *testing.T) {
+	dir, _ := scene3(t)
+	old := Diag{File: "cast.dieg.md", Line: 3, Severity: "warn", Rule: "relative-time-fact", Msg: "old fact"}
+	moved := old
+	moved.Line = 9 // same warn, line moved by the edit
+	f := &fakeLLM{replies: []string{"=== FILE: ep01/s2.dieg.md ===\nNEW\n" + End}}
+	chk, _ := checks([]Diag{old}, []Diag{moved})
+	res, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 3, Out: filepath.Dir(dir)})
+	if err != nil || !res.Clean || res.Rounds != 1 || len(f.prompts) != 1 {
+		t.Fatalf("%+v %v prompts=%d", res, err, len(f.prompts))
+	}
+}
+
+// A warn the revision introduces still blocks and is asked to be fixed; the old one is not.
+func TestReviseBlocksOnNewWarn(t *testing.T) {
+	dir, _ := scene3(t)
+	old := Diag{File: "cast.dieg.md", Severity: "warn", Rule: "relative-time-fact", Msg: "old fact"}
+	nw := Diag{File: "ep01/s2.dieg.md", Severity: "warn", Rule: "retell-known", Msg: "brand new"}
+	f := &fakeLLM{replies: []string{"=== FILE: ep01/s2.dieg.md ===\nNEW\n" + End, "=== FILE: ep01/s2.dieg.md ===\nNEW2\n" + End}}
+	chk, _ := checks([]Diag{old}, []Diag{old, nw}, []Diag{old})
+	res, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 3, Out: filepath.Dir(dir)})
+	if err != nil || !res.Clean || res.Rounds != 2 {
+		t.Fatalf("%+v %v", res, err)
+	}
+	if !strings.Contains(f.prompts[1], "brand new") || strings.Contains(f.prompts[1], "old fact") {
+		t.Error("fix prompt should carry only the new warn")
+	}
+}
+
+// Only a change to a scene's own request stales it: a different Previously recap (an earlier scene's fact text) does not.
+func TestStaleIgnoresPreviously(t *testing.T) {
+	b, mk, out := rerenderFixture(t)
+	s1, s2 := mk("s1", ""), mk("s2", "")
+	s1.Previously, s2.Previously = "old recap", "old recap 2"
+	seedNovel(t, out, b, s1, s2)
+	run := func(a, c render.Scene) RerenderResult {
+		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
+		rr, err := Rerender(ctx, cs, "w", []render.Scene{a, c}, b, out, Opts{}, 0, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return rr
+	}
+	n1, n2 := s1, s2
+	n2.Previously = "a different recap"
+	if rr := run(n1, n2); len(rr.Changed)+len(rr.Added) != 0 {
+		t.Fatalf("recap-only change staled %+v", rr)
+	}
+	n2 = mk("s2", "-own change")
+	n2.Previously = s2.Previously
+	if rr := run(n1, n2); len(rr.Changed) != 1 || rr.Changed[0] != "s2" {
+		t.Fatalf("own change not stale: %+v", rr)
+	}
+}
+
+// A legacy .hash (full RenderHash, with Previously) of an unchanged scene is not stale.
+func TestLegacyFullHashNotStale(t *testing.T) {
+	b, mk, out := rerenderFixture(t)
+	s := mk("s1", "")
+	s.Previously = "recap"
+	seedNovel(t, out, b, s)
+	full, _ := render.RenderHash(s, b)
+	os.WriteFile(filepath.Join(out, "novel", "s1."+b.ID+".hash"), []byte(full+"\n"), 0o644)
+	cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
+	rr, err := Rerender(ctx, cs, "w", []render.Scene{s}, b, out, Opts{}, 0, nil)
+	if err != nil || len(rr.Changed)+len(rr.Added) != 0 {
+		t.Fatalf("%+v %v", rr, err)
+	}
+}
+
+// Inserting acts renumbers #aN and moves line:col; the same old warn must stay old.
+func TestReviseBaselineSurvivesRenumbering(t *testing.T) {
+	dir, _ := scene3(t)
+	old := Diag{File: "ep01/s2.dieg.md", Line: 4, Col: 3, Severity: "warn", Rule: "retell-known", Msg: "t.s/s2#a2 tells b p again (ep01/s2.dieg.md:4:3)"}
+	moved := Diag{File: "ep01/s2.dieg.md", Line: 9, Col: 3, Severity: "warn", Rule: "retell-known", Msg: "t.s/s2#a7 tells b p again (ep01/s2.dieg.md:9:3)"}
+	f := &fakeLLM{replies: []string{"=== FILE: ep01/s2.dieg.md ===\nNEW\n" + End}}
+	chk, _ := checks([]Diag{old}, []Diag{moved})
+	res, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 3, Out: filepath.Dir(dir)})
+	if err != nil || !res.Clean || res.Rounds != 1 {
+		t.Fatalf("%+v %v", res, err)
+	}
+}
+
+// One old warn does not hide a second identical one the revision adds.
+func TestReviseBaselineMultiset(t *testing.T) {
+	dir, _ := scene3(t)
+	w := Diag{File: "cast.dieg.md", Severity: "warn", Rule: "retell-known", Msg: "same #a1"}
+	f := &fakeLLM{replies: []string{"=== FILE: ep01/s2.dieg.md ===\nNEW\n" + End, "=== FILE: ep01/s2.dieg.md ===\nNEW2\n" + End}}
+	chk, _ := checks([]Diag{w}, []Diag{w, w}, []Diag{w})
+	res, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 3, Out: filepath.Dir(dir)})
+	if err != nil || !res.Clean || res.Rounds != 2 {
+		t.Fatalf("%+v %v", res, err)
 	}
 }

@@ -13,6 +13,7 @@ type Report struct {
 	ExtractError string   `json:"extract_error"`
 	Warnings     []string `json:"warnings,omitempty"`
 	Scores       *Scores  `json:"scores,omitempty"`
+	Patched      bool     `json:"patched,omitempty"` // final prose came from a sentence patch, not a full render
 }
 
 // VerbClass collapses synonyms; an unknown verb is its own class so it never silently matches.

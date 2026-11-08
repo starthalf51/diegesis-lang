@@ -1,0 +1,440 @@
+=== FILE: cast.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 등장인물과 선언
+
+```sl
+work yeoul "여울섬"
+  unit day
+  name ko "여울섬"
+
+character seoyun "Han Seoyun" major
+  name ko "한서윤"
+  attr seoyun.age = 29
+  believes haejin_sank
+  believes father_died
+  believes seoyun_came_home
+  doubts official_cause
+character malsun "Oh Malsun" major
+  name ko "오말순"
+  attr malsun.age = 78
+  believes tide_song
+character minjae "Kang Minjae" major
+  name ko "강민재"
+  attr minjae.age = 29
+  believes malsun_dementia
+  believes vote_scheduled
+  believes clinic_close
+  believes minjae_leaves
+  believes taeo_arrives
+character taeo "Yoon Taeo" major
+  name ko "윤태오"
+  attr taeo.age = 30
+  believes malsun_dementia
+  believes vote_scheduled
+  believes clinic_close
+  believes taeo_arrives
+character gyeongtae "Do Gyeongtae" major
+  name ko "도경태"
+  attr gyeongtae.age = 63
+  believes vote_scheduled
+  believes demolition
+  believes haejin_sank
+  believes light_out
+  believes yeongho_refused
+  believes lens_smashed
+  believes not official_cause
+  believes not hospital_alibi
+character haeun "Do Haeun" major
+  name ko "도하은"
+  attr haeun.age = 31
+character yeongho "Baek Yeongho" major
+  name ko "백영호"
+  attr yeongho.age = 70
+  believes light_out
+  believes yeongho_refused
+  believes lens_smashed
+  believes ledger_record
+character jihwan "Ryu Jihwan" minor
+  name ko "류지환"
+  attr jihwan.age = 35
+  believes vote_scheduled
+  believes demolition
+  believes jihwan_stays
+character gicheol "Moon Gicheol" minor
+  name ko "문기철"
+  attr gicheol.age = 58
+  believes haejin_sank
+character sua "Jeong Sua" minor
+  name ko "정수아"
+  attr sua.age = 13
+  believes sua_collects
+
+parent seoyun of malsun
+
+place dock "the dock"
+  name ko "여울섬 선착장"
+place malsun_house "Malsun's house"
+  name ko "오말순의 집"
+place lighthouse "the lighthouse"
+  name ko "여울섬 등대"
+place ruin "the abandoned house"
+  name ko "섬 끝 폐가"
+place clinic "the health clinic"
+  name ko "보건지소"
+place school "the branch school"
+  name ko "여울분교"
+place minbak "Gicheol's guesthouse"
+  name ko "문기철의 민박집"
+
+thing vote_notice "the vote notice"
+  name ko "주민 투표 공고문"
+  attr vote_notice.at = dock
+thing tin_box "a rusty tin box"
+  name ko "녹슨 양철 상자"
+  attr tin_box.at = malsun_house
+thing ledger_page "the torn ledger page"
+  name ko "찢긴 등대 근무 장부 쪽"
+thing glass_shard "a thick glass shard"
+  name ko "두꺼운 유리 조각"
+thing stair_nail "the new nail"
+  name ko "열세 번째 계단의 새 못"
+  attr stair_nail.at = lighthouse
+
+fact vote_scheduled "섬 전체를 리조트 개발사에 팔지 정하는 주민 투표 날짜가 잡혀 있다" true
+fact demolition "투표가 가결되면 등대와 폐가를 포함한 섬 건물은 곧바로 철거된다" true
+fact clinic_close "투표가 가결되면 보건지소도 문을 닫는다" true
+fact jihwan_stays "개발사 현장 책임자 류지환은 투표가 끝날 때까지 섬에 머문다" true
+fact haejin_sank "삼십 년 전 여객선 해진호가 여울섬 앞바다에서 침몰해 열한 명이 죽었다" true
+fact father_died "서윤의 아버지는 해진호 사고로 죽었다" true
+fact seoyun_came_home "서윤은 치매 초기인 외할머니를 돌보려고 서울에서 섬으로 돌아왔다" true
+fact malsun_dementia "오말순은 치매 초기라 옛일과 오늘 일을 자주 뒤섞는다" true
+fact sua_collects "정수아는 바닷가에서 물건을 주워 모은다" true
+fact tide_song "옛 노래에 '열한 물때에 불이 잔다'라는 구절이 있다" true
+fact official_cause "해진호 사고는 기상 악화로 인한 단순 사고였다" false
+fact hospital_alibi "사고 날 밤 도경태는 육지 병원에 입원해 있었다" false
+fact light_out "해진호가 침몰한 밤 등대 불은 두 시간 동안 꺼져 있었다" true
+fact yeongho_refused "그 밤 도경태는 백영호에게 등대 불을 끄라고 시켰지만 백영호는 끝내 거절했다" true
+fact lens_smashed "도경태가 등대 불을 끄고 내려간 뒤 혼자 남은 백영호가 불을 다시 켜려다 어둠 속에서 램프에 부딪혀 렌즈를 깨뜨렸고, 그 탓에 등대 불은 끝내 다시 켜지지 않았다" true
+fact ledger_record "등대 불이 꺼진 일은 근무 장부에 적혔고 그 쪽은 찢겨 사라졌다" true
+fact malsun_keeps "오말순은 찢긴 장부 쪽을 삼십 년 동안 보관해 왔다" true
+fact minjae_leaves "강민재는 근무 기간이 끝나 오늘 마지막 배로 섬을 떠나 육지로 돌아간다" true
+fact taeo_arrives "강민재 대신 윤태오가 보건지소에 새로 부임해 서윤을 돕게 된다" true
+```
+=== FILE: ep02/s5.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: s5
+location: malsun_house
+when: after s4 by 1h..8h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 30m..60m
+enter seoyun, malsun
+malsun says seoyun: hospital_alibi
+seoyun sees tin_box
+seoyun asks malsun
+malsun says seoyun: box_off_limits
+malsun says seoyun: sank_eleventh_tide
+setup tide_night hint: sank_eleventh_tide
+seoyun thinks: tide_song
+seoyun thinks: malsun_dementia
+seoyun does tuck_in_grandmother
+exit all
+```
+=== FILE: ep03/cast.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 3화 추가 선언
+
+```sl
+fact shard_found "정수아는 등대 아래 바위틈에서 두꺼운 유리 조각을 주웠다" true
+fact shard_many "그 바위틈에는 비슷한 유리 조각이 여럿 박혀 있었다" true
+fact shard_curved "유리 조각은 한쪽이 둥글게 휘어 있고 가장자리에 가는 홈이 층층이 패어 있다" true
+fact sua_keeps "정수아는 그 유리 조각을 자기 보물 상자에 넣어 둘 생각이다" true
+fact seoyun_wonders "서윤은 옛 노래의 '불'이 등대 불을 가리키는지 궁금해한다" true
+fact demolition_schedule "투표가 가결되면 철거는 등대부터 시작된다" true
+fact minbak_included "문기철의 민박집도 철거 목록에 들어 있다" true
+fact lighthouse_useless "등대는 오래전부터 불을 켜지 않는 빈 건물일 뿐이다" true
+fact yeongho_pale "등대 이야기가 나오자 백영호의 얼굴이 굳는다" true
+fact song_matches "옛 노래의 '열한 물때'는 해진호가 가라앉은 밤의 물때와 같다" true
+fact lens_broken "해진호가 가라앉은 뒤로 등대 렌즈 한 귀퉁이가 깨져 있었다" true
+fact box_question "서윤은 양철 상자 안에 그 밤과 관련된 무언가가 있으리라 짐작한다" true
+
+sua believes shard_found
+sua believes shard_many
+sua believes sua_keeps
+jihwan believes demolition_schedule
+jihwan believes minbak_included
+jihwan believes clinic_close
+gyeongtae believes lighthouse_useless
+malsun believes lens_broken
+```
+=== FILE: ep04/s11.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s11"
+location: lighthouse
+when: after s10 by 0m..10m
+pov: seoyun close
+render: {pace: slow, tension: 0.6}
+mode: authored
+---
+
+```sl
+lasts 10m..30m
+enter seoyun, taeo
+seoyun sees lens_chipped
+seoyun says taeo: lens_chipped
+seoyun sees lens_grooves
+seoyun believes shard_matches
+seoyun thinks: shard_matches
+payoff yeoul.scenes/shard_clue
+taeo sees lens_grooves
+seoyun thinks: nail_odd
+exit seoyun, taeo
+```
+=== FILE: ep06/s17.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: s17
+location: malsun_house
+when: after s16 by 1h..6h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 30m..1h
+enter seoyun, malsun
+seoyun sees tin_box
+malsun says seoyun: box_off_limits
+seoyun asks malsun
+malsun says seoyun: malsun_yeongho_silent
+seoyun sees malsun_glance
+seoyun thinks: box_question
+seoyun thinks: yeongho_nailed
+exit seoyun, malsun
+```
+=== FILE: ep08/cast.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 8화 추가 선언
+
+```sl
+fact ledger_entry "찢긴 장부 쪽에는 해진호가 가라앉은 밤 '소등 지시 거부함. 도경태가 직접 등을 끔. 렌즈 깨짐'이라는 글씨와 백영호의 근무 서명이 적혀 있다" true
+fact seoyun_suspects "서윤은 그 밤 등대 불을 끄게 만든 사람이 도경태라고 의심한다" true
+fact seoyun_links "서윤은 등대 아래 유리 조각과 깨진 렌즈 귀퉁이, 도경태 손의 베인 상처가 모두 그 한밤에 생긴 것이라고 짐작한다" true
+fact seoyun_probe_plan "서윤은 날이 밝으면 도경태를 직접 떠보기로 한다" true
+fact scar_from_net "도경태의 손바닥 흉터는 젊을 적 그물을 걷다 베인 것이다" false
+fact jihwan_offer "개발사는 투표가 가결되면 오말순을 육지의 좋은 요양병원에 모시는 비용을 모두 대겠다고 한다" true
+fact jihwan_asks_quiet "류지환은 서윤에게 투표가 끝날 때까지만 지난 일을 들추지 말아 달라고 청한다" true
+fact jihwan_knows "서윤은 류지환이 도경태에게서 자기 이야기를 전해 들었다고 짐작한다" true
+fact demolition_rush "도경태는 개발사에 투표가 가결되면 등대부터 하루라도 빨리 허물어 달라고 재촉한다" true
+fact gyeongtae_share "투표가 가결되면 도경태는 개발사에서 이장 몫으로 따로 큰돈을 받기로 되어 있다" true
+fact lighthouse_buries "도경태는 등대만 사라지면 삼십 년 전 그 밤 일은 영영 묻힌다고 말한다" true
+fact haeun_shaken "하은은 아버지가 등대를 서둘러 허물려는 까닭이 돈만이 아닐지도 모른다고 느낀다" true
+fact haeun_heard_nothing "하은은 방금 막 들어와 아무 말도 듣지 못했다" false
+
+malsun believes malsun_keeps
+gyeongtae believes not scar_from_net
+gyeongtae believes demolition_rush
+gyeongtae believes gyeongtae_share
+gyeongtae believes lighthouse_buries
+jihwan believes jihwan_offer
+jihwan believes jihwan_asks_quiet
+haeun believes not haeun_heard_nothing
+```
+=== FILE: ep08/s21.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: s21
+location: malsun_house
+when: after s20 by 0m..4h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 20m..50m
+enter seoyun, malsun
+seoyun sees malsun
+seoyun does take_down_box
+seoyun does open_box
+seoyun sees ledger_page, ledger_entry
+payoff yeoul.scenes/box_hint
+seoyun believes light_out
+malsun says seoyun: malsun_keeps
+seoyun believes seoyun_links
+seoyun thinks: seoyun_links
+seoyun believes seoyun_suspects
+seoyun thinks: seoyun_suspects
+seoyun believes seoyun_probe_plan
+seoyun thinks: seoyun_probe_plan
+exit malsun, seoyun
+```
+=== FILE: ep09/cast.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 9화 추가 선언
+
+```sl
+fact confront_plan "서윤과 해솔은 맞춰 본 유리 조각을 들고 백영호를 다시 찾아가기로 한다" true
+fact yeongho_lied_before "백영호는 지난번에 불이 한 번도 꺼지지 않았다고 서윤에게 거짓말을 했다" true
+fact fragments_hidden "백영호는 그 밤 등실에 흩어진 렌즈 파편을 쓸어 담아 열세 번째 계단 판자 밑에 숨겼고, 철거 소식을 듣고 그 판자에 새 못을 박아 다시 막았다" true
+fact fragments_found "열세 번째 계단 판자 밑에서 검붉은 얼룩이 밴 천에 싸인 렌즈 파편 꾸러미가 나온다" true
+fact seoyun_blood_guess "서윤은 천에 밴 얼룩이 그 밤 등대 불을 끄다 손을 벤 도경태의 피라고 생각한다" true
+fact keep_evidence "해솔은 파편 꾸러미를 출장소로 옮겨 진료부와 함께 보관하기로 한다" true
+fact reveal_plan "서윤은 투표 전에 마을 사람들 앞에서 그 밤 일을 밝히기로 마음먹는다" true
+
+yeongho believes yeongho_lied_before
+yeongho believes fragments_hidden
+```
+=== FILE: ep09/s24.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s24"
+location: lighthouse
+when: after s23
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 30m..60m
+enter seoyun, haesol, sua
+sua shows glass_shard to haesol
+sua says haesol: shard_found
+haesol does fit_shard glass_shard
+haesol sees lens_chipped, shard_matches
+seoyun sees shard_matches
+haesol says seoyun: shard_matches
+seoyun thinks: seoyun_links
+seoyun believes confront_plan
+seoyun says haesol: confront_plan
+exit sua
+exit seoyun, haesol
+```
+=== FILE: ep09/s25.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s25"
+location: ruin
+when: after s24
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.9
+mode: authored
+---
+
+```sl
+lasts 30m..60m
+enter seoyun, haesol, yeongho
+seoyun shows glass_shard to yeongho
+haesol says yeongho: shard_matches
+yeongho says seoyun: yeongho_lied_before
+yeongho says seoyun: light_out
+seoyun believes light_out
+yeongho says seoyun: yeongho_refused
+yeongho says seoyun: lens_smashed
+yeongho says seoyun, haesol: fragments_hidden
+exit seoyun, haesol
+exit yeongho
+```
+=== FILE: ep10/cast.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 10화 추가 선언
+
+```sl
+fact gyeongtae_came_secretly "그날 밤 도경태는 육지 병원에 있지 않고 몰래 배를 타고 섬에 들어와 있었다" true
+fact quarrel_in_lighthouse "그 밤 등실에서 백영호와 도경태는 불을 끄느냐 마느냐를 두고 멱살을 잡고 다투었다" true
+fact gyeongtae_doused "다투던 끝에 도경태가 백영호를 밀쳐 내고 직접 램프 불을 끄다가 램프 덮개 쇠테에 오른손을 깊게 베었다" true
+fact gyeongtae_threat "도경태는 렌즈를 깨뜨려 불을 꺼뜨린 것이 등대지기라며 모든 잘못을 백영호에게 뒤집어씌우겠다고 을러 입을 막았다" true
+fact light_died_tide "등대 불이 죽은 것은 열한 물때 들물이 막 돌던 시각이었다" true
+fact yeongho_testify "백영호는 투표 전 마을 회의에서 그 밤 일을 증언하겠다고 한다" true
+fact statement_taken "해솔은 백영호의 진술을 받아 적어 진료부, 파편 꾸러미와 함께 출장소에 보관하기로 한다" true
+fact malsun_saw_dark "그 밤 오말순은 집 창으로 등대 불이 꺼지는 것을 보았다" true
+fact song_is_clock "옛 노래의 '열한 물때에 불이 잔다'는 그 밤 등대 불이 죽은 시각을 가리킨다" true
+
+artifact yeongho_statement "Baek Yeongho's statement"
+  name ko "백영호 진술서"
+  contains gyeongtae_came_secretly, quarrel_in_lighthouse, gyeongtae_doused, lens_smashed, light_died_tide
+
+yeongho believes gyeongtae_came_secretly
+yeongho believes quarrel_in_lighthouse
+yeongho believes gyeongtae_doused
+yeongho believes gyeongtae_threat
+yeongho believes light_died_tide
+yeongho believes yeongho_testify
+haesol believes statement_taken
+malsun believes malsun_saw_dark
+malsun believes song_is_clock
+```
+=== FILE: ep10/s27.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: s27
+location: ruin
+when: after s26 by 0h..3h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.85
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, haesol, yeongho
+mention gyeongtae
+seoyun says yeongho: fragments_found
+haesol shows glass_shard
+yeongho says seoyun, haesol: gyeongtae_came_secretly
+yeongho says seoyun, haesol: quarrel_in_lighthouse
+yeongho says seoyun, haesol: gyeongtae_doused
+seoyun believes gyeongtae_came_secretly
+haesol believes not hospital_alibi
+haesol believes not official_cause
+seoyun thinks: seoyun_links
+exit seoyun, haesol, yeongho
+```
+=== END ===

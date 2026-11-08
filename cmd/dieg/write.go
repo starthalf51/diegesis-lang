@@ -147,7 +147,12 @@ type counter struct {
 }
 
 func (k *counter) Complete(ctx context.Context, system, user string) (render.Result, error) {
-	k.n.Add(1)
+	// DIEG_CALL_CAP=N: a hard stop for benchmark drivers; call N+1 and later fail before reaching the model.
+	n, c := k.n.Add(1), int64(0) // add first, then check: concurrent callers cannot both pass the last slot
+	if c, _ = strconv.ParseInt(os.Getenv("DIEG_CALL_CAP"), 10, 64); c > 0 && n > c {
+		k.n.Add(-1)
+		return render.Result{}, fmt.Errorf("DIEG_CALL_CAP=%d reached", c)
+	}
 	return k.c.Complete(ctx, system, user)
 }
 
@@ -195,6 +200,8 @@ func cmdWrite(args []string) int {
 func commonFlag(args []string, i int, o *write.Opts, styles *string, limit *int) (int, bool, int) {
 	a := args[i]
 	switch {
+	case a == "--no-digest":
+		o.NoDigest = true
 	case a == "--no-render":
 		o.Render = false
 	case a == "--skeleton" || a == "--skeleton=true" || a == "--skeleton=false":
@@ -303,6 +310,12 @@ func runWrite(idea, styles string, limit int, o write.Opts, force bool) (int, er
 	if limit > 0 && limit < len(ss) {
 		ss = ss[:limit]
 	}
+	o, closeDigest, err := withDigest(ctx, work, o)
+	if err != nil {
+		summary(res, 0, nil)
+		return 1, err
+	}
+	defer closeDigest()
 	return renderAll(ctx, cs, work, ss, b, o, res, summary, nil)
 }
 
@@ -368,4 +381,17 @@ func notUnderCorpus(out string) error {
 		return fmt.Errorf("-o %q is under the corpus directory; pick another output dir", out)
 	}
 	return nil
+}
+
+// withDigest wires o.Digest to a PG pool (pg.Digest for work) unless --no-digest; the returned func closes the pool.
+func withDigest(ctx context.Context, work string, o write.Opts) (write.Opts, func(), error) {
+	if o.NoDigest {
+		return o, func() {}, nil
+	}
+	pool, err := pg.Connect(ctx)
+	if err != nil {
+		return o, nil, err
+	}
+	o.Digest = func(ctx context.Context, sceneID string) (string, string, error) { return pg.Digest(ctx, pool, work, sceneID) }
+	return o, pool.Close, nil
 }

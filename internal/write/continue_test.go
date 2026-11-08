@@ -42,9 +42,9 @@ func TestContinueRejectsPastEdits(t *testing.T) {
 		"=== FILE: ep03/s2.dieg.md ===\n# wrong episode\n" + End,
 	}}
 	chk, n := checks(nil)
-	o := Opts{Rounds: 3, Out: filepath.Dir(dir), Digest: "DIGEST"}
+	o := Opts{Rounds: 3, Out: filepath.Dir(dir), Recap: "DIGEST"}
 	res, err := ContinueLoop(ctx, f, chk, dir, 2, "brief", testRefs(t), o)
-	if err != nil || res.Clean || res.Rounds != 3 || *n != 0 {
+	if err != nil || res.Clean || res.Rounds != 3 || *n != 1 { // 1 = the baseline check
 		t.Fatalf("%+v %v checks=%d", res, err, *n)
 	}
 	for i, p := range []string{"ep01/s1.dieg.md", "cast.dieg.md", "ep03/s2.dieg.md"} {
@@ -70,14 +70,14 @@ func TestContinueOnlyNewScenesRendered(t *testing.T) {
 		_, e1 := os.Stat(filepath.Join(d, "ep01", "s1.dieg.md"))
 		_, e2 := os.Stat(filepath.Join(d, "ep02", "s2.dieg.md"))
 		seen = append(seen, e1 == nil && e2 == nil)
-		if len(seen) == 1 {
+		if len(seen) == 2 { // seen[0] is the baseline check
 			return []Diag{{File: "ep02/s2.dieg.md", Line: 1, Severity: "error", Rule: "x", Msg: "bad"}}, nil
 		}
 		return nil, nil
 	}
-	o := Opts{Rounds: 3, Out: filepath.Dir(dir), Digest: "DIGEST-MARK"}
+	o := Opts{Rounds: 3, Out: filepath.Dir(dir), Recap: "DIGEST-MARK"}
 	res, err := ContinueLoop(ctx, f, chk, dir, 2, "서진이 종탑에 오른다", testRefs(t), o)
-	if err != nil || !res.Clean || res.Rounds != 2 || !slices.Equal(seen, []bool{true, true}) {
+	if err != nil || !res.Clean || res.Rounds != 2 || !slices.Equal(seen, []bool{false, true, true}) {
 		t.Fatalf("%+v %v seen=%v", res, err, seen)
 	}
 	p := f.prompts[0]
@@ -125,5 +125,29 @@ func TestCapDigest(t *testing.T) {
 func TestDefaultRenderEffortLow(t *testing.T) {
 	if e := DefaultOpts().RenderEffort; e != "low" {
 		t.Errorf("RenderEffort %q, want low", e)
+	}
+}
+
+// A warn the story already had before the new episode does not block it; a new one does.
+func TestContinueIgnoresPreexistingWarn(t *testing.T) {
+	dir, _ := story(t)
+	ep := "=== FILE: ep02/s2.dieg.md ===\n---\nmodule: t.scenes\nimport: [t.cast]\nscene: \"s2\"\n---\n\n```sl\nenter a\n```\n" + End
+	old := Diag{File: "cast.dieg.md", Line: 3, Severity: "warn", Rule: "relative-time-fact", Msg: "old fact"}
+	nw := Diag{File: "ep02/s2.dieg.md", Severity: "warn", Rule: "retell-known", Msg: "brand new"}
+	f := &fakeLLM{replies: []string{ep}}
+	chk, _ := checks([]Diag{old}, []Diag{old})
+	res, err := ContinueLoop(ctx, f, chk, dir, 2, "b", testRefs(t), Opts{Rounds: 3, Out: filepath.Dir(dir)})
+	if err != nil || !res.Clean || res.Rounds != 1 {
+		t.Fatalf("pre-existing warn blocked: %+v %v", res, err)
+	}
+	dir, _ = story(t)
+	f = &fakeLLM{replies: []string{ep, ep}}
+	chk, _ = checks([]Diag{old}, []Diag{old, nw}, []Diag{old})
+	res, err = ContinueLoop(ctx, f, chk, dir, 2, "b", testRefs(t), Opts{Rounds: 3, Out: filepath.Dir(dir)})
+	if err != nil || !res.Clean || res.Rounds != 2 {
+		t.Fatalf("new warn: %+v %v", res, err)
+	}
+	if !strings.Contains(f.prompts[1], "brand new") || strings.Contains(f.prompts[1], "old fact") {
+		t.Error("fix prompt should carry only the new warn")
 	}
 }
