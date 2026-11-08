@@ -471,7 +471,7 @@ func writeMetrics(t *tracker, j *judgeOutcome) error {
 	}
 	b, err := json.MarshalIndent(map[string]any{
 		"episodes": c.eps, "cut_at_episode": t.cut, "stopped_by": stop, "scenes_per_episode": perEp, "rev_after": included,
-		"judge_status": status, "length_target": lengthLine, "chars_per_episode": chars, "b_missing_scenes": t.bMissing(),
+		"judge_status": status, "length_target": lengthLine, "chars_per_episode": chars, "b_missing_scenes": t.bMissing(), "b_coded_unrendered_scenes": t.bUnrendered(),
 		"plan_uncharged": c.sum(t.totals("plan")), "A": t.atCut("A"), "B": t.atCut("B"), "A_total_including_cut_work": c.sum(t.totals("a")), "B_total_including_cut_work": c.sum(t.totals("b")), "judge": c.sum(t.totals("judge")),
 		"revisions": revs,
 	}, "", "  ")

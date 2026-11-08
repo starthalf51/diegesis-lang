@@ -111,3 +111,23 @@ func (t *tracker) bMissing() map[string]int {
 	}
 	return m
 }
+
+// bUnrendered lists scenes dieg coded (b/story/ep*/<id>.dieg.md) that have no rendered b/novel/<id>.*.md: the
+// --scenes cap leaves a backlog that bMissing (which counts per harness episode) cannot see.
+func (t *tracker) bUnrendered() []string {
+	coded, _ := filepath.Glob(filepath.Join(t.c.out, "b", "story", "ep*", "s*.dieg.md"))
+	out := []string{}
+	for _, f := range coded {
+		id := strings.TrimSuffix(filepath.Base(f), ".dieg.md")
+		if m, _ := filepath.Glob(filepath.Join(t.c.out, "b", "novel", id+".*.md")); len(m) == 0 {
+			out = append(out, id)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { // s9 before s10
+		if len(out[i]) != len(out[j]) {
+			return len(out[i]) < len(out[j])
+		}
+		return out[i] < out[j]
+	})
+	return out
+}

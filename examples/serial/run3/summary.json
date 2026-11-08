@@ -153,5 +153,11 @@
     }
   ],
   "scenes_per_episode": 2,
-  "stopped_by": ""
+  "stopped_by": "",
+  "b_coded_unrendered_scenes": [
+    "s32",
+    "s33",
+    "s34",
+    "s35"
+  ]
 }
