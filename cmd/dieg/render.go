@@ -59,12 +59,20 @@ func backend(dir, id string) (render.Backend, error) {
 func cmdRender(args []string) int {
 	var pos []string
 	id, out, styles, verify, retries := "", "", "styles", false, 2
+	verifier, verifierSet := "card", false
 	dw := write.DefaultOpts()
-	rm, xm := dw.RenderModel, dw.ExtractModel
+	rm, xm, re := dw.RenderModel, dw.ExtractModel, dw.RenderEffort
 	for i := 0; i < len(args); i++ {
 		switch a := args[i]; {
 		case a == "--verify":
 			verify = true
+		case a == "--verifier" && i+1 < len(args):
+			i++
+			verifierSet = true
+			if verifier = args[i]; verifier != "card" && verifier != "open" {
+				fmt.Fprintf(os.Stderr, "dieg: --verifier %q: want card or open\n", verifier)
+				return 2
+			}
 		case (a == "--render-model" || a == "--extract-model") && i+1 < len(args):
 			i++
 			if err := render.ValidModel(args[i]); err != nil {
@@ -72,6 +80,12 @@ func cmdRender(args []string) int {
 				return 2
 			}
 			*map[string]*string{"--render-model": &rm, "--extract-model": &xm}[a] = args[i]
+		case a == "--render-effort" && i+1 < len(args):
+			i++
+			if re = args[i]; re != "low" && re != "medium" && re != "high" {
+				fmt.Fprintf(os.Stderr, "dieg: --render-effort %q: want low, medium or high\n", re)
+				return 2
+			}
 		case a == "--retries" && i+1 < len(args):
 			i++
 			n, err := strconv.Atoi(args[i])
@@ -91,7 +105,11 @@ func cmdRender(args []string) int {
 	if len(pos) != 2 || id == "" {
 		return usage()
 	}
-	pass, err := renderOnce(pos[0], pos[1], id, out, styles, verify, retries, rm, xm)
+	if verifierSet && !verify {
+		fmt.Fprintln(os.Stderr, "dieg: --verifier needs --verify")
+		return 2
+	}
+	pass, err := renderOnce(pos[0], pos[1], id, out, styles, verify, retries, rm, xm, re, verifier)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
@@ -103,7 +121,7 @@ func cmdRender(args []string) int {
 }
 
 // renderOnce 는 pass=false 여도 산문은 쓴다(--verify 가 상한까지 가도 통과 못 한 경우).
-func renderOnce(target, scene, id, out, styles string, verify bool, retries int, rm, xm string) (bool, error) {
+func renderOnce(target, scene, id, out, styles string, verify bool, retries int, rm, xm, re, verifier string) (bool, error) {
 	b, err := backend(styles, id)
 	if err != nil {
 		return false, err
@@ -115,13 +133,17 @@ func renderOnce(target, scene, id, out, styles string, verify bool, retries int,
 	var text string
 	pass := true
 	if verify {
-		r, n, err := render.RenderVerified2(context.Background(), render.Completers{Render: render.NewClaudeCLIWith(rm, "medium"), Extract: render.NewClaudeCLIWith(xm, "low")}, target, s, b, render.VerifyOpts{K: 1, Retries: retries})
+		r, n, err := render.RenderVerified2(context.Background(), render.Completers{Render: render.NewClaudeCLIWith(rm, re), Extract: render.NewClaudeCLIWith(xm, "low")}, target, s, b, render.VerifyOpts{K: 1, Retries: retries, Verifier: verifier})
 		if err != nil {
 			return false, err
 		}
 		pass = render.Passed(r)
-		fmt.Fprintf(os.Stderr, "verify: attempts=%d missing=%d halluc=%d leaked=%d pass=%t\n", n,
-			len(r.Report.Missing), len(r.Report.Hallucinated), len(r.Report.Leaked), pass)
+		g2 := fmt.Sprintf("halluc=%d", len(r.Report.Hallucinated))
+		if verifier == "card" {
+			g2 = fmt.Sprintf("warnings=%d", len(r.Report.Warnings))
+		}
+		fmt.Fprintf(os.Stderr, "verify: attempts=%d missing=%d %s leaked=%d pass=%t\n", n,
+			len(r.Report.Missing), g2, len(r.Report.Leaked), pass)
 		if r.Report.ExtractError != "" {
 			fmt.Fprintln(os.Stderr, "verify:", r.Report.ExtractError)
 		}
@@ -131,7 +153,7 @@ func renderOnce(target, scene, id, out, styles string, verify bool, retries int,
 		if err != nil {
 			return false, err
 		}
-		res, err := render.NewClaudeCLI().Complete(context.Background(), sys, user)
+		res, err := render.NewClaudeCLIWith(rm, re).Complete(context.Background(), sys, user)
 		if err != nil {
 			return false, err
 		}

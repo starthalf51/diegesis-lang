@@ -1,0 +1,36 @@
+{
+  "Mode": "single",
+  "Pair": "chibi/45.88.en-doyle",
+  "Work": "chibi",
+  "Scene": "45.88",
+  "Backend": "en-doyle",
+  "Beats": 10,
+  "Acts": 24,
+  "Passed": false,
+  "Calls": 6,
+  "RenderCalls": 3,
+  "ExtractCalls": 3,
+  "RenderUsage": {
+    "input": 6,
+    "output": 13444,
+    "cache_read": 5580,
+    "cache_write": 5593
+  },
+  "ExtractUsage": {
+    "input": 6,
+    "output": 1817,
+    "cache_read": 2517,
+    "cache_write": 6276
+  },
+  "Attempts": 3,
+  "Chars": 2952,
+  "Missing": [
+    "jiang_gan|read|commanders_traitors",
+    "wu_officers|assert|commanders_traitors",
+    "zhou_yu|assert|jiang_gan_envoy"
+  ],
+  "Hallucinated": [
+    "Chiang Kan takes the letter from Chang Yün and Tsʻai Mao and hides it in his robe."
+  ],
+  "Leaked": []
+}

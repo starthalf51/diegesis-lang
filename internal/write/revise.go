@@ -300,7 +300,7 @@ type RerenderResult struct {
 
 // Rerender brings the prose in out/novel up to date with all (every shown scene of the story, discourse order):
 // a scene is stale when its stored <scene>.<backend>.hash is missing (Added) or differs from its current RenderHash
-// (Changed; the hash includes the renderer mode). Stale scenes are rendered (limit > 0 caps this run to the first limit; the rest stay stale and the next
+// (Changed). Stale scenes are rendered (limit > 0 caps this run to the first limit; the rest stay stale and the next
 // run picks them up), prose files of scenes no longer in all are deleted (Removed), and novel.md is rebuilt.
 // A scene whose render call failed gets no hash, so it is retried; one that rendered but failed verification keeps
 // its hash (its report.json says so).
@@ -312,9 +312,9 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 		cur[i].FreeDialogue = o.Skeleton // Novel renders (and hashes) with this
 		live[fileID(cur[i].ID)] = true
 	}
-	after := map[string]string{} // what Novel stores: the hash carries the renderer mode
+	after := map[string]string{} // what Novel stores
 	for _, s := range cur {
-		h, err := sceneHash(s, b, o.Renderer)
+		h, err := render.RenderHash(s, b)
 		if err != nil {
 			return RerenderResult{}, fmt.Errorf("scene %s: %w", s.ID, err)
 		}

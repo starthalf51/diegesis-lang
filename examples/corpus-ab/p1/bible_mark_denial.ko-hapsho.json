@@ -1,0 +1,32 @@
+{
+  "Mode": "single",
+  "Pair": "bible/mark_denial.ko-hapsho",
+  "Work": "bible",
+  "Scene": "mark_denial",
+  "Backend": "ko-hapsho",
+  "Beats": 4,
+  "Acts": 10,
+  "Passed": false,
+  "Calls": 6,
+  "RenderCalls": 3,
+  "ExtractCalls": 3,
+  "RenderUsage": {
+    "input": 6,
+    "output": 11576,
+    "cache_read": 3306,
+    "cache_write": 5423
+  },
+  "ExtractUsage": {
+    "input": 6,
+    "output": 1638,
+    "cache_read": 2517,
+    "cache_write": 4206
+  },
+  "Attempts": 3,
+  "Chars": 455,
+  "Missing": [],
+  "Hallucinated": [
+    "extra-act:peter|assert|not peter_knows_jesus"
+  ],
+  "Leaked": []
+}

@@ -1,0 +1,21 @@
+{
+  "Pair": "chibi/45.88.ko-haera",
+  "Calls": 3,
+  "PassedBefore": false,
+  "PassedAfter": true,
+  "BeforeMissing": [
+    "wu_officers|assert|commanders_traitors",
+    "zhou_yu|assert|jiang_gan_envoy"
+  ],
+  "BeforeHall": [
+    "장간이 편지를 몰래 소매 속에 감추었다."
+  ],
+  "BeforeLeak": [],
+  "AfterMissing": [
+    "zhou_yu|assert|jiang_gan_envoy"
+  ],
+  "AfterHall": [],
+  "AfterLeak": [],
+  "CharsBefore": 922,
+  "CharsAfter": 922
+}

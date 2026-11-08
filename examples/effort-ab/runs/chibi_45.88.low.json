@@ -1,0 +1,18 @@
+{
+  "Scene": "chibi/45.88",
+  "Effort": "low",
+  "Done": true,
+  "Pass": true,
+  "Attempts": 1,
+  "Score": 1,
+  "S1": 1,
+  "S2": 1,
+  "S3": 1,
+  "RenderCalls": 1,
+  "CardCalls": 1,
+  "RenderOut": 6118,
+  "RenderOutPerCall": 6118,
+  "Weighted": 124650,
+  "Missing": [],
+  "Leaked": []
+}

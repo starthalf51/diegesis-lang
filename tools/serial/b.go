@@ -11,6 +11,9 @@ import (
 	"time"
 )
 
+// withEffort adds run3's render effort (the card verifier is dieg's default, so it needs no flag).
+func withEffort(args []string) []string { return append(args, "--render-effort", "low") }
+
 // runBEpisode runs `dieg write` (ep 1) or `dieg continue` (ep >= 2). The idea file carries ep1's brief, later
 // briefs go through --brief; both carry the same length line as A's prompts.
 func runBEpisode(ctx context.Context, t *tracker, briefs []string, e int) error {
@@ -28,7 +31,7 @@ func runBEpisode(ctx context.Context, t *tracker, briefs []string, e int) error 
 	if err := t.check(stepReserve + judgeReserve); err != nil {
 		return err
 	}
-	if err := runDieg(ctx, c.out, args); err != nil {
+	if err := runDieg(ctx, c.out, withEffort(args)); err != nil {
 		return fmt.Errorf("dieg %s (ep %d): %w (see %s)", args[0], e, err, filepath.Join(c.out, "b.log"))
 	}
 	t.syncScenes(e)
@@ -42,7 +45,7 @@ func runBRevise(ctx context.Context, t *tracker, k, e int) error {
 		if err := t.check(stepReserve + judgeReserve); err != nil {
 			return err
 		}
-		if err := runDieg(ctx, t.c.out, []string{"revise", filepath.Join(t.c.out, "b"), revReqs[k]}); err != nil {
+		if err := runDieg(ctx, t.c.out, withEffort([]string{"revise", filepath.Join(t.c.out, "b"), revReqs[k]})); err != nil {
 			return fmt.Errorf("dieg revise (rev %d): %w (see %s)", k+1, err, filepath.Join(t.c.out, "b.log"))
 		}
 		t.syncScenes(e)
@@ -107,4 +110,24 @@ func (t *tracker) bMissing() map[string]int {
 		}
 	}
 	return m
+}
+
+// bUnrendered lists scenes dieg coded (b/story/ep*/<id>.dieg.md) that have no rendered b/novel/<id>.*.md: the
+// --scenes cap leaves a backlog that bMissing (which counts per harness episode) cannot see.
+func (t *tracker) bUnrendered() []string {
+	coded, _ := filepath.Glob(filepath.Join(t.c.out, "b", "story", "ep*", "s*.dieg.md"))
+	out := []string{}
+	for _, f := range coded {
+		id := strings.TrimSuffix(filepath.Base(f), ".dieg.md")
+		if m, _ := filepath.Glob(filepath.Join(t.c.out, "b", "novel", id+".*.md")); len(m) == 0 {
+			out = append(out, id)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { // s9 before s10
+		if len(out[i]) != len(out[j]) {
+			return len(out[i]) < len(out[j])
+		}
+		return out[i] < out[j]
+	})
+	return out
 }

@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"recheck\":[],\"candidates\":[{\"id\":\"C1\",\"verdict\":\"extra\",\"item\":\"\",\"quote\":\"이웃집 노인이 뛰어 들어와 서윤의 손에 낡은 돈 봉투를 쥐여 주고는 말없이 돌아갔다.\"}]}\n```",
+  "stop": "end_turn",
+  "tag": "h-haejin_r1_t2",
+  "try": 0
+}

@@ -1,0 +1,44 @@
+{
+  "Mode": "layered",
+  "Pair": "bible/mark_denial.ko-hapsho",
+  "Work": "bible",
+  "Scene": "mark_denial",
+  "Backend": "ko-hapsho",
+  "Beats": 4,
+  "Acts": 10,
+  "Passed": false,
+  "Calls": 25,
+  "RenderCalls": 12,
+  "ExtractCalls": 13,
+  "RenderUsage": {
+    "input": 24,
+    "output": 33436,
+    "cache_read": 834,
+    "cache_write": 18826
+  },
+  "ExtractUsage": {
+    "input": 26,
+    "output": 3350,
+    "cache_read": 10907,
+    "cache_write": 21084
+  },
+  "BeatAttempts": [
+    3,
+    3,
+    3,
+    1
+  ],
+  "BeatFailed": [
+    1
+  ],
+  "StyleOK": true,
+  "FinalFrom": "stitched",
+  "Chars": 1471,
+  "Missing": [
+    "mark_maid|perceive|peter_with_jesus"
+  ],
+  "Hallucinated": [
+    "extra-act:peter|assert|not peter_knows_jesus"
+  ],
+  "Leaked": []
+}

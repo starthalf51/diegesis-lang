@@ -1,0 +1,48 @@
+{
+  "Name": "orig-haejin",
+  "Base": "haejin/s3.ko-haera",
+  "Kind": "orig",
+  "Expect": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E7": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    }
+  },
+  "Withheld": {
+    "W1": false
+  },
+  "Invented": null,
+  "Mutated": null,
+  "Target": 619
+}

@@ -1,0 +1,30 @@
+{
+  "Mode": "single",
+  "Pair": "bible/mark_denial.ko-haera",
+  "Work": "bible",
+  "Scene": "mark_denial",
+  "Backend": "ko-haera",
+  "Beats": 4,
+  "Acts": 10,
+  "Passed": true,
+  "Calls": 4,
+  "RenderCalls": 2,
+  "ExtractCalls": 2,
+  "RenderUsage": {
+    "input": 4,
+    "output": 8304,
+    "cache_read": 1292,
+    "cache_write": 3804
+  },
+  "ExtractUsage": {
+    "input": 4,
+    "output": 1066,
+    "cache_read": 1678,
+    "cache_write": 2738
+  },
+  "Attempts": 2,
+  "Chars": 379,
+  "Missing": [],
+  "Hallucinated": [],
+  "Leaked": []
+}

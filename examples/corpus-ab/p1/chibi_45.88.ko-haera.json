@@ -1,0 +1,35 @@
+{
+  "Mode": "single",
+  "Pair": "chibi/45.88.ko-haera",
+  "Work": "chibi",
+  "Scene": "45.88",
+  "Backend": "ko-haera",
+  "Beats": 10,
+  "Acts": 24,
+  "Passed": false,
+  "Calls": 6,
+  "RenderCalls": 3,
+  "ExtractCalls": 3,
+  "RenderUsage": {
+    "input": 6,
+    "output": 23598,
+    "cache_read": 3876,
+    "cache_write": 5306
+  },
+  "ExtractUsage": {
+    "input": 6,
+    "output": 2430,
+    "cache_read": 2517,
+    "cache_write": 6677
+  },
+  "Attempts": 3,
+  "Chars": 922,
+  "Missing": [
+    "wu_officers|assert|commanders_traitors",
+    "zhou_yu|assert|jiang_gan_envoy"
+  ],
+  "Hallucinated": [
+    "장간이 편지를 몰래 소매 속에 감추었다."
+  ],
+  "Leaked": []
+}

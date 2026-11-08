@@ -151,7 +151,7 @@ func (k *counter) Complete(ctx context.Context, system, user string) (render.Res
 	return k.c.Complete(ctx, system, user)
 }
 
-// cmdWrite runs `dieg write <idea.txt | "아이템 문장"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--renderer layered|single] [--beat-retries N] [--force]`.
+// cmdWrite runs `dieg write <idea.txt | "아이템 문장"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--render-effort low|medium|high] [--force]`.
 // Exit 1 when the code is not clean after the rounds (nothing rendered), 3 when a rendered scene failed verification.
 // --scenes N renders only the first N shown scenes (to fit a call budget).
 func cmdWrite(args []string) int {
@@ -213,27 +213,19 @@ func commonFlag(args []string, i int, o *write.Opts, styles *string, limit *int)
 		}
 		*map[string]*string{"--code-model": &o.CodeModel, "--render-model": &o.RenderModel, "--extract-model": &o.ExtractModel}[a] = args[i+1]
 		return i + 1, true, 0
-	case a == "--code-effort" && i+1 < len(args):
+	case (a == "--code-effort" || a == "--render-effort") && i+1 < len(args):
 		if e := args[i+1]; e != "low" && e != "medium" && e != "high" {
-			fmt.Fprintf(os.Stderr, "dieg: --code-effort %q: want low, medium or high\n", e)
+			fmt.Fprintf(os.Stderr, "dieg: %s %q: want low, medium or high\n", a, e)
 			return i, false, 2
 		}
-		o.CodeEffort = args[i+1]
+		*map[string]*string{"--code-effort": &o.CodeEffort, "--render-effort": &o.RenderEffort}[a] = args[i+1]
 		return i + 1, true, 0
-	case a == "--renderer" && i+1 < len(args):
-		if r := args[i+1]; r != "layered" && r != "single" {
-			fmt.Fprintf(os.Stderr, "dieg: --renderer %q: want layered or single\n", r)
+	case a == "--verifier" && i+1 < len(args):
+		if v := args[i+1]; v != "card" && v != "open" {
+			fmt.Fprintf(os.Stderr, "dieg: --verifier %q: want card or open\n", v)
 			return i, false, 2
 		}
-		o.Renderer = args[i+1]
-		return i + 1, true, 0
-	case a == "--beat-retries" && i+1 < len(args):
-		n, err := strconv.Atoi(args[i+1])
-		if err != nil || n < 0 {
-			fmt.Fprintf(os.Stderr, "dieg: --beat-retries %q: want an integer ≥ 0\n", args[i+1])
-			return i, false, 2
-		}
-		o.BeatRetries = n
+		o.Verifier = args[i+1]
 		return i + 1, true, 0
 	case (a == "--backend" || a == "--styles") && i+1 < len(args):
 		*map[string]*string{"--backend": &o.Backend, "--styles": styles}[a] = args[i+1]
@@ -250,7 +242,7 @@ func meters(o write.Opts, f io.Writer) (*render.Meter, render.Completers, *count
 	k := &counter{c: render.NewClaudeCLIWith(o.CodeModel, o.CodeEffort), n: new(atomic.Int64)}
 	m := render.NewMeter(k, f)
 	cs := render.Completers{
-		Render:  m.With(&counter{c: render.NewClaudeCLIWith(o.RenderModel, "medium"), n: k.n}),
+		Render:  m.With(&counter{c: render.NewClaudeCLIWith(o.RenderModel, o.RenderEffort), n: k.n}),
 		Extract: m.With(&counter{c: render.NewClaudeCLIWith(o.ExtractModel, "low"), n: k.n}),
 	}
 	return m, cs, k

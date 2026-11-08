@@ -1,0 +1,53 @@
+{
+  "Name": "k-bible",
+  "Base": "bible/mark_denial.ko-gojeon",
+  "Kind": "K",
+  "Expect": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": true
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": false,
+      "Unsure": false
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": true
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E7": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E8": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    }
+  },
+  "Withheld": {},
+  "Invented": null,
+  "Mutated": [
+    "E4"
+  ],
+  "Target": 376
+}

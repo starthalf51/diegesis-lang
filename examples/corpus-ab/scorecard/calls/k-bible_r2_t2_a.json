@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"recheck\":[{\"id\":\"E1\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"여종 하나가 그를 보고 그 얼굴을 자세히 바라보더라\"},{\"id\":\"E4\",\"fact_present\":\"no\",\"as_stated\":\"no\",\"quote\":\"\"}],\"candidates\":[{\"id\":\"C1\",\"verdict\":\"covered\",\"item\":\"E5\",\"quote\":\"이 사람도 그 무리 중 하나로다.\"},{\"id\":\"C2\",\"verdict\":\"extra\",\"item\":\"\",\"quote\":\"베드로가 자리를 피하여 문간으로 나가니\"}]}\n```",
+  "stop": "end_turn",
+  "tag": "k-bible_r2_t2",
+  "try": 0
+}

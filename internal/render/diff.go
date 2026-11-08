@@ -11,6 +11,8 @@ type Report struct {
 	Hallucinated []string `json:"hallucinated"`
 	Leaked       []string `json:"leaked"`
 	ExtractError string   `json:"extract_error"`
+	Warnings     []string `json:"warnings,omitempty"`
+	Scores       *Scores  `json:"scores,omitempty"`
 }
 
 // VerbClass collapses synonyms; an unknown verb is its own class so it never silently matches.

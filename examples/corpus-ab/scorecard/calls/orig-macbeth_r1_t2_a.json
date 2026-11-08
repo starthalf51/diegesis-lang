@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"recheck\":[],\"candidates\":[{\"id\":\"C1\",\"verdict\":\"extra\",\"item\":\"\",\"quote\":\"“사형에 해당하는 반역죄가 자백되고 입증되어 그를 쓰러뜨렸소.”\"}]}\n```",
+  "stop": "end_turn",
+  "tag": "orig-macbeth_r1_t2",
+  "try": 0
+}

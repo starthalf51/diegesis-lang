@@ -53,6 +53,23 @@ func TestBadCodeEffortExits2(t *testing.T) {
 	}
 }
 
+func TestBadRenderEffortExits2(t *testing.T) {
+	for name, c := range map[string]int{
+		"write":    cmdWrite([]string{"idea", "-o", t.TempDir(), "--render-effort", "max"}),
+		"continue": cmdContinue([]string{t.TempDir(), "--ep", "2", "--render-effort", "max"}),
+		"revise":   cmdRevise([]string{t.TempDir(), "x", "--render-effort", "max"}),
+		"render":   cmdRender([]string{"w", "s", "--backend", "b", "--render-effort", "max"}),
+	} {
+		if c != 2 {
+			t.Errorf("%s exit %d", name, c)
+		}
+	}
+	o, st, lim := write.DefaultOpts(), "styles", 0
+	if _, ok, code := commonFlag([]string{"--render-effort", "low"}, 0, &o, &st, &lim); !ok || code != 0 || o.RenderEffort != "low" {
+		t.Errorf("ok=%v code=%d effort=%q", ok, code, o.RenderEffort)
+	}
+}
+
 func TestWriteRejectsUnknownModel(t *testing.T) {
 	if c := cmdWrite([]string{"idea", "-o", t.TempDir(), "--render-model", "nope"}); c != 2 {
 		t.Fatalf("exit %d", c)
@@ -127,9 +144,10 @@ func (f fakeC) Complete(context.Context, string, string) (render.Result, error) 
 	return render.Result{Text: f.s, StopReason: "end_turn"}, nil
 }
 
-func TestRendererFlagValidation(t *testing.T) {
+// --renderer and --beat-retries were removed with the layered renderer: unknown flags exit 2 before any call.
+func TestRendererFlagGone(t *testing.T) {
 	// 0 calls: every run opens <dir>/calls.jsonl before its first call, so the dir must stay empty.
-	for _, bad := range [][]string{{"--renderer", "foo"}, {"--beat-retries", "-1"}, {"--beat-retries", "x"}} {
+	for _, bad := range [][]string{{"--renderer", "single"}, {"--renderer", "layered"}, {"--beat-retries", "1"}} {
 		for name, run := range map[string]func(dir string) int{
 			"write":    func(d string) int { return cmdWrite(append([]string{"idea", "-o", d}, bad...)) },
 			"continue": func(d string) int { return cmdContinue(append([]string{d, "--ep", "2"}, bad...)) },
@@ -146,20 +164,32 @@ func TestRendererFlagValidation(t *testing.T) {
 	}
 }
 
-func TestRendererFlagParses(t *testing.T) {
-	o, styles, limit := write.DefaultOpts(), "", 0
-	if o.Renderer != "single" || o.BeatRetries != 2 {
-		t.Fatalf("defaults %q %d", o.Renderer, o.BeatRetries)
+func TestVerifierFlag(t *testing.T) {
+	if write.DefaultOpts().Verifier != "card" {
+		t.Fatal("default verifier must be card")
 	}
-	args := []string{"--renderer", "layered", "--beat-retries", "0"}
-	for i := 0; i < len(args); i++ {
-		j, ok, code := commonFlag(args, i, &o, &styles, &limit)
-		if !ok || code != 0 {
-			t.Fatalf("%s: ok=%t code=%d", args[i], ok, code)
+	for name, run := range map[string]func(dir string) int{
+		"write":    func(d string) int { return cmdWrite([]string{"idea", "-o", d, "--verifier", "bogus"}) },
+		"continue": func(d string) int { return cmdContinue([]string{d, "--ep", "2", "--verifier", "bogus"}) },
+		"revise":   func(d string) int { return cmdRevise([]string{d, "요청", "--verifier", "bogus"}) },
+		"render":   func(d string) int { return cmdRender([]string{"w", "s", "--backend", "b", "--verify", "--verifier", "bogus"}) },
+	} {
+		dir := t.TempDir()
+		if c := run(dir); c != 2 {
+			t.Errorf("%s exit %d", name, c)
 		}
-		i = j
+		if es, _ := os.ReadDir(dir); len(es) != 0 {
+			t.Errorf("%s wrote %v", name, es)
+		}
 	}
-	if o.Renderer != "layered" || o.BeatRetries != 0 {
-		t.Fatalf("%q %d", o.Renderer, o.BeatRetries)
+	o, styles, limit := write.DefaultOpts(), "", 0
+	if _, ok, code := commonFlag([]string{"--verifier", "open"}, 0, &o, &styles, &limit); !ok || code != 0 || o.Verifier != "open" {
+		t.Fatalf("%v %d %q", ok, code, o.Verifier)
+	}
+}
+
+func TestRenderVerifierNeedsVerify(t *testing.T) {
+	if c := cmdRender([]string{"w", "s", "--backend", "b", "--verifier", "open"}); c != 2 {
+		t.Errorf("exit %d", c)
 	}
 }

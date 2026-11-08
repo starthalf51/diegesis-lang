@@ -1,0 +1,24 @@
+{
+  "Pair": "macbeth/1.3.en-doyle",
+  "Calls": 4,
+  "PassedBefore": false,
+  "PassedAfter": false,
+  "BeforeMissing": [
+    "macbeth|assert|holds(king,macbeth)",
+    "macbeth|assert|holds(king,macbeth)",
+    "macbeth|assert|holds(thane_of_glamis,macbeth)"
+  ],
+  "BeforeHall": [],
+  "BeforeLeak": [],
+  "AfterMissing": [
+    "macbeth|assert|holds(king,macbeth)",
+    "macbeth|assert|holds(king,macbeth)",
+    "macbeth|assert|holds(thane_of_cawdor,macbeth)",
+    "macbeth|assert|holds(thane_of_glamis,macbeth)"
+  ],
+  "AfterHall": [],
+  "AfterLeak": [],
+  "CharsBefore": 5884,
+  "CharsAfter": 5871,
+  "EditChars": 41
+}

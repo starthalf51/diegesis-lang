@@ -1,0 +1,50 @@
+{
+  "Mode": "layered",
+  "Pair": "macbeth/1.3.en-doyle",
+  "Work": "macbeth",
+  "Scene": "1.3",
+  "Backend": "en-doyle",
+  "Beats": 11,
+  "Acts": 26,
+  "Passed": false,
+  "Calls": 33,
+  "RenderCalls": 16,
+  "ExtractCalls": 17,
+  "RenderUsage": {
+    "input": 32,
+    "output": 26906,
+    "cache_read": 1069,
+    "cache_write": 25726
+  },
+  "ExtractUsage": {
+    "input": 34,
+    "output": 4685,
+    "cache_read": 14263,
+    "cache_write": 25078
+  },
+  "BeatAttempts": [
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    3,
+    1
+  ],
+  "BeatFailed": [
+    10
+  ],
+  "StyleOK": true,
+  "FinalFrom": "unstitched",
+  "Chars": 2346,
+  "Missing": [
+    "macbeth|assert|holds(king,macbeth)",
+    "macbeth|assert|holds(thane_of_glamis,macbeth)"
+  ],
+  "Hallucinated": [],
+  "Leaked": []
+}

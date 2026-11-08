@@ -1,0 +1,55 @@
+sc-report calls so far 61 budget 65
+### 변형별 (run1 / run2)
+| 변형 | 호출 | S1 | S2 | S3 | S4 | 점수 | G1 실패 | G2 실패 | 후보(확정) |
+|---|---|---|---|---|---|---|---|---|---|
+| orig-chibi r1 | 2 | 1.00 | 1.00 | 1.00 | 1.00 | 1.000 | false | false | 조조와 우리 나라 사이의 문제를 입에 올리는 자가 있거든 바로 목을 베어라.[extra,IR] |
+| orig-chibi r2 | 2 | 1.00 | 1.00 | 1.00 | 1.00 | 1.000 | false | false | 조조와 우리 나라 사이의 문제를 입에 올리는 자가 있거든 바로 목을 베어라.[extra,IR] |
+| d1-chibi r1 | 2 | 0.83 | 0.83 | 1.00 | 0.94 | 0.861 | false | false | 조조와 우리 나라 사이의 문제를 입에 올리는 자가 있거든 바로 목을 베어라.[extra,IR]; 북쪽에서 사람이 왔습니다.[extra,IR] |
+| d1-chibi r2 | 2 | 0.83 | 0.83 | 1.00 | 0.94 | 0.861 | false | false | 조조와 우리 나라 사이의 문제를 입에 올리는 자가 있거든 바로 목을 베어라.[extra,IR]; 북쪽에서 사람이 왔습니다.[extra,IR] |
+| d3-chibi r1 | 2 | 0.50 | 0.50 | 1.00 | 0.81 | 0.581 | false | false |  |
+| d3-chibi r2 | 2 | 0.50 | 0.50 | 1.00 | 0.81 | 0.581 | false | false |  |
+| h-chibi r1 | 1 | 1.00 | 1.00 | 1.00 | 0.95 | 0.995 | false | false |  |
+| h-chibi r2 | 1 | 1.00 | 1.00 | 1.00 | 0.95 | 0.995 | false | false |  |
+| orig-macbeth r1 | 2 | 1.00 | 1.00 | 1.00 | 1.00 | 1.000 | false | true | “사형에 해당하는 반역죄가 자백되고 입증되어 그를 쓰러뜨렸소.”[extra] |
+| orig-macbeth r2 | 2 | 1.00 | 1.00 | 1.00 | 1.00 | 1.000 | false | true | “그분께서 나더러 그대를 캐더의 영주라 부르라 하셨소.”[covered]; “사형에 해당하는 반역죄가 자백되고 입증되어 그를 쓰러뜨렸소.”[extra] |
+| d1-macbeth r1 | 2 | 0.93 | 0.93 | 1.00 | 0.96 | 0.938 | false | false | 그분께서 나더러 그대를 캐더의 영주라 부르라 하셨소.[covered]; 무거운 심판 아래에서 간신히 그 목숨을 붙들고 있다고 전했다.[covered] |
+| d1-macbeth r2 | 2 | 0.93 | 0.71 | 1.00 | 0.96 | 0.896 | false | true | 무거운 심판 아래에서 간신히 그 목숨을 붙들고 있다고 전했다.[extra] |
+| d3-macbeth r1 | 2 | 0.71 | 0.57 | 1.00 | 0.87 | 0.730 | false | false | 안개가 다시 몰려와 그녀들의 형체를 감추었고[trivial] |
+| d3-macbeth r2 | 2 | 0.71 | 0.71 | 1.00 | 0.87 | 0.758 | false | true | 그분께서 나더러 그대를 캐더의 영주라 부르라 하셨소.[covered]; 무거운 심판 아래에서 간신히 그 목숨을 붙들고 있다고 전했다[extra] |
+| k-macbeth r1 | 2 | 1.00 | 0.93 | 1.00 | 1.00 | 0.986 | false | true | “사형에 해당하는 반역죄가 자백되고 입증되어 그를 쓰러뜨렸소.”[extra] |
+| k-macbeth r2 | 2 | 1.00 | 0.93 | 1.00 | 1.00 | 0.986 | false | true | “그분께서 나더러 그대를 캐더의 영주라 부르라 하셨소.”[covered]; “사형에 해당하는 반역죄가 자백되고 입증되어 그를 쓰러뜨렸소.”[extra] |
+| k-bible r1 | 2 | 0.88 | 0.88 | 1.00 | 0.99 | 0.899 | false | true | 이 사람도 그 무리 중 하나로다.[extra]; 베드로가 자리를 피하여 문간으로 나가니[extra] |
+| k-bible r2 | 2 | 0.88 | 0.88 | 1.00 | 0.99 | 0.899 | false | true | 이 사람도 그 무리 중 하나로다.[covered]; 베드로가 자리를 피하여 문간으로 나가니[extra] |
+| orig-haejin r1 | 1 | 1.00 | 1.00 | 1.00 | 1.00 | 1.000 | false | false |  |
+| orig-haejin r2 | 1 | 1.00 | 1.00 | 1.00 | 1.00 | 1.000 | false | false |  |
+| h-haejin r1 | 2 | 1.00 | 1.00 | 1.00 | 0.93 | 0.993 | false | true | 이웃집 노인이 뛰어 들어와 서윤의 손에 낡은 돈 봉투를 쥐여 주고는 말없이 돌아갔다.[extra] |
+| h-haejin r2 | 2 | 1.00 | 1.00 | 1.00 | 0.93 | 0.993 | false | true | 이웃집 노인이 뛰어 들어와 서윤의 손에 낡은 돈 봉투를 쥐여 주고는 말없이 돌아갔다.[extra] |
+| l-haejin r1 | 1 | 1.00 | 1.00 | 1.00 | 0.95 | 0.995 | true | false |  |
+| l-haejin r2 | 1 | 1.00 | 1.00 | 1.00 | 0.95 | 0.995 | true | false |  |
+
+### 축별 지표 (시행 = 변형 × 실행)
+| 축 | 검출 | 오경보 | 두 실행 일치(항목/변형) |
+|---|---|---|---|
+| S1 | 18/18 (100%) | 0/168 (0%) | 95/95 (100%) |
+| S2 | 4/4 (100%) | 5/168 (3%) | 90/95 (95%) |
+| G1 | 2/2 (100%) | 0/4 (0%) | 3/3 (100%) |
+| G2 | 2/4 (50%) | 8/24 (33%) | 10/12 (83%) |
+
+S2 검출(삭제 항목도 포함): 18/18 (100%) / 게이트 일치: 10/12 (83%) / 점수 |Δ| 평균 0.0060 최대 0.0429
+실행 24회: 렌더당 평균 호출 1.75, 가중 토큰 33855, 2단 발동 18/24
+
+### 점수 순서 (원본 > D1 > D3)
+bible r1: orig 0.000  D1 0.000  D3 0.000  원본>D1 false  D1>D3 true
+bible r2: orig 0.000  D1 0.000  D3 0.000  원본>D1 false  D1>D3 true
+chibi r1: orig 1.000  D1 0.861  D3 0.581  원본>D1 true  D1>D3 true
+chibi r2: orig 1.000  D1 0.861  D3 0.581  원본>D1 true  D1>D3 true
+macbeth r1: orig 1.000  D1 0.938  D3 0.730  원본>D1 true  D1>D3 true
+macbeth r2: orig 1.000  D1 0.896  D3 0.758  원본>D1 true  D1>D3 true
+
+### 옛 검증기 K=3
+d1-chibi: passed=false missing=[zhou_yu|assert|cao_head_soon] hall=[Chiang Kan pockets the letter from Tsʻai Mao and Chang Yün.] leak=[] weighted=59283 err=
+d3-macbeth: passed=false missing=[macbeth|assert|banquo_line macbeth|assert|holds(king,macbeth) macbeth|assert|not cawdor_traitor witch3|assert|banquo_line] hall=[] leak=[] weighted=72948 err=
+h-chibi: passed=false missing=[] hall=[Chiang Kan pockets the letter from Chang Yün and Tsʻai Mao.] leak=[] weighted=71643 err=
+k-macbeth: passed=false missing=[macbeth|assert|holds(king,macbeth) ross|assert|holds(thane_of_cawdor,macbeth)] hall=[extra-act:angus|assert|holds(thane_of_cawdor,macbeth)] leak=[] weighted=82671 err=
+l-haejin: passed=false missing=[seoyun|assert|song_line] hall=[extra-act:minjae|assert|minjae_leaves extra-act:seoyun|perceive|song_line] leak=[minjae_leaves] weighted=44373 err=
+옛: 렌더당 호출 3, 가중 토큰 66184 (5개)

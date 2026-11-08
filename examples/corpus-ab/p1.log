@@ -1,0 +1,17 @@
+bible/mark_denial.en-doyle         beats=4 pass=false calls=6 used=6 
+bible/mark_denial.ko-gojeon        beats=4 pass=false calls=6 used=12 
+bible/mark_denial.ko-haera         beats=4 pass=true calls=4 used=16 
+bible/mark_denial.ko-hapsho        beats=4 pass=false calls=6 used=22 
+chibi/45.88.en-doyle               beats=10 pass=false calls=6 used=28 
+chibi/45.88.ko-gojeon              beats=10 pass=false calls=6 used=34 
+chibi/45.88.ko-haera               beats=10 pass=false calls=6 used=40 
+chibi/45.88.ko-hapsho              beats=10 pass=false calls=6 used=46 
+macbeth/1.3.en-doyle               beats=11 pass=false calls=6 used=52 
+macbeth/1.3.ko-gojeon              beats=11 pass=true calls=2 used=54 
+macbeth/1.3.ko-haera               beats=11 pass=true calls=2 used=56 
+macbeth/1.3.ko-hapsho              beats=11 pass=true calls=4 used=60 
+odyssey/19.1.en-doyle              beats=10 pass=false calls=6 used=66 
+odyssey/19.1.ko-gojeon             beats=10 pass=false calls=6 used=72 
+odyssey/19.1.ko-haera              beats=10 pass=false calls=6 used=78 
+odyssey/19.1.ko-hapsho             beats=10 pass=true calls=6 used=84 
+total calls 84

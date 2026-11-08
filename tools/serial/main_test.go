@@ -312,3 +312,32 @@ func TestSerialReplanBlocked(t *testing.T) {
 	}
 }
 
+
+// TestBRenderEffortLow: every B dieg call carries --render-effort low.
+func TestBRenderEffortLow(t *testing.T) {
+	fakeDiegArgs = nil
+	dry(t)
+	if len(fakeDiegArgs) == 0 {
+		t.Fatal("no dieg calls")
+	}
+	for _, a := range fakeDiegArgs {
+		if n := len(a); n < 2 || a[n-2] != "--render-effort" || a[n-1] != "low" {
+			t.Errorf("missing --render-effort low: %v", a)
+		}
+		t.Log(a)
+	}
+}
+
+// TestBUnrendered: a coded scene without a rendered file shows up, in numeric order, even when bMissing sees nothing.
+func TestBUnrendered(t *testing.T) {
+	out := t.TempDir()
+	for _, f := range []string{"b/story/ep01/s1.dieg.md", "b/story/ep02/s10.dieg.md", "b/story/ep02/s9.dieg.md", "b/novel/s1.ko-haera.md"} {
+		if err := write(filepath.Join(out, f), "x"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got := (&tracker{c: cfg{out: out}}).bUnrendered()
+	if len(got) != 2 || got[0] != "s9" || got[1] != "s10" {
+		t.Errorf("got %v, want [s9 s10]", got)
+	}
+}

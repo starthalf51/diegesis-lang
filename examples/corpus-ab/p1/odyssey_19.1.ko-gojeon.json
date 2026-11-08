@@ -1,0 +1,36 @@
+{
+  "Mode": "single",
+  "Pair": "odyssey/19.1.ko-gojeon",
+  "Work": "odyssey",
+  "Scene": "19.1",
+  "Backend": "ko-gojeon",
+  "Beats": 10,
+  "Acts": 29,
+  "Passed": false,
+  "Calls": 6,
+  "RenderCalls": 3,
+  "ExtractCalls": 3,
+  "RenderUsage": {
+    "input": 6,
+    "output": 25985,
+    "cache_read": 6636,
+    "cache_write": 6421
+  },
+  "ExtractUsage": {
+    "input": 6,
+    "output": 3374,
+    "cache_read": 2517,
+    "cache_write": 7437
+  },
+  "Attempts": 3,
+  "Chars": 1315,
+  "Missing": [
+    "odysseus|assert|beggar_is_odysseus",
+    "odysseus|assert|odysseus_home",
+    "telemachus|assert|beggar_is_odysseus"
+  ],
+  "Hallucinated": [
+    "Athena turns Penelope's attention away so she cannot notice what happens."
+  ],
+  "Leaked": []
+}

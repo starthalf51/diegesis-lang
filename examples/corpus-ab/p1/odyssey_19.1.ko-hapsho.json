@@ -1,0 +1,32 @@
+{
+  "Mode": "single",
+  "Pair": "odyssey/19.1.ko-hapsho",
+  "Work": "odyssey",
+  "Scene": "19.1",
+  "Backend": "ko-hapsho",
+  "Beats": 10,
+  "Acts": 29,
+  "Passed": true,
+  "Calls": 6,
+  "RenderCalls": 3,
+  "ExtractCalls": 3,
+  "RenderUsage": {
+    "input": 6,
+    "output": 24365,
+    "cache_read": 4959,
+    "cache_write": 6468
+  },
+  "ExtractUsage": {
+    "input": 6,
+    "output": 3469,
+    "cache_read": 2517,
+    "cache_write": 7787
+  },
+  "Attempts": 3,
+  "Chars": 1449,
+  "Missing": [
+    "odysseus|assert|odysseus_home"
+  ],
+  "Hallucinated": [],
+  "Leaked": []
+}

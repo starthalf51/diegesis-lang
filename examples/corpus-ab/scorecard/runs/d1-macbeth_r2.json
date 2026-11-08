@@ -1,0 +1,116 @@
+{
+  "Variant": "d1-macbeth",
+  "Run": 2,
+  "Items": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "만세, 맥베스여! 글라미스의 영주여, 만세!"
+    },
+    "E10": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "그분께서 나더러 그대를 캐더의 영주라 부르라 하셨소."
+    },
+    "E11": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "앵거스는 그 영주가 아직 목숨을 부지하고 있으나",
+      "T2": true
+    },
+    "E12": {
+      "Present": false,
+      "AsStated": false,
+      "Quote": "",
+      "T2": true
+    },
+    "E13": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "그리고 캐더의 영주!"
+    },
+    "E14": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "가장 큰 것이 아직 남았다."
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "그대에게 만세, 캐더의 영주여!"
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“그대는 장차 왕이 되리라!”",
+      "T2": true
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "그대는 왕을 낳으리라, 그대 자신은 왕이 아니어도."
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": false,
+      "Quote": "“시넬이 죽었으니, 나는 글라미스의 영주가 된 줄 안다.”",
+      "T2": true
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": false,
+      "Quote": "“캐더의 영주가 살아 있다,”",
+      "T2": true
+    },
+    "E7": {
+      "Present": true,
+      "AsStated": false,
+      "Quote": "“번성한 신사.”",
+      "T2": true
+    },
+    "E8": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "그대의 자식들이 왕이 되리라."
+    },
+    "E9": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "그대가 왕이 되리라."
+    }
+  },
+  "Leak": {},
+  "LeakQuote": {},
+  "Cands": [
+    {
+      "Ev": {
+        "actor": "angus",
+        "verb": "tells",
+        "targets": [
+          "macbeth"
+        ],
+        "action": "",
+        "text": "Angus says the Thane of Cawdor is under heavy judgment and barely clinging to life."
+      },
+      "Quote": "무거운 심판 아래에서 간신히 그 목숨을 붙들고 있다고 전했다.",
+      "Confirmed": true,
+      "Verdict": "extra"
+    }
+  ],
+  "G1Fail": false,
+  "G2Fail": true,
+  "S1": 0.9285714285714286,
+  "S2": 0.7142857142857143,
+  "S3": 1,
+  "S4": 0.9560632688927944,
+  "Score": 0.8956063268892795,
+  "Calls": 2,
+  "Tier2": 1,
+  "Retries": 0,
+  "In": 4,
+  "Out": 1635,
+  "CR": 4087,
+  "CW": 4841,
+  "Weighted": 51321,
+  "Eff": 0.17451069287217308
+}

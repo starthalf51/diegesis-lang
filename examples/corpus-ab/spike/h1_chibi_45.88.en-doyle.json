@@ -1,0 +1,26 @@
+{
+  "Pair": "chibi/45.88.en-doyle",
+  "Calls": 4,
+  "PassedBefore": false,
+  "PassedAfter": false,
+  "BeforeMissing": [
+    "jiang_gan|read|commanders_traitors",
+    "wu_officers|assert|commanders_traitors",
+    "zhou_yu|assert|jiang_gan_envoy"
+  ],
+  "BeforeHall": [
+    "Chiang Kan takes the letter from Chang Yün and Tsʻai Mao and hides it in his robe."
+  ],
+  "BeforeLeak": [],
+  "AfterMissing": [
+    "jiang_gan|read|commanders_traitors",
+    "zhou_yu|assert|jiang_gan_envoy"
+  ],
+  "AfterHall": [
+    "Chiang Kan pockets the letter from Chang Yün and Tsʻai Mao and flees the camp."
+  ],
+  "AfterLeak": [],
+  "CharsBefore": 2952,
+  "CharsAfter": 2966,
+  "EditChars": 72
+}

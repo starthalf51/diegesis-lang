@@ -1,0 +1,45 @@
+{
+  "Name": "d3-chibi",
+  "Base": "chibi/45.88.ko-hapsho",
+  "Kind": "D3",
+  "Expect": {
+    "E1": {
+      "Present": false,
+      "AsStated": false,
+      "Unsure": false
+    },
+    "E2": {
+      "Present": false,
+      "AsStated": false,
+      "Unsure": false
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": true
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E5": {
+      "Present": false,
+      "AsStated": false,
+      "Unsure": false
+    },
+    "E6": {
+      "Present": false,
+      "AsStated": false,
+      "Unsure": true
+    }
+  },
+  "Withheld": {},
+  "Invented": null,
+  "Mutated": [
+    "E1",
+    "E2",
+    "E5"
+  ],
+  "Target": 962
+}

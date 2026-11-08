@@ -1,0 +1,94 @@
+{
+  "Variant": "k-bible",
+  "Run": 2,
+  "Items": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "여종 하나가 그를 보고 그 얼굴을 자세히 바라보더라",
+      "T2": true
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "너도 나사렛 사람 예수와 함께 있었구나!"
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "베드로는 그 말이 참이 아니라고 잡아떼며"
+    },
+    "E4": {
+      "Present": false,
+      "AsStated": false,
+      "Quote": "",
+      "T2": true
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "네가 참으로 그 무리 중 하나로구나."
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "나는 너희가 말하는 그 사람을 알지 못하노라!"
+    },
+    "E7": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "그때 닭이 두 번째로 우는 소리를 듣더라."
+    },
+    "E8": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "닭이 두 번 울기 전에 네가 나를 세 번 부인하리라 하시던 말씀이었더라."
+    }
+  },
+  "Leak": {},
+  "LeakQuote": {},
+  "Cands": [
+    {
+      "Ev": {
+        "actor": "mark_maid",
+        "verb": "says",
+        "targets": [
+          "mark_bystanders"
+        ],
+        "action": "",
+        "text": "The maid tells the bystanders that Peter is one of the followers."
+      },
+      "Quote": "이 사람도 그 무리 중 하나로다.",
+      "Confirmed": false,
+      "Verdict": "covered"
+    },
+    {
+      "Ev": {
+        "actor": "peter",
+        "verb": "does",
+        "targets": [],
+        "action": "exit",
+        "text": "Peter leaves for the gateway."
+      },
+      "Quote": "베드로가 자리를 피하여 문간으로 나가니",
+      "Confirmed": true,
+      "Verdict": "extra"
+    }
+  ],
+  "G1Fail": false,
+  "G2Fail": true,
+  "S1": 0.875,
+  "S2": 0.875,
+  "S3": 1,
+  "S4": 0.9920844327176781,
+  "Score": 0.8992084432717679,
+  "Calls": 2,
+  "Tier2": 1,
+  "Retries": 0,
+  "In": 4,
+  "Out": 831,
+  "CR": 1856,
+  "CW": 2400,
+  "Weighted": 25245,
+  "Eff": 0.3561926889569292
+}
