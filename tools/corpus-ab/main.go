@@ -119,6 +119,10 @@ func main() {
 	spike := flag.String("spike", "", "h1|h2: spike.go")
 	flag.Parse()
 	ctx := context.Background()
+	if *spike == "sc-tier1" { // "tier1" 은 기존 실호출 스파이크 이름이라 겹치지 않게 sc- 를 붙인다
+		tier1(*out)
+		return
+	}
 	if *spike == "sc-dry" {
 		runDry(ctx)
 		return
