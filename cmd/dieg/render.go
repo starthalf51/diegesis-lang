@@ -59,12 +59,19 @@ func backend(dir, id string) (render.Backend, error) {
 func cmdRender(args []string) int {
 	var pos []string
 	id, out, styles, verify, retries := "", "", "styles", false, 2
+	verifier := "card"
 	dw := write.DefaultOpts()
 	rm, xm := dw.RenderModel, dw.ExtractModel
 	for i := 0; i < len(args); i++ {
 		switch a := args[i]; {
 		case a == "--verify":
 			verify = true
+		case a == "--verifier" && i+1 < len(args):
+			i++
+			if verifier = args[i]; verifier != "card" && verifier != "open" {
+				fmt.Fprintf(os.Stderr, "dieg: --verifier %q: want card or open\n", verifier)
+				return 2
+			}
 		case (a == "--render-model" || a == "--extract-model") && i+1 < len(args):
 			i++
 			if err := render.ValidModel(args[i]); err != nil {
@@ -91,7 +98,7 @@ func cmdRender(args []string) int {
 	if len(pos) != 2 || id == "" {
 		return usage()
 	}
-	pass, err := renderOnce(pos[0], pos[1], id, out, styles, verify, retries, rm, xm)
+	pass, err := renderOnce(pos[0], pos[1], id, out, styles, verify, retries, rm, xm, verifier)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
@@ -103,7 +110,7 @@ func cmdRender(args []string) int {
 }
 
 // renderOnce 는 pass=false 여도 산문은 쓴다(--verify 가 상한까지 가도 통과 못 한 경우).
-func renderOnce(target, scene, id, out, styles string, verify bool, retries int, rm, xm string) (bool, error) {
+func renderOnce(target, scene, id, out, styles string, verify bool, retries int, rm, xm, verifier string) (bool, error) {
 	b, err := backend(styles, id)
 	if err != nil {
 		return false, err
@@ -115,7 +122,7 @@ func renderOnce(target, scene, id, out, styles string, verify bool, retries int,
 	var text string
 	pass := true
 	if verify {
-		r, n, err := render.RenderVerified2(context.Background(), render.Completers{Render: render.NewClaudeCLIWith(rm, "medium"), Extract: render.NewClaudeCLIWith(xm, "low")}, target, s, b, render.VerifyOpts{K: 1, Retries: retries})
+		r, n, err := render.RenderVerified2(context.Background(), render.Completers{Render: render.NewClaudeCLIWith(rm, "medium"), Extract: render.NewClaudeCLIWith(xm, "low")}, target, s, b, render.VerifyOpts{K: 1, Retries: retries, Verifier: verifier})
 		if err != nil {
 			return false, err
 		}

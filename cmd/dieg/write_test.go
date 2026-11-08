@@ -163,3 +163,27 @@ func TestRendererFlagParses(t *testing.T) {
 		t.Fatalf("%q %d", o.Renderer, o.BeatRetries)
 	}
 }
+
+func TestVerifierFlag(t *testing.T) {
+	if write.DefaultOpts().Verifier != "card" {
+		t.Fatal("default verifier must be card")
+	}
+	for name, run := range map[string]func(dir string) int{
+		"write":    func(d string) int { return cmdWrite([]string{"idea", "-o", d, "--verifier", "bogus"}) },
+		"continue": func(d string) int { return cmdContinue([]string{d, "--ep", "2", "--verifier", "bogus"}) },
+		"revise":   func(d string) int { return cmdRevise([]string{d, "요청", "--verifier", "bogus"}) },
+		"render":   func(d string) int { return cmdRender([]string{"w", "s", "--backend", "b", "--verify", "--verifier", "bogus"}) },
+	} {
+		dir := t.TempDir()
+		if c := run(dir); c != 2 {
+			t.Errorf("%s exit %d", name, c)
+		}
+		if es, _ := os.ReadDir(dir); len(es) != 0 {
+			t.Errorf("%s wrote %v", name, es)
+		}
+	}
+	o, styles, limit := write.DefaultOpts(), "", 0
+	if _, ok, code := commonFlag([]string{"--verifier", "open"}, 0, &o, &styles, &limit); !ok || code != 0 || o.Verifier != "open" {
+		t.Fatalf("%v %d %q", ok, code, o.Verifier)
+	}
+}

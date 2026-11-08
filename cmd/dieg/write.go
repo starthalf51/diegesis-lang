@@ -227,6 +227,13 @@ func commonFlag(args []string, i int, o *write.Opts, styles *string, limit *int)
 		}
 		o.Renderer = args[i+1]
 		return i + 1, true, 0
+	case a == "--verifier" && i+1 < len(args):
+		if v := args[i+1]; v != "card" && v != "open" {
+			fmt.Fprintf(os.Stderr, "dieg: --verifier %q: want card or open\n", v)
+			return i, false, 2
+		}
+		o.Verifier = args[i+1]
+		return i + 1, true, 0
 	case a == "--beat-retries" && i+1 < len(args):
 		n, err := strconv.Atoi(args[i+1])
 		if err != nil || n < 0 {

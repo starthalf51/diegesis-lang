@@ -59,7 +59,7 @@ func renderScene(ctx context.Context, cs render.Completers, work string, s rende
 		return r, 1, &st, err
 	}
 	n0 := 0
-	r, n, err := render.RenderVerified2(ctx, render.Completers{Render: &sceneLabeler{c: cs.Render, scene: s.ID, kind: "render-", attempt: &n0}, Extract: &sceneLabeler{c: cs.Extract, scene: s.ID, kind: "extract-", attempt: &n0}}, work, s, b, render.VerifyOpts{K: 1, Retries: 2})
+	r, n, err := render.RenderVerified2(ctx, render.Completers{Render: &sceneLabeler{c: cs.Render, scene: s.ID, kind: "render-", attempt: &n0}, Extract: &sceneLabeler{c: cs.Extract, scene: s.ID, kind: "extract-", attempt: &n0}}, work, s, b, render.VerifyOpts{K: 1, Retries: 2, Verifier: o.Verifier})
 	return r, n, nil, err
 }
 

@@ -6,7 +6,12 @@ import (
 )
 
 // VerifyOpts: K 는 재추출 횟수, Retries 는 첫 렌더 뒤 최대 재렌더 횟수.
-type VerifyOpts struct{ K, Retries int }
+// Verifier "card" 이면 재추출 대신 체크리스트 채점(ScoreCard, Card 옵션), 그 밖(""·"open")은 열린 재추출.
+type VerifyOpts struct {
+	K, Retries int
+	Verifier   string
+	Card       CardOpts
+}
 
 // Passed 는 ADR-019 의 사실 기준(환각 0, 누출 0, 누락 ≤ MaxMissing)을 통과했는지. render-check 의 ADR-012(누락 ≤ 1 허용)보다 엄격하다. 재추출이 깨졌으면 통과가 아니다.
 func Passed(r Render) bool {
@@ -32,7 +37,7 @@ func RenderVerified2(ctx context.Context, cs Completers, work string, s Scene, b
 	extra := ""
 	for n := 1; ; n++ {
 		var err error
-		if r, err = renderWith(ctx, cs.Render, cs.Extract, work, s, b, o.K, extra); err != nil {
+		if r, err = renderWith(ctx, cs.Render, cs.Extract, work, s, b, o.K, extra, o.card()); err != nil {
 			return r, n, err
 		}
 		if Passed(r) || n > o.Retries {
@@ -90,4 +95,11 @@ func describe(s Scene, lang, key string) string {
 		}
 	}
 	return name + " (" + p[1] + "): " + text(p[2])
+}
+
+func (o VerifyOpts) card() *CardOpts {
+	if o.Verifier == "card" {
+		return &o.Card
+	}
+	return nil
 }
