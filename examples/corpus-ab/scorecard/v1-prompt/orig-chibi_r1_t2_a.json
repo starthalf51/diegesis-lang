@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"recheck\":[],\"candidates\":[{\"id\":\"C1\",\"verdict\":\"extra\",\"item\":\"\",\"quote\":\"장간은 그 편지를 자기 소매 속에 넣습니다.\"},{\"id\":\"C2\",\"verdict\":\"extra\",\"item\":\"\",\"quote\":\"조조와 우리 나라 사이의 문제를 입에 올리는 자가 있거든 바로 목을 베어라.\"}]}\n```",
+  "stop": "end_turn",
+  "tag": "orig-chibi_r1_t2",
+  "try": 0
+}

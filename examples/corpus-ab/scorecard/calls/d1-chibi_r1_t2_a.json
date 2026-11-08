@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"recheck\":[{\"id\":\"E5\",\"fact_present\":\"no\",\"as_stated\":\"no\",\"quote\":\"\"}],\"candidates\":[{\"id\":\"C1\",\"verdict\":\"extra\",\"item\":\"\",\"quote\":\"조조와 우리 나라 사이의 문제를 입에 올리는 자가 있거든 바로 목을 베어라.\"},{\"id\":\"C2\",\"verdict\":\"extra\",\"item\":\"\",\"quote\":\"북쪽에서 사람이 왔습니다.\"}]}\n```",
+  "stop": "end_turn",
+  "tag": "d1-chibi_r1_t2",
+  "try": 0
+}

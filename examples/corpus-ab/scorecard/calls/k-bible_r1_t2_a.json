@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"recheck\":[{\"id\":\"E1\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"그를 보고 그 얼굴을 자세히 바라보더라\"},{\"id\":\"E4\",\"fact_present\":\"no\",\"as_stated\":\"no\",\"quote\":\"\"}],\"candidates\":[{\"id\":\"C1\",\"verdict\":\"extra\",\"item\":\"\",\"quote\":\"이 사람도 그 무리 중 하나로다.\"},{\"id\":\"C2\",\"verdict\":\"extra\",\"item\":\"\",\"quote\":\"베드로가 자리를 피하여 문간으로 나가니\"}]}\n```\n\nWait — let me reconsider E4 and E1 carefully.\n\nE1: The maid sees Peter and looks at his face, then says \"you were with Jesus.\" The prose implies she noticed Peter was with Jesus, by her statement, so fact_present is yes; as_stated yes is acceptable given she conveys it with a perceiving verb (\"보고\").\n\nE4: The prose says the maid heard the rooster crow, not Peter. Peter does not hear the first crow in the prose, so no.",
+  "stop": "end_turn",
+  "tag": "k-bible_r1_t2",
+  "try": 0
+}

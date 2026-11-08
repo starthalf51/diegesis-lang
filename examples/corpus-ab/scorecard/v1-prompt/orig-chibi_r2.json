@@ -1,0 +1,102 @@
+{
+  "Variant": "orig-chibi",
+  "Run": 2,
+  "Items": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "주유는 빙그레 웃으면서 말을 돌려, 장간이 조조를 위해 자기를 설득하러 왔다는 속뜻을 드러냅니다.",
+      "T2": true
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "나더러 조조 편의 사자라니 무슨 말씀이오?",
+      "T2": true
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "장간은 편지를 펼쳐서 천천히 읽어 내려갑니다.",
+      "T2": true
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "그 두 사람은 처음부터 오와 연이 닿아 있었구나.",
+      "T2": true
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "하루 이틀 안에 조조의 머리를 보여 주겠소.",
+      "T2": true
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "장윤과 채모 두 장군이 오셨습니다.",
+      "T2": true
+    }
+  },
+  "Leak": {},
+  "LeakQuote": {},
+  "Cands": [
+    {
+      "Ev": {
+        "actor": "jiang_gan",
+        "verb": "does",
+        "targets": [],
+        "action": "takes the letter from Chang Yün and Tsʻai Mao into his sleeve",
+        "text": "장간이 편지를 자기 소매 속에 넣는다."
+      },
+      "Quote": "장간은 그 편지를 자기 소매 속에 넣습니다.",
+      "Confirmed": true,
+      "Verdict": "extra"
+    },
+    {
+      "Ev": {
+        "actor": "zhou_yu",
+        "verb": "orders",
+        "targets": [
+          "taishi_ci"
+        ],
+        "action": "",
+        "text": "주유가 태사자에게 잔치의 주인 노릇을 하고, 조조와의 문제를 입에 올리는 자의 목을 베라고 명한다."
+      },
+      "Quote": "조조와 우리 나라 사이의 문제를 입에 올리는 자가 있거든 바로 목을 베어라.",
+      "Confirmed": true,
+      "Verdict": "extra"
+    },
+    {
+      "Ev": {
+        "actor": "wu_officers",
+        "verb": "whispers",
+        "targets": [
+          "zhou_yu"
+        ],
+        "action": "",
+        "text": "오의 장수가 주유에게 북쪽에서 사람이 왔다고 속삭인다."
+      },
+      "Quote": "북쪽에서 사람이 왔습니다.",
+      "Confirmed": true,
+      "Verdict": "extra"
+    }
+  ],
+  "G1Fail": false,
+  "G2Fail": true,
+  "S1": 1,
+  "S2": 1,
+  "S3": 1,
+  "S4": 1,
+  "Score": 1,
+  "Calls": 2,
+  "Tier2": 1,
+  "Retries": 0,
+  "In": 4,
+  "Out": 1296,
+  "CR": 2733,
+  "CW": 3401,
+  "Weighted": 37854,
+  "Eff": 0.2641728747292228
+}

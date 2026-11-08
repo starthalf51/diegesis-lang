@@ -1,0 +1,545 @@
+{
+  "Passed": false,
+  "Raws": [
+    {
+      "acts": [
+        {
+          "actor": "",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "witches",
+          "verb": "says",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "macbeth",
+          "verb": "says",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "macbeth",
+          "verb": "asks",
+          "targets": [
+            "witches"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "witch1",
+          "verb": "hails",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "holds(thane_of_glamis,macbeth)"
+        },
+        {
+          "actor": "witch2",
+          "verb": "hails",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "holds(thane_of_cawdor,macbeth)"
+        },
+        {
+          "actor": "witch3",
+          "verb": "hails",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "king_hereafter"
+        },
+        {
+          "actor": "witch3",
+          "verb": "tells",
+          "targets": [
+            "banquo"
+          ],
+          "fact": "banquo_line"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "says",
+          "targets": [],
+          "fact": "holds(thane_of_glamis,macbeth)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "says",
+          "targets": [],
+          "fact": "alive(cawdor)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "says",
+          "targets": [],
+          "fact": "cawdor_in_favour"
+        },
+        {
+          "actor": "witches",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "macbeth",
+          "verb": "says",
+          "targets": [
+            "banquo"
+          ],
+          "fact": "banquo_line"
+        },
+        {
+          "actor": "banquo",
+          "verb": "says",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "king_hereafter"
+        },
+        {
+          "actor": "",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "angus",
+          "verb": "tells",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "holds(thane_of_cawdor,macbeth)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "asks",
+          "targets": [
+            "angus",
+            "ross"
+          ],
+          "fact": "alive(cawdor)"
+        },
+        {
+          "actor": "angus",
+          "verb": "tells",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "alive(cawdor)"
+        },
+        {
+          "actor": "angus",
+          "verb": "tells",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "cawdor_traitor"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "aside",
+          "targets": [],
+          "fact": "holds(thane_of_glamis,macbeth)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "aside",
+          "targets": [],
+          "fact": "holds(thane_of_cawdor,macbeth)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "aside",
+          "targets": [],
+          "fact": "king_hereafter"
+        },
+        {
+          "actor": "banquo",
+          "verb": "says",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "macbeth",
+          "verb": "aside",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "macbeth",
+          "verb": "thinks",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        }
+      ],
+      "facts_stated": [
+        "alive(cawdor)",
+        "holds(thane_of_cawdor,macbeth)",
+        "holds(thane_of_glamis,macbeth)",
+        "banquo_line",
+        "cawdor_in_favour",
+        "cawdor_traitor",
+        "king_hereafter"
+      ],
+      "new_events": []
+    },
+    {
+      "acts": [
+        {
+          "actor": "witches",
+          "verb": "says",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "macbeth",
+          "verb": "says",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "macbeth",
+          "verb": "asks",
+          "targets": [
+            "witches"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "witch1",
+          "verb": "hails",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "holds(thane_of_glamis,macbeth)"
+        },
+        {
+          "actor": "witch2",
+          "verb": "hails",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "holds(thane_of_cawdor,macbeth)"
+        },
+        {
+          "actor": "witch3",
+          "verb": "hails",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "king_hereafter"
+        },
+        {
+          "actor": "witch3",
+          "verb": "tells",
+          "targets": [
+            "banquo"
+          ],
+          "fact": "banquo_line"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "thinks",
+          "targets": [],
+          "fact": "holds(thane_of_glamis,macbeth)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "thinks",
+          "targets": [],
+          "fact": "alive(cawdor)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "thinks",
+          "targets": [],
+          "fact": "cawdor_in_favour"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "tells",
+          "targets": [
+            "banquo"
+          ],
+          "fact": "banquo_line"
+        },
+        {
+          "actor": "banquo",
+          "verb": "tells",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "king_hereafter"
+        },
+        {
+          "actor": "angus",
+          "verb": "tells",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "holds(thane_of_cawdor,macbeth)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "asks",
+          "targets": [
+            "angus"
+          ],
+          "fact": "alive(cawdor)"
+        },
+        {
+          "actor": "angus",
+          "verb": "tells",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "alive(cawdor)"
+        },
+        {
+          "actor": "angus",
+          "verb": "tells",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "cawdor_traitor"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "thinks",
+          "targets": [],
+          "fact": "holds(thane_of_glamis,macbeth)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "thinks",
+          "targets": [],
+          "fact": "holds(thane_of_cawdor,macbeth)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "thinks",
+          "targets": [],
+          "fact": "king_hereafter"
+        },
+        {
+          "actor": "banquo",
+          "verb": "says",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "macbeth",
+          "verb": "thinks",
+          "targets": [],
+          "fact": ""
+        }
+      ],
+      "facts_stated": [
+        "alive(cawdor)",
+        "holds(thane_of_cawdor,macbeth)",
+        "holds(thane_of_glamis,macbeth)",
+        "banquo_line",
+        "cawdor_in_favour",
+        "cawdor_traitor",
+        "king_hereafter"
+      ],
+      "new_events": [
+        {
+          "actor": "witches",
+          "verb": "exit",
+          "targets": [],
+          "action": "",
+          "text": "The witches withdraw into the fog and vanish."
+        }
+      ]
+    },
+    {
+      "acts": [
+        {
+          "actor": "",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "macbeth",
+          "verb": "asks",
+          "targets": [
+            "witches"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "witch1",
+          "verb": "hails",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "holds(thane_of_glamis,macbeth)"
+        },
+        {
+          "actor": "witch2",
+          "verb": "hails",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "holds(thane_of_cawdor,macbeth)"
+        },
+        {
+          "actor": "witch3",
+          "verb": "hails",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "king_hereafter"
+        },
+        {
+          "actor": "witch3",
+          "verb": "tells",
+          "targets": [
+            "banquo"
+          ],
+          "fact": "banquo_line"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "says",
+          "targets": [],
+          "fact": "alive(cawdor)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "says",
+          "targets": [],
+          "fact": "cawdor_in_favour"
+        },
+        {
+          "actor": "",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "macbeth",
+          "verb": "tells",
+          "targets": [
+            "banquo"
+          ],
+          "fact": "banquo_line"
+        },
+        {
+          "actor": "banquo",
+          "verb": "tells",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "king_hereafter"
+        },
+        {
+          "actor": "",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "angus",
+          "verb": "hails",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "holds(thane_of_cawdor,macbeth)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "asks",
+          "targets": [
+            "angus"
+          ],
+          "fact": "alive(cawdor)"
+        },
+        {
+          "actor": "angus",
+          "verb": "tells",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "alive(cawdor)"
+        },
+        {
+          "actor": "angus",
+          "verb": "tells",
+          "targets": [
+            "macbeth"
+          ],
+          "fact": "cawdor_traitor"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "aside",
+          "targets": [],
+          "fact": "holds(thane_of_glamis,macbeth)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "aside",
+          "targets": [],
+          "fact": "holds(thane_of_cawdor,macbeth)"
+        },
+        {
+          "actor": "macbeth",
+          "verb": "aside",
+          "targets": [],
+          "fact": "king_hereafter"
+        },
+        {
+          "actor": "",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        }
+      ],
+      "facts_stated": [
+        "alive(cawdor)",
+        "holds(thane_of_cawdor,macbeth)",
+        "holds(thane_of_glamis,macbeth)",
+        "banquo_line",
+        "cawdor_in_favour",
+        "cawdor_traitor",
+        "king_hereafter"
+      ],
+      "new_events": []
+    }
+  ],
+  "Report": {
+    "missing": [
+      "macbeth|assert|holds(king,macbeth)",
+      "ross|assert|holds(thane_of_cawdor,macbeth)"
+    ],
+    "hallucinated": [
+      "extra-act:angus|assert|holds(thane_of_cawdor,macbeth)"
+    ],
+    "leaked": [],
+    "extract_error": ""
+  },
+  "Usage": {
+    "input": 6,
+    "output": 2949,
+    "cache_read": 8661,
+    "cache_write": 4145
+  },
+  "Variant": "k-macbeth",
+  "Weighted": 82671
+}

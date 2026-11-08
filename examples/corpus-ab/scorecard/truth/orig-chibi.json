@@ -1,0 +1,41 @@
+{
+  "Name": "orig-chibi",
+  "Base": "chibi/45.88.ko-hapsho",
+  "Kind": "orig",
+  "Expect": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": true
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E6": {
+      "Present": false,
+      "AsStated": false,
+      "Unsure": true
+    }
+  },
+  "Withheld": {},
+  "Invented": null,
+  "Mutated": null,
+  "Target": 962
+}

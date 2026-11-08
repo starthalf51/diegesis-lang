@@ -1,0 +1,58 @@
+{
+  "Variant": "d3-chibi",
+  "Run": 1,
+  "Items": {
+    "E1": {
+      "Present": false,
+      "AsStated": false,
+      "Quote": "",
+      "T2": true
+    },
+    "E2": {
+      "Present": false,
+      "AsStated": false,
+      "Quote": "",
+      "T2": true
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "장간은 편지를 펼쳐서 천천히 읽어 내려갑니다."
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "그 두 사람은 처음부터 오와 연이 닿아 있었구나."
+    },
+    "E5": {
+      "Present": false,
+      "AsStated": false,
+      "Quote": "",
+      "T2": true
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "장윤과 채모 두 장군이 오셨습니다."
+    }
+  },
+  "Leak": {},
+  "LeakQuote": {},
+  "Cands": null,
+  "G1Fail": false,
+  "G2Fail": false,
+  "S1": 0.5,
+  "S2": 0.5,
+  "S3": 1,
+  "S4": 0.8056133056133056,
+  "Score": 0.5805613305613305,
+  "Calls": 2,
+  "Tier2": 1,
+  "Retries": 0,
+  "In": 4,
+  "Out": 864,
+  "CR": 716,
+  "CW": 5040,
+  "Weighted": 30240,
+  "Eff": 0.19198456698456698
+}

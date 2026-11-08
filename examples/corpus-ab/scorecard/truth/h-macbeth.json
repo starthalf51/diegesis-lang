@@ -1,0 +1,83 @@
+{
+  "Name": "h-macbeth",
+  "Base": "macbeth/1.3.ko-haera",
+  "Kind": "H",
+  "Expect": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E10": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E11": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E12": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E13": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E14": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": true
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E7": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E8": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E9": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    }
+  },
+  "Withheld": {},
+  "Invented": [
+    "그때 로스가 품에서 던컨 왕의 인장이 찍힌 서신을 꺼내 맥베스의 손에 쥐여 주었다."
+  ],
+  "Mutated": null,
+  "Target": 1707
+}

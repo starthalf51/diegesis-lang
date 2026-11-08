@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"recheck\":[{\"id\":\"E4\",\"fact_present\":\"no\",\"as_stated\":\"no\",\"quote\":\"\"},{\"id\":\"E5\",\"fact_present\":\"yes\",\"as_stated\":\"no\",\"quote\":\"“시넬이 죽었으니, 나는 글라미스의 영주가 된 줄 안다.”\"},{\"id\":\"E6\",\"fact_present\":\"yes\",\"as_stated\":\"no\",\"quote\":\"“캐더의 영주가 살아 있다,”\"},{\"id\":\"E7\",\"fact_present\":\"no\",\"as_stated\":\"no\",\"quote\":\"\"},{\"id\":\"E8\",\"fact_present\":\"no\",\"as_stated\":\"no\",\"quote\":\"\"},{\"id\":\"E12\",\"fact_present\":\"no\",\"as_stated\":\"no\",\"quote\":\"\"}],\"candidates\":[{\"id\":\"C1\",\"verdict\":\"trivial\",\"item\":\"\",\"quote\":\"안개가 다시 몰려와 그녀들의 형체를 감추었고\"}]}\n```",
+  "stop": "end_turn",
+  "tag": "d3-macbeth_r1_t2",
+  "try": 0
+}

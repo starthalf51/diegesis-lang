@@ -1,0 +1,280 @@
+{
+  "Passed": false,
+  "Raws": [
+    {
+      "acts": [
+        {
+          "actor": "malsun",
+          "verb": "says",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "song_line"
+        },
+        {
+          "actor": "seoyun",
+          "verb": "sees",
+          "targets": [
+            "sewing_box"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "seoyun",
+          "verb": "asks",
+          "targets": [
+            "malsun"
+          ],
+          "fact": "song_line"
+        },
+        {
+          "actor": "malsun",
+          "verb": "says",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "haenyeo_past"
+        },
+        {
+          "actor": "seoyun",
+          "verb": "says",
+          "targets": [
+            "malsun"
+          ],
+          "fact": "memorial_day"
+        },
+        {
+          "actor": "malsun",
+          "verb": "says",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "box_untouchable"
+        },
+        {
+          "actor": "minjae",
+          "verb": "whispers",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "grandma_memory_failing"
+        },
+        {
+          "actor": "seoyun",
+          "verb": "says",
+          "targets": [
+            "minjae"
+          ],
+          "fact": "seoyun_will_ask"
+        },
+        {
+          "actor": "minjae",
+          "verb": "tells",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "minjae_leaves"
+        }
+      ],
+      "facts_stated": [
+        "song_line",
+        "haenyeo_past",
+        "memorial_day",
+        "box_untouchable",
+        "grandma_memory_failing",
+        "seoyun_will_ask",
+        "minjae_leaves"
+      ],
+      "new_events": []
+    },
+    {
+      "acts": [
+        {
+          "actor": "malsun",
+          "verb": "says",
+          "targets": [],
+          "fact": "song_line"
+        },
+        {
+          "actor": "seoyun",
+          "verb": "sees",
+          "targets": [
+            "malsun"
+          ],
+          "fact": "song_line"
+        },
+        {
+          "actor": "seoyun",
+          "verb": "asks",
+          "targets": [
+            "malsun"
+          ],
+          "fact": "song_line"
+        },
+        {
+          "actor": "malsun",
+          "verb": "says",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "haenyeo_past"
+        },
+        {
+          "actor": "seoyun",
+          "verb": "says",
+          "targets": [
+            "malsun"
+          ],
+          "fact": "memorial_day"
+        },
+        {
+          "actor": "malsun",
+          "verb": "says",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "box_untouchable"
+        },
+        {
+          "actor": "minjae",
+          "verb": "whispers",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "grandma_memory_failing"
+        },
+        {
+          "actor": "seoyun",
+          "verb": "says",
+          "targets": [
+            "minjae"
+          ],
+          "fact": "seoyun_will_ask"
+        },
+        {
+          "actor": "minjae",
+          "verb": "says",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "minjae_leaves"
+        }
+      ],
+      "facts_stated": [
+        "song_line",
+        "haenyeo_past",
+        "memorial_day",
+        "box_untouchable",
+        "grandma_memory_failing",
+        "seoyun_will_ask",
+        "minjae_leaves"
+      ],
+      "new_events": []
+    },
+    {
+      "acts": [
+        {
+          "actor": "malsun",
+          "verb": "says",
+          "targets": [],
+          "fact": "song_line"
+        },
+        {
+          "actor": "seoyun",
+          "verb": "sees",
+          "targets": [
+            "malsun"
+          ],
+          "fact": "song_line"
+        },
+        {
+          "actor": "seoyun",
+          "verb": "asks",
+          "targets": [
+            "malsun"
+          ],
+          "fact": "song_line"
+        },
+        {
+          "actor": "malsun",
+          "verb": "says",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "haenyeo_past"
+        },
+        {
+          "actor": "seoyun",
+          "verb": "says",
+          "targets": [
+            "malsun"
+          ],
+          "fact": "memorial_day"
+        },
+        {
+          "actor": "malsun",
+          "verb": "says",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "box_untouchable"
+        },
+        {
+          "actor": "minjae",
+          "verb": "whispers",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "grandma_memory_failing"
+        },
+        {
+          "actor": "seoyun",
+          "verb": "says",
+          "targets": [
+            "minjae"
+          ],
+          "fact": "seoyun_will_ask"
+        },
+        {
+          "actor": "minjae",
+          "verb": "tells",
+          "targets": [
+            "seoyun"
+          ],
+          "fact": "minjae_leaves"
+        }
+      ],
+      "facts_stated": [
+        "song_line",
+        "haenyeo_past",
+        "memorial_day",
+        "box_untouchable",
+        "grandma_memory_failing",
+        "seoyun_will_ask",
+        "minjae_leaves"
+      ],
+      "new_events": []
+    }
+  ],
+  "Report": {
+    "missing": [
+      "seoyun|assert|song_line"
+    ],
+    "hallucinated": [
+      "extra-act:minjae|assert|minjae_leaves",
+      "extra-act:seoyun|perceive|song_line"
+    ],
+    "leaked": [
+      "minjae_leaves"
+    ],
+    "extract_error": ""
+  },
+  "Usage": {
+    "input": 6,
+    "output": 1301,
+    "cache_read": 5643,
+    "cache_write": 2637
+  },
+  "Variant": "l-haejin",
+  "Weighted": 44373
+}

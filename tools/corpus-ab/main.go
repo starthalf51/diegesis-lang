@@ -119,6 +119,14 @@ func main() {
 	spike := flag.String("spike", "", "h1|h2: spike.go")
 	flag.Parse()
 	ctx := context.Background()
+	if *spike == "sc-dry" {
+		runDry(ctx)
+		return
+	}
+	if strings.HasPrefix(*spike, "sc-") {
+		runSC(ctx, *spike, *budget, *out, *pairs)
+		return
+	}
 	bs, err := render.LoadBackends("styles")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

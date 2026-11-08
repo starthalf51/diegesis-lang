@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"recheck\":[{\"id\":\"E5\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"“시넬이 죽었으니, 나는 글라미스의 영주가 된 줄 안다.”\"},{\"id\":\"E6\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"“캐더의 영주가 살아 있다,”\"},{\"id\":\"E7\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"“번성한 신사.”\"}],\"candidates\":[{\"id\":\"C1\",\"verdict\":\"covered\",\"item\":\"E10\",\"quote\":\"“그분께서 나더러 그대를 캐더의 영주라 부르라 하셨소.”\"},{\"id\":\"C2\",\"verdict\":\"extra\",\"item\":\"\",\"quote\":\"“사형에 해당하는 반역죄가 자백되고 입증되어 그를 쓰러뜨렸소.”\"}]}\n```",
+  "stop": "end_turn",
+  "tag": "orig-macbeth_r2_t2",
+  "try": 0
+}

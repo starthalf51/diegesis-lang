@@ -1,0 +1,111 @@
+{
+  "Variant": "k-macbeth",
+  "Run": 1,
+  "Items": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“만세, 맥베스여! 글라미스의 영주여, 만세!”"
+    },
+    "E10": {
+      "Present": true,
+      "AsStated": false,
+      "Quote": "“그분께서 나더러 그대를 캐더의 영주라 부르라 하셨소.”",
+      "T2": true
+    },
+    "E11": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "앵거스는 그 영주가 아직 목숨을 부지하고 있으나"
+    },
+    "E12": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "캐더의 영주가 노르웨이 편에 서서 던컨 왕에게 맞섰다는 사실을 밝혔다"
+    },
+    "E13": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“그리고 캐더의 영주!”"
+    },
+    "E14": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“가장 큰 것이 아직 남았다.”"
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“그대에게 만세, 캐더의 영주여!”"
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“그대는 장차 왕이 되리라!”"
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“그대는 왕을 낳으리라, 그대 자신은 왕이 아니어도.”"
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“시넬이 죽었으니, 나는 글라미스의 영주가 된 줄 안다.”"
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“캐더의 영주가 살아 있다,”"
+    },
+    "E7": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“번성한 신사.”"
+    },
+    "E8": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“그대의 자식들이 왕이 되리라.”"
+    },
+    "E9": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "“그대가 왕이 되리라.”"
+    }
+  },
+  "Leak": {},
+  "LeakQuote": {},
+  "Cands": [
+    {
+      "Ev": {
+        "actor": "angus",
+        "verb": "tells",
+        "targets": [
+          "macbeth"
+        ],
+        "action": "",
+        "text": "Angus says Cawdor was convicted of treason, proven and confessed."
+      },
+      "Quote": "“사형에 해당하는 반역죄가 자백되고 입증되어 그를 쓰러뜨렸소.”",
+      "Confirmed": true,
+      "Verdict": "extra"
+    }
+  ],
+  "G1Fail": false,
+  "G2Fail": true,
+  "S1": 1,
+  "S2": 0.9285714285714286,
+  "S3": 1,
+  "S4": 0.9994145199063232,
+  "Score": 0.985655737704918,
+  "Calls": 2,
+  "Tier2": 1,
+  "Retries": 0,
+  "In": 4,
+  "Out": 1028,
+  "CR": 716,
+  "CW": 8194,
+  "Weighted": 42162,
+  "Eff": 0.23377822155137756
+}

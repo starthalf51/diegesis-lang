@@ -1,0 +1,41 @@
+{
+  "Name": "orig-odyssey",
+  "Base": "odyssey/19.1.ko-haera",
+  "Kind": "orig",
+  "Expect": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": true
+    }
+  },
+  "Withheld": {},
+  "Invented": null,
+  "Mutated": null,
+  "Target": 1309
+}
