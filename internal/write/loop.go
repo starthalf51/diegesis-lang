@@ -45,7 +45,7 @@ type Opts struct {
 	RenderEffort                         string   // claude --effort for render calls (default low)
 	NoDigest                             bool     // CLI: --no-digest, leave o.Digest nil
 	Recap                                string   // ContinueLoop only: the PG state digest of the story so far (StateDigest)
-	Digest                               func(ctx context.Context, sceneID string) (string, error) // render path: per-scene PG world-state digest appended to the render prompt and folded into staleness; nil = none
+	Digest                               func(ctx context.Context, sceneID string) (text, state string, err error) // render path: per-scene PG world-state digest; text is appended to the render prompt, only the state-only part is hashed for staleness; nil = none
 	Verifier                             string   // "card" (default, render.ScoreCard checklist) or "open" (open re-extraction)
 }
 

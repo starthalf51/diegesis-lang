@@ -10,8 +10,8 @@ import (
 	"diegesis/internal/render"
 )
 
-func digestOf(s string) func(context.Context, string) (string, error) {
-	return func(context.Context, string) (string, error) { return s, nil }
+func digestOf(s string) func(context.Context, string) (string, string, error) {
+	return func(context.Context, string) (string, string, error) { return s, s, nil }
 }
 
 func hashFile(t *testing.T, out string, b render.Backend, id string) string {
@@ -90,5 +90,27 @@ func TestLegacyHashNotStale(t *testing.T) {
 	}
 	if h := hashFile(t, out, b, "s1"); len(strings.Fields(h)) != 2 {
 		t.Errorf("hash after re-render = %q, want two columns", h)
+	}
+}
+
+// Only the state part of the digest decides staleness; the text (acts, plants) may change freely.
+func TestStaleOnlyOnStatePart(t *testing.T) {
+	b, mk, out := rerenderFixture(t)
+	now := []render.Scene{mk("s1", "")}
+	run := func(text, state string) RerenderResult {
+		d := func(context.Context, string) (string, string, error) { return text, state, nil }
+		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
+		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{Digest: d}, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return rr
+	}
+	run("acts v1", "STATE")
+	if rr := run("acts v2", "STATE"); len(rr.Changed)+len(rr.Added) != 0 {
+		t.Fatalf("text-only change went stale %+v", rr)
+	}
+	if rr := run("acts v2", "STATE2"); len(rr.Changed) != 1 {
+		t.Fatalf("state change not stale %+v", rr)
 	}
 }

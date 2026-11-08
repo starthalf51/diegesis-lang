@@ -53,7 +53,7 @@ func Novel(ctx context.Context, cs render.Completers, work string, scenes []rend
 	var rs []SceneResult
 	for _, s := range scenes {
 		s.FreeDialogue = o.Skeleton
-		digest, err := sceneDigest(ctx, o, s.ID)
+		digest, dh, err := sceneDigest(ctx, o, s.ID)
 		var r render.Render
 		n := 0
 		if err == nil {
@@ -71,7 +71,7 @@ func Novel(ctx context.Context, cs render.Completers, work string, scenes []rend
 				return rs, err
 			}
 			if h, err := render.RenderHash(s, b); err == nil {
-				if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".hash"), []byte(stamp(h, o, digest)+"\n"), 0o644); err != nil {
+				if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".hash"), []byte(stamp(h, o, dh)+"\n"), 0o644); err != nil {
 					return rs, err
 				}
 			}
@@ -113,23 +113,27 @@ func fileID(id string) string {
 }
 
 // sceneDigest is o.Digest for scene id, blank-line-prefixed so it can be appended to a prompt; "" when there is none.
-func sceneDigest(ctx context.Context, o Opts, id string) (string, error) {
+// The second result is the hash of the digest's state-only part (what staleness compares).
+func sceneDigest(ctx context.Context, o Opts, id string) (suffix, stateHash string, err error) {
 	if o.Digest == nil {
-		return "", nil
+		return "", "", nil
 	}
-	d, err := o.Digest(ctx, id)
-	if err != nil || strings.TrimSpace(d) == "" {
-		return "", err
+	d, st, err := o.Digest(ctx, id)
+	if err != nil {
+		return "", "", err
 	}
-	return "\n\n" + d, nil
+	if strings.TrimSpace(d) != "" {
+		suffix = "\n\n" + d
+	}
+	return suffix, digestHash(st), nil
 }
 
 func digestHash(d string) string { h := sha256.Sum256([]byte(d)); return hex.EncodeToString(h[:8]) }
 
 // stamp is the .hash content: "<irhash>" without a digest, else "<irhash> <digesthash>".
-func stamp(ir string, o Opts, digest string) string {
+func stamp(ir string, o Opts, stateHash string) string {
 	if o.Digest == nil {
 		return ir
 	}
-	return ir + " " + digestHash(digest)
+	return ir + " " + stateHash
 }

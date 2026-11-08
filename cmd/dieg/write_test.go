@@ -193,3 +193,16 @@ func TestRenderVerifierNeedsVerify(t *testing.T) {
 		t.Errorf("exit %d", c)
 	}
 }
+
+func TestNoDigestFlag(t *testing.T) {
+	o := write.DefaultOpts()
+	styles, limit := "styles", 0
+	if _, ok, code := commonFlag([]string{"--no-digest"}, 0, &o, &styles, &limit); !ok || code != 0 || !o.NoDigest {
+		t.Fatalf("ok=%t code=%d NoDigest=%t", ok, code, o.NoDigest)
+	}
+	got, closeFn, err := withDigest(context.Background(), "w", o)
+	if err != nil || got.Digest != nil {
+		t.Fatalf("Digest wired despite --no-digest: %v", err)
+	}
+	closeFn()
+}

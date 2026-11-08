@@ -55,14 +55,14 @@ func hm(sec int64) string {
 }
 
 // Digest 는 장면 sceneID(짧은 ID)의 시점에서 PG 가 아는 세계 상태. 절 제목부터 끝까지의 텍스트이고, 장면이 없으면 오류다.
-func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (string, error) {
+func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (text, state string, err error) {
 	rb, err := RenderScene(ctx, p, work, sceneID)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	s, err := render.ParseScene(rb)
 	if err != nil {
-		return "", fmt.Errorf("scene %s: %w", sceneID, err)
+		return "", "", fmt.Errorf("scene %s: %w", sceneID, err)
 	}
 	q := querier(ctx, p)
 	var sid, startPt, placeShort, placeName string
@@ -70,7 +70,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	rows, err := q(`SELECT id, discourse_ord, coalesce(start_pt,''), coalesce(lint_short(place_id),''), coalesce(render_name($1, place_id, 'ko'),'')
 	                  FROM scene WHERE work_id=$1 AND lint_short(id)=$2 AND shown`, work, s.ID)
 	if err != nil || len(rows) != 1 {
-		return "", fmt.Errorf("scene %s: %v (%d rows)", s.ID, err, len(rows))
+		return "", "", fmt.Errorf("scene %s: %v (%d rows)", s.ID, err, len(rows))
 	}
 	sid, startPt, placeShort, placeName = rows[0][0], rows[0][2], rows[0][3], rows[0][4]
 	fmt.Sscan(rows[0][1], &ord)
@@ -84,14 +84,22 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	                WHERE wh.work_id=$1 AND wh.prop_id IS NOT NULL
 	                  AND NOT EXISTS (SELECT 1 FROM reader_state($1, $2) r WHERE r.fact_id = z.base)`, work, ord-1)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	for _, h := range hid {
 		hidden[h[0]] = true
 	}
 
 	var b strings.Builder
-	line := func(f string, a ...any) { fmt.Fprintf(&b, f+"\n", a...) }
+	// st collects only the STATE sections (1, 2, 4) the staleness hash covers; sections 3 and 5 are narrative.
+	var st strings.Builder
+	inState := true
+	line := func(f string, a ...any) {
+		fmt.Fprintf(&b, f+"\n", a...)
+		if inState {
+			fmt.Fprintf(&st, f+"\n", a...)
+		}
+	}
 	line("## 이 시점의 세계 상태 (어기지 말 것)")
 	line("아래는 이 이야기의 코드·그래프에서 뽑은 확정 상태다. 위 장면 명세와 겹치지 않는 한, 소품·장소·앎을 아래와 다르게 쓰지 않는다. 아래에 없는 소품 위치를 새로 옮기지 않는다.")
 
@@ -100,7 +108,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	                     coalesce((SELECT p.earliest FROM scene x JOIN point p ON p.id=x.start_pt WHERE x.work_id=$1 AND x.discourse_ord=$3-1),-1),
 	                     coalesce((SELECT lint_short(x.id) FROM scene x WHERE x.work_id=$1 AND x.discourse_ord=$3-1),'')`, work, startPt, ord)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	var t0, tp int64
 	fmt.Sscan(tm[0][0], &t0)
@@ -124,7 +132,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	                 AND (e.kind <> 'thing' OR EXISTS (SELECT 1 FROM act x JOIN scene xs ON xs.id=x.scene_id WHERE x.work_id=$1 AND xs.discourse_ord <= $3 AND a.entity_id = ANY(x.objects)))
 	               ORDER BY 1, 4`, work, startPt, ord)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	line("\n### 코드에 적힌 속성")
 	var elsewhere []string
@@ -148,6 +156,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 		line("- 이 장면의 장소(%s)에 없는 물건: %s. 장면에서 직접 옮기는 행위가 없으면 그 자리에 둔다.", placeName, strings.Join(elsewhere, ", "))
 	}
 
+	inState = false
 	// 3. 이미 일어난 물건·동작 행위 (이 장면 이전, 서술 순서)
 	ac, err := q(`
 	  WITH last_here AS (SELECT id FROM scene WHERE work_id=$1 AND shown AND discourse_ord < $2 AND place_id = (SELECT place_id FROM scene WHERE id=$3)
@@ -162,7 +171,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	            OR (a.verb='does' AND s.id IN (SELECT id FROM last_here)))
 	     ORDER BY s.discourse_ord DESC, a.ord DESC LIMIT 14) x ORDER BY 1, 2`, work, ord, sid)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	if len(ac) > 0 {
 		line("\n### 이미 일어난 물건·동작 (코드의 행위, 오래된 순)")
@@ -178,6 +187,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 		}
 	}
 
+	inState = true
 	// 4. 등장인물이 아는 것·믿는 것 (이 장면 이전에 얻은 것, 최근 순)
 	var cast []string
 	for _, e := range s.Cast {
@@ -197,7 +207,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 		     ORDER BY z.base, point_ord($1, bl.from_pt) DESC) y
 		   WHERE y.o IS NOT NULL ORDER BY y.o DESC LIMIT 5`, work, id, ord, startPt)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		nm := id
 		if len(s.Cast) > 0 {
@@ -227,16 +237,23 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 		}
 	}
 
+	inState = false
 	// 5. 이 장면이 심거나 회수하는 복선의 원문
-	su, err := q(`SELECT 'plant', coalesce(nullif(s.text,''), render_fact_text($1, s.prop_id), '') FROM setup s WHERE s.work_id=$1 AND s.scene_id=$2
+	su, err := q(`SELECT 'plant', coalesce(nullif(s.text,''), render_fact_text($1, s.prop_id), ''), coalesce(lint_short(s.prop_id),''), coalesce((SELECT lint_short(z.base) FROM prop_norm($1, s.prop_id) z LIMIT 1),'') FROM setup s WHERE s.work_id=$1 AND s.scene_id=$2
 	               UNION ALL
-	              SELECT 'payoff', coalesce(nullif(s.text,''), render_fact_text($1, s.prop_id), '') FROM payoff p JOIN setup s ON s.id=p.setup_id WHERE p.work_id=$1 AND p.scene_id=$2`, work, sid)
+	              SELECT 'payoff', coalesce(nullif(s.text,''), render_fact_text($1, s.prop_id), ''), coalesce(lint_short(s.prop_id),''), coalesce((SELECT lint_short(z.base) FROM prop_norm($1, s.prop_id) z LIMIT 1),'') FROM payoff p JOIN setup s ON s.id=p.setup_id WHERE p.work_id=$1 AND p.scene_id=$2`, work, sid)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	if len(su) > 0 {
+	var shown [][]string
+	for _, r := range su {
+		if !hidden[r[2]] && !hidden[r[3]] {
+			shown = append(shown, r)
+		}
+	}
+	if len(shown) > 0 {
 		line("\n### 이 장면이 심거나 거두는 복선의 원문 (이 표현과 어긋나지 않게)")
-		for _, r := range su {
+		for _, r := range shown {
 			k := "심음"
 			if r[0] == "payoff" {
 				k = "거둠"
@@ -244,15 +261,15 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 			line("- %s: %s", k, r[1])
 		}
 	}
-	pl, err := q(`SELECT lint_short(sx.id), coalesce(nullif(su.text,''), render_fact_text($1, su.prop_id), ''), coalesce(lint_short(su.prop_id),'')
+	pl, err := q(`SELECT lint_short(sx.id), coalesce(nullif(su.text,''), render_fact_text($1, su.prop_id), ''), coalesce(lint_short(su.prop_id),''), coalesce((SELECT lint_short(z.base) FROM prop_norm($1, su.prop_id) z LIMIT 1),'')
 	                FROM setup su JOIN scene sx ON sx.id=su.scene_id WHERE su.work_id=$1 AND sx.shown AND sx.discourse_ord < $2
 	               ORDER BY sx.discourse_ord DESC LIMIT 8`, work, ord)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	var pls []string
 	for _, r := range pl {
-		if r[1] != "" && !hidden[r[2]] {
+		if r[1] != "" && !hidden[r[2]] && !hidden[r[3]] {
 			pls = append(pls, fmt.Sprintf("- %s에서 심은 묘사: %s", r[0], r[1]))
 		}
 	}
@@ -266,5 +283,5 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	if utf8.RuneCountInString(out) > digestCap {
 		out = string([]rune(out)[:digestCap]) + "\n(이하 생략)\n"
 	}
-	return out, nil
+	return out, st.String(), nil
 }

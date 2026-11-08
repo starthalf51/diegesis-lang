@@ -337,11 +337,11 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 	if o.Digest != nil {
 		for _, s := range cur {
 			if old, ok := beforeDig[s.ID]; ok && !slices.Contains(rr.Changed, s.ID) {
-				d, err := sceneDigest(ctx, o, s.ID)
+				_, dh, err := sceneDigest(ctx, o, s.ID)
 				if err != nil {
 					return RerenderResult{}, fmt.Errorf("scene %s digest: %w", s.ID, err)
 				}
-				if digestHash(d) != old {
+				if dh != old {
 					rr.Changed = append(rr.Changed, s.ID)
 				}
 			}

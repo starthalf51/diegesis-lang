@@ -387,6 +387,6 @@ func withDigest(ctx context.Context, work string, o write.Opts) (write.Opts, fun
 	if err != nil {
 		return o, nil, err
 	}
-	o.Digest = func(ctx context.Context, sceneID string) (string, error) { return pg.Digest(ctx, pool, work, sceneID) }
+	o.Digest = func(ctx context.Context, sceneID string) (string, string, error) { return pg.Digest(ctx, pool, work, sceneID) }
 	return o, pool.Close, nil
 }
