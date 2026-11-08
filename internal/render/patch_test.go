@@ -85,7 +85,7 @@ func TestPatchVerifiedRetryThenFallback(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if r.Prose != "전체 렌더 산문" || n != 3 || strings.Join(log, "") != "RRRX" {
+	if r.Report.Patched || r.Prose != "전체 렌더 산문" || n != 3 || strings.Join(log, "") != "RRRX" {
 		t.Fatalf("prose=%q n=%d log=%v", r.Prose, n, log)
 	}
 	if !strings.Contains(rc.users[0], "변경 내역") || strings.Contains(rc.users[2], "변경 내역") {
@@ -104,7 +104,7 @@ func TestPatchVerifiedCardFeedback(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Join(log, "") != "PCPC" || n != 2 || r.Prose != "새 산문입니다." || !Passed(r) {
+	if strings.Join(log, "") != "PCPC" || n != 2 || !r.Report.Patched || r.Prose != "새 산문입니다." || !Passed(r) {
 		t.Fatalf("log=%v n=%d prose=%q %+v", log, n, r.Prose, r.Report)
 	}
 	if !strings.Contains(rc.users[1], "검수 결과") || strings.Contains(rc.users[0], "검수 결과") {
@@ -120,5 +120,11 @@ func TestSceneDiff(t *testing.T) {
 	rm, ad := SceneDiff(old, nw)
 	if len(rm) != 0 || len(ad) != 1 {
 		t.Fatalf("rm=%v ad=%v", rm, ad)
+	}
+}
+
+func TestApplyPatchOverlappingOccurrences(t *testing.T) {
+	if _, err := ApplyPatch("aaa", []Edit{{"aa", "x"}}); !IsBadExtract(err) {
+		t.Fatalf("overlapping repeats must be ambiguous: %v", err)
 	}
 }

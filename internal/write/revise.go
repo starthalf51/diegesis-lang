@@ -371,7 +371,7 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 	var err error
 	for _, s := range ss {
 		o2, has := old[s.ID]
-		if has && o.Verifier == "card" && slices.Contains(rr.Changed, s.ID) {
+		if has && o.Verifier == "card" && slices.Contains(rr.Changed, s.ID) && proseMatches(o2, o, b, before[s.ID]) {
 			sr, ok, perr := patchScene(ctx, cs, work, o2, s, b, out, o)
 			if perr != nil {
 				return rr, perr

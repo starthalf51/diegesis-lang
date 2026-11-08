@@ -57,7 +57,16 @@ func ApplyPatch(prose string, es []Edit) (string, error) {
 		if e.Old == "" {
 			return "", badExtract(fmt.Sprintf("patch: edit %d has an empty old", i+1))
 		}
-		switch n := strings.Count(prose, e.Old); {
+		n := 0
+		for j := strings.Index(prose, e.Old); j >= 0; { // overlapping repeats ("aa" in "aaa") are ambiguous too
+			n++
+			k := strings.Index(prose[j+1:], e.Old)
+			if k < 0 {
+				break
+			}
+			j += 1 + k
+		}
+		switch {
 		case n == 0:
 			return "", badExtract(fmt.Sprintf("patch: edit %d old not found in the prose: %q", i+1, e.Old))
 		case n > 1:
@@ -271,6 +280,7 @@ func PatchVerified(ctx context.Context, cs Completers, work string, old, nw Scen
 		if r.Report, err = ScoreCard(ctx, cs.Extract, nw, b, prose, o.Card); err != nil {
 			return r, n, fmt.Errorf("%s/%s card: %w", nw.ID, b.ID, err)
 		}
+		r.Report.Patched = true
 		if Passed(r) {
 			return r, n, nil
 		}

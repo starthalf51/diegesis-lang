@@ -20,6 +20,7 @@ type SceneResult struct {
 	Pass     bool
 	Err      error
 	Report   render.Report // last attempt's verification report
+	Patched  bool          // the prose came from a sentence patch (see Report.Patched), not a full render
 }
 
 // sceneLabeler tags render calls render-<scene>-a<n> and the extraction calls that follow extract-<scene>-a<n>.

@@ -73,9 +73,14 @@ func runRevise(request, styles string, limit int, o write.Opts) (int, error) {
 	m, cs, k := meters(o, f)
 	o.Reserved = corpusWorks()
 	summary := func(res write.Result, rr write.RerenderResult, failed []string) {
-		t := m.Total()
-		fmt.Printf("revise: rounds=%d clean=%t changed=%s added=%s removed=%s failed=%d%v calls=%d tokens in=%d out=%d cache_read=%d cache_write=%d → %s\n",
-			res.Rounds, res.Clean, strings.Join(rr.Changed, ","), strings.Join(rr.Added, ","), strings.Join(rr.Removed, ","),
+		t, patched := m.Total(), 0
+		for _, s := range rr.Scenes {
+			if s.Patched {
+				patched++
+			}
+		}
+		fmt.Printf("revise: rounds=%d clean=%t changed=%s added=%s removed=%s patched=%d failed=%d%v calls=%d tokens in=%d out=%d cache_read=%d cache_write=%d → %s\n",
+			res.Rounds, res.Clean, strings.Join(rr.Changed, ","), strings.Join(rr.Added, ","), strings.Join(rr.Removed, ","), patched,
 			len(failed), failed, k.n.Load(), t.Input, t.Output, t.CacheRead, t.CacheWrite, o.Out)
 	}
 	var old map[string]render.Scene // pre-revision requests, for sentence-level patches (compile only, no model call)
