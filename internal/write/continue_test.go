@@ -42,7 +42,7 @@ func TestContinueRejectsPastEdits(t *testing.T) {
 		"=== FILE: ep03/s2.dieg.md ===\n# wrong episode\n" + End,
 	}}
 	chk, n := checks(nil)
-	o := Opts{Rounds: 3, Out: filepath.Dir(dir), Digest: "DIGEST"}
+	o := Opts{Rounds: 3, Out: filepath.Dir(dir), Recap: "DIGEST"}
 	res, err := ContinueLoop(ctx, f, chk, dir, 2, "brief", testRefs(t), o)
 	if err != nil || res.Clean || res.Rounds != 3 || *n != 0 {
 		t.Fatalf("%+v %v checks=%d", res, err, *n)
@@ -75,7 +75,7 @@ func TestContinueOnlyNewScenesRendered(t *testing.T) {
 		}
 		return nil, nil
 	}
-	o := Opts{Rounds: 3, Out: filepath.Dir(dir), Digest: "DIGEST-MARK"}
+	o := Opts{Rounds: 3, Out: filepath.Dir(dir), Recap: "DIGEST-MARK"}
 	res, err := ContinueLoop(ctx, f, chk, dir, 2, "서진이 종탑에 오른다", testRefs(t), o)
 	if err != nil || !res.Clean || res.Rounds != 2 || !slices.Equal(seen, []bool{true, true}) {
 		t.Fatalf("%+v %v seen=%v", res, err, seen)

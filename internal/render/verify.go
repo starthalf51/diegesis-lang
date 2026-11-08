@@ -11,6 +11,9 @@ type VerifyOpts struct {
 	K, Retries int
 	Verifier   string
 	Card       CardOpts
+	// UserSuffix is appended to the render user prompt (after Prompt, before retry feedback) for generation only.
+	// It is not part of RenderHash.
+	UserSuffix string
 }
 
 // Passed 는 사실 기준 통과 여부. 열린 경로는 ADR-019(환각 0, 누출 0, 누락 ≤ MaxMissing), 카드 경로는 ADR-028(누출 0, 누락+종류 틀림 ≤ 1, G2 는 경고만 — Hallucinated 가 늘 비어 있다).
@@ -38,7 +41,7 @@ func RenderVerified2(ctx context.Context, cs Completers, work string, s Scene, b
 	extra := ""
 	for n := 1; ; n++ {
 		var err error
-		if r, err = renderWith(ctx, cs.Render, cs.Extract, work, s, b, o.K, extra, o.card()); err != nil {
+		if r, err = renderWith(ctx, cs.Render, cs.Extract, work, s, b, o.K, o.UserSuffix, extra, o.card()); err != nil {
 			return r, n, err
 		}
 		if Passed(r) || n > o.Retries {

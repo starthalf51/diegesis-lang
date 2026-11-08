@@ -16,7 +16,7 @@ import (
 
 // ContinueLoop writes episode ep into storyDir (the accumulated story/ code): it asks c for new files under
 // story/epNN/ only, writes them there, checks the whole storyDir (past + new) and feeds diagnostics back until clean
-// or o.Rounds is spent. The prompt carries the cast files and o.Digest, not the past scene code. A bundle with a
+// or o.Rounds is spent. The prompt carries the cast files and o.Recap, not the past scene code. A bundle with a
 // path outside epNN/ or one that already exists is a "bundle" diagnostic and consumes its round (Review Focus 1);
 // past files are never written. A rejected round's epNN/ is removed again, so after an unclean run storyDir is
 // as it was. Round r's raw output is <out>/rounds/epNN-r<r>.raw.txt and its files <out>/rounds/epNN-r<r>/;
@@ -44,7 +44,7 @@ func ContinueLoop(ctx context.Context, c render.Completer, check Checker, storyD
 	var last map[string]string
 	var lastDiags []Diag
 	var bundle string
-	first := ContinuePrompt(o.Digest, cast, brief, ep, refs, o.Reserved, o.Skeleton)
+	first := ContinuePrompt(o.Recap, cast, brief, ep, refs, o.Reserved, o.Skeleton)
 	user := first
 	for r := 1; r <= o.Rounds; r++ {
 		l := d + "-code-r" + strconv.Itoa(r)

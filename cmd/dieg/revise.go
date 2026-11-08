@@ -103,6 +103,12 @@ func runRevise(request, styles string, limit int, o write.Opts) (int, error) {
 		summary(res, write.RerenderResult{}, nil)
 		return 1, err
 	}
+	o, closeDigest, err := withDigest(ctx, work, o)
+	if err != nil {
+		summary(res, write.RerenderResult{}, nil)
+		return 1, err
+	}
+	defer closeDigest()
 	rr, err := write.Rerender(ctx, cs, work, all, b, o.Out, o, limit)
 	if err != nil {
 		summary(res, rr, nil)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -321,14 +322,32 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 		after[s.ID] = h
 	}
 	dir := filepath.Join(out, "novel")
-	before := map[string]string{}
+	before, beforeDig := map[string]string{}, map[string]string{}
 	for _, s := range cur {
 		if h, err := os.ReadFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".hash")); err == nil {
-			before[s.ID] = strings.TrimSpace(string(h))
+			f := strings.Fields(string(h))
+			before[s.ID] = strings.Join(f[:min(1, len(f))], "")
+			if len(f) > 1 { // a legacy single-hash file means "digest unknown": never stale because of it
+				beforeDig[s.ID] = f[1]
+			}
 		}
 	}
 	rr := RerenderResult{}
 	rr.Changed, rr.Added, _ = ChangedScenes(before, after)
+	if o.Digest != nil {
+		for _, s := range cur {
+			if old, ok := beforeDig[s.ID]; ok && !slices.Contains(rr.Changed, s.ID) {
+				d, err := sceneDigest(ctx, o, s.ID)
+				if err != nil {
+					return RerenderResult{}, fmt.Errorf("scene %s digest: %w", s.ID, err)
+				}
+				if digestHash(d) != old {
+					rr.Changed = append(rr.Changed, s.ID)
+				}
+			}
+		}
+		sort.Strings(rr.Changed)
+	}
 	if ents, err := os.ReadDir(dir); err == nil {
 		for _, e := range ents {
 			id, ok := strings.CutSuffix(e.Name(), "."+b.ID+".md")

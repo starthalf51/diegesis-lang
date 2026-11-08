@@ -2,6 +2,8 @@ package write
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -34,9 +36,9 @@ func (l *sceneLabeler) Complete(ctx context.Context, system, user string) (rende
 	return label(l.c, l.kind+l.scene+"-a"+strconv.Itoa(*l.attempt)).Complete(ctx, system, user)
 }
 
-func renderScene(ctx context.Context, cs render.Completers, work string, s render.Scene, b render.Backend, o Opts) (render.Render, int, error) {
+func renderScene(ctx context.Context, cs render.Completers, work string, s render.Scene, b render.Backend, o Opts, digest string) (render.Render, int, error) {
 	n0 := 0
-	return render.RenderVerified2(ctx, render.Completers{Render: &sceneLabeler{c: cs.Render, scene: s.ID, kind: "render-", attempt: &n0}, Extract: &sceneLabeler{c: cs.Extract, scene: s.ID, kind: "extract-", attempt: &n0}}, work, s, b, render.VerifyOpts{K: 1, Retries: 2, Verifier: o.Verifier})
+	return render.RenderVerified2(ctx, render.Completers{Render: &sceneLabeler{c: cs.Render, scene: s.ID, kind: "render-", attempt: &n0}, Extract: &sceneLabeler{c: cs.Extract, scene: s.ID, kind: "extract-", attempt: &n0}}, work, s, b, render.VerifyOpts{K: 1, Retries: 2, Verifier: o.Verifier, UserSuffix: digest})
 }
 
 // Novel renders scenes (already in discourse order) with RenderVerified2
@@ -51,7 +53,12 @@ func Novel(ctx context.Context, cs render.Completers, work string, scenes []rend
 	var rs []SceneResult
 	for _, s := range scenes {
 		s.FreeDialogue = o.Skeleton
-		r, n, err := renderScene(ctx, cs, work, s, b, o)
+		digest, err := sceneDigest(ctx, o, s.ID)
+		var r render.Render
+		n := 0
+		if err == nil {
+			r, n, err = renderScene(ctx, cs, work, s, b, o, digest)
+		}
 		sr := SceneResult{ID: s.ID, Attempts: n, Err: err}
 		if err == nil {
 			sr.Pass = render.Passed(r)
@@ -64,7 +71,7 @@ func Novel(ctx context.Context, cs render.Completers, work string, scenes []rend
 				return rs, err
 			}
 			if h, err := render.RenderHash(s, b); err == nil {
-				if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".hash"), []byte(h+"\n"), 0o644); err != nil {
+				if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".hash"), []byte(stamp(h, o, digest)+"\n"), 0o644); err != nil {
 					return rs, err
 				}
 			}
@@ -103,4 +110,26 @@ func fileID(id string) string {
 		}
 		return r
 	}, id)
+}
+
+// sceneDigest is o.Digest for scene id, blank-line-prefixed so it can be appended to a prompt; "" when there is none.
+func sceneDigest(ctx context.Context, o Opts, id string) (string, error) {
+	if o.Digest == nil {
+		return "", nil
+	}
+	d, err := o.Digest(ctx, id)
+	if err != nil || strings.TrimSpace(d) == "" {
+		return "", err
+	}
+	return "\n\n" + d, nil
+}
+
+func digestHash(d string) string { h := sha256.Sum256([]byte(d)); return hex.EncodeToString(h[:8]) }
+
+// stamp is the .hash content: "<irhash>" without a digest, else "<irhash> <digesthash>".
+func stamp(ir string, o Opts, digest string) string {
+	if o.Digest == nil {
+		return ir
+	}
+	return ir + " " + digestHash(digest)
 }

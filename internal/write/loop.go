@@ -43,7 +43,9 @@ type Opts struct {
 	Skeleton                             bool     // code carries events only; the renderer writes the dialogue
 	CodeEffort                           string   // claude --effort for coding calls: low, medium or high
 	RenderEffort                         string   // claude --effort for render calls (default low)
-	Digest                               string   // ContinueLoop only: the PG state digest of the story so far
+	NoDigest                             bool     // CLI: --no-digest, leave o.Digest nil
+	Recap                                string   // ContinueLoop only: the PG state digest of the story so far (StateDigest)
+	Digest                               func(ctx context.Context, sceneID string) (string, error) // render path: per-scene PG world-state digest appended to the render prompt and folded into staleness; nil = none
 	Verifier                             string   // "card" (default, render.ScoreCard checklist) or "open" (open re-extraction)
 }
 
