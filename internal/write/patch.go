@@ -35,10 +35,11 @@ func patchScene(ctx context.Context, cs render.Completers, work string, old, s r
 	return sr, true, saveScene(dir, s, b, o, dh, r)
 }
 
-// proseMatches: the stored prose was rendered from old iff its stored IR hash is old's RenderHash. After a --scenes cap
+// proseMatches: the stored prose was rendered from old iff its stored IR hash is old's genHash (or legacy RenderHash). After a --scenes cap
 // or --no-render the disk prose can be older than old, and a patch would then ship stale prose.
 func proseMatches(old render.Scene, o Opts, b render.Backend, stored string) bool {
 	old.FreeDialogue = o.Skeleton
-	h, err := render.RenderHash(old, b)
-	return err == nil && stored != "" && h == stored
+	h, err := genHash(old, b)
+	full, _ := render.RenderHash(old, b) // legacy stamp
+	return err == nil && stored != "" && (h == stored || full == stored)
 }

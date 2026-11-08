@@ -17,7 +17,7 @@ import (
 func SceneHashes(scenes []render.Scene, b render.Backend) (map[string]string, error) {
 	m := map[string]string{}
 	for _, s := range scenes {
-		h, err := render.RenderHash(s, b)
+		h, err := genHash(s, b)
 		if err != nil {
 			return nil, fmt.Errorf("scene %s: %w", s.ID, err)
 		}
@@ -86,6 +86,25 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 	res := Result{Dir: storyDir}
 	var lastDiags, diags []Diag
 	wellFormed, checked := false, false
+	// Diagnostics the untouched story already has never block a revision (and are not asked to be fixed): only ones a
+	// revision adds do. Keyed by rule + message (line numbers move). One extra check, no model call.
+	base, err := check(ctx, storyDir)
+	if err != nil {
+		return res, fmt.Errorf("baseline check: %w", err)
+	}
+	checked = true
+	old := map[string]bool{}
+	for _, d := range base {
+		old[d.Rule+"|"+d.Msg] = true
+	}
+	fresh := func(ds []Diag) (o []Diag) {
+		for _, d := range ds {
+			if d.Blocking() && !old[d.Rule+"|"+d.Msg] {
+				o = append(o, d)
+			}
+		}
+		return
+	}
 	defer func() { // an error after a check ran leaves PG on a rejected candidate: put it back on story/
 		if rerr != nil && checked {
 			check(ctx, storyDir)
@@ -143,14 +162,12 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 			}
 			cur, lastDiags, wellFormed = next, res.Diags, true
 			res.Clean = true
-			for _, x := range res.Diags {
-				res.Clean = res.Clean && !x.Blocking()
-			}
+			res.Clean = len(fresh(res.Diags)) == 0
 		}
 		if res.Clean {
 			break
 		}
-		diags = blocking(res.Diags)
+		diags = fresh(res.Diags)
 	}
 	if res.Clean {
 		if err := swapDir(storyDir, cur); err != nil {
@@ -313,7 +330,7 @@ func Stamp(ctx context.Context, all []render.Scene, b render.Backend, out string
 			continue
 		}
 		s.FreeDialogue = o.Skeleton
-		ir, err := render.RenderHash(s, b)
+		ir, err := genHash(s, b)
 		if err != nil {
 			return stamped, irDiffer, err
 		}
@@ -349,7 +366,7 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 	}
 	after := map[string]string{} // what Novel stores
 	for _, s := range cur {
-		h, err := render.RenderHash(s, b)
+		h, err := genHash(s, b)
 		if err != nil {
 			return RerenderResult{}, fmt.Errorf("scene %s: %w", s.ID, err)
 		}
@@ -361,6 +378,9 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 		if h, err := os.ReadFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".hash")); err == nil {
 			f := strings.Fields(string(h))
 			before[s.ID] = strings.Join(f[:min(1, len(f))], "")
+			if full, err := render.RenderHash(s, b); err == nil && before[s.ID] == full { // legacy hash (with Previously) of an unchanged scene
+				before[s.ID] = after[s.ID]
+			}
 			if len(f) > 1 { // a legacy single-hash file means "digest unknown": never stale because of it
 				beforeDig[s.ID] = f[1]
 			}
@@ -436,4 +456,12 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 		err = Concat(out, cur, b.ID)
 	}
 	return rr, err
+}
+
+// genHash is the staleness hash of the generation path: the render request without its Previously recap (the fact
+// texts of the three scenes before it). Without this a one-scene edit would stale the next three scenes; a scene
+// is re-rendered when its own request changes. render.RenderHash (the corpus path) is untouched.
+func genHash(s render.Scene, b render.Backend) (string, error) {
+	s.Previously = ""
+	return render.RenderHash(s, b)
 }

@@ -139,7 +139,7 @@ func saveScene(dir string, s render.Scene, b render.Backend, o Opts, dh string, 
 	if err := os.WriteFile(base+".md", []byte(r.Prose+"\n"), 0o644); err != nil {
 		return err
 	}
-	if h, err := render.RenderHash(s, b); err == nil {
+	if h, err := genHash(s, b); err == nil {
 		return os.WriteFile(base+".hash", []byte(stamp(h, o, dh)+"\n"), 0o644)
 	}
 	return nil
