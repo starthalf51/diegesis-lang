@@ -1,0 +1,111 @@
+=== FILE: ep02/cast.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 2화 추가 선언
+
+```sl
+fact memorial_thirty "오늘 선착장에서 해진호 삼십 주기 위령제가 열린다" true
+fact chrysanthemum_rite "유족들이 바다에 국화를 한 송이씩 던진다" true
+fact gyeongtae_hosts "도경태는 이장으로서 해마다 해진호 위령제를 주관해 왔다" true
+fact appendix_story "사고 사흘 전 도경태는 맹장이 터져 육지로 실려 갔다" false
+fact box_off_limits "장롱 위 양철 상자는 오말순이 아무도 손대지 못하게 하는 물건이다" true
+fact sank_eleventh_tide "해진호가 가라앉은 밤은 열한 물때였다" true
+
+gyeongtae believes memorial_thirty
+gyeongtae believes gyeongtae_hosts
+gyeongtae believes not appendix_story
+malsun believes box_off_limits
+malsun believes sank_eleventh_tide
+malsun believes haejin_sank
+```
+=== FILE: ep02/s3.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: s3
+location: dock
+when: after s2 by 0d..1d
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.4
+mode: authored
+---
+
+```sl
+lasts 40m..90m
+enter seoyun, malsun, gyeongtae, gicheol, yeongho, minjae
+gyeongtae says seoyun, malsun, gicheol, yeongho, minjae: memorial_thirty
+gicheol says seoyun: haejin_sank
+seoyun sees chrysanthemum_rite
+seoyun thinks: father_died
+seoyun does throw_flower
+malsun says seoyun: tide_song
+minjae says seoyun: malsun_dementia
+yeongho does stare_at_lighthouse
+gyeongtae lies seoyun, minjae: official_cause
+exit all
+```
+=== FILE: ep02/s4.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: s4
+location: dock
+when: after s3 by 0m..60m
+pov: seoyun close
+render:
+  pace: medium
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, gyeongtae, yeongho
+gyeongtae says seoyun: gyeongtae_hosts
+seoyun asks gyeongtae
+seoyun says gyeongtae: father_died
+gyeongtae lies seoyun: appendix_story
+gyeongtae lies seoyun: hospital_alibi
+seoyun believes appendix_story
+seoyun believes hospital_alibi
+yeongho does drop_cup
+seoyun thinks: hospital_alibi
+yeongho does turn_away
+exit yeongho
+exit seoyun, gyeongtae
+```
+=== FILE: ep02/s5.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: s5
+location: malsun_house
+when: after s4 by 1h..8h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 30m..60m
+enter seoyun, malsun
+seoyun says malsun: hospital_alibi
+malsun says seoyun: hospital_alibi
+seoyun sees tin_box
+seoyun asks malsun
+malsun says seoyun: box_off_limits
+malsun says seoyun: sank_eleventh_tide
+setup tide_night hint: sank_eleventh_tide
+seoyun thinks: tide_song
+seoyun thinks: malsun_dementia
+seoyun does tuck_in_grandmother
+exit all
+```
+=== END ===

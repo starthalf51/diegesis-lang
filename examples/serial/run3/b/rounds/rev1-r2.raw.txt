@@ -1,0 +1,65 @@
+=== FILE: ep01/s2.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s2"
+location: malsun_house
+when: after s1 by 1h..4h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 40m..90m
+enter seoyun, malsun
+malsun enacts: tide_song
+#! allow unpaid-promise: "연재 1화다. 이 구절은 뒤 화에서 등대 불이 꺼진 시각을 가리키는 말로 회수된다"
+setup tide_hour promise: tide_song
+seoyun asks malsun
+malsun says seoyun: tide_song
+seoyun sees tin_box
+setup box_hint hint: "외할머니 장롱 위에 놓인 녹슨 양철 상자"
+enter minjae
+minjae says seoyun: clinic_close
+seoyun says minjae: hospital_alibi
+minjae says seoyun: minjae_leaves
+minjae says seoyun: taeo_arrives
+exit minjae
+seoyun thinks: tide_song
+malsun thinks
+exit seoyun, malsun
+```
+=== FILE: ep02/s3.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: s3
+location: dock
+when: after s2 by 0d..1d
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.4
+mode: authored
+---
+
+```sl
+lasts 40m..90m
+attr minjae.status = gone
+enter seoyun, malsun, gyeongtae, gicheol, yeongho, taeo
+taeo says seoyun: taeo_arrives
+gyeongtae says seoyun, malsun, gicheol, yeongho, taeo: memorial_thirty
+gicheol says seoyun: haejin_sank
+seoyun sees chrysanthemum_rite
+seoyun thinks: father_died
+seoyun does throw_flower
+malsun says seoyun: tide_song
+taeo says seoyun: malsun_dementia
+yeongho does stare_at_lighthouse
+gyeongtae lies seoyun, taeo: official_cause
+exit all
+```
+=== END ===

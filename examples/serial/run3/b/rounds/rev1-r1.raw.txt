@@ -1,0 +1,318 @@
+=== FILE: cast.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 등장인물과 선언
+
+```sl
+work yeoul "여울섬"
+  unit day
+  name ko "여울섬"
+
+character seoyun "Han Seoyun" major
+  name ko "한서윤"
+  attr seoyun.age = 29
+  believes haejin_sank
+  believes father_died
+  believes seoyun_came_home
+  doubts official_cause
+character malsun "Oh Malsun" major
+  name ko "오말순"
+  attr malsun.age = 78
+  believes tide_song
+character minjae "Kang Minjae" major
+  name ko "강민재"
+  attr minjae.age = 29
+  believes malsun_dementia
+  believes vote_scheduled
+  believes clinic_close
+  believes minjae_leaves
+  believes taeo_arrives
+character taeo "Yoon Taeo" major
+  name ko "윤태오"
+  attr taeo.age = 30
+  believes malsun_dementia
+  believes vote_scheduled
+  believes clinic_close
+  believes taeo_arrives
+character gyeongtae "Do Gyeongtae" major
+  name ko "도경태"
+  attr gyeongtae.age = 63
+  believes vote_scheduled
+  believes demolition
+  believes haejin_sank
+  believes light_out
+  believes ordered_off
+  believes not official_cause
+  believes not hospital_alibi
+character haeun "Do Haeun" major
+  name ko "도하은"
+  attr haeun.age = 31
+character yeongho "Baek Yeongho" major
+  name ko "백영호"
+  attr yeongho.age = 70
+  believes light_out
+  believes ordered_off
+  believes ledger_record
+character jihwan "Ryu Jihwan" minor
+  name ko "류지환"
+  attr jihwan.age = 35
+  believes vote_scheduled
+  believes demolition
+  believes jihwan_stays
+character gicheol "Moon Gicheol" minor
+  name ko "문기철"
+  attr gicheol.age = 58
+  believes haejin_sank
+character sua "Jeong Sua" minor
+  name ko "정수아"
+  attr sua.age = 13
+  believes sua_collects
+
+parent seoyun of malsun
+
+place dock "the dock"
+  name ko "여울섬 선착장"
+place malsun_house "Malsun's house"
+  name ko "오말순의 집"
+place lighthouse "the lighthouse"
+  name ko "여울섬 등대"
+place ruin "the abandoned house"
+  name ko "섬 끝 폐가"
+place clinic "the health clinic"
+  name ko "보건지소"
+place school "the branch school"
+  name ko "여울분교"
+place minbak "Gicheol's guesthouse"
+  name ko "문기철의 민박집"
+
+thing vote_notice "the vote notice"
+  name ko "주민 투표 공고문"
+  attr vote_notice.at = dock
+thing tin_box "a rusty tin box"
+  name ko "녹슨 양철 상자"
+  attr tin_box.at = malsun_house
+thing ledger_page "the torn ledger page"
+  name ko "찢긴 등대 근무 장부 쪽"
+thing glass_shard "a thick glass shard"
+  name ko "두꺼운 유리 조각"
+thing stair_nail "the new nail"
+  name ko "열세 번째 계단의 새 못"
+  attr stair_nail.at = lighthouse
+
+fact vote_scheduled "열이틀 뒤 섬 전체를 리조트 개발사에 팔지 정하는 주민 투표가 열린다" true
+fact demolition "투표가 가결되면 등대와 폐가를 포함한 섬 건물은 곧바로 철거된다" true
+fact clinic_close "투표가 가결되면 보건지소도 문을 닫는다" true
+fact jihwan_stays "개발사 현장 책임자 류지환은 투표가 끝날 때까지 섬에 머문다" true
+fact haejin_sank "삼십 년 전 여객선 해진호가 여울섬 앞바다에서 침몰해 열한 명이 죽었다" true
+fact father_died "서윤의 아버지는 해진호 사고로 죽었다" true
+fact seoyun_came_home "서윤은 치매 초기인 외할머니를 돌보려고 서울에서 섬으로 돌아왔다" true
+fact malsun_dementia "오말순은 치매 초기라 옛일과 오늘 일을 자주 뒤섞는다" true
+fact sua_collects "정수아는 바닷가에서 물건을 주워 모은다" true
+fact tide_song "옛 노래에 '열한 물때에 불이 잔다'라는 구절이 있다" true
+fact official_cause "해진호 사고는 기상 악화로 인한 단순 사고였다" false
+fact hospital_alibi "사고 날 밤 도경태는 육지 병원에 입원해 있었다" false
+fact light_out "해진호가 침몰한 밤 등대 불은 두 시간 동안 꺼져 있었다" true
+fact ordered_off "백영호가 도경태의 지시로 등대 불을 껐다" true
+fact ledger_record "등대 불이 꺼진 일은 근무 장부에 적혔고 그 쪽은 찢겨 사라졌다" true
+fact malsun_keeps "오말순은 찢긴 장부 쪽을 삼십 년 동안 보관해 왔다" true
+fact minjae_leaves "강민재는 근무 기간이 끝나 오늘 마지막 배로 섬을 떠나 육지로 돌아간다" true
+fact taeo_arrives "강민재 대신 윤태오가 보건지소에 새로 부임해 서윤을 돕게 된다" true
+```
+=== FILE: ep01/s2.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s2"
+location: malsun_house
+when: after s1 by 1h..4h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.5
+mode: authored
+---
+
+```sl
+lasts 40m..90m
+enter seoyun, malsun
+malsun enacts: tide_song
+#! allow unpaid-promise: "연재 1화다. 이 구절은 뒤 화에서 등대 불이 꺼진 시각을 가리키는 말로 회수된다"
+setup tide_hour promise: tide_song
+seoyun asks malsun
+malsun says seoyun: tide_song
+seoyun sees tin_box
+setup box_hint hint: "외할머니 장롱 위에 놓인 녹슨 양철 상자"
+enter minjae
+minjae says seoyun: clinic_close
+seoyun says minjae: hospital_alibi
+minjae says seoyun: minjae_leaves
+minjae says seoyun: taeo_arrives
+exit minjae
+attr minjae.status = gone
+seoyun thinks: tide_song
+malsun thinks
+exit seoyun, malsun
+```
+=== FILE: ep02/s3.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: s3
+location: dock
+when: after s2 by 0d..1d
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.4
+mode: authored
+---
+
+```sl
+lasts 40m..90m
+enter seoyun, malsun, gyeongtae, gicheol, yeongho, taeo
+taeo says seoyun: taeo_arrives
+gyeongtae says seoyun, malsun, gicheol, yeongho, taeo: memorial_thirty
+gicheol says seoyun: haejin_sank
+seoyun sees chrysanthemum_rite
+seoyun thinks: father_died
+seoyun does throw_flower
+malsun says seoyun: tide_song
+taeo says seoyun: malsun_dementia
+yeongho does stare_at_lighthouse
+gyeongtae lies seoyun, taeo: official_cause
+exit all
+```
+=== FILE: ep03/s7.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s7"
+location: dock
+when: after s6 by 0h..3h
+pov: seoyun close
+render:
+  pace: medium
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 30m..60m
+enter jihwan, gyeongtae, taeo, gicheol, yeongho, seoyun
+jihwan shows vote_notice to seoyun, taeo, gicheol, yeongho
+jihwan says seoyun, taeo, gicheol, yeongho, gyeongtae: vote_scheduled
+jihwan says seoyun, taeo, gicheol, yeongho, gyeongtae: demolition_schedule
+jihwan says seoyun, taeo, gicheol, yeongho, gyeongtae: jihwan_stays
+taeo asks jihwan: clinic_close
+jihwan says taeo: clinic_close
+gicheol asks jihwan: minbak_included
+jihwan says gicheol: minbak_included
+gyeongtae says seoyun, taeo, gicheol, yeongho: lighthouse_useless
+yeongho thinks: light_out
+seoyun sees yeongho_pale
+exit all
+```
+=== FILE: ep04/cast.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 4화 추가 선언
+
+```sl
+fact climb_before "서윤과 태오는 등대가 철거되기 전에 꼭대기까지 한 번 올라가 보기로 한다" true
+fact stairs_old "등대 나선 계단의 못은 하나같이 붉게 녹슬어 있다" true
+fact nail_new "열세 번째 계단에만 녹 하나 없는 새 못이 박혀 있다" true
+fact nail_odd "아무도 쓰지 않는 등대 계단에 누가 왜 새 못을 박았는지 알 수 없다" true
+fact step_mark "열세 번째 계단 판자 가장자리에는 한 번 들어 올렸다가 다시 덮은 듯한 틈이 나 있다" true
+fact lens_chipped "꼭대기 등실의 렌즈 한 귀퉁이가 깨져 떨어져 나가 있다" true
+fact lens_grooves "등대 렌즈 유리에는 가는 홈이 층층이 둥글게 패어 있다" true
+fact shard_matches "정수아가 주운 유리 조각은 깨진 등대 렌즈 귀퉁이에서 떨어져 나온 것이다" true
+
+seoyun believes climb_before
+taeo believes climb_before
+```
+=== FILE: ep04/s9.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s9"
+location: lighthouse
+when: after s8 by 0d..1d
+pov: seoyun close
+render: {pace: slow, tension: 0.3}
+mode: authored
+---
+
+```sl
+lasts 10m..30m
+enter seoyun, taeo
+seoyun says taeo: climb_before
+taeo says seoyun: vote_scheduled
+enter sua
+sua shows glass_shard to seoyun
+sua tells seoyun: shard_found
+seoyun sees glass_shard, shard_curved
+sua tells seoyun: sua_keeps
+exit sua
+seoyun says taeo: shard_found
+exit seoyun, taeo
+```
+=== FILE: ep04/s10.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s10"
+location: lighthouse
+when: after s9 by 0m..10m
+pov: seoyun close
+render: {pace: slow, tension: 0.5}
+mode: authored
+---
+
+```sl
+lasts 10m..20m
+enter seoyun, taeo
+taeo sees stairs_old
+taeo says seoyun: stairs_old
+seoyun sees stair_nail, nail_new
+seoyun says taeo: nail_new
+taeo sees stair_nail, nail_new
+taeo believes nail_odd
+taeo says seoyun: nail_odd
+seoyun sees step_mark
+setup new_nail hint: nail_new
+exit seoyun, taeo
+```
+=== FILE: ep04/s11.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s11"
+location: lighthouse
+when: after s10 by 0m..10m
+pov: seoyun close
+render: {pace: slow, tension: 0.6}
+mode: authored
+---
+
+```sl
+lasts 10m..30m
+enter seoyun, taeo
+seoyun sees lens_chipped
+seoyun says taeo: lens_chipped
+seoyun sees lens_grooves
+seoyun believes shard_matches
+seoyun thinks: shard_matches
+payoff yeoul.scenes/shard_clue
+taeo sees lens_grooves
+taeo says seoyun: nail_odd
+seoyun believes nail_odd
+seoyun thinks: nail_odd
+exit seoyun, taeo
+```
+=== END ===

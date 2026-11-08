@@ -1,0 +1,101 @@
+=== FILE: ep04/cast.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 4화 추가 선언
+
+```sl
+fact climb_before "서윤과 민재는 등대가 철거되기 전에 꼭대기까지 한 번 올라가 보기로 한다" true
+fact stairs_old "등대 나선 계단의 못은 하나같이 붉게 녹슬어 있다" true
+fact nail_new "열세 번째 계단에만 녹 하나 없는 새 못이 박혀 있다" true
+fact nail_odd "아무도 쓰지 않는 등대 계단에 누가 왜 새 못을 박았는지 알 수 없다" true
+fact step_mark "열세 번째 계단 판자 가장자리에는 한 번 들어 올렸다가 다시 덮은 듯한 틈이 나 있다" true
+fact lens_chipped "꼭대기 등실의 렌즈 한 귀퉁이가 깨져 떨어져 나가 있다" true
+fact lens_grooves "등대 렌즈 유리에는 가는 홈이 층층이 둥글게 패어 있다" true
+fact shard_matches "정수아가 주운 유리 조각은 깨진 등대 렌즈 귀퉁이에서 떨어져 나온 것이다" true
+
+seoyun believes climb_before
+minjae believes climb_before
+```
+=== FILE: ep04/s9.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s9"
+location: lighthouse
+when: after s8 by 0d..1d
+pov: seoyun close
+render: {pace: slow, tension: 0.3}
+mode: authored
+---
+
+```sl
+lasts 10m..30m
+enter seoyun, minjae
+seoyun says minjae: climb_before
+minjae says seoyun: vote_scheduled
+enter sua
+sua shows glass_shard to seoyun
+sua tells seoyun: shard_found
+seoyun sees glass_shard, shard_curved
+sua tells seoyun: sua_keeps
+exit sua
+seoyun says minjae: shard_found
+exit seoyun, minjae
+```
+=== FILE: ep04/s10.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s10"
+location: lighthouse
+when: after s9 by 0m..10m
+pov: seoyun close
+render: {pace: slow, tension: 0.5}
+mode: authored
+---
+
+```sl
+lasts 10m..20m
+enter seoyun, minjae
+minjae sees stairs_old
+minjae says seoyun: stairs_old
+seoyun sees stair_nail, nail_new
+seoyun says minjae: nail_new
+minjae sees stair_nail, nail_new
+minjae believes nail_odd
+minjae says seoyun: nail_odd
+seoyun sees step_mark
+setup new_nail hint: nail_new
+exit seoyun, minjae
+```
+=== FILE: ep04/s11.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s11"
+location: lighthouse
+when: after s10 by 0m..10m
+pov: seoyun close
+render: {pace: slow, tension: 0.6}
+mode: authored
+---
+
+```sl
+lasts 10m..30m
+enter seoyun, minjae
+seoyun sees lens_chipped
+seoyun says minjae: lens_chipped
+seoyun sees lens_grooves
+seoyun believes shard_matches
+seoyun thinks: shard_matches
+payoff yeoul.scenes/shard_clue
+minjae sees lens_grooves
+minjae says seoyun: nail_odd
+seoyun believes nail_odd
+seoyun thinks: nail_odd
+exit seoyun, minjae
+```
+=== END ===
