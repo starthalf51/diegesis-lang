@@ -149,7 +149,7 @@ func runContinue(ep int, brief, styles string, limit int, o write.Opts) (int, er
 // summary gets the number of backlog scenes: stale scenes that are not in the new episode.
 func renderContinued(ctx context.Context, cs render.Completers, work string, all []render.Scene, b render.Backend, o write.Opts,
 	res write.Result, limit int, summary func(write.Result, write.RerenderResult, int, []string)) (int, error) {
-	rr, err := write.Rerender(ctx, cs, work, all, b, o.Out, o, limit)
+	rr, err := write.Rerender(ctx, cs, work, all, b, o.Out, o, limit, nil) // continue: full render
 	newEp := map[string]bool{}
 	for _, id := range res.Scenes {
 		newEp[id] = true

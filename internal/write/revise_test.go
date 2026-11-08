@@ -135,7 +135,7 @@ func TestReviseRendersOnlyChanged(t *testing.T) {
 	seedNovel(t, out, b, s1, s2, mk("s3", ""))
 	rc := &fakeLLM{replies: []string{"산문"}}
 	xc := &fakeLLM{replies: []string{"{}"}}
-	rr, err := Rerender(ctx, render.Completers{Render: rc, Extract: xc}, "w", []render.Scene{s1, s2b, s4}, b, out, Opts{}, 0)
+	rr, err := Rerender(ctx, render.Completers{Render: rc, Extract: xc}, "w", []render.Scene{s1, s2b, s4}, b, out, Opts{}, 0, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +180,7 @@ func TestRerenderPicksUpBacklog(t *testing.T) {
 	now := []render.Scene{mk("s1", "X"), mk("s2", "X"), mk("s3", "X")}
 	run := func(limit int) RerenderResult {
 		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
-		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{}, limit)
+		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{}, limit, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -337,7 +337,7 @@ func TestLayeredHashIsStale(t *testing.T) {
 	now := []render.Scene{mk("s1", ""), mk("s2", "")}
 	run := func() RerenderResult {
 		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
-		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{}, 0)
+		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{}, 0, nil)
 		if err != nil {
 			t.Fatal(err)
 		}

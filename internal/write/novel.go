@@ -61,19 +61,9 @@ func Novel(ctx context.Context, cs render.Completers, work string, scenes []rend
 		}
 		sr := SceneResult{ID: s.ID, Attempts: n, Err: err}
 		if err == nil {
-			sr.Pass = render.Passed(r)
-			sr.Report = r.Report
-			rep, _ := json.MarshalIndent(r.Report, "", "  ")
-			if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".report.json"), append(rep, '\n'), 0o644); err != nil {
+			sr.Pass, sr.Report = render.Passed(r), r.Report
+			if err := saveScene(dir, s, b, o, dh, r); err != nil {
 				return rs, err
-			}
-			if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".md"), []byte(r.Prose+"\n"), 0o644); err != nil {
-				return rs, err
-			}
-			if h, err := render.RenderHash(s, b); err == nil {
-				if err := os.WriteFile(filepath.Join(dir, fileID(s.ID)+"."+b.ID+".hash"), []byte(stamp(h, o, dh)+"\n"), 0o644); err != nil {
-					return rs, err
-				}
 			}
 		}
 		rs = append(rs, sr)
@@ -136,4 +126,20 @@ func stamp(ir string, o Opts, stateHash string) string {
 		return ir
 	}
 	return ir + " " + stateHash
+}
+
+// saveScene writes a scene's prose, report and staleness stamp into dir.
+func saveScene(dir string, s render.Scene, b render.Backend, o Opts, dh string, r render.Render) error {
+	rep, _ := json.MarshalIndent(r.Report, "", "  ")
+	base := filepath.Join(dir, fileID(s.ID)+"."+b.ID)
+	if err := os.WriteFile(base+".report.json", append(rep, '\n'), 0o644); err != nil {
+		return err
+	}
+	if err := os.WriteFile(base+".md", []byte(r.Prose+"\n"), 0o644); err != nil {
+		return err
+	}
+	if h, err := render.RenderHash(s, b); err == nil {
+		return os.WriteFile(base+".hash", []byte(stamp(h, o, dh)+"\n"), 0o644)
+	}
+	return nil
 }

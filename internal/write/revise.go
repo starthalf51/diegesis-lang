@@ -304,8 +304,9 @@ type RerenderResult struct {
 // (Changed). Stale scenes are rendered (limit > 0 caps this run to the first limit; the rest stay stale and the next
 // run picks them up), prose files of scenes no longer in all are deleted (Removed), and novel.md is rebuilt.
 // A scene whose render call failed gets no hash, so it is retried; one that rendered but failed verification keeps
-// its hash (its report.json says so).
-func Rerender(ctx context.Context, cs render.Completers, work string, all []render.Scene, b render.Backend, out string, o Opts, limit int) (RerenderResult, error) {
+// its hash (its report.json says so). A Changed scene that has an entry in old (its pre-revision request) and prose on
+// disk is patched sentence by sentence (card verifier only) instead of re-rendered; old == nil renders everything in full.
+func Rerender(ctx context.Context, cs render.Completers, work string, all []render.Scene, b render.Backend, out string, o Opts, limit int, old map[string]render.Scene) (RerenderResult, error) {
 	cur := make([]render.Scene, len(all))
 	copy(cur, all)
 	live := map[string]bool{}
@@ -366,8 +367,24 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 	if limit > 0 && limit < len(ss) {
 		ss = ss[:limit]
 	}
+	var rest []render.Scene
 	var err error
-	rr.Scenes, err = Novel(ctx, cs, work, ss, b, out, o)
+	for _, s := range ss {
+		o2, has := old[s.ID]
+		if has && o.Verifier == "card" && slices.Contains(rr.Changed, s.ID) {
+			sr, ok, perr := patchScene(ctx, cs, work, o2, s, b, out, o)
+			if perr != nil {
+				return rr, perr
+			}
+			if ok {
+				rr.Scenes = append(rr.Scenes, sr)
+				continue
+			}
+		}
+		rest = append(rest, s)
+	}
+	nr, err := Novel(ctx, cs, work, rest, b, out, o)
+	rr.Scenes = append(rr.Scenes, nr...)
 	if err == nil {
 		err = Concat(out, cur, b.ID)
 	}

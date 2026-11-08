@@ -51,7 +51,7 @@ func TestDigestChangeMakesStale(t *testing.T) {
 	now := []render.Scene{mk("s1", "")}
 	run := func(d string) RerenderResult {
 		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
-		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{Digest: digestOf(d)}, 0)
+		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{Digest: digestOf(d)}, 0, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -73,7 +73,7 @@ func TestLegacyHashNotStale(t *testing.T) {
 	seedNovel(t, out, b, mk("s1", ""))
 	run := func(s render.Scene) RerenderResult {
 		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
-		rr, err := Rerender(ctx, cs, "w", []render.Scene{s}, b, out, Opts{Digest: digestOf("A")}, 0)
+		rr, err := Rerender(ctx, cs, "w", []render.Scene{s}, b, out, Opts{Digest: digestOf("A")}, 0, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -100,7 +100,7 @@ func TestStaleOnlyOnStatePart(t *testing.T) {
 	run := func(text, state string) RerenderResult {
 		d := func(context.Context, string) (string, string, error) { return text, state, nil }
 		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
-		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{Digest: d}, 0)
+		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{Digest: d}, 0, nil)
 		if err != nil {
 			t.Fatal(err)
 		}

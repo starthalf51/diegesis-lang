@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"diegesis/internal/render"
 	"diegesis/internal/write"
 )
 
@@ -77,6 +78,15 @@ func runRevise(request, styles string, limit int, o write.Opts) (int, error) {
 			res.Rounds, res.Clean, strings.Join(rr.Changed, ","), strings.Join(rr.Added, ","), strings.Join(rr.Removed, ","),
 			len(failed), failed, k.n.Load(), t.Input, t.Output, t.CacheRead, t.CacheWrite, o.Out)
 	}
+	var old map[string]render.Scene // pre-revision requests, for sentence-level patches (compile only, no model call)
+	if o.Render {
+		if _, prev, err := shownScenes(ctx, story); err == nil {
+			old = make(map[string]render.Scene, len(prev))
+			for _, s := range prev {
+				old[s.ID] = s
+			}
+		}
+	}
 	res, err := write.ReviseLoop(ctx, m, writeChecker(o.Reserved), story, request, refs, o)
 	if err != nil {
 		summary(res, write.RerenderResult{}, nil)
@@ -109,7 +119,7 @@ func runRevise(request, styles string, limit int, o write.Opts) (int, error) {
 		return 1, err
 	}
 	defer closeDigest()
-	rr, err := write.Rerender(ctx, cs, work, all, b, o.Out, o, limit)
+	rr, err := write.Rerender(ctx, cs, work, all, b, o.Out, o, limit, old)
 	if err != nil {
 		summary(res, rr, nil)
 		return 1, err
