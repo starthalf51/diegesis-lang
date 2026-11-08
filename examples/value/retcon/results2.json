@@ -1,0 +1,292 @@
+{
+  "results": [
+    {
+      "ID": "R1",
+      "Arm": "A",
+      "Cost": {
+        "calls": 4,
+        "errs": 0,
+        "weighted_in": 52569,
+        "output": 17121,
+        "priced": 138174
+      },
+      "Collateral": {
+        "Units": 11,
+        "UnitsChanged": 1,
+        "UnitsAffected": 6,
+        "AffectedChanged": 1,
+        "BaseChars": 43936,
+        "CharsChanged": 701,
+        "CharsCollateral": 0,
+        "CollateralUnits": null,
+        "AffectedUnits": [
+          "e03",
+          "e04",
+          "e08",
+          "e09",
+          "e10",
+          "e11"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/a.out.txt",
+      "Residual": 1,
+      "Introduced": 0,
+      "QuotesOK": "2/2"
+    },
+    {
+      "ID": "R1",
+      "Arm": "B",
+      "Cost": {
+        "calls": 27,
+        "errs": 0,
+        "weighted_in": 166834,
+        "output": 54231,
+        "priced": 243351.6
+      },
+      "CostNet": {
+        "calls": 24,
+        "errs": 0,
+        "weighted_in": 154683,
+        "output": 50052,
+        "priced": 230801.8
+      },
+      "Regen": [
+        "s32"
+      ],
+      "Collateral": {
+        "Units": 31,
+        "UnitsChanged": 10,
+        "UnitsAffected": 14,
+        "AffectedChanged": 7,
+        "BaseChars": 39558,
+        "CharsChanged": 9906,
+        "CharsCollateral": 2796,
+        "CollateralUnits": [
+          "s22:806",
+          "s23:1213",
+          "s29:777"
+        ],
+        "AffectedUnits": [
+          "s6",
+          "s8",
+          "s9",
+          "s11",
+          "s12",
+          "s17",
+          "s21",
+          "s24",
+          "s25",
+          "s26",
+          "s27",
+          "s28",
+          "s30",
+          "s31"
+        ],
+        "AddedUnits": [
+          "s32:1966"
+        ],
+        "AddedChars": 1966
+      },
+      "JudgeRaw": "judge/b.out.txt",
+      "Residual": 1,
+      "Introduced": 0,
+      "QuotesOK": "2/2"
+    },
+    {
+      "ID": "R2",
+      "Arm": "A",
+      "Cost": {
+        "calls": 3,
+        "errs": 0,
+        "weighted_in": 31690,
+        "output": 10985,
+        "priced": 86615
+      },
+      "Collateral": {
+        "Units": 11,
+        "UnitsChanged": 1,
+        "UnitsAffected": 6,
+        "AffectedChanged": 1,
+        "BaseChars": 43936,
+        "CharsChanged": 263,
+        "CharsCollateral": 0,
+        "CollateralUnits": null,
+        "AffectedUnits": [
+          "e03",
+          "e04",
+          "e06",
+          "e08",
+          "e09",
+          "e10"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/a.out.txt",
+      "Residual": 3,
+      "Introduced": 0,
+      "QuotesOK": "6/6"
+    },
+    {
+      "ID": "R2",
+      "Arm": "B",
+      "Cost": {
+        "calls": 44,
+        "errs": 0,
+        "weighted_in": 210222,
+        "output": 66265,
+        "priced": 241764.8
+      },
+      "CostNet": {
+        "calls": 41,
+        "errs": 0,
+        "weighted_in": 199748,
+        "output": 62303,
+        "priced": 230961.8
+      },
+      "Regen": [
+        "s32"
+      ],
+      "Collateral": {
+        "Units": 31,
+        "UnitsChanged": 17,
+        "UnitsAffected": 10,
+        "AffectedChanged": 10,
+        "BaseChars": 39558,
+        "CharsChanged": 16595,
+        "CharsCollateral": 6814,
+        "CollateralUnits": [
+          "s7:1191",
+          "s10:811",
+          "s22:1113",
+          "s23:1170",
+          "s28:867",
+          "s29:828",
+          "s30:834"
+        ],
+        "AffectedUnits": [
+          "s6",
+          "s8",
+          "s9",
+          "s11",
+          "s12",
+          "s21",
+          "s24",
+          "s25",
+          "s26",
+          "s27"
+        ],
+        "AddedUnits": [
+          "s32:1425"
+        ],
+        "AddedChars": 1425
+      },
+      "JudgeRaw": "judge/b.out.txt",
+      "Residual": 0,
+      "Introduced": 1,
+      "QuotesOK": "2/2"
+    },
+    {
+      "ID": "R3",
+      "Arm": "A",
+      "Cost": {
+        "calls": 8,
+        "errs": 0,
+        "weighted_in": 147900,
+        "output": 45017,
+        "priced": 372985
+      },
+      "Collateral": {
+        "Units": 11,
+        "UnitsChanged": 6,
+        "UnitsAffected": 8,
+        "AffectedChanged": 5,
+        "BaseChars": 43936,
+        "CharsChanged": 4098,
+        "CharsCollateral": 1250,
+        "CollateralUnits": [
+          "e04:1250"
+        ],
+        "AffectedUnits": [
+          "e01",
+          "e02",
+          "e05",
+          "e06",
+          "e07",
+          "e08",
+          "e09",
+          "e10"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/a.out.txt",
+      "Residual": 0,
+      "Introduced": 1,
+      "QuotesOK": "2/2"
+    },
+    {
+      "ID": "R3",
+      "Arm": "B",
+      "Cost": {
+        "calls": 21,
+        "errs": 0,
+        "weighted_in": 142199,
+        "output": 48212,
+        "priced": 217589
+      },
+      "CostNet": {
+        "calls": 19,
+        "errs": 0,
+        "weighted_in": 134711,
+        "output": 43516,
+        "priced": 207376.8
+      },
+      "Regen": [
+        "s33"
+      ],
+      "Collateral": {
+        "Units": 31,
+        "UnitsChanged": 7,
+        "UnitsAffected": 14,
+        "AffectedChanged": 3,
+        "BaseChars": 39558,
+        "CharsChanged": 6543,
+        "CharsCollateral": 3959,
+        "CollateralUnits": [
+          "s12:735",
+          "s13:862",
+          "s14:1312",
+          "s21:1050"
+        ],
+        "AffectedUnits": [
+          "s1",
+          "s2",
+          "s4",
+          "s5",
+          "s16",
+          "s18",
+          "s19",
+          "s20",
+          "s22",
+          "s23",
+          "s26",
+          "s27",
+          "s28",
+          "s30"
+        ],
+        "AddedUnits": [
+          "s32:1280",
+          "s33:1983"
+        ],
+        "AddedChars": 3263
+      },
+      "JudgeRaw": "judge/b.out.txt",
+      "Residual": 0,
+      "Introduced": 1,
+      "QuotesOK": "2/2"
+    }
+  ]
+}

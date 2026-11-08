@@ -1,0 +1,161 @@
+=== FILE: ep04/cast.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 4화 추가 선언
+
+```sl
+fact climb_before "서윤과 태오는 등대가 철거되기 전에 꼭대기까지 한 번 올라가 보기로 한다" true
+fact stairs_old "등대 나선 계단의 못은 하나같이 붉게 녹슬어 있다" true
+fact nail_new "열세 번째 계단에만 녹 하나 없는 새 못이 박혀 있다" true
+fact nail_odd "아무도 쓰지 않는 등대 계단에 누가 왜 새 못을 박았는지 알 수 없다" true
+fact step_mark "열세 번째 계단 판자 가장자리에는 한 번 들어 올렸다가 다시 덮은 듯한 틈이 나 있다" true
+fact lens_chipped "꼭대기 등실의 렌즈 한 귀퉁이가 깨져 떨어져 나가 있다" true
+fact lens_grooves "등대 렌즈 유리에는 가는 홈이 층층이 둥글게 패어 있다" true
+fact shard_matches "정수아가 주운 유리 조각은 깨진 등대 렌즈 귀퉁이에서 떨어져 나온 것이다" true
+fact taeo_checked "윤태오는 보건지소 일로 육지 병원에 연락한 김에 해진호 사고 무렵 도경태의 입원 기록을 알아보았다" true
+fact hospital_no_record "육지 병원에는 해진호가 가라앉던 무렵 도경태가 입원했던 기록이 전혀 없다" true
+fact keep_secret_alibi "서윤과 태오는 확실한 증거를 손에 쥘 때까지 이 일을 아무에게도 말하지 않기로 한다" true
+
+artifact hospital_reply "the mainland hospital's reply"
+  name ko "육지 병원 회신 문서"
+  contains hospital_no_record
+
+seoyun believes climb_before
+taeo believes climb_before
+```
+=== FILE: ep04/offstage.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 4화 무대 밖 사건
+
+```sl
+event taeo_inquiry "서윤에게서 도경태의 병원 알리바이를 전해 들은 태오가 육지 병원에 입원 기록을 알아본다"
+  when after s8 by 0h..12h
+  when before s9
+  lasts 10m..1h
+  seoyun says taeo: hospital_alibi
+  taeo does call_hospital
+  taeo believes taeo_checked
+  taeo reads hospital_reply: hospital_no_record
+  taeo believes not hospital_alibi
+```
+=== FILE: ep04/s32.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s32"
+location: lighthouse
+when: after s11 by 0m..10m
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 10m..20m
+enter seoyun, taeo
+taeo says seoyun: taeo_checked
+taeo shows hospital_reply to seoyun
+seoyun reads hospital_reply: hospital_no_record
+taeo says seoyun: not hospital_alibi
+seoyun believes not hospital_alibi
+seoyun believes not appendix_story
+seoyun thinks: not hospital_alibi
+seoyun thinks: father_died
+taeo believes keep_secret_alibi
+taeo says seoyun: keep_secret_alibi
+seoyun believes keep_secret_alibi
+exit seoyun, taeo
+```
+=== FILE: ep05/offstage.dieg.md ===
+---
+module: yeoul.cast
+mode: authored
+---
+
+# 여울섬 — 5화 무대 밖 사건
+
+```sl
+event taeo_departs "태오가 선착장에서 해솔에게 떠난다는 말을 남긴다"
+  when after s32 by 0d..1d
+  lasts 10m..30m
+  taeo believes taeo_recalled
+  taeo tells haesol: taeo_recalled
+
+event taeo_gone "태오를 태운 첫 배가 섬을 떠난다"
+  when after taeo_departs.end by 0m..30m
+  lasts 5m..10m
+  attr taeo.status = gone
+```
+=== FILE: ep07/s18.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s18"
+location: clinic
+when: after s17 by 0d..1d
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 40m..90m
+enter seoyun, haesol
+seoyun tells haesol: hospital_no_record
+haesol says seoyun: chart_search
+haesol reads clinic_chart
+haesol tells seoyun: gyeongtae_treated
+seoyun reads clinic_chart
+seoyun sees chart_signed
+seoyun believes alibi_broken
+seoyun thinks: alibi_broken
+haesol says seoyun: haesol_keeps_quiet
+exit all
+```
+=== FILE: ep10/s27.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: s27
+location: ruin
+when: after s26 by 0h..3h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.85
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, haesol, yeongho
+mention gyeongtae
+seoyun says yeongho: fragments_found
+haesol shows glass_shard
+haesol tells yeongho: shard_matches
+yeongho says seoyun: yeongho_lied_before
+yeongho says seoyun, haesol: gyeongtae_came_secretly
+yeongho says seoyun, haesol: yeongho_refused
+yeongho says seoyun, haesol: quarrel_in_lighthouse
+yeongho says seoyun, haesol: lens_broke_in_fight
+yeongho says seoyun, haesol: light_out
+seoyun believes light_out
+seoyun believes gyeongtae_came_secretly
+haesol believes light_out
+haesol believes not hospital_alibi
+haesol believes not official_cause
+seoyun thinks: seoyun_links
+exit seoyun, haesol, yeongho
+```
+=== END ===

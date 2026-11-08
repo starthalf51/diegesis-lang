@@ -1,0 +1,18 @@
+{
+  "missing": [
+    "haesol|read|gyeongtae_treated"
+  ],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "서윤은 도경태가 사고 날 밤에도 섬을 떠나 있지 않았다고 추론하지만 말하지 않는다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 0.8571428571428571,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 0.9682539682539681
+  }
+}

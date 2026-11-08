@@ -1,0 +1,15 @@
+{
+  "missing": [
+    "seoyun|assert|nail_odd"
+  ],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "scores": {
+    "Coverage": 1,
+    "Kind": 0.75,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 0.9444444444444444
+  }
+}

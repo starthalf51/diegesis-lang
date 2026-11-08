@@ -256,7 +256,13 @@ func (c cfg) revisionAfter(ep int) int {
 }
 
 func main() {
-	if err := run(context.Background(), os.Args[1:]); err != nil {
+	do := run
+	if len(os.Args) > 1 && os.Args[1] == "minedit" { // spike: minimal-edit render, see minedit.go
+		do = func(ctx context.Context, a []string) error { return runMinedit(ctx, a[1:]) }
+	} else if len(os.Args) > 1 && os.Args[1] == "retcon" { // spike: mid-story retcon, see retcon.go
+		do = func(ctx context.Context, a []string) error { return runRetcon(ctx, a[1:]) }
+	}
+	if err := do(context.Background(), os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, "serial:", err)
 		os.Exit(1)
 	}

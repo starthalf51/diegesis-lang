@@ -1,0 +1,16 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "백영호는 그날 밤 도경태가 육지 병원에 있지 않고 몰래 배를 타고 섬에 들어와 있었다고 말한다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 1
+  }
+}

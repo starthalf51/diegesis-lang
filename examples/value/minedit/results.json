@@ -1,0 +1,736 @@
+{
+  "budget": 60,
+  "calls_used": 55,
+  "results": [
+    {
+      "ID": "R1",
+      "Pilot": 0,
+      "Affected": [
+        "s21",
+        "s22",
+        "s23",
+        "s24",
+        "s25",
+        "s26",
+        "s27",
+        "s28",
+        "s29",
+        "s30"
+      ],
+      "NewScenes": [
+        "s32"
+      ],
+      "Scenes": [
+        {
+          "ID": "s21",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 2,
+          "DiffAdded": 2,
+          "MChars": 82,
+          "BChars": 1173,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s22",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 30,
+          "BChars": 806,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s23",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 36,
+          "BChars": 1213,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s24",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 4,
+          "DiffAdded": 4,
+          "MChars": 91,
+          "BChars": 879,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s25",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 3,
+          "DiffAdded": 4,
+          "MChars": 200,
+          "BChars": 1054,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s26",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 2,
+          "DiffAdded": 2,
+          "MChars": 39,
+          "BChars": 827,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s27",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 8,
+          "DiffAdded": 10,
+          "MChars": 310,
+          "BChars": 1592,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s28",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 30,
+          "BChars": 724,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s29",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 20,
+          "BChars": 777,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s30",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 78,
+          "BChars": 861,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        }
+      ],
+      "M": {
+        "calls": 22,
+        "errs": 0,
+        "weighted_in": 119398,
+        "output": 39265,
+        "priced": 92741.6
+      },
+      "BAff": {
+        "calls": 22,
+        "errs": 0,
+        "weighted_in": 69009,
+        "output": 36531,
+        "priced": 77522.8
+      },
+      "BCode": {
+        "calls": 2,
+        "errs": 0,
+        "weighted_in": 85674,
+        "output": 13521,
+        "priced": 153279
+      },
+      "BNetRC": {
+        "calls": 0,
+        "errs": 0,
+        "weighted_in": 0,
+        "output": 0,
+        "priced": 0
+      },
+      "MTotalPriced": 246020.6,
+      "BTotalAff": 230801.8,
+      "CollM": {
+        "Units": 31,
+        "UnitsChanged": 10,
+        "UnitsAffected": 14,
+        "AffectedChanged": 7,
+        "BaseChars": 39558,
+        "CharsChanged": 916,
+        "CharsCollateral": 86,
+        "CollateralUnits": [
+          "s22:30",
+          "s23:36",
+          "s29:20"
+        ],
+        "AffectedUnits": [
+          "s6",
+          "s8",
+          "s9",
+          "s11",
+          "s12",
+          "s17",
+          "s21",
+          "s24",
+          "s25",
+          "s26",
+          "s27",
+          "s28",
+          "s30",
+          "s31"
+        ],
+        "AddedUnits": [
+          "s32:1966"
+        ],
+        "AddedChars": 1966
+      },
+      "CollB": {
+        "Units": 31,
+        "UnitsChanged": 10,
+        "UnitsAffected": 14,
+        "AffectedChanged": 7,
+        "BaseChars": 39558,
+        "CharsChanged": 9906,
+        "CharsCollateral": 2796,
+        "CollateralUnits": [
+          "s22:806",
+          "s23:1213",
+          "s29:777"
+        ],
+        "AffectedUnits": [
+          "s6",
+          "s8",
+          "s9",
+          "s11",
+          "s12",
+          "s17",
+          "s21",
+          "s24",
+          "s25",
+          "s26",
+          "s27",
+          "s28",
+          "s30",
+          "s31"
+        ],
+        "AddedUnits": [
+          "s32:1966"
+        ],
+        "AddedChars": 1966
+      },
+      "PassM": "10/10",
+      "PassB": "10/10",
+      "JudgeResidual": 0,
+      "JudgeIntro": 2,
+      "QuotesOK": "4/4",
+      "HashChecks": "old IR hash == stored 31/31, new IR hash == B stored 32/32"
+    },
+    {
+      "ID": "R3",
+      "Pilot": 0,
+      "Affected": [
+        "s12",
+        "s13",
+        "s14",
+        "s18",
+        "s19",
+        "s20",
+        "s21"
+      ],
+      "NewScenes": [
+        "s32",
+        "s33"
+      ],
+      "Scenes": [
+        {
+          "ID": "s12",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 1,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 34,
+          "BChars": 735,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s13",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 28,
+          "BChars": 862,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s14",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 1,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 30,
+          "BChars": 1312,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s18",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 1,
+          "Leaked": 0,
+          "DiffRemoved": 5,
+          "DiffAdded": 3,
+          "MChars": 147,
+          "BChars": 950,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s19",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 33,
+          "BChars": 665,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s20",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 33,
+          "BChars": 969,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s21",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 27,
+          "BChars": 1050,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        }
+      ],
+      "M": {
+        "calls": 18,
+        "errs": 0,
+        "weighted_in": 80433,
+        "output": 29988,
+        "priced": 70729.4
+      },
+      "BAff": {
+        "calls": 15,
+        "errs": 0,
+        "weighted_in": 43024,
+        "output": 29200,
+        "priced": 57183.600000000006
+      },
+      "BCode": {
+        "calls": 2,
+        "errs": 0,
+        "weighted_in": 86553,
+        "output": 11472,
+        "priced": 143913
+      },
+      "BNetRC": {
+        "calls": 0,
+        "errs": 0,
+        "weighted_in": 0,
+        "output": 0,
+        "priced": 0
+      },
+      "MTotalPriced": 214642.4,
+      "BTotalAff": 201096.6,
+      "CollM": {
+        "Units": 31,
+        "UnitsChanged": 7,
+        "UnitsAffected": 14,
+        "AffectedChanged": 3,
+        "BaseChars": 39558,
+        "CharsChanged": 332,
+        "CharsCollateral": 119,
+        "CollateralUnits": [
+          "s12:34",
+          "s13:28",
+          "s14:30",
+          "s21:27"
+        ],
+        "AffectedUnits": [
+          "s1",
+          "s2",
+          "s4",
+          "s5",
+          "s16",
+          "s18",
+          "s19",
+          "s20",
+          "s22",
+          "s23",
+          "s26",
+          "s27",
+          "s28",
+          "s30"
+        ],
+        "AddedUnits": [
+          "s32:1280",
+          "s33:1983"
+        ],
+        "AddedChars": 3263
+      },
+      "CollB": {
+        "Units": 31,
+        "UnitsChanged": 7,
+        "UnitsAffected": 14,
+        "AffectedChanged": 3,
+        "BaseChars": 39558,
+        "CharsChanged": 6543,
+        "CharsCollateral": 3959,
+        "CollateralUnits": [
+          "s12:735",
+          "s13:862",
+          "s14:1312",
+          "s21:1050"
+        ],
+        "AffectedUnits": [
+          "s1",
+          "s2",
+          "s4",
+          "s5",
+          "s16",
+          "s18",
+          "s19",
+          "s20",
+          "s22",
+          "s23",
+          "s26",
+          "s27",
+          "s28",
+          "s30"
+        ],
+        "AddedUnits": [
+          "s32:1280",
+          "s33:1983"
+        ],
+        "AddedChars": 3263
+      },
+      "PassM": "7/7",
+      "PassB": "7/7",
+      "JudgeResidual": 0,
+      "JudgeIntro": 1,
+      "QuotesOK": "2/2",
+      "HashChecks": "old IR hash == stored 31/31, new IR hash == B stored 33/33"
+    },
+    {
+      "ID": "R2",
+      "Pilot": 6,
+      "Affected": [
+        "s6",
+        "s7",
+        "s8",
+        "s9",
+        "s10",
+        "s11",
+        "s12",
+        "s21",
+        "s22",
+        "s23",
+        "s24",
+        "s25",
+        "s26",
+        "s27",
+        "s28",
+        "s29",
+        "s30"
+      ],
+      "NewScenes": [
+        "s32"
+      ],
+      "Scenes": [
+        {
+          "ID": "s6",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 2,
+          "DiffAdded": 2,
+          "MChars": 77,
+          "BChars": 719,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s7",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 46,
+          "BChars": 1191,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s8",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 4,
+          "DiffAdded": 4,
+          "MChars": 47,
+          "BChars": 1062,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s9",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 5,
+          "DiffAdded": 5,
+          "MChars": 48,
+          "BChars": 808,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s10",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 22,
+          "BChars": 811,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        },
+        {
+          "ID": "s11",
+          "Edits": 1,
+          "CardCalls": 0,
+          "Pass": true,
+          "Missing": 0,
+          "Leaked": 0,
+          "DiffRemoved": 1,
+          "DiffAdded": 1,
+          "MChars": 25,
+          "BChars": 752,
+          "BPass": true,
+          "BCalls": 0,
+          "EditStop": "end_turn"
+        }
+      ],
+      "M": {
+        "calls": 13,
+        "errs": 0,
+        "weighted_in": 53463,
+        "output": 17227,
+        "priced": 40876.2
+      },
+      "BAff": {
+        "calls": 13,
+        "errs": 0,
+        "weighted_in": 34442,
+        "output": 17160,
+        "priced": 37122
+      },
+      "BCode": {
+        "calls": 2,
+        "errs": 0,
+        "weighted_in": 85513,
+        "output": 3722,
+        "priced": 104123
+      },
+      "BNetRC": {
+        "calls": 0,
+        "errs": 0,
+        "weighted_in": 0,
+        "output": 0,
+        "priced": 0
+      },
+      "MTotalPriced": 144999.2,
+      "BTotalAff": 141245,
+      "CollM": {
+        "Units": 31,
+        "UnitsChanged": 17,
+        "UnitsAffected": 10,
+        "AffectedChanged": 10,
+        "BaseChars": 39558,
+        "CharsChanged": 11517,
+        "CharsCollateral": 4880,
+        "CollateralUnits": [
+          "s7:46",
+          "s10:22",
+          "s22:1113",
+          "s23:1170",
+          "s28:867",
+          "s29:828",
+          "s30:834"
+        ],
+        "AffectedUnits": [
+          "s6",
+          "s8",
+          "s9",
+          "s11",
+          "s12",
+          "s21",
+          "s24",
+          "s25",
+          "s26",
+          "s27"
+        ],
+        "AddedUnits": [
+          "s32:1425"
+        ],
+        "AddedChars": 1425
+      },
+      "CollB": {
+        "Units": 31,
+        "UnitsChanged": 17,
+        "UnitsAffected": 10,
+        "AffectedChanged": 10,
+        "BaseChars": 39558,
+        "CharsChanged": 16595,
+        "CharsCollateral": 6814,
+        "CollateralUnits": [
+          "s7:1191",
+          "s10:811",
+          "s22:1113",
+          "s23:1170",
+          "s28:867",
+          "s29:828",
+          "s30:834"
+        ],
+        "AffectedUnits": [
+          "s6",
+          "s8",
+          "s9",
+          "s11",
+          "s12",
+          "s21",
+          "s24",
+          "s25",
+          "s26",
+          "s27"
+        ],
+        "AddedUnits": [
+          "s32:1425"
+        ],
+        "AddedChars": 1425
+      },
+      "PassM": "6/6",
+      "PassB": "6/6",
+      "JudgeResidual": 0,
+      "JudgeIntro": 0,
+      "QuotesOK": "",
+      "HashChecks": "old IR hash == stored 31/31, new IR hash == B stored 32/32"
+    }
+  ],
+  "stopped": ""
+}

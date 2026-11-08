@@ -1,0 +1,12 @@
+s21: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+revise: rounds=2 clean=true changed=s21,s22,s23,s24,s25,s26,s27,s28,s29,s30 added=s32 removed= failed=0[] calls=27 tokens in=54 out=54231 cache_read=22264 cache_write=131643 → examples\value\retcon\r1\b
+s22: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s23: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s24: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s25: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s26: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s27: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s28: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s29: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s30: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s32: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
