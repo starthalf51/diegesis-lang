@@ -59,7 +59,7 @@ func backend(dir, id string) (render.Backend, error) {
 func cmdRender(args []string) int {
 	var pos []string
 	id, out, styles, verify, retries := "", "", "styles", false, 2
-	verifier := "card"
+	verifier, verifierSet := "card", false
 	dw := write.DefaultOpts()
 	rm, xm, re := dw.RenderModel, dw.ExtractModel, dw.RenderEffort
 	for i := 0; i < len(args); i++ {
@@ -68,6 +68,7 @@ func cmdRender(args []string) int {
 			verify = true
 		case a == "--verifier" && i+1 < len(args):
 			i++
+			verifierSet = true
 			if verifier = args[i]; verifier != "card" && verifier != "open" {
 				fmt.Fprintf(os.Stderr, "dieg: --verifier %q: want card or open\n", verifier)
 				return 2
@@ -104,6 +105,10 @@ func cmdRender(args []string) int {
 	if len(pos) != 2 || id == "" {
 		return usage()
 	}
+	if verifierSet && !verify {
+		fmt.Fprintln(os.Stderr, "dieg: --verifier needs --verify")
+		return 2
+	}
 	pass, err := renderOnce(pos[0], pos[1], id, out, styles, verify, retries, rm, xm, re, verifier)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
@@ -133,8 +138,12 @@ func renderOnce(target, scene, id, out, styles string, verify bool, retries int,
 			return false, err
 		}
 		pass = render.Passed(r)
-		fmt.Fprintf(os.Stderr, "verify: attempts=%d missing=%d halluc=%d leaked=%d pass=%t\n", n,
-			len(r.Report.Missing), len(r.Report.Hallucinated), len(r.Report.Leaked), pass)
+		g2 := fmt.Sprintf("halluc=%d", len(r.Report.Hallucinated))
+		if verifier == "card" {
+			g2 = fmt.Sprintf("warnings=%d", len(r.Report.Warnings))
+		}
+		fmt.Fprintf(os.Stderr, "verify: attempts=%d missing=%d %s leaked=%d pass=%t\n", n,
+			len(r.Report.Missing), g2, len(r.Report.Leaked), pass)
 		if r.Report.ExtractError != "" {
 			fmt.Fprintln(os.Stderr, "verify:", r.Report.ExtractError)
 		}
@@ -144,7 +153,7 @@ func renderOnce(target, scene, id, out, styles string, verify bool, retries int,
 		if err != nil {
 			return false, err
 		}
-		res, err := render.NewClaudeCLI().Complete(context.Background(), sys, user)
+		res, err := render.NewClaudeCLIWith(rm, re).Complete(context.Background(), sys, user)
 		if err != nil {
 			return false, err
 		}

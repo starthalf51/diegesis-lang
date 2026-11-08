@@ -187,3 +187,9 @@ func TestVerifierFlag(t *testing.T) {
 		t.Fatalf("%v %d %q", ok, code, o.Verifier)
 	}
 }
+
+func TestRenderVerifierNeedsVerify(t *testing.T) {
+	if c := cmdRender([]string{"w", "s", "--backend", "b", "--verifier", "open"}); c != 2 {
+		t.Errorf("exit %d", c)
+	}
+}

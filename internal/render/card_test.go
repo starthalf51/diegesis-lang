@@ -138,3 +138,17 @@ func TestScoreCardDuplicateIDRetry(t *testing.T) {
 		t.Fatalf("err=%v calls=%d %+v", err, f.calls, r)
 	}
 }
+
+func TestScoreCardStrictYesNo(t *testing.T) {
+	for name, body := range map[string]string{
+		"revealed": `{"items":[{"id":"E1","fact_present":"yes","as_stated":"yes"},{"id":"E2","fact_present":"yes","as_stated":"yes"},{"id":"E3","fact_present":"yes","as_stated":"yes"}],"withheld":[{"id":"W1","revealed":"partially"}]}`,
+		"fact":     `{"items":[{"id":"E1","fact_present":"maybe","as_stated":"yes"},{"id":"E2","fact_present":"yes","as_stated":"yes"},{"id":"E3","fact_present":"yes","as_stated":"yes"}],"withheld":[{"id":"W1","revealed":"no"}]}`,
+		"stated":   `{"items":[{"id":"E1","fact_present":"yes","as_stated":"yes (implied)"},{"id":"E2","fact_present":"yes","as_stated":"yes"},{"id":"E3","fact_present":"yes","as_stated":"yes"}],"withheld":[{"id":"W1","revealed":"no"}]}`,
+	} {
+		f := &fakeCompleter{replies: []Result{tierReply(body), tierReply(body)}}
+		r, err := ScoreCard(ctx, f, cardScene(), Backend{Lang: "en"}, "prose", CardOpts{Tier2: "off"})
+		if err != nil || f.calls != 2 || r.ExtractError == "" || Passed(Render{Report: r}) {
+			t.Errorf("%s: err=%v calls=%d %+v", name, err, f.calls, r)
+		}
+	}
+}

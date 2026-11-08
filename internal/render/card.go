@@ -139,7 +139,16 @@ type card struct {
 	other    []NewEvent
 }
 
-func yes(x string) bool { return strings.EqualFold(strings.TrimSpace(x), "yes") }
+// yn 은 "yes"/"no"(공백·대소문자 무시)만 받는다. 그 밖의 값("partially", "", "yes (implied)")은 badExtract — 누출 검사가 열린 채로 통과하지 않게.
+func yn(x, field string) (bool, error) {
+	switch strings.ToLower(strings.TrimSpace(x)) {
+	case "yes":
+		return true, nil
+	case "no":
+		return false, nil
+	}
+	return false, badExtract(fmt.Sprintf("card: %s must be yes or no, got %q", field, x))
+}
 
 func cardJSON(text string) (rawCard, error) {
 	body := text
@@ -167,8 +176,15 @@ func ansOf(list []rawItem, want []string) (map[string]itemAns, error) {
 		if _, dup := m[it.ID]; dup {
 			return nil, badExtract("card: duplicate id " + it.ID)
 		}
-		fp := yes(it.FactPresent)
-		m[it.ID] = itemAns{fp, fp && yes(it.AsStated)}
+		fp, err := yn(it.FactPresent, it.ID+" fact_present")
+		if err != nil {
+			return nil, err
+		}
+		as, err := yn(it.AsStated, it.ID+" as_stated")
+		if err != nil {
+			return nil, err
+		}
+		m[it.ID] = itemAns{fp, fp && as}
 	}
 	for _, id := range want {
 		if _, ok := m[id]; !ok {
@@ -201,7 +217,11 @@ func ParseCard(s Scene, text string) (card, error) {
 		if _, dup := c.revealed[w.ID]; dup {
 			return card{}, badExtract("card: duplicate id " + w.ID)
 		}
-		c.revealed[w.ID] = yes(w.Revealed)
+		rv, err := yn(w.Revealed, w.ID+" revealed")
+		if err != nil {
+			return card{}, err
+		}
+		c.revealed[w.ID] = rv
 	}
 	for i := range s.Withheld {
 		if _, ok := c.revealed[fmt.Sprintf("W%d", i+1)]; !ok {

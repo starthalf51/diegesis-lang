@@ -13,7 +13,8 @@ type VerifyOpts struct {
 	Card       CardOpts
 }
 
-// Passed 는 ADR-019 의 사실 기준(환각 0, 누출 0, 누락 ≤ MaxMissing)을 통과했는지. render-check 의 ADR-012(누락 ≤ 1 허용)보다 엄격하다. 재추출이 깨졌으면 통과가 아니다.
+// Passed 는 사실 기준 통과 여부. 열린 경로는 ADR-019(환각 0, 누출 0, 누락 ≤ MaxMissing), 카드 경로는 ADR-028(누출 0, 누락+종류 틀림 ≤ 1, G2 는 경고만 — Hallucinated 가 늘 비어 있다).
+// render-check 의 ADR-012(누락 ≤ 1 허용)보다 열린 경로가 엄격하다. 채점이 깨졌으면(ExtractError) 통과가 아니다.
 func Passed(r Render) bool {
 	p := r.Report
 	return p.ExtractError == "" && len(p.Hallucinated) == 0 && len(p.Leaked) == 0 && len(p.Missing) <= MaxMissing
