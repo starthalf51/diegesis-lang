@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 )
 
@@ -205,4 +207,31 @@ func TestNoDigestFlag(t *testing.T) {
 		t.Fatalf("Digest wired despite --no-digest: %v", err)
 	}
 	closeFn()
+}
+
+type okCompleter struct{}
+
+func (okCompleter) Complete(context.Context, string, string) (render.Result, error) {
+	return render.Result{Text: "x", StopReason: "end_turn"}, nil
+}
+
+// DIEG_CALL_CAP=N lets exactly N calls through, even from many goroutines, and a refused call is not counted.
+func TestCallCapExact(t *testing.T) {
+	t.Setenv("DIEG_CALL_CAP", "5")
+	k := &counter{c: okCompleter{}, n: new(atomic.Int64)}
+	var wg sync.WaitGroup
+	var ok atomic.Int64
+	for i := 0; i < 64; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if _, err := k.Complete(context.Background(), "", ""); err == nil {
+				ok.Add(1)
+			}
+		}()
+	}
+	wg.Wait()
+	if ok.Load() != 5 || k.n.Load() != 5 {
+		t.Errorf("passed=%d counted=%d, want 5/5", ok.Load(), k.n.Load())
+	}
 }

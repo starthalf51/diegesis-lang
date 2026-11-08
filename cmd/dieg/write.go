@@ -148,10 +148,11 @@ type counter struct {
 
 func (k *counter) Complete(ctx context.Context, system, user string) (render.Result, error) {
 	// DIEG_CALL_CAP=N: a hard stop for benchmark drivers; call N+1 and later fail before reaching the model.
-	if c, _ := strconv.ParseInt(os.Getenv("DIEG_CALL_CAP"), 10, 64); c > 0 && k.n.Load() >= c {
+	n, c := k.n.Add(1), int64(0) // add first, then check: concurrent callers cannot both pass the last slot
+	if c, _ = strconv.ParseInt(os.Getenv("DIEG_CALL_CAP"), 10, 64); c > 0 && n > c {
+		k.n.Add(-1)
 		return render.Result{}, fmt.Errorf("DIEG_CALL_CAP=%d reached", c)
 	}
-	k.n.Add(1)
 	return k.c.Complete(ctx, system, user)
 }
 

@@ -24,6 +24,10 @@ func TestRelativeTimeFact(t *testing.T) {
 		{`fact v "열이틀 뒤 투표가 열린다" true`, 1},
 		{`fact v "투표는 10월 3일에 열린다" true`, 0},
 		{`fact v "the vote opens in twelve days" true`, 1},
+		{`fact v "사흘 뒤 문이 열린다" true`, 1},
+		{`fact v "한 달 뒤 문이 열린다" true`, 1},
+		{`fact v "서진이 상자를 확인한 뒤 자리를 떠났다" true`, 0},
+		{`fact v "그 일 후 아무도 말하지 않았다" true`, 0},
 	}
 	for _, c := range cases {
 		id := compileLoad(t, pool, c.fact+"\n")
@@ -165,5 +169,25 @@ func TestRetellKnownMixedAudience(t *testing.T) {
 `)
 	if got := of(lint(t, pool, id), "retell-known", id); len(got) != 0 {
 		t.Errorf("retell-known = %v, want none for a mixed audience", got)
+	}
+}
+
+// retell-known 제외 사례: 사이에 의심, 다른 화자, 다른 인용문, sends 는 되풀이가 아니다. 같은 말 그대로면 걸린다.
+func TestRetellKnownExclusions(t *testing.T) {
+	pool := open(t)
+	for name, c := range map[string]struct {
+		body string
+		want int
+	}{
+		"plain repeat": {retellScenes + "scene 3\n  when after 1\n  enter a, b\n  a tells b: p\n", 1},
+		"intervening doubt": {retellScenes + "scene 2\n  when after 1\n  enter b\n  b doubts p\nscene 3\n  when after 2\n  enter a, b\n  a tells b: p\n", 0},
+		"different speaker": {retellScenes + "scene 3\n  when after 1\n  enter b, c\n  c tells b: p\n", 0},
+		"unequal quotes":    {"scene 1\n  enter a, b\n  a tells b: p \"하나\"\nscene 3\n  when after 1\n  enter a, b\n  a tells b: p \"둘\"\n", 0},
+		"sends":             {retellScenes + "scene 3\n  when after 1\n  enter a, m\n  a sends m to b with p\n", 0},
+	} {
+		id := compileLoad(t, pool, c.body)
+		if got := of(lint(t, pool, id), "retell-known", id); len(got) != c.want {
+			t.Errorf("%s: retell-known = %v, want %d", name, got, c.want)
+		}
 	}
 }

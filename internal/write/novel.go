@@ -54,7 +54,7 @@ func Novel(ctx context.Context, cs render.Completers, work string, scenes []rend
 	var rs []SceneResult
 	for _, s := range scenes {
 		s.FreeDialogue = o.Skeleton
-		digest, dh, err := sceneDigest(ctx, o, s.ID)
+		digest, state, err := sceneDigest(ctx, o, s.ID)
 		var r render.Render
 		n := 0
 		if err == nil {
@@ -63,7 +63,7 @@ func Novel(ctx context.Context, cs render.Completers, work string, scenes []rend
 		sr := SceneResult{ID: s.ID, Attempts: n, Err: err}
 		if err == nil {
 			sr.Pass, sr.Report = render.Passed(r), r.Report
-			if err := saveScene(dir, s, b, o, dh, r); err != nil {
+			if err := saveScene(dir, s, b, o, state, r); err != nil {
 				return rs, err
 			}
 		}
@@ -104,8 +104,8 @@ func fileID(id string) string {
 }
 
 // sceneDigest is o.Digest for scene id, blank-line-prefixed so it can be appended to a prompt; "" when there is none.
-// The second result is the hash of the digest's state-only part (what staleness compares).
-func sceneDigest(ctx context.Context, o Opts, id string) (suffix, stateHash string, err error) {
+// The second result is the digest's state-only part (what staleness hashes and what a state patch diffs against).
+func sceneDigest(ctx context.Context, o Opts, id string) (suffix, state string, err error) {
 	if o.Digest == nil {
 		return "", "", nil
 	}
@@ -116,7 +116,7 @@ func sceneDigest(ctx context.Context, o Opts, id string) (suffix, stateHash stri
 	if strings.TrimSpace(d) != "" {
 		suffix = "\n\n" + d
 	}
-	return suffix, digestHash(st), nil
+	return suffix, st, nil
 }
 
 func digestHash(d string) string { h := sha256.Sum256([]byte(d)); return hex.EncodeToString(h[:8]) }
@@ -129,8 +129,8 @@ func stamp(ir string, o Opts, stateHash string) string {
 	return ir + " " + stateHash
 }
 
-// saveScene writes a scene's prose, report and staleness stamp into dir.
-func saveScene(dir string, s render.Scene, b render.Backend, o Opts, dh string, r render.Render) error {
+// saveScene writes a scene's prose, report, state text and staleness stamp into dir.
+func saveScene(dir string, s render.Scene, b render.Backend, o Opts, state string, r render.Render) error {
 	rep, _ := json.MarshalIndent(r.Report, "", "  ")
 	base := filepath.Join(dir, fileID(s.ID)+"."+b.ID)
 	if err := os.WriteFile(base+".report.json", append(rep, '\n'), 0o644); err != nil {
@@ -140,7 +140,19 @@ func saveScene(dir string, s render.Scene, b render.Backend, o Opts, dh string, 
 		return err
 	}
 	if h, err := genHash(s, b); err == nil {
-		return os.WriteFile(base+".hash", []byte(stamp(h, o, dh)+"\n"), 0o644)
+		if err := writeState(base, o, state); err != nil {
+			return err
+		}
+		return os.WriteFile(base+".hash", []byte(stamp(h, o, digestHash(state))+"\n"), 0o644)
 	}
 	return nil
+}
+
+// writeState stores the state digest text a scene was rendered under (<scene>.<backend>.state.txt, next to .hash), so a
+// later state-stale patch can show the model which state lines changed. Without a digest there is nothing to store.
+func writeState(base string, o Opts, state string) error {
+	if o.Digest == nil {
+		return nil
+	}
+	return os.WriteFile(base+".state.txt", []byte(state), 0o644)
 }

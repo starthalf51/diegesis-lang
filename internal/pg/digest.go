@@ -105,8 +105,8 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 
 	// 1. 장소·시간
 	tm, err := q(`SELECT coalesce((SELECT earliest FROM point WHERE id=$2),-1),
-	                     coalesce((SELECT p.earliest FROM scene x JOIN point p ON p.id=x.start_pt WHERE x.work_id=$1 AND x.shown AND x.discourse_ord=$3-1),-1),
-	                     coalesce((SELECT lint_short(x.id) FROM scene x WHERE x.work_id=$1 AND x.shown AND x.discourse_ord=$3-1),'')`, work, startPt, ord)
+	                     coalesce((SELECT p.earliest FROM scene x JOIN point p ON p.id=x.start_pt WHERE x.work_id=$1 AND x.shown AND x.discourse_ord<$3 ORDER BY x.discourse_ord DESC LIMIT 1),-1),
+	                     coalesce((SELECT lint_short(x.id) FROM scene x WHERE x.work_id=$1 AND x.shown AND x.discourse_ord<$3 ORDER BY x.discourse_ord DESC LIMIT 1),'')`, work, startPt, ord)
 	if err != nil {
 		return "", "", err
 	}
@@ -125,11 +125,15 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	// 2. 코드에 있는 속성: 사물·장소, 그리고 이미 떠난 인물
 	at, err := q(`SELECT lint_short(a.entity_id), render_name($1, a.entity_id,'ko'), e.kind, a.key, a.value, a.kind,
 	                     CASE WHEN a.kind='id' AND EXISTS (SELECT 1 FROM entity v WHERE v.id=a.value) THEN render_name($1, a.value,'ko') ELSE a.value END,
-	                     count(*) OVER (PARTITION BY a.entity_id, a.key), coalesce(lint_short(a.at_pt),''),
+	                     (SELECT count(*) FROM attribute z WHERE z.work_id=$1 AND z.entity_id=a.entity_id AND z.key=a.key), coalesce(lint_short(a.at_pt),''),
 	                     CASE WHEN a.at_pt IS NULL THEN 'yes' ELSE precedes($1, a.at_pt, $2) END
 	                FROM attribute a JOIN entity e ON e.work_id=$1 AND e.id=a.entity_id
 	               WHERE a.work_id=$1 AND (e.kind <> 'character' OR a.key='status')
 	                 AND (e.kind <> 'thing' OR EXISTS (SELECT 1 FROM act x JOIN scene xs ON xs.id=x.scene_id WHERE x.work_id=$1 AND xs.discourse_ord <= $3 AND a.entity_id = ANY(x.objects)))
+	                 AND (a.at_pt IS NULL OR precedes($1, a.at_pt, $2) = 'yes')
+	                 AND NOT EXISTS (SELECT 1 FROM attribute b WHERE b.work_id=$1 AND b.entity_id=a.entity_id AND b.key=a.key AND b.at_pt IS NOT NULL
+	                                    AND b.at_pt IS DISTINCT FROM a.at_pt AND precedes($1, b.at_pt, $2) = 'yes'
+	                                    AND (a.at_pt IS NULL OR precedes($1, a.at_pt, b.at_pt) = 'yes'))
 	               ORDER BY 1, 4`, work, startPt, ord)
 	if err != nil {
 		return "", "", err

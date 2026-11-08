@@ -125,3 +125,29 @@ func TestDigestOmitsWithheld(t *testing.T) {
 		t.Errorf("withheld fact text leaked:\n%s", d)
 	}
 }
+
+// 나중 장면에서 옮겨지는 사물: 앞 장면 요약은 옛 위치만, 옮긴 장면 요약은 새 위치만 보인다(미래 값 누수 금지).
+func TestDigestAttrTimeFilter(t *testing.T) {
+	body := `place hall "홀"
+place yard "마당"
+thing box "녹슨 상자"
+  name ko "녹슨 상자"
+  attr box.at = hall
+scene 1 at hall
+  enter a, b
+  a sees box
+scene 2 at yard
+  when after 1
+  enter a, b
+  attr box.at = yard
+  a sees box
+`
+	_, s1 := digestOf(t, body, "1")
+	if !strings.Contains(s1, "at = 홀") || strings.Contains(s1, "마당(") || strings.Contains(s1, "at = 마당") {
+		t.Errorf("scene 1 leaks the later location:\n%s", s1)
+	}
+	_, s2 := digestOf(t, body, "2")
+	if !strings.Contains(s2, "at = 마당") || strings.Contains(s2, "at = 홀") {
+		t.Errorf("scene 2 must show only the latest location:\n%s", s2)
+	}
+}

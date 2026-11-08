@@ -14,6 +14,9 @@ type VerifyOpts struct {
 	// UserSuffix is appended to the render user prompt (after Prompt, before retry feedback) for generation only.
 	// It is not part of RenderHash.
 	UserSuffix string
+	// StateRm, StateAd (PatchVerified only): world-state lines that left / entered the digest since the old prose was
+	// written. They join the scene diff, so a patch for a scene whose own request did not change still has a diff.
+	StateRm, StateAd []string
 }
 
 // Passed 는 사실 기준 통과 여부. 열린 경로는 ADR-019(환각 0, 누출 0, 누락 ≤ MaxMissing), 카드 경로는 ADR-028(누출 0, 누락+종류 틀림 ≤ 1, G2 는 경고만 — Hallucinated 가 늘 비어 있다).

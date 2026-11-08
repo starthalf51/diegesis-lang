@@ -87,24 +87,12 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 	var lastDiags, diags []Diag
 	wellFormed, checked := false, false
 	// Diagnostics the untouched story already has never block a revision (and are not asked to be fixed): only ones a
-	// revision adds do. Keyed by rule + message (line numbers move). One extra check, no model call.
-	base, err := check(ctx, storyDir)
+	// revision adds do (see baseline). One extra check, no model call.
+	fresh, err := baseline(ctx, check, storyDir)
 	if err != nil {
-		return res, fmt.Errorf("baseline check: %w", err)
+		return res, err
 	}
 	checked = true
-	old := map[string]bool{}
-	for _, d := range base {
-		old[d.Rule+"|"+d.Msg] = true
-	}
-	fresh := func(ds []Diag) (o []Diag) {
-		for _, d := range ds {
-			if d.Blocking() && !old[d.Rule+"|"+d.Msg] {
-				o = append(o, d)
-			}
-		}
-		return
-	}
 	defer func() { // an error after a check ran leaves PG on a rejected candidate: put it back on story/
 		if rerr != nil && checked {
 			check(ctx, storyDir)
@@ -161,7 +149,6 @@ func ReviseLoop(ctx context.Context, c render.Completer, check Checker, storyDir
 				return res, fmt.Errorf("round %d check: %w", r, err)
 			}
 			cur, lastDiags, wellFormed = next, res.Diags, true
-			res.Clean = true
 			res.Clean = len(fresh(res.Diags)) == 0
 		}
 		if res.Clean {
@@ -319,9 +306,10 @@ type RerenderResult struct {
 }
 
 // Stamp upgrades legacy .hash files (IR hash only) of rendered scenes to "<current IR hash> <state digest hash>", so a
-// baseline rendered before digests existed can be compared for state staleness. No model call. irDiffer counts files
-// whose stored IR hash differed from the current one (hash-scheme drift); they are rewritten too.
-func Stamp(ctx context.Context, all []render.Scene, b render.Backend, out string, o Opts) (stamped, irDiffer int, err error) {
+// baseline rendered before digests existed can be compared for state staleness, and stores each scene's state text next to
+// it (state.txt). No model call. A hash that is neither the current generation hash nor the legacy full RenderHash is not
+// this scene's: it is left alone and counted in skipped.
+func Stamp(ctx context.Context, all []render.Scene, b render.Backend, out string, o Opts) (stamped, skipped int, err error) {
 	for _, s := range all {
 		p := filepath.Join(out, "novel", fileID(s.ID)+"."+b.ID+".hash")
 		h, rerr := os.ReadFile(p)
@@ -332,21 +320,25 @@ func Stamp(ctx context.Context, all []render.Scene, b render.Backend, out string
 		s.FreeDialogue = o.Skeleton
 		ir, err := genHash(s, b)
 		if err != nil {
-			return stamped, irDiffer, err
+			return stamped, skipped, err
 		}
-		_, dh, err := sceneDigest(ctx, o, s.ID)
+		if full, _ := render.RenderHash(s, b); f[0] != ir && f[0] != full { // not this scene's hash: the prose is of some other request
+			skipped++
+			continue
+		}
+		_, state, err := sceneDigest(ctx, o, s.ID)
 		if err != nil {
-			return stamped, irDiffer, err
+			return stamped, skipped, err
 		}
-		if ir != f[0] {
-			irDiffer++
+		if err := writeState(strings.TrimSuffix(p, ".hash"), o, state); err != nil {
+			return stamped, skipped, err
 		}
-		if err := os.WriteFile(p, []byte(stamp(ir, o, dh)+"\n"), 0o644); err != nil {
-			return stamped, irDiffer, err
+		if err := os.WriteFile(p, []byte(stamp(ir, o, digestHash(state))+"\n"), 0o644); err != nil {
+			return stamped, skipped, err
 		}
 		stamped++
 	}
-	return stamped, irDiffer, nil
+	return stamped, skipped, nil
 }
 
 // Rerender brings the prose in out/novel up to date with all (every shown scene of the story, discourse order):
@@ -391,11 +383,11 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 	if o.Digest != nil {
 		for _, s := range cur {
 			if old, ok := beforeDig[s.ID]; ok && !slices.Contains(rr.Changed, s.ID) {
-				_, dh, err := sceneDigest(ctx, o, s.ID)
+				_, st, err := sceneDigest(ctx, o, s.ID)
 				if err != nil {
 					return RerenderResult{}, fmt.Errorf("scene %s digest: %w", s.ID, err)
 				}
-				if dh != old {
+				if digestHash(st) != old {
 					rr.Changed = append(rr.Changed, s.ID)
 					rr.StateStale = append(rr.StateStale, s.ID)
 				}
@@ -423,7 +415,7 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 				continue
 			}
 			rr.Removed = append(rr.Removed, id)
-			for _, ext := range []string{".md", ".report.json", ".hash"} {
+			for _, ext := range []string{".md", ".report.json", ".hash", ".state.txt"} {
 				if err := os.Remove(filepath.Join(dir, id+"."+b.ID+ext)); err != nil && !os.IsNotExist(err) {
 					return rr, err
 				}
@@ -439,7 +431,11 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 	for _, s := range ss {
 		o2, has := old[s.ID]
 		if has && o.Verifier == "card" && slices.Contains(rr.Changed, s.ID) && proseMatches(o2, o, b, before[s.ID]) {
-			sr, ok, perr := patchScene(ctx, cs, work, o2, s, b, out, o)
+			oldDig := ""
+			if slices.Contains(rr.StateStale, s.ID) {
+				oldDig = beforeDig[s.ID] // state-only change: patch from the stored state text
+			}
+			sr, ok, perr := patchScene(ctx, cs, work, o2, s, b, out, o, oldDig)
 			if perr != nil {
 				return rr, perr
 			}

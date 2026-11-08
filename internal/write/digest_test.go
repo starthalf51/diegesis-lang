@@ -134,3 +134,79 @@ func TestStampThenStateStaleAndSkip(t *testing.T) {
 		t.Fatalf("%+v", rr)
 	}
 }
+
+func stateStaleSetup(t *testing.T, a string) (render.Backend, render.Scene, string) {
+	b, mk, out := rerenderFixture(t)
+	s := mk("s1", "")
+	s.Beats, s.Withheld = nil, nil
+	seedNovel(t, out, b, s)
+	if n, _, err := Stamp(ctx, []render.Scene{s}, b, out, Opts{Digest: digestOf(a)}); err != nil || n != 1 {
+		t.Fatalf("stamp %d %v", n, err)
+	}
+	return b, s, out
+}
+
+const (
+	stateA = "### 상태\n- 상자 at = 홀\n- 문 = 닫힘\n"
+	stateB = "### 상태\n- 상자 at = 마당\n- 문 = 닫힘\n"
+)
+
+// Only the PG state changed (old IR == new IR): the patch prompt must name the changed state lines, not an empty diff.
+func TestStateStalePatchCarriesStateLines(t *testing.T) {
+	b, s, out := stateStaleSetup(t, stateA)
+	rc := &fakeLLM{replies: []string{`{"edits":[{"old":"old s1","new":"new s1"}]}`}}
+	xc := &fakeLLM{replies: []string{`{"items":[],"withheld":[],"other":[]}`}}
+	o := Opts{Verifier: "card", Digest: digestOf(stateB)}
+	rr, err := Rerender(ctx, render.Completers{Render: rc, Extract: xc}, "w", []render.Scene{s}, b, out, o, 0, map[string]render.Scene{"s1": s})
+	if err != nil || len(rr.StateStale) != 1 || len(rr.Scenes) != 1 || !rr.Scenes[0].Patched {
+		t.Fatalf("%+v %v", rr, err)
+	}
+	_, diff, ok := strings.Cut(rc.prompts[0], "## 변경 내역")
+	if !ok || !strings.Contains(diff, "상자 at = 홀") || !strings.Contains(diff, "상자 at = 마당") {
+		t.Fatalf("diff lacks the changed state lines: %q", diff)
+	}
+	if strings.Contains(diff, "문 = 닫힘") {
+		t.Errorf("unchanged state line in the diff: %q", diff)
+	}
+	if got, _ := os.ReadFile(filepath.Join(out, "novel", "s1."+b.ID+".state.txt")); string(got) != stateB {
+		t.Errorf("state file after patch = %q", got)
+	}
+}
+
+// A scene stamped without a stored state text (legacy) cannot be diffed: it is rendered in full.
+func TestStateStaleLegacyFullRender(t *testing.T) {
+	b, s, out := stateStaleSetup(t, stateA)
+	sf := filepath.Join(out, "novel", "s1."+b.ID+".state.txt")
+	if _, err := os.Stat(sf); err != nil {
+		t.Fatalf("stamp wrote no state file: %v", err)
+	}
+	os.Remove(sf)
+	rc := &fakeLLM{replies: []string{"전체 산문"}}
+	xc := &fakeLLM{replies: []string{`{"items":[],"withheld":[],"other":[]}`}}
+	o := Opts{Verifier: "card", Digest: digestOf(stateB)}
+	rr, err := Rerender(ctx, render.Completers{Render: rc, Extract: xc}, "w", []render.Scene{s}, b, out, o, 0, map[string]render.Scene{"s1": s})
+	if err != nil || len(rr.StateStale) != 1 || len(rr.Scenes) != 1 || rr.Scenes[0].Patched {
+		t.Fatalf("%+v %v", rr, err)
+	}
+	if strings.Contains(rc.prompts[0], "변경 내역") {
+		t.Errorf("legacy state-stale scene was patched")
+	}
+}
+
+// Stamp rewrites only hashes it can identify as this scene's (generation or legacy full hash); others are skipped.
+func TestStampSkipsUnknownHash(t *testing.T) {
+	b, mk, out := rerenderFixture(t)
+	s1, s2, s3 := mk("s1", ""), mk("s2", ""), mk("s3", "")
+	seedNovel(t, out, b, s1, s2, s3)
+	p2 := filepath.Join(out, "novel", "s2."+b.ID+".hash")
+	os.WriteFile(p2, []byte("deadbeef\n"), 0o644)
+	full, _ := render.RenderHash(s3, b) // legacy full hash is accepted
+	os.WriteFile(filepath.Join(out, "novel", "s3."+b.ID+".hash"), []byte(full+"\n"), 0o644)
+	n, skipped, err := Stamp(ctx, []render.Scene{s1, s2, s3}, b, out, Opts{Digest: digestOf("A")})
+	if err != nil || n != 2 || skipped != 1 {
+		t.Fatalf("stamped=%d skipped=%d %v", n, skipped, err)
+	}
+	if h, _ := os.ReadFile(p2); strings.TrimSpace(string(h)) != "deadbeef" {
+		t.Errorf("mismatched hash rewritten: %q", h)
+	}
+}

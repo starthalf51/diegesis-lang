@@ -434,3 +434,28 @@ func TestLegacyFullHashNotStale(t *testing.T) {
 		t.Fatalf("%+v %v", rr, err)
 	}
 }
+
+// Inserting acts renumbers #aN and moves line:col; the same old warn must stay old.
+func TestReviseBaselineSurvivesRenumbering(t *testing.T) {
+	dir, _ := scene3(t)
+	old := Diag{File: "ep01/s2.dieg.md", Line: 4, Col: 3, Severity: "warn", Rule: "retell-known", Msg: "t.s/s2#a2 tells b p again (ep01/s2.dieg.md:4:3)"}
+	moved := Diag{File: "ep01/s2.dieg.md", Line: 9, Col: 3, Severity: "warn", Rule: "retell-known", Msg: "t.s/s2#a7 tells b p again (ep01/s2.dieg.md:9:3)"}
+	f := &fakeLLM{replies: []string{"=== FILE: ep01/s2.dieg.md ===\nNEW\n" + End}}
+	chk, _ := checks([]Diag{old}, []Diag{moved})
+	res, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 3, Out: filepath.Dir(dir)})
+	if err != nil || !res.Clean || res.Rounds != 1 {
+		t.Fatalf("%+v %v", res, err)
+	}
+}
+
+// One old warn does not hide a second identical one the revision adds.
+func TestReviseBaselineMultiset(t *testing.T) {
+	dir, _ := scene3(t)
+	w := Diag{File: "cast.dieg.md", Severity: "warn", Rule: "retell-known", Msg: "same #a1"}
+	f := &fakeLLM{replies: []string{"=== FILE: ep01/s2.dieg.md ===\nNEW\n" + End, "=== FILE: ep01/s2.dieg.md ===\nNEW2\n" + End}}
+	chk, _ := checks([]Diag{w}, []Diag{w, w}, []Diag{w})
+	res, err := ReviseLoop(ctx, f, chk, dir, "req", testRefs(t), Opts{Rounds: 3, Out: filepath.Dir(dir)})
+	if err != nil || !res.Clean || res.Rounds != 2 {
+		t.Fatalf("%+v %v", res, err)
+	}
+}

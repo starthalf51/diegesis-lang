@@ -33,11 +33,11 @@ func cmdStamp(args []string) int {
 		return 1
 	}
 	defer closeDigest()
-	n, differ, err := write.Stamp(ctx, all, b, o.Out, o)
+	n, skipped, err := write.Stamp(ctx, all, b, o.Out, o)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
 	}
-	fmt.Printf("stamp: %d of %d scenes stamped (%d had a different IR hash) → %s\n", n, len(all), differ, o.Out)
+	fmt.Printf("stamp: %d of %d scenes stamped (%d skipped: stored hash is not this scene's request) → %s\n", n, len(all), skipped, o.Out)
 	return 0
 }

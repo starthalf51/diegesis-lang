@@ -13,9 +13,10 @@ import (
 )
 
 // cmdRevise runs `dieg revise <story-dir> "요청" [--rounds N] [--scenes N] [--no-render] [--backend id] [--styles dir]
-// [--code-model M] [--render-model M] [--extract-model M] [--code-effort e]` on a dir made by `dieg write -o <story-dir>`.
+// [--skip s1,s2 (benchmark only: never render these scenes)] [--code-model M] [--render-model M] [--extract-model M] [--code-effort e]` on a dir made by `dieg write -o <story-dir>`.
 // The AI edits story/ to satisfy the request (checker + PG lint loop on a copy; story/ changes only when clean), then only
-// the scenes whose render request changed or that are new are re-rendered (--scenes N caps that), removed scenes lose
+// the scenes whose render request changed or that are new are re-rendered (--scenes N caps that; changed scenes are patched
+// sentence by sentence only with the card verifier, which is the default), removed scenes lose
 // their prose files, and novel.md is rebuilt. Exit codes as write.
 func cmdRevise(args []string) int {
 	o := write.DefaultOpts()
@@ -89,7 +90,9 @@ func runRevise(request, styles string, limit int, o write.Opts) (int, error) {
 	}
 	var old map[string]render.Scene // pre-revision requests, for sentence-level patches (compile only, no model call)
 	if o.Render {
-		if _, prev, err := shownScenes(ctx, story); err == nil {
+		if _, prev, err := shownScenes(ctx, story); err != nil {
+			fmt.Fprintln(os.Stderr, "dieg: note: the story before the revision does not compile ("+err.Error()+"); changed scenes are re-rendered in full, not patched")
+		} else {
 			old = make(map[string]render.Scene, len(prev))
 			for _, s := range prev {
 				old[s.ID] = s

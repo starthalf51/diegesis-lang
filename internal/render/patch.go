@@ -208,6 +208,7 @@ func patchSystem(b Backend, s Scene) string {
 - 아래 '변경 내역'에 나온 사실·행위와 직접 닿는 문장만 고친다. 닿지 않는 문장은 목록에 넣지 않는다. 문장을 다듬거나 순서를 바꾸지 않는다.
 - '옛 명세에만 있음'에 있는 내용은 산문에서 말하거나 암시하지 않는다(그 내용을 전하던 문장은 새 명세에 맞게 고치거나, 자리가 없으면 new 를 빈 문자열로 해 그 문장만 지운다).
 - '새 명세에만 있음'에 있는 내용은 그것을 전하는 인물·동사(누가 말하는가, 보는가)대로 해당 문장에 반영한다. 자리가 없으면 가까운 문장에 이어 붙이는 식으로 old 를 그 문장으로 하고 new 에 덧붙인다.
+- '세계 상태:' 로 시작하는 항목은 이 장면 시점의 세계 상태(물건 위치·인물 상태·아는 것)가 바뀐 것이다. 그 상태를 말하거나 전제하는 문장만 고친다.
 - 새 명세(Acts, Must not state or imply 등)에 없는 사건·사실·대사를 새로 지어내지 않는다. 말하면 안 되는 사실은 암시도 하지 않는다. 거짓으로 표시된 사실은 서술자가 사실로 단정하지 않는다. 시점은 그대로 유지한다.
 - 고친 문장도 목표 어투를 지킨다.
 - old 는 옛 산문에 나온 그대로(띄어쓰기·문장부호 포함) 한 문장 또는 짧은 구간이고, 옛 산문에서 정확히 한 번만 나와야 한다. 겹치는 구간을 고르지 않는다.
@@ -249,6 +250,7 @@ func patchFeedback(s Scene, lang string, rep Report) string {
 // 요약 절(없으면 "")로 패치 프롬프트와 대체 렌더 모두에 붙는다. 검수는 카드 고정이다. 돌려주는 int 는 모델 렌더 시도 수(패치 + 대체 렌더).
 func PatchVerified(ctx context.Context, cs Completers, work string, old, nw Scene, b Backend, oldProse, digest string, o VerifyOpts) (Render, int, error) {
 	rm, ad := SceneDiff(old, nw)
+	rm, ad = append(rm, prefixed(o.StateRm)...), append(ad, prefixed(o.StateAd)...)
 	diff, sys := diffText(rm, ad), patchSystem(b, nw)
 	r := Render{Work: work, Scene: nw.ID, Backend: b.ID, Lang: b.Lang, Tone: b.Tone}
 	ps, pu, err := b.Prompt(nw)
@@ -289,4 +291,42 @@ func PatchVerified(ctx context.Context, cs Completers, work string, old, nw Scen
 	o.UserSuffix = digest
 	full, m, err := RenderVerified2(ctx, cs, work, nw, b, o)
 	return full, 2 + m, err
+}
+
+const stateTag = "세계 상태: "
+
+func prefixed(ls []string) (o []string) {
+	for _, l := range ls {
+		o = append(o, stateTag+l)
+	}
+	return
+}
+
+// StateDiff is the multiset difference of two state digests' lines (headings and blanks ignored): lines only in old,
+// lines only in nw.
+func StateDiff(old, nw string) (rm, ad []string) {
+	lines := func(s string) (o []string) {
+		for _, l := range strings.Split(s, "\n") {
+			if l = strings.TrimSpace(l); l != "" && !strings.HasPrefix(l, "#") {
+				o = append(o, l)
+			}
+		}
+		return
+	}
+	minus := func(a, b []string) (o []string) {
+		n := map[string]int{}
+		for _, x := range b {
+			n[x]++
+		}
+		for _, x := range a {
+			if n[x] > 0 {
+				n[x]--
+			} else {
+				o = append(o, x)
+			}
+		}
+		return
+	}
+	a, b := lines(old), lines(nw)
+	return minus(a, b), minus(b, a)
 }
