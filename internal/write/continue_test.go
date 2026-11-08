@@ -121,3 +121,9 @@ func TestCapDigest(t *testing.T) {
 		t.Error("cut without need")
 	}
 }
+
+func TestDefaultRenderEffortLow(t *testing.T) {
+	if e := DefaultOpts().RenderEffort; e != "low" {
+		t.Errorf("RenderEffort %q, want low", e)
+	}
+}

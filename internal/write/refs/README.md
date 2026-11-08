@@ -57,7 +57,7 @@ dieg write "아이템 한 문장" -o out/story1
 
 출력: `story/`(Diegesis 코드), `novel/`(장면별 산문), `novel.md`(합친 소설), `calls.jsonl`(호출마다 토큰 기록), `diags.txt`(남은 진단).
 
-종료 코드: `0` 코드가 깨끗하고 모든 장면이 검증 통과(`--no-render` 면 코드만 깨끗), `1` 라운드가 끝나도 error·warn 진단이 남음(warn 도 막는다 — 사물 위치·거짓 공개 린트 포함, 렌더하지 않음) 또는 입력·실행 오류, `3` 렌더한 장면 중 검증 실패가 있음(마지막 렌더는 소설에 들어간다). 장면은 환각 0 일 때만 통과한다(ADR-019).
+종료 코드: `0` 코드가 깨끗하고 모든 장면이 검증 통과(`--no-render` 면 코드만 깨끗), `1` 라운드가 끝나도 error·warn 진단이 남음(warn 도 막는다 — 사물 위치·거짓 공개 린트 포함, 렌더하지 않음) 또는 입력·실행 오류, `3` 렌더한 장면 중 검증 실패가 있음(마지막 렌더는 소설에 들어간다). 장면은 카드 채점 통과(누출 0, 누락+종류 틀림 ≤ 1)일 때 통과한다(ADR-028. `--verifier open` 이면 환각 0, ADR-019).
 
 ## 이어 쓰기와 수정: `dieg continue` · `dieg revise`
 
@@ -78,6 +78,8 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 | `--render-model M` | 렌더 모델(기본 `claude-haiku-5-5`, 근거 `examples/renderer-ab`) |
 | `--extract-model M` | 재추출 모델(기본 `claude-sonnet-5-5`) |
 | `--code-effort e` | 코딩 추론 효과 `low`/`medium`/`high`(기본 `medium`) |
+| `--render-effort e` | 렌더 추론 효과 `low`/`medium`/`high`(기본 `low`, 근거 `examples/effort-ab`) |
+| `--verifier card\|open` | 장면 채점기(기본 `card`, `open` 은 예전 개방형 추출) |
 | `--skeleton` | 뼈대 모드: 코드는 대사를 쓰지 않고 렌더러가 대사를 쓴다 |
 
 - 없는 모델 ID·효과·렌더러 값은 플래그 파싱 단계에서 exit 2 로 끝난다(호출 전, 조용히 기본값으로 바뀌지 않는다).
@@ -85,6 +87,11 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 - **동작 변경:** `dieg render --verify` 의 기본 모델이 sonnet 이 되었다(`--render-model`·`--extract-model` 로 바꾼다).
 - **동작 변경(플랜 5):** 기본 렌더 모델이 haiku 가 되었다(`write`·`continue`·`revise`·`render --verify` 모두. 렌더러 A/B, `examples/renderer-ab`). 재추출은 sonnet 그대로다.
 - **동작 변경(플랜 5, 검증기):** `ExtractHash` 가 바뀌어 다음 `dieg render-check` 는 캐시된 장면을 전부 다시 추출한다(장면당 K=3, 코퍼스 16장면이면 약 48회 호출). 산문 캐시는 유효하고 추출 캐시만 무효다.
+- **동작 변경(플랜 6):**
+  - 생성 경로(`write`·`continue`·`revise`·`render --verify`)의 기본 채점기는 체크리스트 카드(`render.ScoreCard`)다. `--verifier open` 으로 예전 개방형 추출 검증을 쓴다. `render-check` 는 그대로 개방형(K=3)이다.
+  - 통과 = 누출 0, 누락 + 종류 틀림 ≤ 1, 채점 오류 없음. 지어낸 사건(G2)은 경고(`warnings`)로만 남고 재시도 피드백에 들어가지 않는다. 따라서 카드 통과는 "환각 0" 이 아니다(ADR-028).
+  - `--render-effort` 기본이 `low` 가 되었다(`write`·`continue`·`revise`·`render --verify`, `examples/effort-ab`: 점수 0.9947→0.9997, 통과 6/6 동일, 호출당 출력 5124→4643 토큰. 토큰 이득은 macbeth 한 장면에 기댄다, n=6).
+  - 계층형 렌더러를 삭제했다: `--renderer`·`--beat-retries` 는 없다(exit 2). 예전 `layered:` 장면 해시는 낡아 다시 렌더된다(ADR-029).
 - 비용 측정: 뼈대 모드만으로는 코드 출력 토큰이 약 2% 줄었다(출력의 대부분이 추론 토큰). `--code-effort medium` 은 high 대비 코드 출력이 약 55% 적었고 깨끗해지는 라운드 수는 늘지 않았다(스모크 1회 기준).
 
 ## 측정 결과
@@ -94,9 +101,11 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 
 연재(12화 계획, 11화에서 잘림, 수정 2회)는 [`examples/serial/README.md`](examples/serial/README.md) 에 있다. 가설은 서지 않았다: 오류는 원 수치로 B 3 대 A 4 지만 1만 자당으로는 B 1.24 대 A 0.89 (미충족), 가중 입력 토큰은 B 가 A 의 1.89배 (가격 기준은 단가표가 없어 미정), 수정 잔여는 B 4 대 A 1 (미충족). 아이템 1개·판정 1회다.
 
-렌더러·렌더 모델 A/B(장면 2개, n=2)는 [`examples/renderer-ab/README.md`](examples/renderer-ab/README.md) 에 있다. 단일+haiku 는 단일+sonnet 과 통과율이 같고 가중 토큰은 약 절반이다. 계층형은 호출이 3~4배인데 통과율이 오르지 않았다. 그래서 기본은 단일 렌더러+haiku 렌더다(결정은 가중치와 무관하다. haiku 의 비용 우위는 가중치에 따라 달라진다: A/B 에서 출력 합계는 +44%(S-son 12,725 대 S-hai 18,368 토큰, `examples/renderer-ab/README.md`), 연재 run2 에서는 호출당 약 2.3배(3,819 대 1,630)). 표본이 작아 통계가 아니라 사례다.
+렌더러·렌더 모델 A/B(장면 2개, n=2)는 [`examples/renderer-ab/README.md`](examples/renderer-ab/README.md) 에 있다. 단일+haiku 는 단일+sonnet 과 통과율이 같고 가중 토큰은 약 절반이다. 계층형(v0.5.0 에 있었고 v0.6.0 에서 삭제)은 호출이 3~4배인데 통과율이 오르지 않았다. 그래서 기본은 단일 렌더러+haiku 렌더다(결정은 가중치와 무관하다. haiku 의 비용 우위는 가중치에 따라 달라진다: A/B 에서 출력 합계는 +44%(S-son 12,725 대 S-hai 18,368 토큰, `examples/renderer-ab/README.md`), 연재 run2 에서는 호출당 약 2.3배(3,819 대 1,630)). 표본이 작아 통계가 아니라 사례다.
 
 연재 재측정(run2, 같은 아이템, 10화에서 잘림)은 [`examples/serial/README.md`](examples/serial/README.md) 의 "run2" 에 있다. (a) 오류: 이 표본에서 충족(B 3 대 A 8)이지만 A 의 run 간 흔들림이 차이와 비슷해 n=1 잡음 범위 안이다. (b) 비용: 가정한 가중치(s=0.6, h=0.2)에서 B 가 A 의 약 1.12배라 미충족. (c) 수정 잔여: 동률이라 미충족. 다음 후보는 haiku 렌더 effort low 와 하네스 `modelOf` 수정이다.
+
+연재 run3(같은 아이템, 양쪽 12화, 호출 146회)은 [`examples/serial/README.md`](examples/serial/README.md) 의 "run3" 에 있다. B 는 카드 채점기와 렌더 effort low 로 돌렸다. (a) 오류: 미충족(A 8 대 B 9, 1만 자당 1.71 대 2.32. B11 파이프라인 잘림 1건을 빼면 8 대 8, 2.07). (b) 비용: 가정 가중치에서 B 가 A 의 0.86배라 충족(A 는 run2 대비 49% 늘어 비교 기준이 흔들렸다). (c) 수정 잔여: 미충족(A 1 대 B 2). 카드는 31/31 통과, 재렌더 0이지만 카드가 지어냄으로는 실패할 수 없어 정의가 바뀐 몫이 크다. B 의 확정 오류 9건은 IR 3, 산문 5, 파이프라인 1, 판정 0 이고 산문 오류는 장면 간 소품·장소·앎의 표류라 장면별 검사가 못 본다. 아이템 1개·판정 1회(n=1)라 사례이며 대체 판단은 여전히 보류다.
 
 ## 대시보드(Grafana)
 
@@ -145,4 +154,5 @@ go vet ./...
 | v0.2.0 | 플랜 2: 정답 셋 3편, 시간 변이, 속성, 독자 모델, 패턴 9종, 지표, Grafana 대시보드 |
 | v0.3.0 | 플랜 3: 거짓 사실 표시, 검증 렌더, 호출 계량(Meter), 사물 위치·거짓 공개 린트, `dieg write`, 직접 쓰기 대 Diegesis 측정 |
 | v0.4.0 | 플랜 4: 역할별 모델·`--code-effort`, 뼈대 모드(`--skeleton`), `dieg continue`, `dieg revise`, 연재 측정 하네스(`tools/serial`). `render --verify` 기본 모델 sonnet |
-| v0.5.0 | 플랜 5: 계층형 렌더러(`--renderer layered`, 옵트인), 기본 렌더 모델 haiku, 검증기가 저작된 사실 없는 행위·등장을 환각으로 세지 않음, stays-gone 규칙(`attr X.status = gone`), 연재 공정 재측정(run2) |
+| v0.5.0 | 플랜 5: 계층형 렌더러(`--renderer layered`, 옵트인; v0.6.0 에서 삭제), 기본 렌더 모델 haiku, 검증기가 저작된 사실 없는 행위·등장을 환각으로 세지 않음, stays-gone 규칙(`attr X.status = gone`), 연재 공정 재측정(run2) |
+| v0.6.0 | 플랜 6: 기본 채점기 card(`--verifier open` 으로 예전 방식), 지어낸 사건은 경고만, 기본 `--render-effort low`, 계층형 렌더러(`--renderer`·`--beat-retries`) 삭제, 연재 run3 |
