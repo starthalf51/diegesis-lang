@@ -1,0 +1,13 @@
+{"t":"2026-11-08T00:30:54Z","label":"dump-extract-bible/mark_denial.en-doyle","input":2,"output":494,"cache_read":0,"cache_write":2045,"stop":"end_turn","err":"","ms":7015}
+{"t":"2026-11-08T00:31:01Z","label":"dump-extract-bible/mark_denial.en-doyle","input":2,"output":496,"cache_read":1687,"cache_write":357,"stop":"end_turn","err":"","ms":7325}
+{"t":"2026-11-08T00:31:08Z","label":"dump-extract-bible/mark_denial.en-doyle","input":2,"output":496,"cache_read":1687,"cache_write":358,"stop":"end_turn","err":"","ms":7154}
+{"t":"2026-11-08T00:31:15Z","label":"dump-extract-bible/mark_denial.ko-gojeon","input":2,"output":648,"cache_read":839,"cache_write":1342,"stop":"end_turn","err":"","ms":9305}
+{"t":"2026-11-08T00:31:25Z","label":"dump-extract-bible/mark_denial.ko-gojeon","input":2,"output":588,"cache_read":1823,"cache_write":358,"stop":"end_turn","err":"","ms":7694}
+{"t":"2026-11-08T00:31:32Z","label":"dump-extract-bible/mark_denial.ko-gojeon","input":2,"output":496,"cache_read":1823,"cache_write":358,"stop":"end_turn","err":"","ms":8852}
+{"t":"2026-11-08T00:31:41Z","label":"dump-extract-bible/mark_denial.ko-hapsho","input":2,"output":501,"cache_read":839,"cache_write":1454,"stop":"end_turn","err":"","ms":6836}
+{"t":"2026-11-08T00:31:48Z","label":"dump-extract-bible/mark_denial.ko-hapsho","input":2,"output":548,"cache_read":1936,"cache_write":358,"stop":"end_turn","err":"","ms":7717}
+{"t":"2026-11-08T00:31:56Z","label":"dump-extract-bible/mark_denial.ko-hapsho","input":2,"output":514,"cache_read":1936,"cache_write":358,"stop":"end_turn","err":"","ms":7748}
+{"t":"2026-11-08T00:32:03Z","label":"dump-extract-chibi/45.88.en-doyle","input":2,"output":507,"cache_read":839,"cache_write":2118,"stop":"end_turn","err":"","ms":9604}
+{"t":"2026-11-08T00:32:13Z","label":"dump-extract-chibi/45.88.en-doyle","input":2,"output":637,"cache_read":2600,"cache_write":358,"stop":"end_turn","err":"","ms":8704}
+{"t":"2026-11-08T00:32:22Z","label":"dump-extract-chibi/45.88.en-doyle","input":2,"output":493,"cache_read":2600,"cache_write":358,"stop":"end_turn","err":"","ms":7953}
+{"t":"2026-11-08T00:32:30Z","label":"dump-extract-chibi/45.88.ko-gojeon","input":2,"output":737,"cache_read":839,"cache_write":1978,"stop":"end_turn","err":"","ms":11226}

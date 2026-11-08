@@ -1,0 +1,44 @@
+{
+  "bible/mark_denial.ko-gojeon": {
+    "E1": {"Present": true, "Quote": "여종 하나가 그를 보고 그 얼굴을 자세히 바라보더라", "Unsure": true},
+    "E2": {"Present": true, "Quote": "너도 나사렛 사람 예수와 함께 있었구나!"},
+    "E3": {"Present": true, "Quote": "그 말이 참이 아니라고 잡아떼며"},
+    "E4": {"Present": true, "Quote": "닭이 우는 소리를 듣더라"},
+    "E5": {"Present": true, "Quote": "네가 참으로 그 무리 중 하나로구나", "Unsure": true},
+    "E6": {"Present": true, "Quote": "나는 너희가 말하는 그 사람을 알지 못하노라!"},
+    "E7": {"Present": true, "Quote": "닭이 두 번째로 우는 소리를 듣더라"},
+    "E8": {"Present": true, "Quote": "닭이 두 번 울기 전에 네가 나를 세 번 부인하리라 하시던 말씀"}
+  },
+  "chibi/45.88.ko-hapsho": {
+    "E1": {"Present": true, "Quote": "장간이 조조를 위해 자기를 설득하러 왔다는 속뜻을 드러냅니다"},
+    "E2": {"Present": true, "Quote": "나더러 조조 편의 사자라니 무슨 말씀이오?"},
+    "E3": {"Present": true, "Quote": "장간은 편지를 펼쳐서 천천히 읽어 내려갑니다 ... 그 두 사람은 처음부터 오와 연이 닿아 있었구나", "Unsure": true},
+    "E4": {"Present": true, "Quote": "그 두 사람은 처음부터 오와 연이 닿아 있었구나"},
+    "E5": {"Present": true, "Quote": "하루 이틀 안에 조조의 머리를 보여 주겠소"},
+    "E6": {"Present": false, "Quote": "장윤과 채모 두 장군이 오셨습니다 (오 진영 소속임을 말하지 않고 도착만 알림)", "Unsure": true}
+  },
+  "macbeth/1.3.ko-haera": {
+    "E1": {"Present": true, "Quote": "글라미스의 영주여, 만세!"},
+    "E2": {"Present": true, "Quote": "그대에게 만세, 캐더의 영주여!"},
+    "E3": {"Present": true, "Quote": "그대는 장차 왕이 되리라!"},
+    "E4": {"Present": true, "Quote": "그대는 왕을 낳으리라"},
+    "E5": {"Present": true, "Quote": "나는 글라미스의 영주가 된 줄 안다"},
+    "E6": {"Present": true, "Quote": "캐더의 영주가 살아 있다,"},
+    "E7": {"Present": true, "Quote": "번성한 신사."},
+    "E8": {"Present": true, "Quote": "그대의 자식들이 왕이 되리라."},
+    "E9": {"Present": true, "Quote": "그대가 왕이 되리라."},
+    "E10": {"Present": true, "Quote": "나더러 그대를 캐더의 영주라 부르라 하셨소"},
+    "E11": {"Present": true, "Quote": "그 영주가 아직 목숨을 부지하고 있으나"},
+    "E12": {"Present": true, "Quote": "노르웨이 편에 서서 던컨 왕에게 맞섰다는 사실"},
+    "E13": {"Present": true, "Quote": "그리고 캐더의 영주!"},
+    "E14": {"Present": true, "Quote": "가장 큰 것이 아직 남았다.", "Unsure": true}
+  },
+  "odyssey/19.1.ko-haera": {
+    "E1": {"Present": true, "Quote": "이 늙은 거지가 바로 오디세우스 자신이라고 믿고 있었다"},
+    "E2": {"Present": true, "Quote": "자신이 크레타 사람이라고 말했다"},
+    "E3": {"Present": true, "Quote": "오디세우스가 살아 있어서 고향 이타케로 돌아오는 길이라는 소식"},
+    "E4": {"Present": true, "Quote": "그것이 오디세우스의 다리임을 알아보았다"},
+    "E5": {"Present": true, "Quote": "당신이 정말 오디세우스 본인인 것이 틀림없어요"},
+    "E6": {"Present": true, "Quote": "하늘이 당신에게 나를 알아보게 하셨으니, 입을 다무시오", "Unsure": true}
+  }
+}

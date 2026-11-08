@@ -1,0 +1,57 @@
+{
+  "Pair": "bible/mark_denial.ko-gojeon",
+  "Prose": "베드로가 불을 쬐고 앉았더니, 대제사장의 여종 하나가 그를 보고 그 얼굴을 자세히 바라보더라.\n\n여종이 베드로를 향하여 이르되, “너도 나사렛 사람 예수와 함께 있었구나!” 하더라.\n\n베드로는 그 말이 참이 아니라고 잡아떼며 이르되, “나는 네가 하는 말을 알지도 못하고 깨닫지도 못하겠다.” 하더라.\n\n베드로가 자리를 피하여 문간으로 나가니, 닭이 우는 소리를 듣더라.\n\n여종이 다시 곁에 섰던 사람들을 향하여 이르되, “이 사람도 그 무리 중 하나로다.” 하더라.\n\n그러나 베드로는 다시 부인하더라.\n\n곁에 섰던 사람들이 베드로에게 이르되, “네가 참으로 그 무리 중 하나로구나. 너도 갈릴리 사람이니 말씨가 그것을 보여 주는구나.” 하더라.\n\n베드로가 말하되, “나는 너희가 말하는 그 사람을 알지 못하노라!” 하더라.\n\n그때 닭이 두 번째로 우는 소리를 듣더라.\n\n이에 베드로가 예수께서 자기에게 이르시던 말씀을 떠올리더라. 닭이 두 번 울기 전에 네가 나를 세 번 부인하리라 하시던 말씀이었더라.",
+  "Expect": [
+    {
+      "ID": "E1",
+      "Key": "mark_maid|perceive|peter_with_jesus",
+      "Text": "대제사장의 여종 하나 sees, hears or notices: Peter was with Jesus"
+    },
+    {
+      "ID": "E2",
+      "Key": "mark_maid|assert|peter_with_jesus",
+      "Text": "대제사장의 여종 하나 says, conveys or thinks (toward 베드로): Peter was with Jesus"
+    },
+    {
+      "ID": "E3",
+      "Key": "peter|assert|not peter_with_jesus",
+      "Text": "베드로 says, conveys or thinks (toward 대제사장의 여종 하나): It is not true that Peter was with Jesus [a claim or belief; it need not be true]"
+    },
+    {
+      "ID": "E4",
+      "Key": "peter|perceive|rooster_crows",
+      "Text": "베드로 sees, hears or notices: the rooster crowed"
+    },
+    {
+      "ID": "E5",
+      "Key": "mark_bystanders|assert|peter_with_jesus",
+      "Text": "곁에 섰던 사람들 says, conveys or thinks (toward 베드로): Peter was with Jesus"
+    },
+    {
+      "ID": "E6",
+      "Key": "peter|assert|not peter_knows_jesus",
+      "Text": "베드로 says, conveys or thinks (toward 곁에 섰던 사람들): It is not true that Peter knows Jesus [a claim or belief; it need not be true]"
+    },
+    {
+      "ID": "E7",
+      "Key": "peter|perceive|rooster_crows_twice",
+      "Text": "베드로 sees, hears or notices: the rooster crowed the second time"
+    },
+    {
+      "ID": "E8",
+      "Key": "peter|assert|peter_will_deny",
+      "Text": "베드로 says, conveys or thinks: Peter will deny Jesus three times before the rooster crows"
+    }
+  ],
+  "Withheld": null,
+  "Want": {
+    "mark_bystanders|assert|peter_with_jesus": 1,
+    "mark_maid|assert|peter_with_jesus": 2,
+    "mark_maid|perceive|peter_with_jesus": 1,
+    "peter|assert|not peter_knows_jesus": 1,
+    "peter|assert|not peter_with_jesus": 2,
+    "peter|assert|peter_will_deny": 1,
+    "peter|perceive|rooster_crows": 1,
+    "peter|perceive|rooster_crows_twice": 1
+  }
+}

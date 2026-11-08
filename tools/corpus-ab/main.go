@@ -130,7 +130,14 @@ func main() {
 		os.Exit(1)
 	}
 	if *spike != "" {
-		runSpike(ctx, *spike, *budget, *out, scs, bs, *pairs)
+		switch *spike {
+		case "report":
+			runReport(*out, scs, bs, *pairs)
+		case "dump", "s1", "s2":
+			runVerifier(ctx, *spike, *budget, *out, scs, bs, *pairs)
+		default:
+			runSpike(ctx, *spike, *budget, *out, scs, bs, *pairs)
+		}
 		return
 	}
 	type job struct {
