@@ -156,7 +156,17 @@ func cardJSON(text string) (rawCard, error) {
 
 func ansOf(list []rawItem, want []string) (map[string]itemAns, error) {
 	m := map[string]itemAns{}
+	ok := map[string]bool{}
+	for _, id := range want {
+		ok[id] = true
+	}
 	for _, it := range list {
+		if !ok[it.ID] {
+			return nil, badExtract("card: unknown id " + it.ID)
+		}
+		if _, dup := m[it.ID]; dup {
+			return nil, badExtract("card: duplicate id " + it.ID)
+		}
 		fp := yes(it.FactPresent)
 		m[it.ID] = itemAns{fp, fp && yes(it.AsStated)}
 	}
@@ -184,6 +194,13 @@ func ParseCard(s Scene, text string) (card, error) {
 	}
 	c := card{items: items, revealed: map[string]bool{}}
 	for _, w := range o.Withheld {
+		var n int
+		if _, e := fmt.Sscanf(w.ID, "W%d", &n); e != nil || n < 1 || n > len(s.Withheld) || w.ID != fmt.Sprintf("W%d", n) {
+			return card{}, badExtract("card: unknown id " + w.ID)
+		}
+		if _, dup := c.revealed[w.ID]; dup {
+			return card{}, badExtract("card: duplicate id " + w.ID)
+		}
 		c.revealed[w.ID] = yes(w.Revealed)
 	}
 	for i := range s.Withheld {

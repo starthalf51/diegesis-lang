@@ -114,3 +114,27 @@ func TestScoresLengthDropped(t *testing.T) {
 		t.Fatalf("%+v", r.Scores)
 	}
 }
+
+func TestScoreCardUnknownIDRetryThenError(t *testing.T) {
+	bad := tierReply(`{"items":[{"id":"E1","fact_present":"yes","as_stated":"yes"},{"id":"E2","fact_present":"yes","as_stated":"yes"},{"id":"E3","fact_present":"yes","as_stated":"yes"},{"id":"E9","fact_present":"yes","as_stated":"yes"}],"withheld":[{"id":"W1","revealed":"no"}]}`)
+	f := &fakeCompleter{replies: []Result{bad, bad}}
+	r, err := ScoreCard(ctx, f, cardScene(), Backend{Lang: "en"}, "prose", CardOpts{Tier2: "off"})
+	if err != nil || f.calls != 2 || r.ExtractError == "" || Passed(Render{Report: r}) {
+		t.Fatalf("err=%v calls=%d %+v", err, f.calls, r)
+	}
+	badW := tierReply(`{"items":[{"id":"E1","fact_present":"yes","as_stated":"yes"},{"id":"E2","fact_present":"yes","as_stated":"yes"},{"id":"E3","fact_present":"yes","as_stated":"yes"}],"withheld":[{"id":"W1","revealed":"no"},{"id":"W7","revealed":"no"}]}`)
+	f = &fakeCompleter{replies: []Result{badW, badW}}
+	if r, _ = ScoreCard(ctx, f, cardScene(), Backend{Lang: "en"}, "prose", CardOpts{Tier2: "off"}); f.calls != 2 || r.ExtractError == "" {
+		t.Fatalf("calls=%d %+v", f.calls, r)
+	}
+}
+
+func TestScoreCardDuplicateIDRetry(t *testing.T) {
+	dup := tierReply(`{"items":[{"id":"E1","fact_present":"no","as_stated":"no"},{"id":"E1","fact_present":"yes","as_stated":"yes"},{"id":"E2","fact_present":"yes","as_stated":"yes"},{"id":"E3","fact_present":"yes","as_stated":"yes"}],"withheld":[{"id":"W1","revealed":"no"}]}`)
+	ok := tierReply(`{"items":[{"id":"E1","fact_present":"no","as_stated":"no"},{"id":"E2","fact_present":"yes","as_stated":"yes"},{"id":"E3","fact_present":"yes","as_stated":"yes"}],"withheld":[{"id":"W1","revealed":"no"}]}`)
+	f := &fakeCompleter{replies: []Result{dup, ok}}
+	r, err := ScoreCard(ctx, f, cardScene(), Backend{Lang: "en"}, "prose", CardOpts{Tier2: "off"})
+	if err != nil || f.calls != 2 || r.ExtractError != "" || !reflect.DeepEqual(r.Missing, []string{"a|assert|fa"}) {
+		t.Fatalf("err=%v calls=%d %+v", err, f.calls, r)
+	}
+}
