@@ -10,6 +10,8 @@
 --   두 행위의 인용문이 같거나 어느 한쪽이 비어 있으며(둘 다 있고 다르면 다른 말로 한 번 더 한 것이다),
 --   그 뒤 행위 전까지 B 의 믿음이 바뀌지 않았다 — P 의 부정을 믿게 됐거나 P 를 거짓으로 믿게 된 행이 없고,
 --   B 가 P 를 의심하는 문장(`doubts` 는 believes 행을 남기지 않아 belief 테이블에서 본다)도 없다.
+-- 청중에 아직 모르는 사람이 섞였거나, 같은 화자가 이미 두 번 넘게 같은 말을 한 모티프(치매 노인의 되풀이 등)면 조용하다.
+-- 청중에 아직 모르는 사람이 섞였거나, 같은 화자가 이미 두 번 넘게 같은 말을 한 모티프(치매 노인의 되풀이 등)면 조용하다.
 -- 작가가 직접 쓴 `believes`(declared)는 출처로 세지 않는다(작품 밖 가정이라 되풀이가 연출일 수 있다).
 WITH told AS (
   SELECT DISTINCT c.act_id, c.pt, c.actor_id, au.entity_id AS hearer, c.prop_id, lint_canon($1, c.prop_id) AS cp, a.quote
@@ -29,6 +31,11 @@ SELECT DISTINCT ON (t.act_id, t.hearer, t.cp)
        jsonb_build_object('hearer', t.hearer, 'prop', t.prop_id, 'first', t.cause_act) AS data
   FROM cand t
  WHERE precedes($1, t.k_pt, t.pt) = 'yes'
+   AND NOT EXISTS (  -- 새 청자가 섞인 발화(공지·뒤늦은 폭로)는 되풀이가 아니다: 청중 모두가 이미 알아야 한다
+   SELECT 1 FROM audience au
+    WHERE au.act_id = t.act_id AND au.entity_id <> t.actor_id
+      AND NOT EXISTS (SELECT 1 FROM cand u WHERE u.act_id = t.act_id AND u.cp = t.cp AND u.hearer = au.entity_id))
+   AND (SELECT count(DISTINCT u.cause_act) FROM cand u WHERE u.act_id = t.act_id AND u.hearer = t.hearer AND u.cp = t.cp) < 2
    AND NOT EXISTS (
    SELECT 1 FROM believes x
     WHERE x.work_id = $1 AND x.entity_id = t.hearer AND x.from_pt IS NOT NULL

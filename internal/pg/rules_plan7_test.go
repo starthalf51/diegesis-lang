@@ -1,6 +1,18 @@
 package pg_test
 
-import "testing"
+import (
+	"context"
+	"fmt"
+	"math/rand"
+	"strings"
+	"testing"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"diegesis/internal/pg"
+	"diegesis/internal/sema"
+	"diegesis/internal/syntax"
+)
 
 // 사실 텍스트에 상대 시간("N일 뒤", "in N days")이 박혀 있으면 경고한다. 절대 날짜는 조용하다.
 func TestRelativeTimeFact(t *testing.T) {
@@ -65,5 +77,93 @@ func TestFactConflict(t *testing.T) {
 		if got := of(lint(t, pool, id), "fact-conflict", id); len(got) != c.want {
 			t.Errorf("%s: fact-conflict = %v, want %d", c.name, got, c.want)
 		}
+	}
+}
+
+// compileLoadFiles 는 compileLoad 와 같되 파일 여러 개(첫 파일에 cast)를 한 작품으로 적재한다.
+func compileLoadFiles(t *testing.T, pool *pgxpool.Pool, bodies ...string) string {
+	t.Helper()
+	id := fmt.Sprintf("t_%d", rand.Int63())
+	var fs []*syntax.File
+	for i, b := range bodies {
+		if i == 0 {
+			b = cast + b
+		}
+		f, diags := syntax.ParseFile(fmt.Sprintf("f%d.dieg", i), []byte(strings.ReplaceAll(b, "WK", id)))
+		for _, d := range diags {
+			if d.Severity == "error" {
+				t.Fatalf("parse: %s", d)
+			}
+		}
+		fs = append(fs, f)
+	}
+	w, ds := sema.Build(fs)
+	for _, d := range ds {
+		if d.Severity == "error" {
+			t.Fatalf("compile: %s", d)
+		}
+	}
+	cleanup(t, pool, id)
+	if err := pg.Load(context.Background(), pool, w); err != nil {
+		t.Fatal(err)
+	}
+	return id
+}
+
+const lensA = `fact lens_smashed "백영호가 거절하자 도경태가 직접 등실에 올라가 렌즈를 깨뜨려 등대 불을 꺼뜨렸고 그때 오른손을 베었다" true
+scene 1
+  enter a, b
+  a tells b: lens_smashed
+`
+const lensB = `module t.s2
+import t.s
+fact lens_broke_in_fight "다투던 끝에 도경태가 뿌리친 오른손이 렌즈를 깨뜨렸고, 그 길로 등대 불이 꺼졌다" true
+scene 2
+  when after 1
+  enter a, b
+  a tells b: lens_broke_in_fight
+`
+
+// 텍스트뿐인 참 사실 둘이 다른 파일·같은 선두 토큰이고 둘 다 서술되면 후보 충돌을 경고한다(B10).
+// 같은 파일이거나, 서술되지 않거나, 선두 토큰이 다르면 조용하다.
+func TestFactConflictTextFacts(t *testing.T) {
+	pool := open(t)
+	id := compileLoadFiles(t, pool, lensA, lensB)
+	got := msgs(lint(t, pool, id), "fact-conflict")
+	if len(got) != 1 || !strings.Contains(got[0], "candidate conflict") {
+		t.Errorf("cross-file text facts: %v, want one candidate conflict", got)
+	}
+	id = compileLoad(t, pool, lensA+`fact lens_broke_in_fight "다투던 끝에 도경태가 뿌리친 오른손이 렌즈를 깨뜨렸고, 그 길로 등대 불이 꺼졌다" true
+scene 2
+  when after 1
+  enter a, b
+  a tells b: lens_broke_in_fight
+`)
+	if got := of(lint(t, pool, id), "fact-conflict", id); len(got) != 0 {
+		t.Errorf("same file: %v, want none", got)
+	}
+	id = compileLoadFiles(t, pool, lensA, `module t.s2
+import t.s
+fact lens_broke_in_fight "다투던 끝에 도경태가 뿌리친 오른손이 렌즈를 깨뜨렸고, 그 길로 등대 불이 꺼졌다" true
+`)
+	if got := of(lint(t, pool, id), "fact-conflict", id); len(got) != 0 {
+		t.Errorf("unnarrated: %v, want none", got)
+	}
+	id = compileLoadFiles(t, pool, lensA, strings.ReplaceAll(lensB, "lens_broke", "tide_broke"))
+	if got := of(lint(t, pool, id), "fact-conflict", id); len(got) != 0 {
+		t.Errorf("different token: %v, want none", got)
+	}
+}
+
+// 청중에 아직 모르는 사람(c)이 섞인 발화는 되풀이가 아니다(공지·뒤늦은 폭로).
+func TestRetellKnownMixedAudience(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, retellScenes+`scene 3
+  when after 1
+  enter a, b, c
+  a tells b, c: p
+`)
+	if got := of(lint(t, pool, id), "retell-known", id); len(got) != 0 {
+		t.Errorf("retell-known = %v, want none for a mixed audience", got)
 	}
 }
