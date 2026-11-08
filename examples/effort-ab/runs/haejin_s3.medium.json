@@ -1,0 +1,18 @@
+{
+  "Scene": "haejin/s3",
+  "Effort": "medium",
+  "Done": true,
+  "Pass": true,
+  "Attempts": 1,
+  "Score": 1,
+  "S1": 1,
+  "S2": 1,
+  "S3": 1,
+  "RenderCalls": 1,
+  "CardCalls": 1,
+  "RenderOut": 4480,
+  "RenderOutPerCall": 4480,
+  "Weighted": 101706,
+  "Missing": [],
+  "Leaked": []
+}

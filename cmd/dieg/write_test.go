@@ -53,6 +53,23 @@ func TestBadCodeEffortExits2(t *testing.T) {
 	}
 }
 
+func TestBadRenderEffortExits2(t *testing.T) {
+	for name, c := range map[string]int{
+		"write":    cmdWrite([]string{"idea", "-o", t.TempDir(), "--render-effort", "max"}),
+		"continue": cmdContinue([]string{t.TempDir(), "--ep", "2", "--render-effort", "max"}),
+		"revise":   cmdRevise([]string{t.TempDir(), "x", "--render-effort", "max"}),
+		"render":   cmdRender([]string{"w", "s", "--backend", "b", "--render-effort", "max"}),
+	} {
+		if c != 2 {
+			t.Errorf("%s exit %d", name, c)
+		}
+	}
+	o, st, lim := write.DefaultOpts(), "styles", 0
+	if _, ok, code := commonFlag([]string{"--render-effort", "low"}, 0, &o, &st, &lim); !ok || code != 0 || o.RenderEffort != "low" {
+		t.Errorf("ok=%v code=%d effort=%q", ok, code, o.RenderEffort)
+	}
+}
+
 func TestWriteRejectsUnknownModel(t *testing.T) {
 	if c := cmdWrite([]string{"idea", "-o", t.TempDir(), "--render-model", "nope"}); c != 2 {
 		t.Fatalf("exit %d", c)

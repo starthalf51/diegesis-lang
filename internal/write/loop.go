@@ -42,12 +42,13 @@ type Opts struct {
 	CodeModel, RenderModel, ExtractModel string   // model per role; DefaultOpts fills them
 	Skeleton                             bool     // code carries events only; the renderer writes the dialogue
 	CodeEffort                           string   // claude --effort for coding calls: low, medium or high
+	RenderEffort                         string   // claude --effort for render calls (default medium)
 	Digest                               string   // ContinueLoop only: the PG state digest of the story so far
 	Verifier                             string   // "card" (default, render.ScoreCard checklist) or "open" (open re-extraction)
 }
 
 func DefaultOpts() Opts {
-	return Opts{Rounds: 4, Backend: "ko-haera", Render: true, Skeleton: true, CodeEffort: "medium", Verifier: "card",
+	return Opts{Rounds: 4, Backend: "ko-haera", Render: true, Skeleton: true, CodeEffort: "medium", RenderEffort: "medium", Verifier: "card",
 		CodeModel: "claude-opus-5-5", RenderModel: "claude-haiku-5-5", ExtractModel: "claude-sonnet-5-5"}
 }
 

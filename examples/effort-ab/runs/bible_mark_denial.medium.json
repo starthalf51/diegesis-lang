@@ -1,0 +1,18 @@
+{
+  "Scene": "bible/mark_denial",
+  "Effort": "medium",
+  "Done": true,
+  "Pass": true,
+  "Attempts": 1,
+  "Score": 1,
+  "S1": 1,
+  "S2": 1,
+  "S3": 1,
+  "RenderCalls": 1,
+  "CardCalls": 2,
+  "RenderOut": 3043,
+  "RenderOutPerCall": 3043,
+  "Weighted": 86889,
+  "Missing": [],
+  "Leaked": []
+}

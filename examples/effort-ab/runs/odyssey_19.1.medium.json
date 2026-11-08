@@ -1,0 +1,20 @@
+{
+  "Scene": "odyssey/19.1",
+  "Effort": "medium",
+  "Done": true,
+  "Pass": true,
+  "Attempts": 2,
+  "Score": 0.9682539682539681,
+  "S1": 1,
+  "S2": 0.8571428571428571,
+  "S3": 1,
+  "RenderCalls": 2,
+  "CardCalls": 4,
+  "RenderOut": 10577,
+  "RenderOutPerCall": 5288.5,
+  "Weighted": 256386,
+  "Missing": [
+    "telemachus|assert|beggar_is_odysseus"
+  ],
+  "Leaked": []
+}

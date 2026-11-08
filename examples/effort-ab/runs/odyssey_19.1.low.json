@@ -1,0 +1,18 @@
+{
+  "Scene": "odyssey/19.1",
+  "Effort": "low",
+  "Done": true,
+  "Pass": true,
+  "Attempts": 1,
+  "Score": 1,
+  "S1": 1,
+  "S2": 1,
+  "S3": 1,
+  "RenderCalls": 1,
+  "CardCalls": 2,
+  "RenderOut": 5412,
+  "RenderOutPerCall": 5412,
+  "Weighted": 134853,
+  "Missing": [],
+  "Leaked": []
+}
