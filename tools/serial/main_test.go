@@ -312,3 +312,18 @@ func TestSerialReplanBlocked(t *testing.T) {
 	}
 }
 
+
+// TestBRenderEffortLow: every B dieg call carries --render-effort low.
+func TestBRenderEffortLow(t *testing.T) {
+	fakeDiegArgs = nil
+	dry(t)
+	if len(fakeDiegArgs) == 0 {
+		t.Fatal("no dieg calls")
+	}
+	for _, a := range fakeDiegArgs {
+		if n := len(a); n < 2 || a[n-2] != "--render-effort" || a[n-1] != "low" {
+			t.Errorf("missing --render-effort low: %v", a)
+		}
+		t.Log(a)
+	}
+}

@@ -232,6 +232,9 @@ var fakeDiegCalls = 3
 // fakeSkip names a scene (e.g. "e2b") the fake dieg does not render, like a scene that failed verification.
 var fakeSkip string
 
+// fakeDiegArgs records every fake dieg command line (for the test).
+var fakeDiegArgs [][]string
+
 // fake answers every model call for -dry and the test, keyed on the prompt's title.
 type fake struct{ eps int }
 
@@ -275,6 +278,7 @@ func (f fake) Complete(_ context.Context, _, user string) (render.Result, error)
 // fakeDieg stands in for the dieg CLI: 3 metered calls per invocation into b/calls.jsonl and scene files in
 // b/novel/ that write creates (e1a, e1b), continue adds (e<N>a, e<N>b) and revise edits (e1a rewritten).
 func fakeDieg(ctx context.Context, out string, args []string) error {
+	fakeDiegArgs = append(fakeDiegArgs, args)
 	dir := filepath.Join(out, "b")
 	m, f, err := meter(fake{}, dir)
 	if err != nil {
