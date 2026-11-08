@@ -64,6 +64,8 @@ haiku(`claude-haiku-5-5`) 렌더를 effort `medium` 과 `low` 로 돌려 card �
 
 - n=6 장면, 장면·팔당 1회 실행. 표준편차를 못 낸다.
 - 차이가 작다. Score 차이는 odyssey 의 medium 재시도 1회(S2 0.86)와 macbeth 의 어투 0.02 가 거의 전부다. 한 번 더 돌리면 뒤집힐 수 있다.
-- 토큰 감소는 장면에 따라 부호가 다르다(bible·chibi 는 low 가 더 많고 macbeth 는 크게 적다). 평균 −9.4% 는 macbeth 하나가 끌었다.
+- 장면별 렌더 출력 토큰/호출(medium → low)은 부호가 갈린다. low 가 더 많은 장면: bible 3043 → 3830, chibi 5599 → 6118, odyssey 5288 → 5412(medium 은 재시도 2회의 평균). low 가 더 적은 장면: macbeth 8646 → 5122, haejin/s19 3522 → 3273, haejin/s3 4480 → 4104. 3 대 3 이다.
+- macbeth 를 빼면 렌더 출력 토큰/호출은 medium 4536.8, low 4547.4 로 low 가 오히려 약간 많다(calls.jsonl 로 다시 계산). 토큰 기준은 macbeth 한 장면 덕에 통과했다. 판정은 미리 정한 규칙을 그대로 따른 것이고, 토큰 이득은 n=6 에서 견고하지 않다.
+- low 의 평균 Score 가 더 높은 것은 odyssey 에서 medium 만 재시도 1회가 필요했기 때문이다(품질 우위의 근거가 아니다).
 - 통과 기준이 ADR-019(환각 0·누출 0·누락 ≤ MaxMissing)라 점수 천장(1.0)에 많이 붙어 있어 변별력이 낮다.
 - card 채점기는 sonnet/low 한 번 판정이다. 채점 잡음은 따로 재지 않았다.
