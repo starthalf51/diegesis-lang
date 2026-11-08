@@ -1,0 +1,8 @@
+== R1 누가 일으켰나 (렌즈를 깬 사람) (pilot=0)
+== R3 비밀을 안 시점 (앞당김) (pilot=0)
+== R2 소품의 위치 (유리 조각을 주운 곳) (pilot=6)
+
+calls used 55/60 stop=""
+R1 scenes=10/10 calls M=22 B(same scenes)=22 | coll M=86 B=2796 | pass M=10/10 B=10/10 | judge res=0 intro=2 | old IR hash == stored 31/31, new IR hash == B stored 32/32
+R3 scenes=7/7 calls M=18 B(same scenes)=15 | coll M=119 B=3959 | pass M=7/7 B=7/7 | judge res=0 intro=1 | old IR hash == stored 31/31, new IR hash == B stored 33/33
+R2 scenes=6/17 calls M=13 B(same scenes)=13 | coll M=4880 B=6814 | pass M=6/6 B=6/6 | judge res=0 intro=0 | old IR hash == stored 31/31, new IR hash == B stored 32/32
