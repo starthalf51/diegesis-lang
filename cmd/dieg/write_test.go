@@ -127,9 +127,10 @@ func (f fakeC) Complete(context.Context, string, string) (render.Result, error) 
 	return render.Result{Text: f.s, StopReason: "end_turn"}, nil
 }
 
-func TestRendererFlagValidation(t *testing.T) {
+// --renderer and --beat-retries were removed with the layered renderer: unknown flags exit 2 before any call.
+func TestRendererFlagGone(t *testing.T) {
 	// 0 calls: every run opens <dir>/calls.jsonl before its first call, so the dir must stay empty.
-	for _, bad := range [][]string{{"--renderer", "foo"}, {"--beat-retries", "-1"}, {"--beat-retries", "x"}} {
+	for _, bad := range [][]string{{"--renderer", "single"}, {"--renderer", "layered"}, {"--beat-retries", "1"}} {
 		for name, run := range map[string]func(dir string) int{
 			"write":    func(d string) int { return cmdWrite(append([]string{"idea", "-o", d}, bad...)) },
 			"continue": func(d string) int { return cmdContinue(append([]string{d, "--ep", "2"}, bad...)) },
@@ -143,24 +144,6 @@ func TestRendererFlagValidation(t *testing.T) {
 				t.Errorf("%s %v wrote %v", name, bad, es)
 			}
 		}
-	}
-}
-
-func TestRendererFlagParses(t *testing.T) {
-	o, styles, limit := write.DefaultOpts(), "", 0
-	if o.Renderer != "single" || o.BeatRetries != 2 {
-		t.Fatalf("defaults %q %d", o.Renderer, o.BeatRetries)
-	}
-	args := []string{"--renderer", "layered", "--beat-retries", "0"}
-	for i := 0; i < len(args); i++ {
-		j, ok, code := commonFlag(args, i, &o, &styles, &limit)
-		if !ok || code != 0 {
-			t.Fatalf("%s: ok=%t code=%d", args[i], ok, code)
-		}
-		i = j
-	}
-	if o.Renderer != "layered" || o.BeatRetries != 0 {
-		t.Fatalf("%q %d", o.Renderer, o.BeatRetries)
 	}
 }
 

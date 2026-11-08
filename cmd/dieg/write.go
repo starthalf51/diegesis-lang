@@ -151,7 +151,7 @@ func (k *counter) Complete(ctx context.Context, system, user string) (render.Res
 	return k.c.Complete(ctx, system, user)
 }
 
-// cmdWrite runs `dieg write <idea.txt | "아이템 문장"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--renderer layered|single] [--beat-retries N] [--force]`.
+// cmdWrite runs `dieg write <idea.txt | "아이템 문장"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--force]`.
 // Exit 1 when the code is not clean after the rounds (nothing rendered), 3 when a rendered scene failed verification.
 // --scenes N renders only the first N shown scenes (to fit a call budget).
 func cmdWrite(args []string) int {
@@ -220,27 +220,12 @@ func commonFlag(args []string, i int, o *write.Opts, styles *string, limit *int)
 		}
 		o.CodeEffort = args[i+1]
 		return i + 1, true, 0
-	case a == "--renderer" && i+1 < len(args):
-		if r := args[i+1]; r != "layered" && r != "single" {
-			fmt.Fprintf(os.Stderr, "dieg: --renderer %q: want layered or single\n", r)
-			return i, false, 2
-		}
-		o.Renderer = args[i+1]
-		return i + 1, true, 0
 	case a == "--verifier" && i+1 < len(args):
 		if v := args[i+1]; v != "card" && v != "open" {
 			fmt.Fprintf(os.Stderr, "dieg: --verifier %q: want card or open\n", v)
 			return i, false, 2
 		}
 		o.Verifier = args[i+1]
-		return i + 1, true, 0
-	case a == "--beat-retries" && i+1 < len(args):
-		n, err := strconv.Atoi(args[i+1])
-		if err != nil || n < 0 {
-			fmt.Fprintf(os.Stderr, "dieg: --beat-retries %q: want an integer ≥ 0\n", args[i+1])
-			return i, false, 2
-		}
-		o.BeatRetries = n
 		return i + 1, true, 0
 	case (a == "--backend" || a == "--styles") && i+1 < len(args):
 		*map[string]*string{"--backend": &o.Backend, "--styles": styles}[a] = args[i+1]

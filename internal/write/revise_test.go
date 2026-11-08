@@ -1,7 +1,6 @@
 package write
 
 import (
-	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -331,44 +330,33 @@ func TestSwapDirDoubleFailureNamesOld(t *testing.T) {
 	}
 }
 
-func TestNovelUsesLayered(t *testing.T) {
-	b, mk, _ := rerenderFixture(t)
-	for _, mode := range []string{"layered", "single"} {
-		var buf bytes.Buffer
-		m := render.NewMeter(&fakeLLM{replies: []string{"산문"}}, &buf)
-		if _, err := Novel(ctx, render.Completers{Render: m, Extract: m}, "w", []render.Scene{mk("s1", "")}, b, t.TempDir(), Opts{Renderer: mode, BeatRetries: 0}); err != nil {
-			t.Fatal(err)
-		}
-		has := strings.Contains(buf.String(), `"label":"beat-s1-b1-a1"`) && strings.Contains(buf.String(), `"label":"final-s1"`)
-		if has != (mode == "layered") || (mode == "single") == !strings.Contains(buf.String(), `"label":"render-s1-a1"`) {
-			t.Errorf("%s calls:\n%s", mode, buf.String())
-		}
-	}
-}
-
-// Switching --renderer makes every scene stale; the same mode again renders nothing.
-func TestRendererSwitchMakesStale(t *testing.T) {
+// A scene rendered by the removed layered renderer carries a "layered:" hash; it never matches, so it is stale.
+func TestLayeredHashIsStale(t *testing.T) {
 	b, mk, out := rerenderFixture(t)
 	seedNovel(t, out, b, mk("s1", ""), mk("s2", ""))
 	now := []render.Scene{mk("s1", ""), mk("s2", "")}
-	run := func(mode string) RerenderResult {
+	run := func() RerenderResult {
 		cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
-		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{Renderer: mode}, 0)
+		rr, err := Rerender(ctx, cs, "w", now, b, out, Opts{}, 0)
 		if err != nil {
 			t.Fatal(err)
 		}
 		return rr
 	}
-	if rr := run("single"); len(rr.Changed)+len(rr.Added) != 0 {
-		t.Fatalf("single over single %+v", rr)
+	if rr := run(); len(rr.Changed)+len(rr.Added) != 0 {
+		t.Fatalf("fresh hashes %+v", rr)
 	}
-	if rr := run("layered"); len(rr.Changed) != 2 {
-		t.Fatalf("layered over single %+v", rr)
+	for _, s := range now {
+		p := filepath.Join(out, "novel", fileID(s.ID)+"."+b.ID+".hash")
+		h, _ := os.ReadFile(p)
+		if err := os.WriteFile(p, append([]byte("layered:"), h...), 0o644); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if rr := run("layered"); len(rr.Changed) != 0 {
-		t.Fatalf("layered again %+v", rr)
+	if rr := run(); len(rr.Changed) != 2 {
+		t.Fatalf("layered hashes %+v", rr)
 	}
-	if rr := run("single"); len(rr.Changed) != 2 {
-		t.Fatalf("single over layered %+v", rr)
+	if rr := run(); len(rr.Changed) != 0 {
+		t.Fatalf("after re-render %+v", rr)
 	}
 }
