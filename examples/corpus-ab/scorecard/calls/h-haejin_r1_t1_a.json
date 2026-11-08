@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"items\":[{\"id\":\"E1\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"열한 물때에 불이 잔다.\"},{\"id\":\"E2\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"“그 노래에 ‘열한 물때에 불이 잔다’는 구절이 있네요.”\"},{\"id\":\"E3\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"“나는 평생 이 여울섬 바다에서 물질을 했다.”\"},{\"id\":\"E4\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"“며칠 뒤면 해진호 사고로 돌아가신 제 아버지 기일이에요.”\"},{\"id\":\"E5\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"“반짇고리는 아무도 손대면 안 된다.”\"},{\"id\":\"E6\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"“말순 할머니는 치매 초기라 기억이 자꾸 흐려져.”\"},{\"id\":\"E7\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"“아버지 기일을 앞두고 이장님께 사고 난 밤의 일을 직접 물어볼 생각이에요.”\"}],\"withheld\":[{\"id\":\"W1\",\"revealed\":\"no\",\"quote\":\"\"}],\"other\":[{\"actor\":\"seoyun\",\"verb\":\"does\",\"targets\":[\"sewing_box\"],\"action\":\"reach\",\"text\":\"서윤이 반짇고리 쪽으로 손을 뻗었다.\",\"quote\":\"서윤은 저도 모르게 손을 내밀어 반짇고리 쪽으로 뻗었다.\"},{\"actor\":\"이웃집 노인\",\"verb\":\"does\",\"targets\":[\"seoyun\"],\"action\":\"gives money envelope\",\"text\":\"이웃집 노인이 뛰어 들어와 서윤의 손에 낡은 돈 봉투를 쥐여 주고 말없이 돌아갔다.\",\"quote\":\"이웃집 노인이 뛰어 들어와 서윤의 손에 낡은 돈 봉투를 쥐여 주고는 말없이 돌아갔다.\"}]}\n```",
+  "stop": "end_turn",
+  "tag": "h-haejin_r1_t1",
+  "try": 0
+}

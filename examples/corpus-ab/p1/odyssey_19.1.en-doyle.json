@@ -1,0 +1,33 @@
+{
+  "Mode": "single",
+  "Pair": "odyssey/19.1.en-doyle",
+  "Work": "odyssey",
+  "Scene": "19.1",
+  "Backend": "en-doyle",
+  "Beats": 10,
+  "Acts": 29,
+  "Passed": false,
+  "Calls": 6,
+  "RenderCalls": 3,
+  "ExtractCalls": 3,
+  "RenderUsage": {
+    "input": 6,
+    "output": 10364,
+    "cache_read": 5580,
+    "cache_write": 5990
+  },
+  "ExtractUsage": {
+    "input": 6,
+    "output": 3233,
+    "cache_read": 2517,
+    "cache_write": 6373
+  },
+  "Attempts": 3,
+  "Chars": 3301,
+  "Missing": [
+    "odysseus|assert|odysseus_home",
+    "telemachus|assert|beggar_is_odysseus"
+  ],
+  "Hallucinated": [],
+  "Leaked": []
+}

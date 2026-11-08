@@ -1,0 +1,32 @@
+{
+  "Mode": "single",
+  "Pair": "macbeth/1.3.ko-haera",
+  "Work": "macbeth",
+  "Scene": "1.3",
+  "Backend": "ko-haera",
+  "Beats": 11,
+  "Acts": 26,
+  "Passed": true,
+  "Calls": 2,
+  "RenderCalls": 1,
+  "ExtractCalls": 1,
+  "RenderUsage": {
+    "input": 2,
+    "output": 9246,
+    "cache_read": 1292,
+    "cache_write": 2096
+  },
+  "ExtractUsage": {
+    "input": 2,
+    "output": 797,
+    "cache_read": 839,
+    "cache_write": 3427
+  },
+  "Attempts": 1,
+  "Chars": 1707,
+  "Missing": [
+    "macbeth|assert|holds(king,macbeth)"
+  ],
+  "Hallucinated": [],
+  "Leaked": []
+}

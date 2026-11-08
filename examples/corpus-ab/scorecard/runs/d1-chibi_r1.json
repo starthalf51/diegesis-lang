@@ -1,0 +1,85 @@
+{
+  "Variant": "d1-chibi",
+  "Run": 1,
+  "Items": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "주유는 빙그레 웃으면서 말을 돌려, 장간이 조조를 위해 자기를 설득하러 왔다는 속뜻을 드러냅니다."
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "나더러 조조 편의 사자라니 무슨 말씀이오?"
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "장간은 편지를 펼쳐서 천천히 읽어 내려갑니다."
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "그 두 사람은 처음부터 오와 연이 닿아 있었구나."
+    },
+    "E5": {
+      "Present": false,
+      "AsStated": false,
+      "Quote": "",
+      "T2": true
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "장윤과 채모 두 장군이 오셨습니다."
+    }
+  },
+  "Leak": {},
+  "LeakQuote": {},
+  "Cands": [
+    {
+      "Ev": {
+        "actor": "zhou_yu",
+        "verb": "orders",
+        "targets": [
+          "taishi_ci"
+        ],
+        "action": "",
+        "text": "주유가 태사자에게 잔치의 주인 노릇을 하고 조조 관련 말을 꺼내는 자의 목을 베라고 명한다."
+      },
+      "Quote": "조조와 우리 나라 사이의 문제를 입에 올리는 자가 있거든 바로 목을 베어라.",
+      "Confirmed": true,
+      "Verdict": "extra"
+    },
+    {
+      "Ev": {
+        "actor": "wu_officers",
+        "verb": "whispers",
+        "targets": [
+          "zhou_yu"
+        ],
+        "action": "",
+        "text": "오의 장수가 주유에게 북쪽에서 사람이 왔다고 속삭인다."
+      },
+      "Quote": "북쪽에서 사람이 왔습니다.",
+      "Confirmed": true,
+      "Verdict": "extra"
+    }
+  ],
+  "G1Fail": false,
+  "G2Fail": true,
+  "S1": 0.8333333333333334,
+  "S2": 0.8333333333333334,
+  "S3": 1,
+  "S4": 0.9449064449064449,
+  "Score": 0.8611573111573112,
+  "Calls": 2,
+  "Tier2": 1,
+  "Retries": 0,
+  "In": 4,
+  "Out": 1055,
+  "CR": 716,
+  "CW": 5483,
+  "Weighted": 34434,
+  "Eff": 0.25008924643007235
+}

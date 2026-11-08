@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"recheck\":[{\"id\":\"E10\",\"fact_present\":\"yes\",\"as_stated\":\"no\",\"quote\":\"“그분께서 나더러 그대를 캐더의 영주라 부르라 하셨소.”\"}],\"candidates\":[{\"id\":\"C1\",\"verdict\":\"extra\",\"item\":\"\",\"quote\":\"“사형에 해당하는 반역죄가 자백되고 입증되어 그를 쓰러뜨렸소.”\"}]}\n```",
+  "stop": "end_turn",
+  "tag": "k-macbeth_r1_t2",
+  "try": 0
+}

@@ -1,0 +1,30 @@
+{
+  "Mode": "layered",
+  "Pair": "chibi/45.88.ko-haera",
+  "Work": "chibi",
+  "Scene": "45.88",
+  "Backend": "ko-haera",
+  "Beats": 10,
+  "Acts": 24,
+  "Passed": false,
+  "Calls": 0,
+  "RenderCalls": 0,
+  "ExtractCalls": 0,
+  "RenderUsage": {
+    "input": 0,
+    "output": 0,
+    "cache_read": 0,
+    "cache_write": 0
+  },
+  "ExtractUsage": {
+    "input": 0,
+    "output": 0,
+    "cache_read": 0,
+    "cache_write": 0
+  },
+  "Chars": 0,
+  "Missing": null,
+  "Hallucinated": null,
+  "Leaked": null,
+  "Skipped": "budget: used 33 + est 28 \u003e 60"
+}

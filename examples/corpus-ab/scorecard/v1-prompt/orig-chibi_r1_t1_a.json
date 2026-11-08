@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"items\":[{\"id\":\"E1\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"주유는 빙그레 웃으면서 말을 돌려, 장간이 조조를 위해 자기를 설득하러 왔다는 속뜻을 드러냅니다.\"},{\"id\":\"E2\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"나더러 조조 편의 사자라니 무슨 말씀이오?\"},{\"id\":\"E3\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"장간은 편지를 펼쳐서 천천히 읽어 내려갑니다.\"},{\"id\":\"E4\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"그 두 사람은 처음부터 오와 연이 닿아 있었구나.\"},{\"id\":\"E5\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"하루 이틀 안에 조조의 머리를 보여 주겠소.\"},{\"id\":\"E6\",\"fact_present\":\"yes\",\"as_stated\":\"yes\",\"quote\":\"장윤과 채모 두 장군이 오셨습니다.\"}],\"withheld\":[],\"other\":[{\"actor\":\"jiang_gan\",\"verb\":\"does\",\"targets\":[],\"action\":\"takes the letter and hides it in his sleeve\",\"text\":\"장간이 편지를 소매 속에 넣는다.\",\"quote\":\"장간은 그 편지를 자기 소매 속에 넣습니다.\"},{\"actor\":\"zhou_yu\",\"verb\":\"orders\",\"targets\":[\"taishi_ci\"],\"action\":\"\",\"text\":\"주유가 태사자에게 잔치의 주인 노릇을 하고 조조 얘기를 하는 자의 목을 베라고 명한다.\",\"quote\":\"조조와 우리 나라 사이의 문제를 입에 올리는 자가 있거든 바로 목을 베어라.\"},{\"actor\":\"jiang_gan\",\"verb\":\"exit\",\"targets\":[],\"action\":\"\",\"text\":\"장간이 놀라 허둥지둥 달아난다.\",\"quote\":\"장간은 놀라 자리에서 허둥지둥 일어나 달아나고\"}]}\n```",
+  "stop": "end_turn",
+  "tag": "orig-chibi_r1_t1",
+  "try": 0
+}

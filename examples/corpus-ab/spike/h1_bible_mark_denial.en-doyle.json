@@ -1,0 +1,19 @@
+{
+  "Pair": "bible/mark_denial.en-doyle",
+  "Calls": 4,
+  "PassedBefore": false,
+  "PassedAfter": true,
+  "BeforeMissing": [
+    "peter|assert|not peter_with_jesus"
+  ],
+  "BeforeHall": [
+    "extra-act:peter|assert|not peter_knows_jesus"
+  ],
+  "BeforeLeak": [],
+  "AfterMissing": [],
+  "AfterHall": [],
+  "AfterLeak": [],
+  "CharsBefore": 954,
+  "CharsAfter": 985,
+  "EditChars": 31
+}

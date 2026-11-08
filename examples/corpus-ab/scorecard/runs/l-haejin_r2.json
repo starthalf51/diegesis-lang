@@ -1,0 +1,64 @@
+{
+  "Variant": "l-haejin",
+  "Run": 2,
+  "Items": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "열한 물때에 불이 잔다."
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "그 노래에 ‘열한 물때에 불이 잔다’는 구절이 있네요."
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "나는 평생 이 여울섬 바다에서 물질을 했다."
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "며칠 뒤면 해진호 사고로 돌아가신 제 아버지 기일이에요."
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "반짇고리는 아무도 손대면 안 된다."
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "말순 할머니는 치매 초기라 기억이 자꾸 흐려져."
+    },
+    "E7": {
+      "Present": true,
+      "AsStated": true,
+      "Quote": "아버지 기일을 앞두고 이장님께 사고 난 밤의 일을 직접 물어볼 생각이에요."
+    }
+  },
+  "Leak": {
+    "W1": true
+  },
+  "LeakQuote": {
+    "W1": "나 오늘 오후 배 타고 육지로 나가. 회사 일이 급해서, 이제 섬에는 돌아오지 않아."
+  },
+  "Cands": null,
+  "G1Fail": true,
+  "G2Fail": false,
+  "S1": 1,
+  "S2": 1,
+  "S3": 1,
+  "S4": 0.9450381679389313,
+  "Score": 0.9945038167938931,
+  "Calls": 1,
+  "Tier2": 0,
+  "Retries": 0,
+  "In": 2,
+  "Out": 622,
+  "CR": 2492,
+  "CW": 357,
+  "Weighted": 17883,
+  "Eff": 0.5561168801621054
+}

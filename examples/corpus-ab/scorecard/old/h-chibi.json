@@ -1,0 +1,550 @@
+{
+  "Passed": false,
+  "Raws": [
+    {
+      "acts": [
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "wu_officers"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "says",
+          "targets": [
+            "zhou_yu"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "jiang_gan_envoy"
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "says",
+          "targets": [
+            "zhou_yu"
+          ],
+          "fact": "not_envoy"
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "jiang_gan_envoy"
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "wu_officers"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "orders",
+          "targets": [
+            "taishi_ci"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "asks",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "asks",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "taishi_ci",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "reads",
+          "targets": [],
+          "fact": "commanders_traitors"
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "thinks",
+          "targets": [],
+          "fact": "commanders_traitors"
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "cao_head_soon"
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "whispers",
+          "targets": [
+            "zhou_yu"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "commanders_traitors"
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        }
+      ],
+      "facts_stated": [
+        "jiang_gan_envoy",
+        "not_envoy",
+        "commanders_traitors",
+        "cao_head_soon"
+      ],
+      "new_events": [
+        {
+          "actor": "jiang_gan",
+          "verb": "does",
+          "targets": [],
+          "action": "takes",
+          "text": "Chiang Kan pockets the letter from Chang Yün and Tsʻai Mao."
+        }
+      ]
+    },
+    {
+      "acts": [
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "wu_officers"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "says",
+          "targets": [
+            "zhou_yu"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "jiang_gan_envoy"
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "says",
+          "targets": [
+            "zhou_yu"
+          ],
+          "fact": "not_envoy"
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "jiang_gan_envoy"
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "wu_officers"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "orders",
+          "targets": [
+            "taishi_ci"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "asks",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "asks",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "taishi_ci",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "reads",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "thinks",
+          "targets": [],
+          "fact": "commanders_traitors"
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "cao_head_soon"
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "whispers",
+          "targets": [
+            "zhou_yu"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "commanders_traitors"
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        }
+      ],
+      "facts_stated": [
+        "jiang_gan_envoy",
+        "not_envoy",
+        "commanders_traitors",
+        "cao_head_soon"
+      ],
+      "new_events": [
+        {
+          "actor": "jiang_gan",
+          "verb": "does",
+          "targets": [],
+          "action": "steal",
+          "text": "장간이 장윤과 채모의 편지를 몰래 소매에 넣는다."
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "does",
+          "targets": [
+            "jiang_gan"
+          ],
+          "action": "feign",
+          "text": "주유가 술에 취한 척하며 장간이 편지를 보게 만든다."
+        }
+      ]
+    },
+    {
+      "acts": [
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "wu_officers"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "says",
+          "targets": [
+            "zhou_yu"
+          ],
+          "fact": "not_envoy"
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "jiang_gan_envoy"
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "jiang_gan_envoy"
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "orders",
+          "targets": [
+            "taishi_ci"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "taishi_ci",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "reads",
+          "targets": [],
+          "fact": "commanders_traitors"
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "thinks",
+          "targets": [],
+          "fact": "commanders_traitors"
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "cao_head_soon"
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "whispers",
+          "targets": [
+            "zhou_yu"
+          ],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "says",
+          "targets": [
+            "jiang_gan"
+          ],
+          "fact": "commanders_traitors"
+        },
+        {
+          "actor": "wu_officers",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "enter",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        },
+        {
+          "actor": "zhou_yu",
+          "verb": "exit",
+          "targets": [],
+          "fact": ""
+        }
+      ],
+      "facts_stated": [
+        "jiang_gan_envoy",
+        "not_envoy",
+        "commanders_traitors",
+        "cao_head_soon"
+      ],
+      "new_events": [
+        {
+          "actor": "jiang_gan",
+          "verb": "does",
+          "targets": [],
+          "action": "steal",
+          "text": "장간이 장윤과 채모의 편지를 몰래 소매 속에 넣는다."
+        },
+        {
+          "actor": "jiang_gan",
+          "verb": "does",
+          "targets": [
+            "zhou_yu"
+          ],
+          "action": "flee",
+          "text": "장간이 놀라 허둥지둥 달아난다."
+        }
+      ]
+    }
+  ],
+  "Report": {
+    "missing": [],
+    "hallucinated": [
+      "Chiang Kan pockets the letter from Chang Yün and Tsʻai Mao."
+    ],
+    "leaked": [],
+    "extract_error": ""
+  },
+  "Usage": {
+    "input": 6,
+    "output": 2898,
+    "cache_read": 6381,
+    "cache_write": 3004
+  },
+  "Variant": "h-chibi",
+  "Weighted": 71643
+}

@@ -1,0 +1,6 @@
+{
+  "raw": "```json\n{\"recheck\":[{\"id\":\"E1\",\"fact_present\":\"no\",\"as_stated\":\"no\",\"quote\":\"\"},{\"id\":\"E2\",\"fact_present\":\"no\",\"as_stated\":\"no\",\"quote\":\"\"},{\"id\":\"E5\",\"fact_present\":\"no\",\"as_stated\":\"no\",\"quote\":\"\"}],\"candidates\":[]}\n```",
+  "stop": "end_turn",
+  "tag": "d3-chibi_r1_t2",
+  "try": 0
+}

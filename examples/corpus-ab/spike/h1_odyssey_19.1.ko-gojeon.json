@@ -1,0 +1,27 @@
+{
+  "Pair": "odyssey/19.1.ko-gojeon",
+  "Calls": 4,
+  "PassedBefore": false,
+  "PassedAfter": false,
+  "BeforeMissing": [
+    "odysseus|assert|beggar_is_odysseus",
+    "odysseus|assert|odysseus_home",
+    "telemachus|assert|beggar_is_odysseus"
+  ],
+  "BeforeHall": [
+    "Athena turns Penelope's attention away so she cannot notice what happens."
+  ],
+  "BeforeLeak": [],
+  "AfterMissing": [
+    "odysseus|assert|odysseus_home",
+    "telemachus|assert|beggar_is_odysseus"
+  ],
+  "AfterHall": [
+    "Athena turns Penelope's attention away so she does not notice what happens.",
+    "extra-act:telemachus|perceive|beggar_is_odysseus"
+  ],
+  "AfterLeak": [],
+  "CharsBefore": 1315,
+  "CharsAfter": 1349,
+  "EditChars": 42
+}

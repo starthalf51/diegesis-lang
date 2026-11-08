@@ -1,0 +1,36 @@
+{
+  "Mode": "single",
+  "Pair": "chibi/45.88.ko-gojeon",
+  "Work": "chibi",
+  "Scene": "45.88",
+  "Backend": "ko-gojeon",
+  "Beats": 10,
+  "Acts": 24,
+  "Passed": false,
+  "Calls": 6,
+  "RenderCalls": 3,
+  "ExtractCalls": 3,
+  "RenderUsage": {
+    "input": 6,
+    "output": 19064,
+    "cache_read": 6636,
+    "cache_write": 5314
+  },
+  "ExtractUsage": {
+    "input": 6,
+    "output": 1909,
+    "cache_read": 2517,
+    "cache_write": 6376
+  },
+  "Attempts": 3,
+  "Chars": 830,
+  "Missing": [
+    "jiang_gan|read|commanders_traitors",
+    "zhou_yu|assert|jiang_gan_envoy"
+  ],
+  "Hallucinated": [
+    "Chiang Kan pockets a letter and later flees the camp.",
+    "extra-act:jiang_gan|assert|not jiang_gan_envoy"
+  ],
+  "Leaked": []
+}

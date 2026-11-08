@@ -1,0 +1,37 @@
+{
+  "Mode": "single",
+  "Pair": "bible/mark_denial.ko-gojeon",
+  "Work": "bible",
+  "Scene": "mark_denial",
+  "Backend": "ko-gojeon",
+  "Beats": 4,
+  "Acts": 10,
+  "Passed": false,
+  "Calls": 6,
+  "RenderCalls": 3,
+  "ExtractCalls": 3,
+  "RenderUsage": {
+    "input": 6,
+    "output": 12301,
+    "cache_read": 4424,
+    "cache_write": 5980
+  },
+  "ExtractUsage": {
+    "input": 6,
+    "output": 1629,
+    "cache_read": 2517,
+    "cache_write": 4249
+  },
+  "Attempts": 3,
+  "Chars": 376,
+  "Missing": [
+    "mark_maid|perceive|peter_with_jesus",
+    "peter|assert|not peter_with_jesus"
+  ],
+  "Hallucinated": [
+    "Peter moves away from the fire to the gateway.",
+    "extra-act:mark_maid|assert|peter_with_jesus",
+    "extra-act:peter|act|not peter_with_jesus"
+  ],
+  "Leaked": []
+}

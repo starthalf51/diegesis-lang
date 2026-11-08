@@ -1,0 +1,101 @@
+
+### s1
+
+bible/mark_denial.ko-gojeon
+| id | 항목 | 정답 | x/6 | 다수6 | 투표A | 투표B |
+|---|---|---|---|---|---|---|
+| E1 | 대제사장의 여종 하나 sees, hears or notices: Peter was with | true? | 0/6 | false | false | false |
+| E2 | 대제사장의 여종 하나 says, conveys or thinks (toward 베드로):  | true | 6/6 | true | true | true |
+| E3 | 베드로 says, conveys or thinks (toward 대제사장의 여종 하나):  | true | 4/6 | true | true | true |
+| E4 | 베드로 sees, hears or notices: the rooster crowed | true | 6/6 | true | true | true |
+| E5 | 곁에 섰던 사람들 says, conveys or thinks (toward 베드로): Pe | true? | 6/6 | true | true | true |
+| E6 | 베드로 says, conveys or thinks (toward 곁에 섰던 사람들): It | true | 6/6 | true | true | true |
+| E7 | 베드로 sees, hears or notices: the rooster crowed the | true | 6/6 | true | true | true |
+| E8 | 베드로 says, conveys or thinks: Peter will deny Jesus | true | 6/6 | true | true | true |
+투표A pass=false miss=[mark_maid|perceive|peter_with_jesus] hall=[extra-act:mark_bystanders|assert|peter_with_jesus extra-act:mark_maid|assert|peter_with_jesus extra-act:mark_maid|assert|peter_with_jesus] leak=[]
+투표B pass=false miss=[mark_maid|perceive|peter_with_jesus] hall=[extra-act:peter|assert|not peter_knows_jesus] leak=[]
+
+chibi/45.88.ko-hapsho
+| id | 항목 | 정답 | x/6 | 다수6 | 투표A | 투표B |
+|---|---|---|---|---|---|---|
+| E1 | 주유 says, conveys or thinks (toward 장간): Chiang Kan | true | 3/6 | false | true | false |
+| E2 | 장간 says, conveys or thinks (toward 주유): It is not  | true | 6/6 | true | true | true |
+| E3 | 장간 reads or writes: Tsʻai Mao and Chang Yün secret | true? | 1/6 | false | false | false |
+| E4 | 장간 says, conveys or thinks: Tsʻai Mao and Chang Yü | true | 6/6 | true | true | true |
+| E5 | 주유 says, conveys or thinks (toward 장간): Tsʻao's he | true | 6/6 | true | true | true |
+| E6 | 오의 장수들 says, conveys or thinks (toward 장간): Tsʻai  | false? | 5/6 | true | true | true |
+투표A pass=false miss=[jiang_gan|read|commanders_traitors] hall=[Chiang Kan pockets the letter from Tsʻai Mao and Chang Yün.] leak=[]
+투표B pass=false miss=[jiang_gan|read|commanders_traitors zhou_yu|assert|jiang_gan_envoy] hall=[Chiang Kan pockets the letter from Tsʻai Mao and Chang Yün.] leak=[]
+
+macbeth/1.3.ko-haera
+| id | 항목 | 정답 | x/6 | 다수6 | 투표A | 투표B |
+|---|---|---|---|---|---|---|
+| E1 | 첫째 마녀 says, conveys or thinks (toward 맥베스): Macbet | true | 6/6 | true | true | true |
+| E2 | 둘째 마녀 says, conveys or thinks (toward 맥베스): Macbet | true | 6/6 | true | true | true |
+| E3 | 셋째 마녀 says, conveys or thinks (toward 맥베스): Macbet | true | 6/6 | true | true | true |
+| E4 | 셋째 마녀 says, conveys or thinks (toward 뱅쿼): Banquo' | true | 6/6 | true | true | true |
+| E5 | 맥베스 says, conveys or thinks (toward 운명의 세 자매): Mac | true | 3/6 | false | true | false |
+| E6 | 맥베스 says, conveys or thinks (toward 운명의 세 자매): the | true | 6/6 | true | true | true |
+| E7 | 맥베스 says, conveys or thinks (toward 운명의 세 자매): the | true | 6/6 | true | true | true |
+| E8 | 맥베스 says, conveys or thinks (toward 뱅쿼): Banquo's  | true | 6/6 | true | true | true |
+| E9 | 뱅쿼 says, conveys or thinks (toward 맥베스): Macbeth i | true | 6/6 | true | true | true |
+| E10 | 로스 says, conveys or thinks (toward 맥베스): Macbeth i | true | 6/6 | true | true | true |
+| E11 | 앵거스 says, conveys or thinks (toward 맥베스): the Than | true | 6/6 | true | true | true |
+| E12 | 앵거스 says, conveys or thinks (toward 맥베스): Cawdor a | true | 6/6 | true | true | true |
+| E13 | 맥베스 says, conveys or thinks: Macbeth is Thane of C | true | 6/6 | true | true | true |
+| E14 | 맥베스 says, conveys or thinks: Macbeth is the King | true? | 0/6 | false | false | false |
+투표A pass=true miss=[macbeth|assert|holds(king,macbeth)] hall=[] leak=[]
+투표B pass=false miss=[macbeth|assert|holds(king,macbeth) macbeth|assert|holds(thane_of_glamis,macbeth)] hall=[] leak=[]
+
+s1 요약: 항목일치 94.0% / 정확도(6다수) 78.6% / 정확도(K3 투표) 82.1% / pass 일치 2/3 / missing 일치 1/3 / hall 일치 2/3 / leak 일치 3/3
+
+### s2
+parse fail bible/mark_denial.ko-gojeon 6 invalid character 'i' after object key
+
+bible/mark_denial.ko-gojeon
+| id | 항목 | 정답 | x/6 | 다수6 | 투표A | 투표B |
+|---|---|---|---|---|---|---|
+| E1 | 대제사장의 여종 하나 sees, hears or notices: Peter was with | true? | 5/6 | true | true | true |
+| E2 | 대제사장의 여종 하나 says, conveys or thinks (toward 베드로):  | true | 5/6 | true | true | true |
+| E3 | 베드로 says, conveys or thinks (toward 대제사장의 여종 하나):  | true | 5/6 | true | true | true |
+| E4 | 베드로 sees, hears or notices: the rooster crowed | true | 5/6 | true | true | true |
+| E5 | 곁에 섰던 사람들 says, conveys or thinks (toward 베드로): Pe | true? | 5/6 | true | true | true |
+| E6 | 베드로 says, conveys or thinks (toward 곁에 섰던 사람들): It | true | 5/6 | true | true | true |
+| E7 | 베드로 sees, hears or notices: the rooster crowed the | true | 5/6 | true | true | true |
+| E8 | 베드로 says, conveys or thinks: Peter will deny Jesus | true | 5/6 | true | true | true |
+투표A pass=true miss=[] hall=[] leak=[]
+투표B pass=true miss=[] hall=[] leak=[]
+
+chibi/45.88.ko-hapsho
+| id | 항목 | 정답 | x/6 | 다수6 | 투표A | 투표B |
+|---|---|---|---|---|---|---|
+| E1 | 주유 says, conveys or thinks (toward 장간): Chiang Kan | true | 6/6 | true | true | true |
+| E2 | 장간 says, conveys or thinks (toward 주유): It is not  | true | 6/6 | true | true | true |
+| E3 | 장간 reads or writes: Tsʻai Mao and Chang Yün secret | true? | 6/6 | true | true | true |
+| E4 | 장간 says, conveys or thinks: Tsʻai Mao and Chang Yü | true | 6/6 | true | true | true |
+| E5 | 주유 says, conveys or thinks (toward 장간): Tsʻao's he | true | 6/6 | true | true | true |
+| E6 | 오의 장수들 says, conveys or thinks (toward 장간): Tsʻai  | false? | 5/6 | true | true | true |
+투표A pass=true miss=[] hall=[] leak=[]
+투표B pass=true miss=[] hall=[] leak=[]
+
+macbeth/1.3.ko-haera
+| id | 항목 | 정답 | x/6 | 다수6 | 투표A | 투표B |
+|---|---|---|---|---|---|---|
+| E1 | 첫째 마녀 says, conveys or thinks (toward 맥베스): Macbet | true | 6/6 | true | true | true |
+| E2 | 둘째 마녀 says, conveys or thinks (toward 맥베스): Macbet | true | 6/6 | true | true | true |
+| E3 | 셋째 마녀 says, conveys or thinks (toward 맥베스): Macbet | true | 6/6 | true | true | true |
+| E4 | 셋째 마녀 says, conveys or thinks (toward 뱅쿼): Banquo' | true | 6/6 | true | true | true |
+| E5 | 맥베스 says, conveys or thinks (toward 운명의 세 자매): Mac | true | 6/6 | true | true | true |
+| E6 | 맥베스 says, conveys or thinks (toward 운명의 세 자매): the | true | 6/6 | true | true | true |
+| E7 | 맥베스 says, conveys or thinks (toward 운명의 세 자매): the | true | 6/6 | true | true | true |
+| E8 | 맥베스 says, conveys or thinks (toward 뱅쿼): Banquo's  | true | 5/6 | true | true | true |
+| E9 | 뱅쿼 says, conveys or thinks (toward 맥베스): Macbeth i | true | 6/6 | true | true | true |
+| E10 | 로스 says, conveys or thinks (toward 맥베스): Macbeth i | true | 6/6 | true | true | true |
+| E11 | 앵거스 says, conveys or thinks (toward 맥베스): the Than | true | 6/6 | true | true | true |
+| E12 | 앵거스 says, conveys or thinks (toward 맥베스): Cawdor a | true | 6/6 | true | true | true |
+| E13 | 맥베스 says, conveys or thinks: Macbeth is Thane of C | true | 6/6 | true | true | true |
+| E14 | 맥베스 says, conveys or thinks: Macbeth is the King | true? | 6/6 | true | true | true |
+투표A pass=true miss=[] hall=[] leak=[]
+투표B pass=true miss=[] hall=[] leak=[]
+
+s2 요약: 항목일치 94.0% / 정확도(6다수) 96.4% / 정확도(K3 투표) 96.4% / pass 일치 3/3 / missing 일치 3/3 / hall 일치 3/3 / leak 일치 3/3

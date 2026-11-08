@@ -1,0 +1,34 @@
+{
+  "Mode": "single",
+  "Pair": "bible/mark_denial.en-doyle",
+  "Work": "bible",
+  "Scene": "mark_denial",
+  "Backend": "en-doyle",
+  "Beats": 4,
+  "Acts": 10,
+  "Passed": false,
+  "Calls": 6,
+  "RenderCalls": 3,
+  "ExtractCalls": 3,
+  "RenderUsage": {
+    "input": 6,
+    "output": 6083,
+    "cache_read": 4594,
+    "cache_write": 4622
+  },
+  "ExtractUsage": {
+    "input": 6,
+    "output": 1463,
+    "cache_read": 1678,
+    "cache_write": 4719
+  },
+  "Attempts": 3,
+  "Chars": 954,
+  "Missing": [
+    "peter|assert|not peter_with_jesus"
+  ],
+  "Hallucinated": [
+    "extra-act:peter|assert|not peter_knows_jesus"
+  ],
+  "Leaked": []
+}

@@ -1,0 +1,43 @@
+{
+  "Name": "h-chibi",
+  "Base": "chibi/45.88.ko-hapsho",
+  "Kind": "H",
+  "Expect": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": true
+    },
+    "E4": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E6": {
+      "Present": false,
+      "AsStated": false,
+      "Unsure": true
+    }
+  },
+  "Withheld": {},
+  "Invented": [
+    "그때 장막 밖에서 큰 불길이 일어 군량을 쌓아 둔 창고 한 채가 순식간에 타올랐으나, 장수들은 아무도 돌아보지 않습니다."
+  ],
+  "Mutated": null,
+  "Target": 962
+}

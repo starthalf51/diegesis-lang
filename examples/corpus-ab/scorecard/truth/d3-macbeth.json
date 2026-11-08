@@ -1,0 +1,86 @@
+{
+  "Name": "d3-macbeth",
+  "Base": "macbeth/1.3.ko-haera",
+  "Kind": "D3",
+  "Expect": {
+    "E1": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E10": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E11": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E12": {
+      "Present": false,
+      "AsStated": false,
+      "Unsure": false
+    },
+    "E13": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E14": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": true
+    },
+    "E2": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E3": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E4": {
+      "Present": false,
+      "AsStated": false,
+      "Unsure": false
+    },
+    "E5": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E6": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    },
+    "E7": {
+      "Present": false,
+      "AsStated": false,
+      "Unsure": false
+    },
+    "E8": {
+      "Present": false,
+      "AsStated": false,
+      "Unsure": false
+    },
+    "E9": {
+      "Present": true,
+      "AsStated": true,
+      "Unsure": false
+    }
+  },
+  "Withheld": {},
+  "Invented": null,
+  "Mutated": [
+    "E12",
+    "E7",
+    "E4",
+    "E8"
+  ],
+  "Target": 1707
+}

@@ -1,0 +1,21 @@
+{
+  "Pair": "odyssey/19.1.en-doyle",
+  "Calls": 4,
+  "PassedBefore": false,
+  "PassedAfter": false,
+  "BeforeMissing": [
+    "odysseus|assert|odysseus_home",
+    "telemachus|assert|beggar_is_odysseus"
+  ],
+  "BeforeHall": [],
+  "BeforeLeak": [],
+  "AfterMissing": [
+    "odysseus|assert|beggar_is_odysseus",
+    "odysseus|assert|odysseus_home"
+  ],
+  "AfterHall": [],
+  "AfterLeak": [],
+  "CharsBefore": 3301,
+  "CharsAfter": 3410,
+  "EditChars": 181
+}
