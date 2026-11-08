@@ -1,0 +1,10 @@
+s32: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+revise: rounds=2 clean=true changed=s12,s13,s14,s18,s19,s20,s21 added=s32,s33 removed= failed=0[] calls=21 tokens in=42 out=48212 cache_read=18216 cache_write=112268 → examples\value\retcon\r3\b
+s12: attempts=1 pass=true missing=[seoyun|assert|visit_gicheol] hallucinated=[] leaked=[] 
+s13: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s14: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s18: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s19: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s20: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s21: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s33: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 

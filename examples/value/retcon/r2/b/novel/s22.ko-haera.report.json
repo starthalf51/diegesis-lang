@@ -1,0 +1,15 @@
+{
+  "missing": [
+    "seoyun|assert|hospital_alibi"
+  ],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "scores": {
+    "Coverage": 0.875,
+    "Kind": 0.875,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 0.888888888888889
+  }
+}
