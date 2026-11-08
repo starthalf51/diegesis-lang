@@ -53,3 +53,44 @@ func TestRetconBudgetGuard(t *testing.T) {
 		t.Errorf("calls made despite budget 5:\n%s", b)
 	}
 }
+
+// R1-R3 of the plan-7 list must be word for word the earlier spike's.
+func TestRetcon2ListKeepsR1toR3(t *testing.T) {
+	got, err := loadRetcons("../../examples/value/retcon2/retcons.json")
+	if err != nil || len(got) != 6 {
+		t.Fatalf("%v, %d retcons", err, len(got))
+	}
+	for i := 0; i < 3; i++ {
+		if got[i].Req != retcons[i].Req || got[i].Keys.String() != retcons[i].Keys.String() {
+			t.Errorf("R%d differs from the spike", i+1)
+		}
+	}
+}
+
+// TestRetcon2Dry: the v2 path on fakes: stamped base, --skip for s32.., revise stats parsed, ep 12 never picked.
+func TestRetcon2Dry(t *testing.T) {
+	saved := retcons
+	defer func() { retcons = saved }()
+	out := t.TempDir()
+	err := runRetcon(context.Background(), []string{"-rc-out", out, "-rc-src", "../../examples/serial/run3", "-rc-dry",
+		"-rc-list", "../../examples/value/retcon2/retcons.json", "-rc-only", "4", "-rc-budget", "100"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(out, "base", ".stamped")); err != nil {
+		t.Error("base not stamped")
+	}
+	// the full story is in the copy (s32 coded), and the revise call carries --skip
+	if _, err := os.Stat(filepath.Join(out, "r4", "b", "story", "ep12")); err != nil {
+		t.Errorf("v2 copy should keep ep12 code: %v", err)
+	}
+	r, _ := os.ReadFile(filepath.Join(out, "results.json"))
+	for _, w := range []string{`"StateStale": 1`, `"IRStale": 1`, `"Patched": 1`, `"s32"`} {
+		if !strings.Contains(string(r), w) {
+			t.Errorf("results.json lacks %s\n%s", w, r)
+		}
+	}
+	if sk := skipIDs(filepath.Join(out, "r4", "b"), 32); len(sk) != 4 || sk[0] != "s32" || sk[3] != "s35" {
+		t.Errorf("skipIDs = %v", sk)
+	}
+}

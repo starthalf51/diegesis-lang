@@ -110,3 +110,21 @@ func TestStateDigestLiarNotDeceived(t *testing.T) {
 		t.Error("digest is not deterministic")
 	}
 }
+
+// Offstage events (never shown) share discourse_ord 0; the digest's "previous scene" lookup must only count shown scenes.
+func TestDigestTwoOffstageEvents(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, `scene s1
+  enter a, b
+  a tells b: p
+event e1 "first"
+event e2 "second"
+`)
+	var sid string
+	if err := pool.QueryRow(context.Background(), `SELECT id FROM scene WHERE work_id=$1 AND shown ORDER BY discourse_ord LIMIT 1`, id).Scan(&sid); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := pg.Digest(context.Background(), pool, id, sid); err != nil {
+		t.Fatal(err)
+	}
+}

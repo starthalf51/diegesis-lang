@@ -105,8 +105,8 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 
 	// 1. 장소·시간
 	tm, err := q(`SELECT coalesce((SELECT earliest FROM point WHERE id=$2),-1),
-	                     coalesce((SELECT p.earliest FROM scene x JOIN point p ON p.id=x.start_pt WHERE x.work_id=$1 AND x.discourse_ord=$3-1),-1),
-	                     coalesce((SELECT lint_short(x.id) FROM scene x WHERE x.work_id=$1 AND x.discourse_ord=$3-1),'')`, work, startPt, ord)
+	                     coalesce((SELECT p.earliest FROM scene x JOIN point p ON p.id=x.start_pt WHERE x.work_id=$1 AND x.shown AND x.discourse_ord=$3-1),-1),
+	                     coalesce((SELECT lint_short(x.id) FROM scene x WHERE x.work_id=$1 AND x.shown AND x.discourse_ord=$3-1),'')`, work, startPt, ord)
 	if err != nil {
 		return "", "", err
 	}

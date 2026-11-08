@@ -54,6 +54,9 @@ func main() {
 	if args[0] == "revise" {
 		os.Exit(cmdRevise(args[1:]))
 	}
+	if args[0] == "stamp" {
+		os.Exit(cmdStamp(args[1:]))
+	}
 	if args[0] == "lint" {
 		os.Exit(cmdLint(args[1:]))
 	}

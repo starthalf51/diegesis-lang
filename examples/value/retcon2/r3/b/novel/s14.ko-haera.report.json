@@ -1,0 +1,17 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "서윤이 옛 노래의 '불이 잔다'는 그 밤 등대 불이 꺼져 있었다는 뜻일 것 같다고 해솔에게 말한다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 0.9807692307692307,
+    "Length": 0,
+    "Score": 0.9978632478632479
+  },
+  "patched": true
+}

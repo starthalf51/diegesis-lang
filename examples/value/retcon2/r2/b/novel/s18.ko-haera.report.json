@@ -1,0 +1,19 @@
+{
+  "missing": [
+    "haesol|read|gyeongtae_treated"
+  ],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "서윤이 장부를 덮어 옆구리에 끼우고 자신의 추론을 입 밖에 내지 않는다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 0.8888888888888888,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 0.9753086419753086
+  },
+  "patched": true
+}

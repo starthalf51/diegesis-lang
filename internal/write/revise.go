@@ -296,7 +296,40 @@ func RevisePrompt(request, bundle string, diags []Diag, r Refs, reserved []strin
 // RerenderResult: the scene ids whose render request changed / is new / is gone, and the re-render outcomes.
 type RerenderResult struct {
 	Changed, Added, Removed []string
+	StateStale              []string // subset of Changed: IR hash unchanged, only the PG state digest differs
+	Skipped                 []string // stale scenes left alone because of Opts.Skip
 	Scenes                  []SceneResult
+}
+
+// Stamp upgrades legacy .hash files (IR hash only) of rendered scenes to "<current IR hash> <state digest hash>", so a
+// baseline rendered before digests existed can be compared for state staleness. No model call. irDiffer counts files
+// whose stored IR hash differed from the current one (hash-scheme drift); they are rewritten too.
+func Stamp(ctx context.Context, all []render.Scene, b render.Backend, out string, o Opts) (stamped, irDiffer int, err error) {
+	for _, s := range all {
+		p := filepath.Join(out, "novel", fileID(s.ID)+"."+b.ID+".hash")
+		h, rerr := os.ReadFile(p)
+		f := strings.Fields(string(h))
+		if rerr != nil || len(f) != 1 {
+			continue
+		}
+		s.FreeDialogue = o.Skeleton
+		ir, err := render.RenderHash(s, b)
+		if err != nil {
+			return stamped, irDiffer, err
+		}
+		_, dh, err := sceneDigest(ctx, o, s.ID)
+		if err != nil {
+			return stamped, irDiffer, err
+		}
+		if ir != f[0] {
+			irDiffer++
+		}
+		if err := os.WriteFile(p, []byte(stamp(ir, o, dh)+"\n"), 0o644); err != nil {
+			return stamped, irDiffer, err
+		}
+		stamped++
+	}
+	return stamped, irDiffer, nil
 }
 
 // Rerender brings the prose in out/novel up to date with all (every shown scene of the story, discourse order):
@@ -344,10 +377,24 @@ func Rerender(ctx context.Context, cs render.Completers, work string, all []rend
 				}
 				if dh != old {
 					rr.Changed = append(rr.Changed, s.ID)
+					rr.StateStale = append(rr.StateStale, s.ID)
 				}
 			}
 		}
 		sort.Strings(rr.Changed)
+	}
+	if len(o.Skip) > 0 { // never render these (e.g. scenes the benchmark leaves out)
+		keep := func(ids []string) (k []string) {
+			for _, id := range ids {
+				if slices.Contains(o.Skip, id) {
+					rr.Skipped = append(rr.Skipped, id)
+				} else {
+					k = append(k, id)
+				}
+			}
+			return
+		}
+		rr.Changed, rr.Added = keep(rr.Changed), keep(rr.Added)
 	}
 	if ents, err := os.ReadDir(dir); err == nil {
 		for _, e := range ents {

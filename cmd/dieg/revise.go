@@ -28,6 +28,9 @@ func cmdRevise(args []string) int {
 			return code
 		case ok:
 			i = j
+		case a == "--skip" && i+1 < len(args):
+			o.Skip = strings.Split(args[i+1], ",")
+			i++
 		case dir == "" && !strings.HasPrefix(a, "-"):
 			dir = a
 		case request == "" && !strings.HasPrefix(a, "--"):
@@ -79,8 +82,9 @@ func runRevise(request, styles string, limit int, o write.Opts) (int, error) {
 				patched++
 			}
 		}
-		fmt.Printf("revise: rounds=%d clean=%t changed=%s added=%s removed=%s patched=%d failed=%d%v calls=%d tokens in=%d out=%d cache_read=%d cache_write=%d → %s\n",
-			res.Rounds, res.Clean, strings.Join(rr.Changed, ","), strings.Join(rr.Added, ","), strings.Join(rr.Removed, ","), patched,
+		fmt.Printf("revise: rounds=%d clean=%t changed=%s added=%s removed=%s state_stale=%s skipped=%s patched=%d failed=%d%v calls=%d tokens in=%d out=%d cache_read=%d cache_write=%d → %s\n",
+			res.Rounds, res.Clean, strings.Join(rr.Changed, ","), strings.Join(rr.Added, ","), strings.Join(rr.Removed, ","),
+			strings.Join(rr.StateStale, ","), strings.Join(rr.Skipped, ","), patched,
 			len(failed), failed, k.n.Load(), t.Input, t.Output, t.CacheRead, t.CacheWrite, o.Out)
 	}
 	var old map[string]render.Scene // pre-revision requests, for sentence-level patches (compile only, no model call)

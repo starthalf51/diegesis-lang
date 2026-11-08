@@ -114,3 +114,23 @@ func TestStaleOnlyOnStatePart(t *testing.T) {
 		t.Fatalf("state change not stale %+v", rr)
 	}
 }
+
+// A legacy hash is stamped with the state digest; a later digest change is then state-stale (listed in StateStale),
+// and a scene in Opts.Skip is never rendered.
+func TestStampThenStateStaleAndSkip(t *testing.T) {
+	b, mk, out := rerenderFixture(t)
+	s1, s2 := mk("s1", ""), mk("s2", "")
+	seedNovel(t, out, b, s1)
+	seedNovel(t, out, b, s2)
+	if n, _, err := Stamp(ctx, []render.Scene{s1, s2}, b, out, Opts{Digest: digestOf("A")}); err != nil || n != 2 {
+		t.Fatalf("stamp %d %v", n, err)
+	}
+	cs := render.Completers{Render: &fakeLLM{replies: []string{"산문"}}, Extract: &fakeLLM{replies: []string{"{}"}}}
+	rr, err := Rerender(ctx, cs, "w", []render.Scene{s1, s2}, b, out, Opts{Digest: digestOf("B"), Skip: []string{"s2"}}, 0, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rr.StateStale) != 2 || len(rr.Changed) != 1 || rr.Changed[0] != "s1" || len(rr.Skipped) != 1 || len(rr.Scenes) != 1 {
+		t.Fatalf("%+v", rr)
+	}
+}

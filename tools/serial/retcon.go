@@ -83,6 +83,72 @@ type rcState struct {
 	glog                io.Writer
 	runDiegFn           func(ctx context.Context, out string, args []string) error
 	maxEp               int // A's judged episodes (1..maxEp); B's are the scenes of those episode dirs
+	v2                  bool   // plan-7 benchmark: list from file, stamped full B base, s>=skipFrom never rendered, A limited to 1..maxEp
+	baseB               string // v2: stamped copy of the run3 B work (every retcon starts from it)
+	skipFrom            int    // v2: scenes numbered >= this are excluded from both arms
+	bReserve            int    // v2: calls kept free before a retcon starts for B's worst case
+}
+
+// loadRetcons reads the retcon list file: [{"ID","Kind","Req","Keys"}] with Keys a regexp (pre-registered).
+func loadRetcons(path string) ([]retcon, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var raw []struct{ ID, Kind, Req, Keys string }
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return nil, err
+	}
+	var out []retcon
+	for _, r := range raw {
+		re, err := regexp.Compile(r.Keys)
+		if err != nil {
+			return nil, fmt.Errorf("%s keys: %w", r.ID, err)
+		}
+		out = append(out, retcon{r.ID, r.Kind, r.Req, re})
+	}
+	return out, nil
+}
+
+// sceneNum is the number in "s32" (0 when it is not an sN id).
+func sceneNum(id string) int { n, _ := strconv.Atoi(strings.TrimPrefix(id, "s")); return n }
+
+// skipIDs lists the scene ids >= from found under story/ of a B work.
+func skipIDs(work string, from int) []string {
+	var ids []string
+	fs, _ := filepath.Glob(filepath.Join(work, "story", "ep*", "s*.dieg.md"))
+	for _, f := range fs {
+		if id := strings.TrimSuffix(filepath.Base(f), ".dieg.md"); sceneNum(id) >= from {
+			ids = append(ids, id)
+		}
+	}
+	sort.Slice(ids, func(i, j int) bool { return sceneNum(ids[i]) < sceneNum(ids[j]) })
+	return ids
+}
+
+// reviseLine pulls the summary fields of the last "revise:" line of a b.log (patched, changed, added, state_stale, skipped).
+var reviseRE = regexp.MustCompile(`revise: .*?changed=(\S*) added=(\S*) removed=(\S*) state_stale=(\S*) skipped=(\S*) patched=(\d+)`)
+
+type reviseStat struct{ Changed, Added, StateStale, Skipped []string; Patched int }
+
+func parseRevise(logPath string) (st reviseStat, ok bool) {
+	b, _ := os.ReadFile(logPath)
+	ms := reviseRE.FindAllStringSubmatch(string(b), -1)
+	if len(ms) == 0 {
+		return st, false
+	}
+	m := ms[len(ms)-1]
+	sp := func(s string) (o []string) {
+		for _, x := range strings.Split(s, ",") {
+			if x != "" {
+				o = append(o, x)
+			}
+		}
+		return
+	}
+	st.Changed, st.Added, st.StateStale, st.Skipped = sp(m[1]), sp(m[2]), sp(m[4]), sp(m[5])
+	st.Patched, _ = strconv.Atoi(m[6])
+	return st, true
 }
 
 func (s *rcState) used() int {
@@ -170,7 +236,7 @@ func (s *rcState) arm_A(ctx context.Context, r retcon, dir string) (map[int]stri
 	var eps []int
 	seen := map[int]bool{}
 	for _, x := range numRE.FindAllString(picked, -1) {
-		if i, _ := strconv.Atoi(x); i >= 1 && i <= 12 && !seen[i] {
+		if i, _ := strconv.Atoi(x); i >= 1 && i <= 12 && !seen[i] && (!s.v2 || i <= s.maxEp) { // v2: ep 12 holds the excluded scenes
 			seen[i] = true
 			eps = append(eps, i)
 		}
@@ -271,13 +337,28 @@ func (s *rcState) arm_B(ctx context.Context, r retcon, dir string) error {
 		return rel == "story/ep12" || rel == "story/ep11/s32.dieg.md" || rel == "calls.jsonl" || rel == "rounds" ||
 			strings.HasPrefix(rel, "diags") || strings.HasPrefix(rel, "digest")
 	}
-	if err := copyTree(filepath.Join(s.src, "b"), work, skip); err != nil {
-		return err
+	args := []string{"revise", work, r.Req}
+	if s.v2 { // full stamped base; scenes >= skipFrom stay coded but are never rendered (revise --skip)
+		if err := copyTree(s.baseB, work, func(rel string) bool { return rel == "calls.jsonl" }); err != nil {
+			return err
+		}
+		if sk := skipIDs(work, s.skipFrom); len(sk) > 0 {
+			args = append(args, "--skip", strings.Join(sk, ","))
+		}
+		if err := s.guard(2, 0); err != nil { // at least the two judge calls must still fit
+			return err
+		}
+		os.Setenv("DIEG_CALL_CAP", strconv.Itoa(s.budget-s.used()-2)) // hard stop inside dieg: the judges keep 2
+	} else {
+		if err := copyTree(filepath.Join(s.src, "b"), work, skip); err != nil {
+			return err
+		}
+		if err := s.guard(stepReserve+2, 0); err != nil { // worst case of one revise + the two judge calls
+			return err
+		}
 	}
-	if err := s.guard(stepReserve+2, 0); err != nil { // worst case of one revise + the two judge calls
-		return err
-	}
-	err := s.runDiegFn(ctx, dir, withEffort([]string{"revise", work, r.Req}))
+	err := s.runDiegFn(ctx, dir, withEffort(args))
+	os.Unsetenv("DIEG_CALL_CAP")
 	// copy dieg's own calls into the global log, whether or not it succeeded
 	if b, e2 := os.ReadFile(filepath.Join(work, "calls.jsonl")); e2 == nil {
 		for _, ln := range strings.Split(strings.TrimSpace(string(b)), "\n") {
@@ -397,11 +478,19 @@ type rcItem struct {
 	Why    string   `json:"why"`
 }
 
+// rcRevise: stale = IR-changed or state-stale or new scenes that were (re)rendered; Patched ones went through the
+// sentence patch, Full = the rest. IRStale = Changed minus StateStale.
+type rcRevise struct {
+	Stale, Patched, Full, IRStale, StateStale, Added int
+	Skipped                                         []string
+}
+
 type rcResult struct {
 	ID, Arm    string
 	Cost       Cost
 	CostNet    *Cost    `json:",omitempty"` // B only: without the calls of re-created old-s32-slot scenes
 	Regen      []string `json:",omitempty"`
+	Revise     *rcRevise `json:",omitempty"` // B only (v2): what dieg revise re-rendered, from its summary line
 	Collateral Collateral
 	JudgeRaw   string `json:",omitempty"`
 	Residual   int    // judge's raw item counts (human-verified marks live in README/verification.md)
@@ -506,7 +595,7 @@ func (s *rcState) one(ctx context.Context, r retcon) ([]rcResult, error) {
 
 func (s *rcState) judged(ctx context.Context, r retcon, arm, dir string, base rcResult, text string) (rcResult, error) {
 	j, err := s.doJudge(ctx, r, arm, dir, text)
-	j.Cost, j.Collateral = base.Cost, base.Collateral
+	j.Cost, j.Collateral, j.Revise, j.CostNet, j.Regen = base.Cost, base.Collateral, base.Revise, base.CostNet, base.Regen
 	return j, err
 }
 
@@ -518,6 +607,9 @@ func runRetcon(ctx context.Context, args []string) error {
 	only := fs.String("rc-only", "", "comma list of retcon numbers (default all)")
 	recompute := fs.Bool("rc-recompute", false, "re-derive cost/collateral from files of a finished run (no call); writes results2.json")
 	dry := fs.Bool("rc-dry", false, "fake every model call and the dieg subprocess; print the commands")
+	list := fs.String("rc-list", "", "plan-7 benchmark: retcon list JSON; B starts from the stamped full base, scenes >= -rc-skip-from are never rendered")
+	skipFrom := fs.Int("rc-skip-from", 32, "with -rc-list: scenes numbered >= this are excluded from both arms")
+	bRes := fs.Int("rc-b-reserve", 45, "with -rc-list: calls that must be free before a retcon starts, for B's worst case")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -527,6 +619,15 @@ func runRetcon(ctx context.Context, args []string) error {
 	s := &rcState{out: *out, src: *src, budget: *budget, dry: *dry, maxEp: 11}
 	if err := os.MkdirAll(s.out, 0o755); err != nil {
 		return err
+	}
+	if *list != "" {
+		rs, err := loadRetcons(*list)
+		if err != nil {
+			return err
+		}
+		retcons = rs
+		s.v2, s.skipFrom, s.bReserve = true, *skipFrom, *bRes
+		s.baseB = filepath.Join(s.out, "base", "b")
 	}
 	if err := s.load(); err != nil {
 		return err
@@ -546,6 +647,9 @@ func runRetcon(ctx context.Context, args []string) error {
 		s.a, s.judge = rcFake{}, rcFake{}
 		s.runDiegFn = func(ctx context.Context, out string, a []string) error {
 			fmt.Printf("DRY dieg %s\n", strings.Join(append([]string{a[0], "<" + filepath.Base(a[1]) + ">"}, a[2:]...), " "))
+			if a[0] == "stamp" {
+				return nil
+			}
 			return fakeRetconDieg(ctx, out, a)
 		}
 	} else {
@@ -556,6 +660,23 @@ func runRetcon(ctx context.Context, args []string) error {
 		build.Stderr = os.Stderr
 		if err := build.Run(); err != nil {
 			return fmt.Errorf("build dieg: %w", err)
+		}
+	}
+	if s.v2 { // stamped base: once, no model call (skipped when the marker is there)
+		mark := filepath.Join(s.out, "base", ".stamped")
+		if _, err := os.Stat(mark); err != nil {
+			skipB := func(rel string) bool {
+				return rel == "calls.jsonl" || rel == "rounds" || strings.HasPrefix(rel, "diags") || strings.HasPrefix(rel, "digest")
+			}
+			if err := copyTree(filepath.Join(s.src, "b"), s.baseB, skipB); err != nil {
+				return err
+			}
+			if err := s.runDiegFn(ctx, filepath.Join(s.out, "base"), []string{"stamp", s.baseB}); err != nil {
+				return fmt.Errorf("stamp: %w", err)
+			}
+			if err := os.WriteFile(mark, []byte("stamped\n"), 0o644); err != nil {
+				return err
+			}
 		}
 	}
 	want := map[string]bool{}
@@ -571,7 +692,11 @@ func runRetcon(ctx context.Context, args []string) error {
 			continue
 		}
 		// do not start a retcon that clearly cannot finish: A ~8 + B worst case + judges
-		if err := s.guard(8+stepReserve+2, 0); err != nil {
+		need := 8 + stepReserve + 2
+		if s.v2 {
+			need = 10 + s.bReserve + 2
+		}
+		if err := s.guard(need, 0); err != nil {
 			stop = fmt.Sprintf("%s not started: %v", r.ID, err)
 			break
 		}
@@ -621,6 +746,10 @@ func fakeRetconDieg(ctx context.Context, out string, args []string) error {
 			return err
 		}
 	}
+	line := "revise: rounds=1 clean=true changed=s3,s4 added= removed= state_stale=s4 skipped=s32 patched=1 failed=0[] calls=3\n"
+	if err := os.WriteFile(filepath.Join(out, "b.log"), []byte(line), 0o644); err != nil {
+		return err
+	}
 	return os.WriteFile(filepath.Join(work, "novel", "s3.ko-haera.md"), []byte("가짜 장면이다. 수정됨.\n"), 0o644)
 }
 
@@ -640,6 +769,11 @@ func (s *rcState) measure(r retcon, dir string) (resA, resB rcResult, idsA []str
 	ids0, beforeB := bUnits(filepath.Join(s.src, "b"), s.maxEp)
 	idsB, afterB = bUnits(filepath.Join(dir, "b"), s.maxEp)
 	resB = rcResult{ID: r.ID, Arm: "B", Cost: costOf(filepath.Join(dir, "b", "calls.jsonl")), Collateral: collateral(ids0, beforeB, afterB, r.Keys)}
+	if st, ok := parseRevise(filepath.Join(dir, "b.log")); ok {
+		n := len(st.Changed) + len(st.Added)
+		resB.Revise = &rcRevise{Stale: n, Patched: st.Patched, Full: n - st.Patched, IRStale: len(st.Changed) - len(st.StateStale),
+			StateStale: len(st.StateStale), Added: len(st.Added), Skipped: st.Skipped}
+	}
 	// B's net cost: without the render/extract calls of scenes in the old s32 slot (ep11) that the copy lacked and revise re-created
 	var regen []string
 	for _, u := range resB.Collateral.AddedUnits {

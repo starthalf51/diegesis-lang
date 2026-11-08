@@ -1,0 +1,8 @@
+{"t":"2026-11-08T15:23:28Z","label":"r3-A-pick","input":2,"output":476,"cache_read":0,"cache_write":3245,"stop":"end_turn","err":"","ms":10146}
+{"t":"2026-11-08T15:23:38Z","label":"r3-A-ep-4","input":2,"output":6447,"cache_read":0,"cache_write":14290,"stop":"end_turn","err":"","ms":60931}
+{"t":"2026-11-08T15:24:39Z","label":"r3-A-ep-5","input":2,"output":5767,"cache_read":0,"cache_write":14134,"stop":"end_turn","err":"","ms":49985}
+{"t":"2026-11-08T15:25:29Z","label":"r3-A-ep-6","input":2,"output":5943,"cache_read":0,"cache_write":14062,"stop":"end_turn","err":"","ms":51489}
+{"t":"2026-11-08T15:26:21Z","label":"r3-A-ep-7","input":2,"output":5398,"cache_read":0,"cache_write":13547,"stop":"end_turn","err":"","ms":48470}
+{"t":"2026-11-08T15:27:09Z","label":"r3-A-ep-8","input":2,"output":6228,"cache_read":0,"cache_write":14206,"stop":"end_turn","err":"","ms":51936}
+{"t":"2026-11-08T15:28:01Z","label":"r3-A-ep-9","input":2,"output":6333,"cache_read":0,"cache_write":14329,"stop":"end_turn","err":"","ms":57843}
+{"t":"2026-11-08T15:28:59Z","label":"r3-A-sum","input":2,"output":6412,"cache_read":0,"cache_write":30363,"stop":"end_turn","err":"","ms":63382}
