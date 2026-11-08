@@ -1,0 +1,23 @@
+0-s2-r1 attempts=1 pass=true score=1.000 calls=2 used=2 
+D-s2-r1 attempts=1 pass=true score=1.000 calls=2 used=4 
+D-s21-r1 attempts=1 pass=true score=1.000 calls=2 used=6 
+0-s21-r1 attempts=1 pass=true score=0.998 calls=2 used=8 
+0-s25-r1 attempts=1 pass=true score=1.000 calls=2 used=10 
+D-s25-r1 attempts=1 pass=true score=1.000 calls=2 used=12 
+D-s27-r1 attempts=1 pass=true score=0.998 calls=2 used=14 
+0-s27-r1 attempts=1 pass=true score=1.000 calls=2 used=16 
+0-s29-r1 attempts=1 pass=true score=1.000 calls=2 used=18 
+D-s29-r1 attempts=1 pass=true score=1.000 calls=2 used=20 
+D-s2-r2 attempts=1 pass=true score=1.000 calls=2 used=22 
+0-s2-r2 attempts=1 pass=true score=1.000 calls=2 used=24 
+0-s21-r2 attempts=1 pass=true score=0.998 calls=2 used=26 
+D-s21-r2 attempts=1 pass=true score=1.000 calls=2 used=28 
+D-s25-r2 attempts=1 pass=true score=1.000 calls=3 used=31 
+0-s25-r2 attempts=1 pass=true score=1.000 calls=2 used=33 
+stop: used=33, run 2 scene s27 쌍을 시작할 여유 없음
+done: 16 cells, 33 calls used (cap 50)
+0-s27-r2 attempts=1 pass=true score=0.998 calls=2 used=35 
+D-s27-r2 attempts=1 pass=true score=0.991 calls=2 used=37 
+D-s29-r2 attempts=1 pass=true score=0.997 calls=2 used=39 
+0-s29-r2 attempts=1 pass=true score=1.000 calls=2 used=41 
+done: 20 cells, 41 calls used (cap 50)
