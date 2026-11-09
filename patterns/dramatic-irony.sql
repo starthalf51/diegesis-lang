@@ -1,14 +1,14 @@
 -- pattern: dramatic-irony
 -- layer: information
--- summary: 독자는 참인 P 를 알고, 같은 장면에 있는 인물은 P 를 모르거나 반대로 믿는다(장면 단위)
+-- summary: the reader knows a true P, and a character in the same scene does not know P or believes the opposite (per scene)
 --
--- 보이는 장면 s 마다: 독자가 s 앞(서술 위치 < s)까지 믿게 된 (b, v) 중 s 의 시작에 참인 것(truth_at = v),
--- 그 사실이 s 에서 다뤄지고(s 의 행위가 전하거나 묻거나, s 안의 믿음·의심 문장이 그 사실이다 — 무관한 사실은 세지 않는다),
--- s 에 등장하는(presence) 인물 중 s 의 시작에 그것을 반대로 믿거나(char_knows = opp), 출처가 없는데(no) 그 장면에서
--- 그 사실에 닿은(그 사실을 전하는 행위의 행위자·청중이거나 그 사실의 믿음·의심 문장의 주어) 사람이 있다.
--- 순서가 정해지지 않은 출처만 있으면(maybe) 세지 않는다. 기록이 없을 뿐 사실과 무관한 인물은 세지 않는다(잡음).
--- 예언자·전지(lint_exempt)는 빼고, 그 사실을 앞서 말하거나 생각한 인물은 안다(char_knows 의 출처).
--- 대상 = 장면. span = 그 장면 한 칸. data.irony = (인물, 사실, 값, 인물의 앎).
+-- For each visible scene s: among the (b, v) the reader has come to believe before s (narration position < s), those true at the start of s (truth_at = v),
+-- where that fact is dealt with in s (an act in s conveys or asks it, or a belief/doubt statement in s is about that fact — unrelated facts are not counted),
+-- and among the characters present (presence) in s there is one who at the start of s believes the opposite (char_knows = opp), or has no source (no) but in that scene
+-- touched that fact (the actor or audience of an act conveying that fact, or the subject of a belief/doubt statement about it).
+-- If there are only sources with undetermined order (maybe), it is not counted. A character with no record who is merely unrelated to the fact is not counted (noise).
+-- Prophets and omniscients (lint_exempt) are excluded, and a character who said or thought that fact earlier knows it (a source for char_knows).
+-- Target = scene. span = that scene's one slot. data.irony = (character, fact, value, the character's knowledge).
 WITH kn AS (SELECT * FROM reader_knows($1)),
 sc AS (SELECT s.id, s.discourse_ord AS ord, s.start_pt FROM scene s WHERE s.work_id = $1 AND s.shown),
 k AS (
@@ -21,7 +21,7 @@ inplay AS (
   UNION
   SELECT b.scene_id, z.base FROM belief b CROSS JOIN LATERAL prop_norm($1, b.prop_id) z
    WHERE b.work_id = $1 AND b.scene_id IS NOT NULL AND b.prop_id IS NOT NULL),
-engaged AS (  -- 그 장면에서 그 사실에 닿은 인물: 그 사실을 전하는 행위의 행위자·청중, 그 사실의 믿음·의심 문장의 주어
+engaged AS (  -- engaged AS (  -- characters who touched that fact in that scene: actor/audience of an act conveying it, subject of a belief/doubt statement about it
   SELECT a.scene_id, a.base, a.actor_id AS entity_id FROM act_props($1) a
   UNION
   SELECT a.scene_id, a.base, au.entity_id FROM act_props($1) a JOIN audience au ON au.act_id = a.act_id

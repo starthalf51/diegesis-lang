@@ -2,15 +2,15 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: 인물이 그 전에 알게 된 적 없는 명제를 말한다
+-- summary: a character says a proposition they have never come to know before
 --
--- 대상: 진실한 단언 발화(assertive 동사 중 lies·decrees 제외)의 내용 명제마다 uses(화자, P, 행위 시점) 한 줄.
---   writes 는 letter-unknown-info, `because P` 는 because-unbelieved 가 맡는다(겹쳐 내지 않는다).
---   decrees 는 수행문이라 뺀다(선포가 P 를 만든다).
--- 면제: lint_exempt — 화자 또는 화자가 속한 그룹이 knows oracle|omniscient.
--- 판정: lint_known(화자, 정규 P, 행위 시점) (db/migrations/005_lint_common.sql):
---   출처 = 화자·속한 그룹의 believes(P, true) 와 decrees P. 배경 지식(시점 없음)은 처음부터 안다.
---   같은 행위의 출처는 declared 일 때만. 확정(precedes yes) → 정상, maybe 뿐 → info(Review Focus 2), 없음 → warn.
+-- Target: for each content proposition of a truthful assertive utterance (assertive verbs except lies and decrees), one uses(speaker, P, act point) line.
+--   writes is covered by letter-unknown-info and `because P` by because-unbelieved (not reported twice).
+--   decrees is excluded as a performative (the proclamation makes P).
+-- Exemption: lint_exempt — the speaker or a group the speaker belongs to has knows oracle|omniscient.
+-- Verdict: lint_known(speaker, canonical P, act point) (db/migrations/005_lint_common.sql):
+--   Sources = believes(P, true) of the speaker and their groups, and decrees P. Background knowledge (no point) is known from the start.
+--   A source from the same act counts only when declared. Definite (precedes yes) → fine, only maybe → info (Review Focus 2), none → warn.
 WITH graded AS (
   SELECT DISTINCT u.act_id, u.entity_id, u.prop_id,
          lint_known($1, u.entity_id, lint_canon($1, u.prop_id), u.at_pt) AS g

@@ -1,11 +1,11 @@
 -- pattern: counter-deception
 -- layer: deception
--- summary: 기만의 수신자가 그 명제를 의심하거나 이미 반대를 믿는다 — 속지 않는다
+-- summary: the recipient of a deception doubts the proposition or already believes the opposite — is not fooled
 --
--- 기만 D(deception-chain 과 같다): lies 행위의 청중, 또는 거짓 명제를 담은 문서를 읽은 사람이 수신자 r.
--- 매치: r 이 D 뒤(같은 시점 포함, precedes = yes)에 그 기저 사실을 doubts 하거나,
---       D 의 시점에 그 반대를 이미 안다(char_knows(r, 기저, ¬값, D) = yes).
--- 대상 = 기만 행위 D. span = D 의 위치 ~ 가장 늦은 의심의 위치(의심이 없으면 D). data.receivers = (수신자, 방식).
+-- Deception D (same as deception-chain): the audience of a lies act, or the person who read a document holding a false proposition, is recipient r.
+-- Match: r doubts that base fact after D (same point included, precedes = yes), or
+--       already knows the opposite at D's point (char_knows(r, base, ¬value, D) = yes).
+-- Target = deception act D. span = D's position ~ the latest doubt's position (D if no doubt). data.receivers = (recipient, manner).
 WITH ap AS (SELECT * FROM act_props($1)),
 d AS (
   SELECT a.act_id, a.ord, a.pt, a.base, a.val, au.entity_id AS e

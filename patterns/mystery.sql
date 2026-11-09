@@ -1,10 +1,10 @@
 -- pattern: mystery
 -- layer: information
--- summary: 참인 P 가 독자에게 withhold 되어 있고, 그동안 P 를 묻거나 의심하는 장면이 있다
+-- summary: a true P is withheld from the reader, and meanwhile there is a scene that asks about or doubts P
 --
--- withhold 마다: P ≡ (b = v) 가 참(truth_at(b, withhold 장면 시작) = v)이고, 막힌 구간 [withhold 장면 위치, until 위치)
--- 안의 보이는 장면에 그 기저 사실을 내용으로 하는 asks 행위나 그 사실에 대한 doubts 문장이 있다.
--- 대상 = 기저 사실. span = withhold 위치 ~ until 위치(until 이 보이는 장면에 없으면 NULL: 끝내 풀리지 않는다).
+-- For each withhold: P ≡ (b = v) is true (truth_at(b, withhold scene start) = v), and in a visible scene inside the blocked interval [withhold scene position, until position)
+-- there is an asks act whose content is that base fact, or a doubts statement about that fact.
+-- Target = base fact. span = withhold position ~ until position (NULL if until is not in a visible scene: never resolved).
 WITH h AS (
   SELECT z.base, z.val, coalesce(sd.discourse_ord, 0) AS d_ord, point_ord($1, wh.until_pt) AS u_ord
     FROM withhold wh LEFT JOIN scene sd ON sd.id = wh.scene_id AND sd.shown

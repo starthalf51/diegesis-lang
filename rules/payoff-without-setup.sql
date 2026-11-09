@@ -2,11 +2,11 @@
 -- severity: warn
 -- layer: lint
 -- target: payoff
--- summary: 복선(setup)이 없거나 회수보다 앞서지 않는다
+-- summary: there is no setup, or it does not come before the payoff
 --
--- 대상: payoff 문장 하나하나(억제 대상은 sema 대로 (payoff, setup ID), 위치는 그 payoff 문장).
--- 위반: setup 이 없으면 warn. 둘 다 시점이 있으면 precedes(setup, payoff):
---   no → warn(회수가 먼저다), maybe → info(Review Focus 2), yes → 정상. 최상위(시점 없는) setup 은 처음부터 있다.
+-- Target: each payoff statement (suppression target is (payoff, setup ID) as in sema; position is that payoff statement).
+-- Violation: warn if there is no setup. If both have points, precedes(setup, payoff):
+--   no → warn (the payoff comes first), maybe → info (Review Focus 2), yes → fine. A top-level (pointless) setup exists from the start.
 SELECT 'payoff' AS target_kind, p.setup_id AS target_id, p.src_id,
        CASE WHEN s.id IS NULL OR x.o = 'no' THEN 'warn' ELSE 'info' END AS severity,
        format(CASE WHEN s.id IS NULL THEN 'payoff of %s has no setup'

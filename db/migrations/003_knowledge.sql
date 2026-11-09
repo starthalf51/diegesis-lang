@@ -1,22 +1,22 @@
--- 003: 역할 보유 구간(resolve_roles) 과 지식 파생(derive_beliefs). 규칙은 설계 노트 compiler.md "지식 파생" 표.
+-- 003: role holding intervals (resolve_roles) and knowledge derivation (derive_beliefs). The rules follow the design note compiler.md "knowledge derivation" table.
 SET LOCAL search_path = public, ag_catalog;
 
--- 행위가 전하는 명제: prop_id 와 with[] (예: `sends ross to macbeth with P`).
+-- Propositions an act conveys: prop_id and with[] (e.g. `sends ross to macbeth with P`).
 CREATE VIEW act_content AS
   SELECT a.work_id, a.id AS act_id, a.pt, a.verb, a.resolved_actor_id AS actor_id, c.prop_id, a.src_id
     FROM act a CROSS JOIN LATERAL unnest(array_remove(ARRAY[a.prop_id], NULL) || a."with") c(prop_id);
 
--- 단언하는 발화. 청중이 내용을 믿는다. asks(질문), orders(명령)는 단언이 아니라서 뺀다.
+-- Asserting utterances. The audience believes the content. asks (questions) and orders (commands) are not assertions, so they are excluded.
 CREATE FUNCTION assertive(verb text) RETURNS bool LANGUAGE sql IMMUTABLE
   AS $$ SELECT verb = ANY ('{tells,says,whispers,hails,lies,shows,decrees,sends}') $$;
 
--- resolve_roles: role_span 을 채우고 role: 화자를 그 시점의 보유자로 바꾼다.
--- 구간은 earliest 일정(STN 의 가장 이른 해, 그 자체로 모든 제약을 만족한다)에서 [from, until) 이다.
--- 열린 끝은 무한. 끝 시점이 풀리지 않았으면(earliest NULL) 구간을 비워 배타 검사에서 뺀다.
--- 겹침: 같은 역할의 앞선 구간(src 순)과 겹치는데 둘이 떨어져 있을 수도 있으면(경계 선후가 maybe) role-overlap warn 을
--- 남기고 이 구간을 넣지 않는다. 반드시 겹치면 그대로 넣어 배타 제약이 적재를 실패시킨다(컴파일러 버그, storage.md).
--- 화자 해석: from ≤ act 가 확정(yes)이고 act < until 이 확정인(act ≤ until 은 yes, until ≤ act 는 yes 가 아님) 보유자가
--- 정확히 하나면 그 사람. 구간과 같은 반열림이라 경계 시점의 행위는 새 보유자다. 아니면 role-ambiguous.
+-- resolve_roles: fill role_span and turn role: speakers into the holder at that point.
+-- The interval is [from, until) on the earliest schedule (the earliest solution of the STN, which by itself satisfies all constraints).
+-- An open end is unbounded. If the end point is unsolved (earliest NULL), leave the interval empty so it drops out of the exclusivity check.
+-- Overlap: if it overlaps an earlier interval of the same role (in src order) but the two may be apart (boundary order is maybe), leave a role-overlap warn
+-- and do not insert this interval. If they must overlap, insert it as is and the exclusion constraint fails the load (a compiler bug, storage.md).
+-- Speaker resolution: if exactly one holder has from ≤ act confirmed (yes) and act < until confirmed (act ≤ until is yes, until ≤ act is not yes),
+-- that is the person. It is half-open like the interval, so an act at the boundary point belongs to the new holder. Otherwise role-ambiguous.
 CREATE FUNCTION resolve_roles(w text) RETURNS void
 LANGUAGE plpgsql SET search_path = public, ag_catalog AS $$
 DECLARE a record; h record; o record; hs text[];
@@ -70,17 +70,17 @@ BEGIN
   END LOOP;
 END $$;
 
--- derive_beliefs: believes / uses / deception. 믿음의 from_pt 는 그 행위의 시점, cause_act 는 그 행위다.
---   단언 발화      청중(화자 제외, role: 화자면 해석된 보유자 제외) believes P
---   lies           + 화자 believes ¬P(value=false) + deception. 그 밖의 단언은 uses(화자, P)
---   sees           화자 believes P
---   reads art      화자 believes art 에 담긴 명제 전부
---   writes art     uses(화자, 담긴 명제 전부)
---   … because P    uses(화자, P)
---   aside/thinks   없음(독자 기록은 이 테이블들의 몫이 아니다)
---   명시적 `X believes P`(belief 테이블)  X believes P, from_pt = at_pt, declared, cause_act = because_pt 가 행위면 그것
---   명시적 `X doubts P`  행 없음(P 도 ¬P 도 믿지 않는다. 원문은 belief 테이블에 남는다)
--- 화자가 모호하면(resolved_actor_id NULL) 화자 쪽 기록은 남기지 않고 청중 쪽만 남긴다.
+-- derive_beliefs: believes / uses / deception. A belief's from_pt is the point of that act, cause_act is that act.
+--   assertive utterance   audience (excluding the speaker; for role: speakers, excluding the resolved holder) believes P
+--   lies           + speaker believes ¬P (value=false) + deception. Any other assertion is uses(speaker, P)
+--   sees           speaker believes P
+--   reads art      speaker believes every proposition the art holds
+--   writes art     uses(speaker, every proposition held)
+--   … because P    uses(speaker, P)
+--   aside/thinks   none (reader records are not these tables' job)
+--   explicit `X believes P` (belief table)  X believes P, from_pt = at_pt, declared, cause_act = because_pt if it is an act
+--   explicit `X doubts P`  no row (neither P nor ¬P is believed; the source stays in the belief table)
+-- If the speaker is ambiguous (resolved_actor_id NULL), leave no speaker-side record and keep only the audience side.
 CREATE FUNCTION derive_beliefs(w text) RETURNS void
 LANGUAGE plpgsql SET search_path = public, ag_catalog AS $$
 BEGIN

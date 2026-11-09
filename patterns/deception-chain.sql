@@ -1,12 +1,12 @@
 -- pattern: deception-chain
 -- layer: deception
--- summary: 기만(거짓말 또는 거짓 문서) → 수신자가 믿는다(전해질 수 있다) → 그 믿음을 because 로 쓴 행동
+-- summary: deception (a lie or a false document) → the recipient believes (and may pass it on) → an action that uses that belief as its because
 --
--- 기만 D: lies 행위(청중이 수신자), 또는 거짓 명제(truth_at ≠ 담긴 값)를 담은 문서를 읽는 reads 행위(읽은 사람이 수신자).
--- 전달: 수신자가 그 명제를 (거짓말이 아닌) 단언으로 다른 사람에게 말하거나, 그 명제를 담은 문서를 쓰고 다른 사람이
--- 그 문서를 읽으면 그 청중·독자도 수신자다(앞선 수신보다 확실히 뒤, precedes = yes). 재귀로 닫는다.
--- 매치: 행위 Y(because P)의 행위자가 수신자이고 수신이 Y 보다 확실히 앞이다. 명제는 정규화한 (기저, 값)으로 같아야 한다.
--- 대상 = 행동 Y. span = 가장 이른 기만의 위치 ~ Y 의 위치. data.sources = 그 사슬의 기만 행위들.
+-- Deception D: a lies act (the audience are recipients), or a reads act on a document holding a false proposition (truth_at ≠ the held value) (the reader is the recipient).
+-- Passing on: when a recipient tells the proposition to someone else as an assertion (not a lie), or writes a document holding it and someone else
+-- reads that document, that audience or reader is a recipient too (definitely after the earlier receipt, precedes = yes). Closed by recursion.
+-- Match: the actor of an act Y (because P) is a recipient and the receipt is definitely before Y. The propositions must be equal as normalized (base, value).
+-- Target = action Y. span = the earliest deception's position ~ Y's position. data.sources = the deception acts of that chain.
 WITH RECURSIVE ap AS (SELECT * FROM act_props($1)),
 src AS (
   SELECT a.act_id AS d_act, a.ord AS d_ord, a.base, a.val, au.entity_id AS e, a.pt AS t

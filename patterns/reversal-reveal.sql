@@ -1,10 +1,10 @@
 -- pattern: reversal-reveal
 -- layer: information
--- summary: 독자가 믿던 사실이 반대로 뒤집히고, 그 사실이 복선(setup)이나 행동의 근거(because)였다
+-- summary: a fact the reader believed is reversed, and that fact was a setup or the basis (because) of an action
 --
--- 독자 믿음의 변화점 중 앞 값이 있는 것(= 뒤집힘)마다: 그 기저 사실이 어떤 setup 의 명제이거나 어떤 행위의 because 다
--- (정규화한 기저 사실이 같으면 부정·별칭도 같은 사실). 진리값은 보지 않는다(참→거짓, 거짓→참 모두 반전이다).
--- 대상 = 기저 사실. span = 앞 믿음의 위치 ~ 뒤집힌 위치.
+-- For each reader-belief change point that has a previous value (= a reversal): that base fact is the proposition of some setup or the because of some act
+-- (if the normalized base facts are equal, negations and aliases are the same fact). The truth value is not checked (true→false and false→true are both reversals).
+-- Target = base fact. span = position of the previous belief ~ position of the reversal.
 WITH k AS (
   SELECT r.*, lag(r.from_ord) OVER (PARTITION BY r.fact_id ORDER BY r.from_ord) AS prev_ord FROM reader_knows($1) r),
 used AS (

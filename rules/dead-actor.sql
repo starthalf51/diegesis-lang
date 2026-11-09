@@ -2,12 +2,12 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: 죽은 인물이 말하거나 행동한다
+-- summary: a dead character speaks or acts
 --
--- 대상: 행위자(해석된 화자. 청중은 보지 않는다) X 에게 `dies X` 시점 @X.died 가 있는 행위.
--- 위반: 죽음이 행위보다 반드시 앞선다 — precedes(@X.died, 행위) = yes 이고 precedes(행위, @X.died) ≠ yes
---   (같은 시각일 수 있으면 임종의 말로 본다). maybe 는 내지 않는다.
--- 면제: lint_exempt — knows oracle|omniscient (유령 등) 와 그런 그룹의 구성원. 그 밖의 경우는 억제로 처리한다.
+-- Target: acts whose actor (the resolved speaker; the audience is not looked at) X has a `dies X` point @X.died.
+-- Violation: the death is necessarily before the act — precedes(@X.died, act) = yes and precedes(act, @X.died) ≠ yes
+--   (if they may be at the same instant it is read as a dying word). maybe is not emitted.
+-- Exemption: lint_exempt — knows oracle|omniscient (ghosts etc.) and members of such groups. Other cases are handled by suppression.
 SELECT 'act' AS target_kind, a.id AS target_id,
        format('%s %s after dying', lint_short(a.resolved_actor_id), a.verb) AS message,
        jsonb_build_object('entity', a.resolved_actor_id, 'died', d.id) AS data

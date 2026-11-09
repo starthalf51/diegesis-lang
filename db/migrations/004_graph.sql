@@ -1,7 +1,7 @@
--- 004: AGE 그래프 투영(project_graph) 과 derive. 그래프는 테이블에서 매번 새로 만드는 투영이다(ADR-001).
+-- 004: AGE graph projection (project_graph) and derive. The graph is a projection rebuilt from the tables every time (ADR-001).
 SET LOCAL search_path = public, ag_catalog;
 
--- rows(jsonb 배열)를 $rows 로 넘겨 `UNWIND $rows AS r <q>` 를 돈다. 문자열을 Cypher 에 이어 붙이지 않는다.
+-- Pass rows (a jsonb array) as $rows and run `UNWIND $rows AS r <q>`. Never concatenate strings into Cypher.
 CREATE FUNCTION graph_rows(g text, q text, rows jsonb) RETURNS void
 LANGUAGE plpgsql SET search_path = public, ag_catalog AS $$
 BEGIN
@@ -12,9 +12,9 @@ BEGIN
     USING jsonb_build_object('rows', rows)::text::agtype;
 END $$;
 
--- 정점 Entity/Point/Fact/Setup, 간선 BEFORE/TOLD/BELIEVES/PRESENT_AT/CAUSES/FORESHADOWS/PARENT_OF.
--- ponytail: 간선마다 MATCH 가 id 로 정점을 훑는다(O(V·E)). 큰 작품에서 느리면 id 속성 인덱스를 건다.
--- ponytail: BEFORE 는 추이 축소하지 않는다(storage.md 는 축소를 적었다). BEFORE* 가 느려지면 축소한다.
+-- Vertices Entity/Point/Fact/Setup, edges BEFORE/TOLD/BELIEVES/PRESENT_AT/CAUSES/FORESHADOWS/PARENT_OF.
+-- ponytail: each edge's MATCH scans vertices by id (O(V·E)). If slow on a big work, add an index on the id property.
+-- ponytail: BEFORE is not transitively reduced (storage.md says it is). Reduce it if BEFORE* gets slow.
 CREATE FUNCTION project_graph(w text) RETURNS void
 LANGUAGE plpgsql SET search_path = public, ag_catalog AS $$
 DECLARE g text := graph_name(w);
@@ -33,7 +33,7 @@ BEGIN
   PERFORM graph_rows(g, 'CREATE (:Setup {id: r.id, kind: r.kind, prop: r.prop_id})',
     (SELECT jsonb_agg(to_jsonb(x)) FROM (SELECT id, kind, prop_id FROM setup WHERE work_id = w) x));
 
-  -- 순서: 억제되지 않은 min ≥ 0 제약. 같은 쌍은 한 간선(가장 빡빡한 경계).
+  -- Order: unsuppressed min ≥ 0 constraints. One edge per pair (the tightest bound).
   PERFORM graph_rows(g, 'MATCH (a:Point {id: r.a}), (b:Point {id: r.b}) CREATE (a)-[:BEFORE {min: r.min, max: r.max}]->(b)',
     (SELECT jsonb_agg(to_jsonb(x)) FROM (
        SELECT from_pt AS a, to_pt AS b, max(min) AS min, min(max) AS max FROM time_edge
@@ -50,7 +50,7 @@ BEGIN
     (SELECT jsonb_agg(to_jsonb(x)) FROM (
        SELECT p.entity_id AS a, s.start_pt AS b, p.scene_id AS scene, p.from_pt AS f, p.to_pt AS t
          FROM presence p JOIN scene s ON s.id = p.scene_id WHERE p.work_id = w) x));
-  -- 인과: 명시적 `believes … because @x` (because_pt → at_pt) 와, `… because P` 행위의 화자가 P 를 믿게 된 행위 → 그 행위.
+  -- Causation: explicit `believes … because @x` (because_pt → at_pt), and the act by which the speaker of a `… because P` act came to believe P → that act.
   PERFORM graph_rows(g, 'MATCH (a:Point {id: r.a}), (b:Point {id: r.b}) CREATE (a)-[:CAUSES {prop: r.prop}]->(b)',
     (SELECT jsonb_agg(to_jsonb(x)) FROM (
        SELECT because_pt AS a, at_pt AS b, prop_id AS prop FROM belief
@@ -66,7 +66,7 @@ BEGIN
     (SELECT jsonb_agg(to_jsonb(x)) FROM (SELECT parent_id AS a, child_id AS b FROM parent WHERE work_id = w) x));
 END $$;
 
--- 적재 트랜잭션의 마지막 단계. 순서가 중요하다: 역할 해석은 풀린 시간을, 믿음은 해석된 화자를 쓴다.
+-- The last step of the load transaction. Order matters: role resolution uses the solved time, beliefs use the resolved speaker.
 CREATE OR REPLACE FUNCTION derive(w text) RETURNS void
 LANGUAGE plpgsql SET search_path = public, ag_catalog AS $$
 BEGIN

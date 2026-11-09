@@ -2,11 +2,11 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: 쓴 사람이 쓰기 전에 믿지 않은 명제가 문서에 담겼다
+-- summary: a document holds a proposition the writer did not believe before writing
 --
--- 대상: `X writes art` 마다 art 에 담긴 명제 P 하나씩(uses(X, P, 쓴 시점)).
--- 제외: 쓴 사람이 ¬P 를 알고 쓴 명제(deception 행, 007 — 위조·거짓 서신은 글로 한 거짓말이다).
--- 면제·판정은 info-flow 와 같다: lint_exempt, lint_known(X, 정규 P, 쓴 시점) → 2 정상, 1 info, 0 warn.
+-- Target: for each `X writes art`, one row per proposition P held in art (uses(X, P, time of writing)).
+-- Excluded: propositions written while knowing ¬P (deception row, 007 — forged or false letters are lies told in writing).
+-- Exemption and verdict are the same as info-flow: lint_exempt, lint_known(X, canonical P, time of writing) → 2 fine, 1 info, 0 warn.
 WITH graded AS (
   SELECT DISTINCT u.act_id, u.entity_id, u.prop_id, art.id AS artifact,
          lint_known($1, u.entity_id, lint_canon($1, u.prop_id), u.at_pt) AS g

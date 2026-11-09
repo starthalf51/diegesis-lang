@@ -2,10 +2,10 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: `… because P` 인데 그 시점에 행위자가 P 를 믿지 않는다
+-- summary: `… because P`, but the actor does not believe P at that point
 --
--- 대상: because P 가 붙은 행위(동사 무관). 행위자 = 해석된 화자(role: 화자가 모호하면 뺀다. role-ambiguous 가 따로 있다).
--- 면제·판정은 info-flow 와 같다: lint_exempt, lint_known(행위자, 정규 P, 행위 시점) → 2 정상, 1 info, 0 warn.
+-- Target: acts carrying because P (any verb). Actor = the resolved speaker (skipped if role: speaker is ambiguous; role-ambiguous covers that separately).
+-- Exemption and verdict are the same as info-flow: lint_exempt, lint_known(actor, canonical P, act point) → 2 fine, 1 info, 0 warn.
 WITH graded AS (
   SELECT a.id AS act_id, a.resolved_actor_id AS entity_id, a.because_id AS prop_id,
          lint_known($1, a.resolved_actor_id, lint_canon($1, a.because_id), a.pt) AS g

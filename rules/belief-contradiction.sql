@@ -2,14 +2,14 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: 직접 지각한 사실과 반대되는 명제를 진실하게 주장한다
+-- summary: truthfully asserts a proposition opposite to a fact the speaker perceived directly
 --
--- 대상: 행위자 X 가 시점 t 에 P 를 진실하게 주장하는 것. 진실한 주장 = 단언 발화(assertive 동사 중 lies·decrees 제외)의
---   내용 명제, 또는 `writes art` 에 담긴 명제. `because P` 는 주장이 아니다.
---   ¬P 를 알고 쓴 명제(deception 행, 007)는 거짓말이지 주장이 아니다.
--- 반대: lint_opposite — `not P` 와 P(별칭은 lint_canon 으로 정규화).
--- 위반: X 자신이 sees 로 얻은 believes(X, ¬P, true)(`sees: P` 와 `sees P` 둘 다)가 있고 그 시점이 t 와 다르며
---   precedes(지각, t) = yes. 들은 것(tells 등)과의 모순, 그룹이 본 것, 선후가 maybe 인 지각은 세지 않는다.
+-- Target: actor X truthfully asserting P at point t. A truthful assertion = the content proposition of an assertive utterance (assertive verbs except lies and decrees),
+--   or a proposition held in `writes art`. `because P` is not an assertion.
+--   A proposition written while knowing ¬P (deception row, 007) is a lie, not an assertion.
+-- Opposite: lint_opposite — `not P` and P (aliases normalized with lint_canon).
+-- Violation: X has a believes(X, ¬P, true) obtained by X's own sees (both `sees: P` and `sees P`) whose point differs from t and
+--   precedes(perception, t) = yes. Contradiction with what was heard (tells etc.), what a group saw, and perceptions with maybe order are not counted.
 WITH
 asserted AS (
   SELECT DISTINCT u.act_id, u.entity_id, u.prop_id, lint_canon($1, u.prop_id) AS c, u.at_pt

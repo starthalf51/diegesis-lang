@@ -1,19 +1,19 @@
 -- pattern: prophecy-fulfilled
 -- layer: foreshadow
--- summary: 예언자(knows oracle)가 단언한 명제가 그때는 참이 아니었거나 미정이었고, 나중에 참이 된다
+-- summary: a proposition asserted by a prophet (knows oracle) was not true or was undetermined at the time, and later becomes true
 --
--- 예언 = 예언자(자신 또는 그룹이 knows oracle)의 단언(거짓말 제외)이 전하는 명제 P ≡ (기저 b = v).
--- 그때 참이 아님(또는 미정): 다음 중 하나. 시점이 없는 사실(상태 술어가 아님)은 둘째 조건으로만 판정한다
---   (선언 진리값은 시점과 무관해서 "그때 참이 아님" 을 말해 주지 못한다).
---   - b 가 상태 술어(holds·alive)이고 그 시점에 truth_at(b) ≠ v(거짓 또는 정해지지 않음)
---   - 청중 누구도 그 시점에 P 를 알지 못한다(char_knows ≠ yes: 청자에게는 미정. 코더형 — 이미 참이지만 아무도 모른다)
--- 나중에 참이 됨(경로 route, 하나라도):
---   state     상태 술어가 예언 뒤의 보이는 장면 끝에서 확실히 v(역할 보유 구간 / 출생·사망 시점)
---   confirmed 예언자가 아닌 인물이 예언 뒤에 P 를 단언하고, 그 시점에 truth_at = v 이며, 그 인물의 P 믿음 중
---             예언자의 행위에서 온 것이 없고, 그 단언의 청중이 예언의 청중과 겹친다(예언을 들은 사람에게 확인해 준다 —
---             예언을 되풀이한 것, 예언과 무관한 사람들 사이에서 지난 사실을 밝히는 것은 확인이 아니다)
---   payoff    예언과 같은 장면에서 P 를 promise 복선으로 걸고 예언 뒤에 회수한다(작가가 적은 실현)
--- 대상 = 예언 행위. span = 예언 위치 ~ 가장 이른 실현 위치(보이지 않는 장면이면 NULL).
+-- Prophecy = proposition P ≡ (base b = v) conveyed by an assertion (not a lie) of a prophet (self or group has knows oracle).
+-- Not true at the time (or undetermined): one of the following. A fact with no point (not a state predicate) is judged only by the second condition
+--   (a declared truth value is independent of the point, so it cannot tell us "not true then").
+--   - b is a state predicate (holds·alive) and truth_at(b) ≠ v at that point (false or not determined)
+--   - no one in the audience knows P at that point (char_knows ≠ yes: undetermined to the listener. The coder type — already true but nobody knows)
+-- Later becomes true (route; any one):
+--   state     the state predicate is certainly v at the end of a visible scene after the prophecy (role holding interval / birth·death point)
+--   confirmed a non-prophet asserts P after the prophecy, truth_at = v at that point, none of that person's beliefs in P
+--             came from the prophet's act, and that assertion's audience overlaps the prophecy's audience (confirming to someone who heard the prophecy —
+--             repeating the prophecy, or revealing a past fact among people unrelated to the prophecy, is not confirmation)
+--   payoff    in the same scene as the prophecy, P is set up as a promise setup and paid off after the prophecy (the realization the author wrote)
+-- Target = the prophecy act. span = prophecy position ~ earliest realization position (NULL if in an unseen scene).
 WITH proph AS (
   SELECT a.* FROM act_props($1) a
    WHERE assertive(a.verb) AND a.verb <> 'lies' AND is_oracle($1, a.actor_id)),

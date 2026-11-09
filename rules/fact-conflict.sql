@@ -2,10 +2,10 @@
 -- severity: warn
 -- layer: lint
 -- target: fact
--- summary: 같은 술어·같은 첫 인자인데 나머지 인자가 다른 참 사실이 둘 있다 (예: broke(lens, A) 와 broke(lens, B)), 또는 같은 선두 토큰의 텍스트 사실이 다른 파일에 둘 있다(후보)
+-- summary: two true facts with the same predicate and first argument but different remaining arguments (e.g. broke(lens, A) and broke(lens, B)), or two text facts with the same leading token in different files (candidate)
 --
--- 참 사실 = `fact x = pred(args)` 로 선언된(별칭이 가리키는) 술어 행. `not` 이나 별칭 행, 추론 중 생긴 술어 행은 세지 않는다.
--- 한 쌍마다 한 번(작은 id 쪽)에 낸다. 정말 둘 다 참인 술어(여럿이 가능한 관계)면 waive 한다.
+-- True fact = a predicate row declared as `fact x = pred(args)` (the one an alias points at). `not`, alias rows, and predicate rows made during inference are not counted.
+-- Emitted once per pair (on the smaller id side). If both really are true (a relation that allows several), waive it.
 WITH pf AS (
   SELECT f.id, f.src_id, f.def->>'pred' AS pred, f.def->'args' AS args
     FROM fact f
@@ -16,11 +16,11 @@ SELECT 'fact' AS target_kind, a.id AS target_id, a.src_id,
        jsonb_build_object('other', b.id) AS data
   FROM pf a JOIN pf b ON a.pred = b.pred AND a.args->0 = b.args->0 AND a.id < b.id AND a.args <> b.args
 UNION ALL
--- 텍스트 사실 휴리스틱(후보): 생성 이야기는 술어 없이 `fact x "text" true` 만 쓴다. 술어 정의 없는 참 사실 둘이
---   서로 다른 파일에 있고, id 의 선두 토큰(첫 `_` 앞, 예: lens_smashed → lens)이 같으며, 둘 다 서술되면(행위 내용 또는 독자 공개) 후보로 낸다.
---   같은 파일 안의 같은 토큰은 한 번에 쓴 사실 묶음이라 세지 않는다.
---   선두 토큰만으로는 run3 B 한 편에서 150건(공유 3개면 21건, 4개면 7건 중 6건 오탐)이 울려서, 같은 사건을 다르게 말하는 쌍으로 좁힌다:
---   두 텍스트가 어절 앞 두 글자를 5개 이상 공유한다(렌즈·깨뜨·도경태 같은 주어·동작·행위자). 조사·활용에 둔감하려는 싼 근사다.
+-- Text-fact heuristic (candidate): generated stories use only `fact x "text" true` with no predicate. Two true facts with no predicate definition
+--   that are in different files, whose ids share the leading token (before the first `_`, e.g. lens_smashed → lens), and that are both narrated (act content or reader disclosure) are emitted as candidates.
+--   The same token inside one file is a bundle of facts written at once, so it is not counted.
+--   The leading token alone fired 150 times in one run3 B piece (with 3 shared, 21 times; with 4, 6 of 7 were false positives), so narrow it to pairs that tell the same event differently:
+--   the two texts share five or more two-character word prefixes (subjects, actions, agents like lens, smashed, Do Gyeongtae). A cheap approximation meant to be insensitive to particles and conjugation.
 SELECT 'fact', a.id, a.src_id,
        format('candidate conflict, check: %s and %s are both true text facts about %s in different files', lint_short(a.id), lint_short(b.id), split_part(lint_short(a.id), '_', 1)),
        jsonb_build_object('other', b.id, 'heuristic', 'text-fact')

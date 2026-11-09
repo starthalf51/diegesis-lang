@@ -1,11 +1,11 @@
 -- pattern: recognition
 -- layer: identity
--- summary: 정체 사실(fact … tag identity)을 믿는 인물 집합이 서술 순서대로 커지고, 적어도 한 번은 sees 로 늘어난다 — 인지(anagnorisis)
+-- summary: the set of characters who believe an identity fact (fact … tag identity) grows in narration order, and grows via sees at least once — recognition (anagnorisis)
 --
--- 정체 사실 f(tag identity, 정규화한 (기저, 값)) 마다: 그것을 믿는 believes 행(값까지 같은 것) 중 의심으로 거둬지지 않은 것
--- (until_pt 없음)으로 인물마다 처음 믿게 된 서술 위치를 구한다(배경 지식 = 0, 보이지 않는 장면의 출처는 세지 않는다).
--- 위치 > 0 인 단계(같은 위치에서 새로 믿게 된 인물들)가 둘 이상이고 그중 하나라도 출처가 sees 인 것이 있으면 매치.
--- 대상 = 정체 사실. span = 첫 단계 ~ 마지막 단계. data.steps = 단계마다 (위치, 새 인물, 경로 동사).
+-- For each identity fact f (tag identity, normalized (base, value)): from the believes rows that believe it (value included) and were not withdrawn by doubt
+-- (no until_pt), find the narration position where each character first came to believe it (background knowledge = 0; sources in unseen scenes are not counted).
+-- Match if there are two or more stages at position > 0 (characters who newly came to believe at the same position) and at least one has a sees source.
+-- Target = identity fact. span = first stage ~ last stage. data.steps = per stage (position, new characters, route verb).
 WITH idf AS (
   SELECT f.id, z.base, z.val FROM fact f CROSS JOIN LATERAL prop_norm($1, f.id) z WHERE f.work_id = $1 AND f.tag = 'identity'),
 b AS (
