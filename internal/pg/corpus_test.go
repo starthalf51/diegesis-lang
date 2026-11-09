@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/sema"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/sema"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 // corpusIR 는 corpus/<work> 를 컴파일하고 작품 ID 를 고유한 것으로 바꾼다(dieg 가 적재한 실제 작품과 겹치지 않게).

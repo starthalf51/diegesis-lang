@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"diegesis/internal/pg"
-	"diegesis/rules"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/rules"
 )
 
 // refs/ holds byte-for-byte copies of repo files (TestRefsInSync keeps them in step):

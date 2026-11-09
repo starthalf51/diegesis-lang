@@ -17,8 +17,8 @@ import (
 	"sort"
 	"strings"
 
-	"diegesis/internal/pg"
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // effortCompleter 는 드라이런이 가짜로 바꾼다.

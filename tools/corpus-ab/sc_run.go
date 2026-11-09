@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // scCompleter 는 테스트가 가짜로 바꾼다. 기본은 구독 claude CLI(sonnet/low).

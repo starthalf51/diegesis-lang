@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/sema"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/sema"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 // compile parses every .dieg.md under dir and builds the IR. Paths in

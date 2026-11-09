@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // judgeHead is the checklist from examples/idea-to-novel/prompts/judge-build.sh, verbatim.

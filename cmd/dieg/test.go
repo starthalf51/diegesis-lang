@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"diegesis/internal/accept"
-	"diegesis/internal/pg"
-	"diegesis/rules"
+	"github.com/starthalf51/diegesis-lang/internal/accept"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/rules"
 )
 
 // cmdTest runs `dieg test <corpus-dir> [--seed N] [--mutants N]`: compile, load, lint, the named

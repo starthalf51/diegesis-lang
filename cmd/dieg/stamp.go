@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"diegesis/internal/write"
+	"github.com/starthalf51/diegesis-lang/internal/write"
 )
 
 // cmdStamp runs `dieg stamp <work-dir>`: loads <work-dir>/story into PG and upgrades the legacy (IR-only) .hash files of

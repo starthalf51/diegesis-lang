@@ -3,8 +3,8 @@ package sema
 import (
 	"slices"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 // stage is the presence state machine of one scene. A group on stage puts

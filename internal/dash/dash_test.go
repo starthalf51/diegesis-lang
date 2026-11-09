@@ -10,7 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 type dashboard struct {

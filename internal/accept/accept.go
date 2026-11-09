@@ -11,8 +11,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"diegesis/internal/mutate"
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/mutate"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 // Expect 는 expect.yaml.

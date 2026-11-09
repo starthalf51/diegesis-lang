@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 type fakeC struct{ n int }

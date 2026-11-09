@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 func main() {

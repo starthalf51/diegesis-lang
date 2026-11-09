@@ -168,3 +168,7 @@ go vet ./...
 | v0.5.0 | 플랜 5: 계층형 렌더러(`--renderer layered`, 옵트인; v0.6.0 에서 삭제), 기본 렌더 모델 haiku, 검증기가 저작된 사실 없는 행위·등장을 환각으로 세지 않음, stays-gone 규칙(`attr X.status = gone`), 연재 공정 재측정(run2) |
 | v0.6.0 | 플랜 6: 기본 채점기 card(`--verifier open` 으로 예전 방식), 지어낸 사건은 경고만, 기본 `--render-effort low`, 계층형 렌더러(`--renderer`·`--beat-retries`) 삭제, 연재 run3 |
 | v0.7.0 | 플랜 7: 렌더 프롬프트에 세계 상태 요약(`--no-digest`), 상태 해시 낡음·`dieg stamp`, `revise` 문장 패치(`patched=N`), 경고 3개, `revise` 는 새 진단만 막음, `--skip`·`DIEG_CALL_CAP`, 수정 재측정(retcon2) |
+
+## 라이선스
+
+Apache License 2.0 ([LICENSE](LICENSE)). 코퍼스·문체 원문의 출처는 [NOTICE](NOTICE) 에 있다(모두 퍼블릭 도메인).

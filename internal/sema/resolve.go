@@ -3,8 +3,8 @@ package sema
 import (
 	"strings"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 var entityKinds = map[string]bool{"character": true, "group": true, "place": true, "thing": true,

@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 func i64(v int64) *int64 { return &v }

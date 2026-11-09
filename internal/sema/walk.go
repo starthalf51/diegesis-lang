@@ -3,8 +3,8 @@ package sema
 import (
 	"fmt"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 // walker emits one container's body in statement order.

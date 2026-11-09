@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"diegesis/internal/pg"
-	"diegesis/rules"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/rules"
 )
 
 // cmdLint runs `dieg lint <work|dir|ir.json> [--json]`. A dir or ir.json is

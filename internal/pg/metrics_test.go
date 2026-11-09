@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 // loadCorpus 는 corpus/<work> 를 고유한 작품 ID 로 적재한다.

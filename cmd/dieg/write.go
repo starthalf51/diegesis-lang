@@ -11,10 +11,10 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"diegesis/internal/pg"
-	"diegesis/internal/render"
-	"diegesis/internal/write"
-	"diegesis/rules"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/write"
+	"github.com/starthalf51/diegesis-lang/rules"
 )
 
 // corpusWorks are the shipped corpus work ids; a generated work may not take one (loading it would overwrite

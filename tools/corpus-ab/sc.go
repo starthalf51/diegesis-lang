@@ -13,7 +13,7 @@ import (
 	"sort"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 type itemAns struct {

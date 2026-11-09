@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"diegesis/internal/pg"
-	"diegesis/internal/render"
-	"diegesis/internal/write"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/write"
 )
 
 // cmdContinue runs `dieg continue <story-dir> --ep N [--brief "다음 화 방향" | --brief-file f] [--rounds N] [--scenes N]

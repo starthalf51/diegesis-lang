@@ -4,8 +4,8 @@ import (
 	"slices"
 	"strings"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 // want resolves a name and checks its kind (any kind when none given).

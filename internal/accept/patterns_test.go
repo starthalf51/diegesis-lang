@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 const patternYAML = expectYAML + `patterns:

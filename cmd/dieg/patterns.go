@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 // cmdPatterns runs `dieg patterns <work|dir> [--json]`: the whole pattern library on one work (a dir is

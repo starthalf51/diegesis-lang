@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 // patternFixtures: 패턴마다 매치 1건(want = "대상/span_from-span_to") + 비매치 1건(같은 상황에서 조건 하나를 뺀 것).

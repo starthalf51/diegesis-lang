@@ -5,7 +5,7 @@ import (
 	"context"
 	"testing"
 
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 // 햄릿 나이 충돌(1.2 의 20세 vs 5.1 의 30세)은 해적→상륙의 느슨한 상한 1년(act4/offstage)에 기댄다:

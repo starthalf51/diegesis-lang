@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // Diag is one compiler or lint diagnostic, File relative to the bundle root. Waived lints are not Diags.

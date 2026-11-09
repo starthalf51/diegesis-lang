@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 // 상자(box)는 hall 에 있고, 1화에서 비공개 사실(secret)을 a 가 보았다. 장면 2 의 요약을 본다.

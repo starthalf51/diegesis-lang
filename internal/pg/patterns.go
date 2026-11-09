@@ -13,7 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"diegesis/patterns"
+	"github.com/starthalf51/diegesis-lang/patterns"
 )
 
 // Pattern 은 patterns/*.sql 파일 하나. 헤더 주석 `-- pattern:` `-- layer:` `-- summary:` 에서 읽는다.

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 func digestOf(s string) func(context.Context, string) (string, string, error) {

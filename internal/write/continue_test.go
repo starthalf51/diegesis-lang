@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 const oldScene = "---\nmodule: t.scenes\nimport: [t.cast]\nscene: \"s1\"\n---\n\n```sl\nenter a\nOLD-SCENE-BODY\n```\n"

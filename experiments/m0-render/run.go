@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "diegesis/internal/render"
+	. "github.com/starthalf51/diegesis-lang/internal/render"
 
 	"context"
 	"encoding/json"

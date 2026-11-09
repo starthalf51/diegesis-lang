@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 	"fmt"
 	"io"
 	"os"

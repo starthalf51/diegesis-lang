@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // SceneResult is one scene's verified render: Attempts renders, Pass per render.Passed, Err if a call failed.

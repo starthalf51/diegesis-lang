@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // System is Plan 3's fixed system prompt (tools/bench), used by plan, A and the judge.

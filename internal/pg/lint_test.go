@@ -11,9 +11,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"diegesis/internal/pg"
-	"diegesis/internal/sema"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/sema"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 // cast 는 규칙 픽스처의 공통 선언. WK 는 고유한 작품 ID 로 바뀐다.

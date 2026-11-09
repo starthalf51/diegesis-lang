@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // SceneHashes maps each scene id to its render.RenderHash: the render request as the backend would send it.

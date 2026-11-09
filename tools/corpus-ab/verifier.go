@@ -12,7 +12,7 @@ import (
 	"sort"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 var vPairs = []string{"bible/mark_denial.ko-gojeon", "chibi/45.88.ko-hapsho", "macbeth/1.3.ko-haera", "odyssey/19.1.ko-haera"}

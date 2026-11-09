@@ -1,7 +1,7 @@
 package main
 
 import (
-	"diegesis/internal/write"
+	"github.com/starthalf51/diegesis-lang/internal/write"
 	"context"
 	"fmt"
 	"io"
@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"strings"
 
-	"diegesis/internal/accept"
-	"diegesis/internal/pg"
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/accept"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // sceneRequest 는 작품(ID 또는 코퍼스 디렉터리 — 디렉터리면 먼저 적재한다)의 장면 렌더 요청을 PG 에서 받는다.
