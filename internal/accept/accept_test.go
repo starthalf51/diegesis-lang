@@ -52,7 +52,7 @@ func TestAcceptPasses(t *testing.T) {
 	}
 }
 
-// 예상 밖의 억제되지 않은 warn 하나 → 불합격(오탐). info 와 억제된 warn 은 오탐이 아니다.
+// One unexpected unsuppressed warn → fail (false positive). info and suppressed warns are not false positives.
 func TestAcceptReportsFalsePositive(t *testing.T) {
 	in := passing()
 	in.Diags = append(in.Diags, diag("info-flow", "m/1.3#a7", "warn", false))
@@ -123,7 +123,7 @@ func TestParseRejectsUnknownKey(t *testing.T) {
 	}
 }
 
-// 억제된 warn 도 expect.yaml 에 선언돼야 한다(Review Focus 1: 억제가 진짜 오류를 조용히 덮지 않게).
+// Suppressed warns must also be declared in expect.yaml (Review Focus 1: so a suppression does not quietly cover a real error).
 func TestAcceptUndeclaredWaiver(t *testing.T) {
 	in := passing()
 	in.Diags = append(in.Diags, diag("info-flow", "m/1.4#a2", "warn", true))
@@ -133,7 +133,7 @@ func TestAcceptUndeclaredWaiver(t *testing.T) {
 	}
 }
 
-// ADR-014: 전체 ≥ 0.8 이고 move-before 제외 ≥ 0.7(기본값). move-before 가 전부 잡혀도 나머지가 0.65 면 불합격.
+// ADR-014: overall ≥ 0.8 and excluding move-before ≥ 0.7 (defaults). Even if all move-before are caught, 0.65 for the rest fails.
 func TestJudgeRequiresBothRates(t *testing.T) {
 	e := parse(t)
 	if e.MutationMinRateWoMoveBefore != 0.7 {
@@ -149,7 +149,7 @@ func TestJudgeRequiresBothRates(t *testing.T) {
 	add("move-before", 20, Detected)
 	add("drop-tells", 13, Detected)
 	add("drop-tells", 7, Survived)
-	r := Judge(e, in) // 전체 33/40 = 0.825, 제외 13/20 = 0.65
+	r := Judge(e, in) // overall 33/40 = 0.825, excluding 13/20 = 0.65
 	if r.Pass || r.Rate < 0.8 || r.RateWoMoveBefore != 0.65 {
 		t.Errorf("pass=%v rate=%v wo=%v, want FAIL with 0.825 / 0.65", r.Pass, r.Rate, r.RateWoMoveBefore)
 	}
@@ -161,7 +161,7 @@ func TestJudgeRequiresBothRates(t *testing.T) {
 	if r := Judge(e, in); !r.Pass || r.HitWoMoveBefore != 17 || r.CountedWoMoveBefore != 20 {
 		t.Errorf("pass=%v wo=%d/%d, want PASS with 17/20 (query detections count, R1)", r.Pass, r.HitWoMoveBefore, r.CountedWoMoveBefore)
 	} else if r.HitLint != 18 || r.HitLintWoMoveBefore != 15 || r.RateLintWoMoveBefore != 0.75 {
-		// 린트만(질의 탐지 제외)의 비율은 보고만 한다: 분모는 같고 분자에서 detected-by-query 를 뺀다
+		// The lint-only rate (query detection excluded) is only reported: same denominator, and detected-by-query is subtracted from the numerator
 		t.Errorf("lint-only %d/%d, wo %d/%d = %v, want 18/23, 15/20 = 0.75", r.HitLint, r.Counted, r.HitLintWoMoveBefore, r.CountedWoMoveBefore, r.RateLintWoMoveBefore)
 	}
 }

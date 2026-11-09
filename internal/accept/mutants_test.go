@@ -47,7 +47,7 @@ scene 2
 func open(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	if os.Getenv("SL_PG_DSN") == "" {
-		t.Fatal("SL_PG_DSN 이 필요하다")
+		t.Fatal("SL_PG_DSN is required")
 	}
 	pool, err := pg.Connect(context.Background())
 	if err != nil {
@@ -79,7 +79,7 @@ func compileFixture(t *testing.T) *ir.Work {
 	return w
 }
 
-// 같은 작품을 다른 ID 로 적재하면 지문이 같고, 결함을 넣으면 달라진다.
+// Loading the same work under a different ID gives the same fingerprint, and injecting a defect makes it differ.
 func TestFingerprint(t *testing.T) {
 	pool, ctx := open(t), context.Background()
 	w := compileFixture(t)
@@ -133,7 +133,7 @@ func TestRunMutants(t *testing.T) {
 	}
 }
 
-// "뒤에 쓰는가" 는 PG precedes 로 정한다: 받은 시점보다 앞선 사용만 있으면 해당 없음.
+// "Is it used later" is decided by PG precedes: if there is only use earlier than the receipt, not applicable.
 func TestApplicableLaterUseOnly(t *testing.T) {
 	pool, ctx := open(t), context.Background()
 	w := compileFixture(t)
@@ -158,8 +158,8 @@ func TestApplicableLaterUseOnly(t *testing.T) {
 	}
 }
 
-// Task 11(오디세이): 들은 사람이 쓰기 전에 의심으로 거둔 믿음은 지워도 결함이 생기지 않는다(n/a).
-// 의심 뒤 다시 들은 것으로 쓰므로 원래 들은 행위는 쓰는 시점에 출처가 아니다(lint_known 의 거둠과 같다).
+// Task 11 (Odyssey): a belief the hearer withdrew by doubt before using it causes no defect when removed (n/a).
+// It is used as heard again after the doubt, so the original hearing act is not a source at the time of use (same as the withdrawal in lint_known).
 func TestApplicableSkipsWithdrawnHearsay(t *testing.T) {
 	pool, ctx := open(t), context.Background()
 	id := fmt.Sprintf("t_%d", rand.Int63())
@@ -194,8 +194,8 @@ scene 1
 	}
 }
 
-// Review Focus 5: 새 진단이 변이 지점(Site: 그 행위·장면, 변이한 명제를 쓰는 행위, 변이한 시점을 지나는 간선)에
-// 있어야 탐지다. 무관한 장면의 info-flow 는 기대 규칙이어도 탐지가 아니다.
+// Review Focus 5: a new diagnostic counts as detection only if it is at the mutation site (Site: that act/scene, acts that use the mutated proposition, edges through the mutated point).
+// An info-flow in an unrelated scene is not detection even if it is an expected rule.
 func TestSiteLocalDetection(t *testing.T) {
 	m := mutate.Mutation{Op: "drop-tells", Target: "w/t.s/1#a2", Expect: []string{"info-flow", "time-cycle"},
 		Site: []string{"w/t.s/1#a2", "w/t.s/1", "w/t.s/2#a1", "w/t.s/1#a2.pt"}}
@@ -219,7 +219,7 @@ func TestSiteLocalDetection(t *testing.T) {
 	}
 }
 
-// Task 2: 성경 5:27 므두셀라의 수명(969년)을 +50년 → 질의 methuselah-dies-am-1656 이 바뀐다 → 탐지(R1: 질의 탐지는 지점과 무관).
+// Task 2: Bible 5:27 Methuselah's lifespan (969 years) +50 years → query methuselah-dies-am-1656 changes → detection (R1: query detection is independent of site).
 func TestShiftDurationGenesis(t *testing.T) {
 	pool, ctx := open(t), context.Background()
 	w := mutate.Rename(corpusWork(t, "../../corpus/bible"), fmt.Sprintf("bible_t%d", rand.Int63()))
@@ -238,14 +238,14 @@ func TestShiftDurationGenesis(t *testing.T) {
 		t.Fatal(err)
 	}
 	var log strings.Builder
-	// 작품 ID 를 상수로 쓰는 질의(그래프 이름과 같은 꼴)는 복사본에서 결과가 다르다
+	// A query that uses the work ID as a constant (like the graph name) gives a different result on the copy
 	qs := append(slices.Clone(e.Queries), Query{Name: "work-constant", SQL: "SELECT $1 = '" + work + "'"})
 	h, err := newHarness(ctx, pool, w, ds, qs, &log)
 	if err != nil {
 		t.Fatal(err)
 	}
-	// 리뷰 fix 1: diagnostic 표를 읽는 질의는 지점 한정을 우회하는 린트 탐지라서 질의 탐지에서 뺀다.
-	// 그래프 이름이 작품 상수인 질의는 이름만 바꾼 복사본에서 결과가 달라 뺀다. 뺀 질의마다 사유 한 줄.
+	// Review fix 1: a query that reads the diagnostic table is lint detection that bypasses the site restriction, so it is excluded from query detection.
+	// A query whose graph name is a work constant gives a different result on the renamed-only copy, so it is excluded. One line of reason per excluded query.
 	var kept []string
 	for _, q := range h.qs {
 		kept = append(kept, q.Name)
@@ -314,8 +314,8 @@ func corpusWork(t *testing.T, dir string) *ir.Work {
 	return w
 }
 
-// 순서만 바꾼 변이(scene 2 를 scene 1 앞으로)는 believes·uses 행도 시점 경계도 그대로일 수 있다. 지문은 간선마다
-// 두 끝점의 precedes 도 담아서 이런 변이를 동등으로 치지 않는다(동등 = 파생 결과가 같다 — 선후도 파생 결과다).
+// A mutant that only changes order (scene 2 before scene 1) can leave the believes·uses rows and point bounds unchanged. The fingerprint also holds each edge's
+// two-endpoint precedes, so such a mutant is not counted as equivalent (equivalent = same derived result — order is a derived result too).
 func TestFingerprintSeesOrder(t *testing.T) {
 	pool, ctx := open(t), context.Background()
 	w := compileFixture(t)

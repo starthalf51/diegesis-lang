@@ -16,7 +16,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
-// cast 는 규칙 픽스처의 공통 선언. WK 는 고유한 작품 ID 로 바뀐다.
+// cast is the common declaration of the rule fixtures. WK is replaced by a unique work ID.
 const cast = `module t.s
 work WK "T"
 character a "A"
@@ -31,7 +31,7 @@ artifact letter "L"
   contains p
 `
 
-// compileLoad 는 cast + body 를 실제 경로(syntax → sema → Load)로 적재하고 작품 ID 를 돌려준다.
+// compileLoad loads cast + body through the real path (syntax → sema → Load) and returns the work ID.
 func compileLoad(t *testing.T, pool *pgxpool.Pool, body string) string {
 	t.Helper()
 	id := fmt.Sprintf("t_%d", rand.Int63())
@@ -58,7 +58,7 @@ func lint(t *testing.T, pool *pgxpool.Pool, work string) []pg.Diagnostic {
 	return ds
 }
 
-// of 는 한 규칙의 진단을 "대상(작품 ID 뺀 것)/등급[/waived]" 로 모은다.
+// of collects one rule's diagnostics as "target (without work ID)/severity[/waived]".
 func of(ds []pg.Diagnostic, rule, work string) []string {
 	var out []string
 	for _, d := range ds {
@@ -139,7 +139,7 @@ scene 2
 	}
 }
 
-// TestEveryDiagnosticHasSrc: 규칙마다 위반 픽스처의 모든 진단에 file:line 이 있어야 한다(Review Focus 4).
+// TestEveryDiagnosticHasSrc: for every rule, every diagnostic of the violating fixture must have a file:line (Review Focus 4).
 func TestEveryDiagnosticHasSrc(t *testing.T) {
 	pool := open(t)
 	seen := map[string]bool{}
@@ -159,7 +159,7 @@ func TestEveryDiagnosticHasSrc(t *testing.T) {
 	}
 }
 
-// TestMacbethGoldenLint: 골든 맥베스(1막 일부)의 억제되지 않은 warn 은 아래 셋뿐이다. 이유는 task-6 보고서.
+// TestMacbethGoldenLint: the golden Macbeth (part of Act 1) has only the three unsuppressed warns below. The reasons are in the task-6 report.
 func TestMacbethGoldenLint(t *testing.T) {
 	pool := open(t)
 	w, id := golden(t)
@@ -176,9 +176,9 @@ func TestMacbethGoldenLint(t *testing.T) {
 	}
 	slices.Sort(got)
 	want := []string{
-		"info-flow macbeth.act1/1.2#a2",            // ross 가 코더의 반역을 어디서 알았는지 포팅에 없다(무대 밖 전투)
-		"info-flow macbeth.act1/1.3#a5",            // 맥베스가 코더 영주가 살아 있다는 걸 어디서 알았는지 없다(극 이전 상식)
-		"unpaid-promise macbeth.act1/banquo_kings", // 회수(4.1 왕들의 행렬)는 골든 범위 밖
+		"info-flow macbeth.act1/1.2#a2",            // the port does not say where Ross learned of Cawdor's treason (an offstage battle)
+		"info-flow macbeth.act1/1.3#a5",            // nothing says where Macbeth learned the Thane of Cawdor is alive (common knowledge before the play)
+		"unpaid-promise macbeth.act1/banquo_kings", // the payoff (4.1 the procession of kings) is outside the golden range
 	}
 	if !slices.Equal(got, want) {
 		t.Errorf("unwaived warns:\n got %q\nwant %q", got, want)

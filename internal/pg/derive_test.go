@@ -20,7 +20,7 @@ const day = int64(86400)
 
 func i64(n int64) *int64 { return &n }
 
-// fx 는 손으로 쓰는 작은 IR. 모든 ID 는 고유한 작품 ID 로 시작한다.
+// fx is a small hand-written IR. Every ID starts with a unique work ID.
 type fx struct {
 	*ir.Work
 	id string
@@ -36,14 +36,14 @@ func newFx() *fx {
 
 func (f *fx) ref(s string) string { return f.id + "/" + s }
 
-// src 는 새 소스 위치를 만들고 ID 를 돌려준다(줄 = ID).
+// src makes a new source position and returns the ID (line = ID).
 func (f *fx) src() int {
 	n := len(f.Src) + 1
 	f.Src = append(f.Src, ir.Src{ID: n, File: "t.dieg", Line: n, Col: 1})
 	return n
 }
 
-// pt 는 원점 뒤의 시점을 만든다(origin→p [0,∞), 컴파일러와 같다).
+// pt makes a point after the origin (origin→p [0,∞), same as the compiler).
 func (f *fx) pt(name string) string {
 	id := f.ref(name)
 	f.Points = append(f.Points, ir.Point{ID: id, WorkID: f.id, Kind: "beat"})
@@ -69,7 +69,7 @@ func (f *fx) fact(name string) string {
 	return id
 }
 
-// act 는 시점 하나를 새로 만들어 그 위에 행위를 둔다.
+// act makes a new point and puts an act on it.
 func (f *fx) act(name, actor, verb, prop string, audience ...string) *ir.Act {
 	id := f.pt(name)
 	f.Acts = append(f.Acts, ir.Act{ID: id, Pt: id, ActorID: actor, Verb: verb, PropID: prop, SrcID: f.src()})
@@ -142,7 +142,7 @@ func TestSolveTimeBounds(t *testing.T) {
 			t.Errorf("%s = [%s,%s], want [%s,%s]", w.p, show(e), show(l), w.e, w.l)
 		}
 	}
-	// 단독: B after A by 1d..2d → B.earliest = 86400
+	// Alone: B after A by 1d..2d → B.earliest = 86400
 	g := newFx()
 	a, b = g.pt("A"), g.pt("B")
 	g.edge(a, b, i64(day), i64(2*day))
@@ -208,7 +208,7 @@ func TestTimeCycle(t *testing.T) {
 		if len(got) != 1 || !slices.Equal(got[0].Src, []int{s1, s2}) {
 			t.Fatalf("diags = %+v, want src [%d %d]", got, s1, s2)
 		}
-		// 순환 간선은 풀이에서 빠진다(리뷰 1회차). B 는 원점 뒤라는 것만 남는다.
+		// Cycle edges drop out of the solve (review round 1). Only "B is after the origin" remains.
 		if e, l := bounds(t, pool, b); show(e) != "0" || l != nil {
 			t.Errorf("B = [%s,%s], want [0,NULL] (cycle edges left out)", show(e), show(l))
 		}
@@ -243,7 +243,7 @@ func precedes(t *testing.T, pool *pgxpool.Pool, w, a, b string) string {
 func TestPrecedesMaybe(t *testing.T) {
 	pool := open(t)
 	f := newFx()
-	a, b := f.pt("A"), f.pt("B") // 형제: 원점 뒤라는 것만 안다
+	a, b := f.pt("A"), f.pt("B") // siblings: only knows they are after the origin
 	c, d := f.pt("C"), f.pt("D")
 	f.edge(a, c, i64(0), nil) // A ≤ C
 	f.edge(c, d, i64(day), nil)
@@ -255,7 +255,7 @@ func TestPrecedesMaybe(t *testing.T) {
 	for _, w := range []struct{ a, b, want string }{
 		{a, b, "maybe"}, {b, a, "maybe"},
 		{a, d, "yes"}, {d, a, "no"}, {c, b, "maybe"},
-		{g, e, "yes"}, {e, g, "no"}, // 원점 기준 구간만으로 정해진다
+		{g, e, "yes"}, {e, g, "no"}, // decided by the origin-relative interval alone
 		{a, e, "maybe"},
 	} {
 		if got := precedes(t, pool, f.id, w.a, w.b); got != w.want {
@@ -297,10 +297,10 @@ func TestRoleExclusion(t *testing.T) {
 			{RoleID: r, EntityID: x, UntilPt: dec, SrcID: f.src()},
 			{RoleID: r, EntityID: y, FromPt: dec, SrcID: f.src()},
 		}
-		after := f.act("after", r, "tells", p, y, z) // 화자 = y, 청중에 y 가 남아 있어도 빼야 한다
+		after := f.act("after", r, "tells", p, y, z) // speaker = y; even if y remains in the audience it must be dropped
 		after.ActorIsRole = true
 		f.edge(dec, after.Pt, i64(0), nil)
-		vague := f.act("vague", r, "tells", p, z) // decree 와 선후를 모른다
+		vague := f.act("vague", r, "tells", p, z) // the order relative to the decree is unknown
 		vague.ActorIsRole = true
 		f.load(t, pool)
 		if got := strs(t, pool, `SELECT coalesce(resolved_actor_id,'?') FROM act WHERE id=$1`, after.ID); !slices.Equal(got, []string{y}) {
@@ -339,7 +339,7 @@ func TestBeliefsFromAudience(t *testing.T) {
 	got := strs(t, pool, `SELECT split_part(entity_id,'/',2)||' '||split_part(prop_id,'/',2)||' '||value::text||' '||split_part(cause_act,'/',2)
 		FROM believes WHERE work_id=$1`, f.id)
 	want := []string{
-		"a l false lie", // 거짓말한 화자는 ¬P
+		"a l false lie", // the lying speaker believes ¬P
 		"b l true lie", "b p true tell", "b q true whisper", "b s true see",
 		"c l true lie", "c p true tell", "c u true read", "c v true read",
 	}

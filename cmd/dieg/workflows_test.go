@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// TestWorkflowsParse: 모든 워크플로가 YAML 로 파싱되고 필수 키·문자열을 가진다.
+// TestWorkflowsParse: every workflow parses as YAML and has the required keys and strings.
 func TestWorkflowsParse(t *testing.T) {
 	need := map[string][]string{
 		"release.yml": {"CGO_ENABLED=0", "dieg_${TAG#v}_${GOOS}_${GOARCH}", "checksums.txt", "softprops/action-gh-release@v2", "contents: write", "tags:", "goos: [linux, darwin, windows]", "goarch: [amd64, arm64]"},

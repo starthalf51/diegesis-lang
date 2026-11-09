@@ -32,7 +32,7 @@ func TestLoadBackends(t *testing.T) {
 	if got := strings.Join(ids, " "); got != "en-doyle: ko-gojeon:gojeon ko-haera:haera ko-hapsho:hapsho" {
 		t.Errorf("backends: %s", got)
 	}
-	// 한국어 백엔드의 시스템 프롬프트는 목표 어투를 밝힌다. 영어 백엔드는 어투 지시가 없다.
+	// The system prompt of a Korean backend states the target tone. An English backend has no tone instruction.
 	s := mustLoad(t, "testdata/scenes/macbeth-1.3.json")
 	want := map[string]string{"ko-haera": "해라체", "ko-hapsho": "하십시오체", "ko-gojeon": "고전소설체"}
 	for _, b := range bs {
@@ -52,7 +52,7 @@ func TestLoadBackends(t *testing.T) {
 	}
 }
 
-// recorder 는 받은 프롬프트를 남기고 차례대로 답한다.
+// recorder keeps the prompts it receives and answers in turn.
 type recorder struct {
 	replies []string
 	prompts []string
@@ -74,7 +74,7 @@ func perfectJSON(t *testing.T, s Scene) string {
 	return "```json\n" + string(b) + "\n```"
 }
 
-// Review Focus 5: 재추출 프롬프트에는 백엔드 ID·어투·문체 샘플이 없고, 원작 지식 무시 지시가 있다.
+// Review Focus 5: the re-extraction prompt has no backend ID, tone or style sample, and has the instruction to ignore knowledge of the original work.
 func TestExtractPromptHasNoBackendInfo(t *testing.T) {
 	s := mustLoad(t, "testdata/scenes/macbeth-1.3.json")
 	for _, b := range mustBackends(t) {
@@ -108,7 +108,7 @@ var toneProse = map[string]string{
 	"":       "Macbeth stood upon the heath.",
 }
 
-// renderAll 은 백엔드마다 tone 의 산문과 extract 의 추출 결과를 내는 가짜 Completer 로 렌더한다.
+// renderAll renders with a fake Completer that returns the prose in each backend's tone and the extract result of extract.
 func renderAll(t *testing.T, s Scene, tone func(Backend) string, extract func(Backend) string) []Render {
 	t.Helper()
 	var rs []Render
@@ -133,7 +133,7 @@ func TestRenderCheckVerdict(t *testing.T) {
 		t.Fatalf("want pass with 6 pairs: %+v", v)
 	}
 
-	// 어투 실패: 하십시오체 백엔드가 해라체로 썼다 → 목표 비율 0 이고 1위 어투가 겹친다.
+	// Tone failure: the hapsho backend wrote in haera → target ratio 0 and the top tones overlap.
 	v = Judge("chibi", s, renderAll(t, s, func(b Backend) string {
 		if b.ID == "ko-hapsho" {
 			return "haera"
@@ -144,7 +144,7 @@ func TestRenderCheckVerdict(t *testing.T) {
 		t.Errorf("tone failure not caught: %+v", v)
 	}
 
-	// 내용 실패: 한 백엔드의 재추출이 사실 둘을 빠뜨리고 숨길 사실을 말했다 → missing 2, leaked, Jaccard < 0.9.
+	// Content failure: one backend's re-extraction missed two facts and stated a hidden fact → missing 2, leaked, Jaccard < 0.9.
 	e := extractedFromScene(s)
 	e.Acts = e.Acts[2:]
 	e.FactsStated = append(e.FactsStated, s.Withheld...)
@@ -181,7 +181,7 @@ func TestRenderCachedSkips(t *testing.T) {
 	if _, err := RenderCached(ctx, r, dir, "w", s, b, Force{}); err != nil {
 		t.Fatal(err)
 	}
-	got, err := RenderCached(ctx, r, dir, "w", s, b, Force{}) // 답이 남아 있지 않다: 호출하면 패닉
+	got, err := RenderCached(ctx, r, dir, "w", s, b, Force{}) // no answer is left: calling would panic
 	if err != nil || got.Prose != toneProse["haera"] {
 		t.Fatalf("cached: %v %+v", err, got)
 	}
@@ -191,7 +191,7 @@ func TestRenderCachedSkips(t *testing.T) {
 	}
 }
 
-// 판정은 기록된 Report·Tones 를 믿지 않고 산문·재추출에서 다시 센다: 분류기나 Diff 가 바뀌면 Completer 없이 판정이 바뀐다.
+// The verdict does not trust the recorded Report and Tones and recounts from the prose and re-extractions: if the classifier or Diff changes, the verdict changes without a Completer.
 func TestJudgeRescoresCachedRecords(t *testing.T) {
 	s := mustLoad(t, "testdata/min.json")
 	b := mustBackends(t)[2] // ko-haera
@@ -200,7 +200,7 @@ func TestJudgeRescoresCachedRecords(t *testing.T) {
 	if _, err := RenderCached(ctx, r, dir, "w", s, b, Force{}); err != nil {
 		t.Fatal(err)
 	}
-	// 옛 분류기·옛 Diff 가 남긴 듯한 기록: 어투 haera 1.0, 빠진 것 없음.
+	// A record as if left by the old classifier and old Diff: tone haera 1.0, nothing missing.
 	rec := filepath.Join(dir, "w", "s1.ko-haera.json")
 	var x Render
 	raw, _ := os.ReadFile(rec)
@@ -212,7 +212,7 @@ func TestJudgeRescoresCachedRecords(t *testing.T) {
 	if err := os.WriteFile(rec, raw, 0o644); err != nil {
 		t.Fatal(err)
 	}
-	got, err := RenderCached(ctx, r, dir, "w", s, b, Force{}) // 답이 남아 있지 않다: 호출하면 패닉
+	got, err := RenderCached(ctx, r, dir, "w", s, b, Force{}) // no answer is left: calling would panic
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -225,7 +225,7 @@ func TestJudgeRescoresCachedRecords(t *testing.T) {
 	}
 }
 
-// 장면(곧 렌더·재추출 프롬프트)이 바뀌면 캐시를 버리고 다시 부른다.
+// If the scene (hence the render and re-extraction prompts) changes, the cache is dropped and called again.
 func TestRenderCachedInvalidatesOnPromptChange(t *testing.T) {
 	s := mustLoad(t, "testdata/min.json")
 	b := mustBackends(t)[2]
@@ -245,7 +245,7 @@ func TestRenderCachedInvalidatesOnPromptChange(t *testing.T) {
 	}
 }
 
-// 사실은 지은이의 ID 로 싣고, 비교만 정규 명제(canon)로 한다: 별칭 둘 중 어느 것을 재추출해도 같은 액트다.
+// The fact is carried by the author's ID, and only the comparison uses the canonical proposition (canon): re-extracting either of two aliases gives the same act.
 func TestDiffCanonicalisesAliases(t *testing.T) {
 	s := Scene{
 		Facts: []Fact{{ID: "king_hereafter", Text: "Macbeth is the King", Canon: "holds(king,macbeth)"},

@@ -46,7 +46,7 @@ func runDemo(scene string, out io.Writer) error {
 			return err
 		}
 	}
-	work, err := load(dir, io.Discard) // 같은 작품 ID 를 다시 적재하면 pg.Load 가 지우고 다시 넣는다
+	work, err := load(dir, io.Discard) // loading the same work ID again makes pg.Load delete it and reinsert
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func runDemo(scene string, out io.Writer) error {
 	}
 
 	fmt.Fprintf(out, "\n== Who knows what (scene %s) ==\n", scene)
-	// 이 장면 전에 얻은 믿음 중 독자에게 아직 숨긴 사실(withhold)은 뺀다.
+	// Drop facts held back from the reader (withhold) from the beliefs gained before this scene.
 	rows, err := pool.Query(ctx, `
 	  SELECT who, txt, yes FROM (
 	  SELECT DISTINCT ON (b.entity_id, z.base) render_name($1, b.entity_id, 'ko') AS who, render_fact_text($1, z.base) AS txt, z.val = b.value AS yes,
@@ -89,9 +89,9 @@ func runDemo(scene string, out io.Writer) error {
 		if err := rows.Scan(&who, &text, &yes); err != nil {
 			return err
 		}
-		v := "참이라고 믿는다"
+		v := "believes it is true"
 		if !yes {
-			v = "거짓이라고 믿는다"
+			v = "believes it is false"
 		}
 		fmt.Fprintf(out, "- %s: 「%s」 — %s\n", who, text, v)
 	}

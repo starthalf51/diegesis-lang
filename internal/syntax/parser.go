@@ -277,7 +277,7 @@ func (p *parser) top(c *cur) Node {
 			return c.decl()
 		}
 		if next := c.peekN(1); next != nil && next.Kind == tWord && (next.Val == "believes" || next.Val == "doubts") {
-			return c.belief() // 배경 지식: 처음부터 믿는다
+			return c.belief() // background knowledge: believed from the start
 		}
 	}
 	c.fail("unknown keyword %s at top level", describe(t))

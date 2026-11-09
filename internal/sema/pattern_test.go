@@ -6,7 +6,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/ir"
 )
 
-// `pattern <id> [at <scene>]`(최상위·장면 안)와 `fact … tag <name>`(R3)이 IR 행이 된다.
+// `pattern <id> [at <scene>]` (top-level and inside a scene) and `fact … tag <name>` (R3) become IR rows.
 func TestPatternDeclAndFactTag(t *testing.T) {
 	w, diags := build(t, `module t.s
 import t.cast

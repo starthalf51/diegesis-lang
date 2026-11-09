@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// fixture: bad 는 규칙을 위반하고(want = 그 규칙의 진단), good 은 같은 상황의 정상판(진단 0).
+// fixture: bad violates the rule (want = that rule's diagnostics), good is the normal version of the same situation (0 diagnostics).
 type fixture struct {
 	bad  string
 	want []string
@@ -140,7 +140,7 @@ account acc2 of ev by b
 scene 2
   when after 1
 `,
-		want: []string{"t.s/1/warn"}, // 대상 = 순환 간선을 만든 첫 `when` 문장(Task 11). src 는 가장 앞선 간선
+		want: []string{"t.s/1/warn"}, // target = the first `when` statement that made the cycle edge (Task 11). src is the earliest edge
 		good: `scene 1
   when after 2
 scene 2
@@ -186,8 +186,8 @@ func TestRule_account_variance(t *testing.T)     { checkRule(t, "account-varianc
 func TestRule_time_cycle(t *testing.T)           { checkRule(t, "time-cycle") }
 func TestRule_inferred_deception(t *testing.T)   { checkRule(t, "inferred-deception") }
 
-// 순서가 정해지지 않은 출처(형제 장면)는 warn 이 아니라 info(Review Focus 2).
-// writes / because 는 각자의 규칙이 맡고 info-flow 는 겹쳐 내지 않는다.
+// A source with undetermined order (a sibling scene) is info, not warn (Review Focus 2).
+// writes / because are covered by their own rules and info-flow does not report them twice.
 func TestInfoFlowMaybeAndPartition(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -211,7 +211,7 @@ scene 2
 	}
 }
 
-// 선후가 정해지지 않은 payoff 는 info, 전달(형제 장면)도 info.
+// A payoff with undetermined order is info, and so is delivery (sibling scene).
 func TestMaybeOrderIsInfo(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -235,8 +235,8 @@ scene 2
 	}
 }
 
-// 기록이 셋 이상이면 같은 행위·명제가 빠진 기록마다 따로 나오지 않고 한 건으로 모인다(Task 10).
-// 빠진 기록과 반대로 적은 기록은 따로 센다(종류가 다르다).
+// With three or more accounts, the same act/proposition missing is merged into one finding rather than one per account missing it (Task 10).
+// An account that wrote the opposite of the missing one is counted separately (different kind).
 func TestAccountVarianceOnePerProp(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `event ev "E"

@@ -38,7 +38,7 @@ func cmdLint(args []string) int {
 			return 1
 		}
 		if st.IsDir() {
-			base = target // IR 의 파일 경로는 디렉터리 기준이다
+			base = target // file paths in the IR are relative to the directory
 		}
 	}
 	ctx := context.Background()

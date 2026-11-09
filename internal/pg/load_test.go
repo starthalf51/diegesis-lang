@@ -15,11 +15,11 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
-// open 은 마이그레이션까지 끝난 풀을 돌려준다.
+// open returns a pool with migrations finished.
 func open(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	if os.Getenv("SL_PG_DSN") == "" {
-		t.Fatal("SL_PG_DSN 이 필요하다")
+		t.Fatal("SL_PG_DSN is required")
 	}
 	ctx := context.Background()
 	pool, err := pg.Connect(ctx)
@@ -33,7 +33,7 @@ func open(t *testing.T) *pgxpool.Pool {
 	return pool
 }
 
-// cleanup 은 테스트가 끝나면 작품 행과 그래프를 지운다.
+// cleanup deletes the work row and graph when the test ends.
 func cleanup(t *testing.T, pool *pgxpool.Pool, work string) {
 	t.Cleanup(func() {
 		ctx := context.Background()
@@ -42,7 +42,7 @@ func cleanup(t *testing.T, pool *pgxpool.Pool, work string) {
 	})
 }
 
-// golden 은 맥베스 골든 IR 을 고유한 작품 ID 로 바꿔 읽는다(다른 적재와 겹치지 않게).
+// golden reads the Macbeth golden IR with a unique work ID (so it does not collide with other loads).
 func golden(t *testing.T) (*ir.Work, string) {
 	t.Helper()
 	b, err := os.ReadFile("../../testdata/golden/macbeth.ir.json")
@@ -104,7 +104,7 @@ func TestLoadCountsMatchIR(t *testing.T) {
 			t.Errorf("%s: %d rows, IR has %d", tb, got[tb], n)
 		}
 	}
-	// src_id 0 → NULL, 빈 참조 → NULL
+	// src_id 0 → NULL, empty reference → NULL
 	var nullPlace int
 	pool.QueryRow(context.Background(), `SELECT count(*) FROM scene WHERE work_id=$1 AND thread_id IS NULL`, id).Scan(&nullPlace)
 	if nullPlace != len(w.Scenes) {

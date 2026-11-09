@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-// 부상 부위 shoulder vs leg → warn 1. 대상은 나중 단언. 같은 값 재단언·배경(선언 블록)과 같은 값은 충돌 아님.
-// account 안의 attr 는 account-variance 몫이라 빠진다. 억제는 다른 규칙처럼 대상 문장에 붙는다.
+// Injury site shoulder vs leg → warn 1. The target is the later assertion. Re-asserting the same value and the same value as the background (declaration block) are not conflicts.
+// attr inside an account is account-variance's job, so it is left out. Suppression attaches to the target statement like other rules.
 func TestAttributeConflictStatic(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `character d "D"
@@ -47,8 +47,8 @@ account acc1 of ev by a
 	}
 }
 
-// 30세 단언, 그보다 몇 달 앞에서 학생 나이(20) 단언 → warn(대상 = 시간상 나중인 30세).
-// 경계가 없으면 precedes 만으로 나이가 줄어드는 것을 잡는다.
+// An assertion of age 30, with a student age (20) assertion a few months earlier → warn (target = the later-in-time 30).
+// Without bounds, precedes alone catches the age decreasing.
 func TestAttributeConflictAge(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -69,7 +69,7 @@ scene 4
 	}
 }
 
-// 20세 at t, 30세 at t+10y → 0. 경계 없이 나이가 느는 것, 1년 이내 오차, 별칭 id(같은 사실), 정수 표기 차이도 0.
+// 20 at t, 30 at t+10y → 0. An age increasing with no bounds, an error within 1 year, an alias id (same fact), and a difference in integer notation are also 0.
 func TestAttributeNoConflictAcrossTime(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `fact q = p
@@ -97,8 +97,8 @@ scene 5
 	}
 }
 
-// 한쪽 경계만 있어도 판정한다(fix 1). 위 경계만: 날짜 없는 장면(≥ origin)과 1600 년 장면(epoch = 1600) 사이는
-// 1년 안 → 20 → 30 은 충돌. 아래 경계만: 10y 이상 뒤 → 20 → 21 은 충돌. 양쪽 다 없으면 감소만(위 Age 테스트).
+// It judges with only one bound too (fix 1). Upper bound only: between an undated scene (≥ origin) and a year-1600 scene (epoch = 1600) it is
+// within 1 year → 20 → 30 is a conflict. Lower bound only: 10y or more later → 20 → 21 is a conflict. With neither bound, only decrease (Age test above).
 func TestAttributeAgeOneSided(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -123,8 +123,8 @@ scene 6
 	}
 }
 
-// lasts 로 장면 길이에 상한을 주면 날짜 없는 두 장면 사이에도 hi 가 생긴다(Task 4, 햄릿).
-// 1 → 2 사이 ≤ 1d + 30d + 1d → 20 → 30 은 충돌. lasts 가 없는 3 → 4 는 상한이 없어 0건.
+// Giving a scene length an upper bound with lasts creates hi even between two undated scenes (Task 4, Hamlet).
+// Between 1 → 2 ≤ 1d + 30d + 1d → 20 → 30 is a conflict. 3 → 4 with no lasts has no upper bound, so 0 findings.
 func TestAttributeAgeLasts(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -146,7 +146,7 @@ scene 4
 	}
 }
 
-// 사물의 X.at 이 장면을 건너 바뀌는 것은 옮김이지 충돌이 아니다(object-location 이 가장 최근 값을 쓴다). 일반 키는 여전히 충돌이다.
+// An object's X.at changing across scenes is a move, not a conflict (object-location uses the most recent value). A general key is still a conflict.
 func TestAttributeConflictAtIsMove(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `place hall "H"

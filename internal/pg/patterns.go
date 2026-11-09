@@ -16,13 +16,13 @@ import (
 	"github.com/starthalf51/diegesis-lang/patterns"
 )
 
-// Pattern 은 patterns/*.sql 파일 하나. 헤더 주석 `-- pattern:` `-- layer:` `-- summary:` 에서 읽는다.
+// Pattern is one patterns/*.sql file. Read from the header comments `-- pattern:` `-- layer:` `-- summary:`.
 type Pattern struct {
 	ID, Layer, Summary, Path, SQL string
 }
 
-// Match 는 pattern_match 행 하나. Span 은 discourse_ord 구간(nil = 보이는 장면에 걸리지 않음).
-// Declared = 같은 패턴의 작가 선언이 이 매치를 덮는다(pattern_covers).
+// Match is one pattern_match row. Span is a discourse_ord range (nil = does not touch a visible scene).
+// Declared = the author's declaration of the same pattern covers this match (pattern_covers).
 type Match struct {
 	Pattern    string          `json:"pattern"`
 	TargetKind string          `json:"target_kind"`
@@ -35,7 +35,7 @@ type Match struct {
 
 var layers = map[string]bool{"foreshadow": true, "information": true, "deception": true, "identity": true}
 
-// PatternDefs 는 내장된 패턴 라이브러리를 읽는다. 패턴 ID 는 파일 이름과 같아야 한다.
+// PatternDefs reads the embedded pattern library. The pattern ID must equal the file name.
 func PatternDefs() ([]Pattern, error) { return readPatterns(patterns.FS) }
 
 func readPatterns(dir fs.FS) ([]Pattern, error) {
@@ -76,9 +76,9 @@ func readPatterns(dir fs.FS) ([]Pattern, error) {
 	return out, err
 }
 
-// evalPatterns 는 작품의 pattern_match 중 같은 종류의 실행(run 의 접두어 lint- | patterns-) 행을 지우고 패턴을 돌려 다시 채운다.
-// only 가 nil 이 아니면 그 ID 만 돌린다(lint). lint 의 부분 실행은 전체 실행(pattern_result 뷰)을 덮지 않는다.
-// 패턴 SQL 을 부분 질의로 감싸 PG 안에서 바로 INSERT 한다(열 이름이 다르면 패턴 파일 오류다).
+// evalPatterns deletes the rows of pattern_match of the same kind of run (run prefix lint- | patterns-) for the work, then runs the patterns and refills it.
+// If only is not nil, only those IDs are run (lint). A partial lint run does not overwrite the full run (the pattern_result view).
+// Wrap the pattern SQL as a subquery and INSERT directly inside PG (a mismatched column name is a pattern file error).
 func evalPatterns(ctx context.Context, tx pgx.Tx, work, run string, only map[string]bool) error {
 	ps, err := PatternDefs()
 	if err != nil {
@@ -100,7 +100,7 @@ func evalPatterns(ctx context.Context, tx pgx.Tx, work, run string, only map[str
 	return nil
 }
 
-// declaredPatterns 는 작품에 선언된 패턴 ID 들(lint 는 이것만 돌린다 — 선언이 없으면 비용이 없다).
+// declaredPatterns are the pattern IDs declared in the work (lint runs only these — no declarations means no cost).
 func declaredPatterns(ctx context.Context, tx pgx.Tx, work string) (map[string]bool, error) {
 	rows, err := tx.Query(ctx, `SELECT DISTINCT pattern_id FROM pattern_decl WHERE work_id = $1`, work)
 	if err != nil {
@@ -114,7 +114,7 @@ func declaredPatterns(ctx context.Context, tx pgx.Tx, work string) (map[string]b
 	return out, err
 }
 
-// Patterns 는 작품 하나에 패턴 라이브러리 전체를 돌려 pattern_match 에 넣고(이전 결과는 지운다) 매치를 돌려준다.
+// Patterns runs the whole pattern library on a work, puts the results in pattern_match (previous results are deleted) and returns the matches.
 func Patterns(ctx context.Context, db *pgxpool.Pool, work string) ([]Match, error) {
 	tx, err := db.Begin(ctx)
 	if err != nil {

@@ -2,7 +2,7 @@ package syntax
 
 import "testing"
 
-// attr <entity>.<key> = <int | string | id> [src …]: 최상위·선언 블록(배경)과 장면 안(그 시점).
+// attr <entity>.<key> = <int | string | id> [src …]: top-level/declaration block (background) and inside a scene (that point).
 func TestAttrParse(t *testing.T) {
 	src := "```sl\nmodule m\nattr hamlet.age = 20\ncharacter watson \"W\"\n  attr watson.wound = shoulder\n" +
 		"scene 1\n  attr hamlet.age = 30 src \"5.1.150\"\n  attr watson.name = \"John\" src a12\n" +
@@ -31,7 +31,7 @@ func TestAttrParse(t *testing.T) {
 	if b.Kind != "str" || b.Value != "John" || b.Key != "name" || b.Src != "a12" {
 		t.Errorf("string attr = %+v", b)
 	}
-	// `attr` 는 예약어가 아니다: attr 라는 인물의 행위는 그대로 행위다
+	// `attr` is not a reserved word: an act by a character named attr is just an act
 	if act, ok := body[2].(*Act); !ok || act.Actor.Name != "attr" || act.Verb != "tells" {
 		t.Errorf("act by attr = %#v", body[2])
 	}

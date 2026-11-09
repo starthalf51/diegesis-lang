@@ -9,8 +9,8 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
-// TestRenderSceneJSON: 맥베스 1.3 의 렌더 요청이 render.Scene 으로 엄격하게 읽히고 Validate 를 통과하며,
-// 출연진·행위 수가 원본 행과 같다(행위 = act 행 + 입·퇴장 경계마다 하나).
+// TestRenderSceneJSON: the render request for Macbeth 1.3 is read strictly as render.Scene and passes Validate,
+// and the cast and act counts equal the original rows (acts = act rows + one per entry/exit bound).
 func TestRenderSceneJSON(t *testing.T) {
 	pool := open(t)
 	w, id := corpusIR(t, "macbeth")
@@ -42,7 +42,7 @@ func TestRenderSceneJSON(t *testing.T) {
 			verbs = append(verbs, a.Verb)
 		}
 	}
-	if acts != 22 || got != acts+bounds { // 1.3.74, 1.3.123 을 사실마다 나눠 19 → 22
+	if acts != 22 || got != acts+bounds { // 1.3.74 and 1.3.123 split per fact, 19 → 22
 		t.Errorf("acts: got %d, want %d rows + %d presence bounds", got, acts, bounds)
 	}
 	if len(s.Cast) != cast {
@@ -57,7 +57,7 @@ func TestRenderSceneJSON(t *testing.T) {
 	if e, _ := s.Entity("macbeth"); len(e.Names["ko"]) == 0 || e.Names["ko"][0] != "맥베스" {
 		t.Errorf("macbeth names: %v", e.Names)
 	}
-	// 시점 인물은 1.3 시작에 글래미스 영주임을 안다. 왕이 된다는 예언은 1.3 에서 처음 듣는다.
+	// The POV character knows at the start of 1.3 that he is Thane of Glamis. The prophecy that he will be king is first heard in 1.3.
 	if !slices.Contains(s.POVBeliefs, "holds(thane_of_glamis,macbeth)") || slices.Contains(s.POVBeliefs, "king_hereafter") {
 		t.Errorf("pov_beliefs: %v", s.POVBeliefs)
 	}
@@ -73,7 +73,7 @@ func TestRenderSceneJSON(t *testing.T) {
 		"witch3:king_hereafter", "witch3:banquo_line"}) {
 		t.Errorf("prophecy beat: %v", proph)
 	}
-	// 사실 ID·문장은 지은이의 것(king_hereafter, cawdor_in_favour), 정규 명제는 비교용 canon 에만.
+	// Fact IDs and sentences are the author's (king_hereafter, cawdor_in_favour); the canonical proposition goes only in canon, for comparison.
 	if f, _ := s.FactByID("king_hereafter"); f.Text != "Macbeth is the King" || f.Canon != "holds(king,macbeth)" {
 		t.Errorf("king_hereafter: %+v", f)
 	}
@@ -88,7 +88,7 @@ func TestRenderSceneJSON(t *testing.T) {
 	}
 }
 
-// 렌더 판정에 쓰는 나머지 세 장면(expect.yaml 의 render_scene)도 엄격하게 읽히고 Validate 를 통과한다.
+// The other three scenes used for the render verdict (expect.yaml's render_scene) are also read strictly and pass Validate.
 func TestRenderScenesValidate(t *testing.T) {
 	pool := open(t)
 	ctx := context.Background()

@@ -209,7 +209,7 @@ type Fact struct {
 	Text   string   `json:"text"`
 	Truth  string   `json:"truth"`
 	Def    *PropDef `json:"def"`
-	Tag    string   `json:"tag,omitempty"` // `fact … tag <name>` (identity = 정체 사실, recognition 패턴)
+	Tag    string   `json:"tag,omitempty"` // `fact … tag <name>` (identity = identity fact, recognition pattern)
 	SrcID  int      `json:"src_id"`
 }
 

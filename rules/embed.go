@@ -1,5 +1,5 @@
-// Package rules 는 린트 규칙 SQL 을 바이너리에 내장한다. 파일 하나가 규칙 하나다(헤더 형식은 설계 노트 checks.md).
-// 장르 규칙은 하위 폴더에 두고 아래 embed 패턴에 추가한다.
+// Package rules embeds the lint rule SQL in the binary. One file is one rule (header format in the design note checks.md).
+// Genre rules go in subfolders and are added to the embed pattern below.
 package rules
 
 import "embed"

@@ -141,11 +141,11 @@ func (w *walker) audience(a ir.Act) []string {
 	}
 	if a.Verb == "whispers" || speech[a.Verb] && w.stage == nil {
 		named := append(slices.Clone(a.Objects), a.To...)
-		if a.Verb == "shows" { // 보여 준 사물은 청중이 아니다
+		if a.Verb == "shows" { // a shown object is not an audience
 			named = slices.DeleteFunc(named, func(e string) bool { k := w.b.kinds[e]; return k == "thing" || k == "artifact" })
 		}
 		if a.Verb == "sends" {
-			named = slices.Clone(a.Objects) // 받는 사람은 전령이 말해 줄 때 안다
+			named = slices.Clone(a.Objects) // the recipient knows when the messenger tells them
 		}
 		var targets []string
 		for _, t := range named {

@@ -95,5 +95,5 @@ func split(path string, src []byte, diag func(Diag)) parts {
 	return p
 }
 
-// IsSource 는 Diegesis 소스 파일(.dieg.md)인지 판정한다. 확장자 인식은 여기 한 곳뿐이다.
+// IsSource decides whether a file is a Diegesis source file (.dieg.md). Extension recognition lives in this one place only.
 func IsSource(path string) bool { return strings.HasSuffix(path, ".dieg.md") }

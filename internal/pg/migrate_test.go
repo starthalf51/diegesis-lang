@@ -24,7 +24,7 @@ func migrations(t *testing.T) fs.FS {
 
 func TestMigrateIdempotent(t *testing.T) {
 	if os.Getenv("SL_PG_DSN") == "" {
-		t.Fatal("SL_PG_DSN 이 필요하다")
+		t.Fatal("SL_PG_DSN is required")
 	}
 	ctx := context.Background()
 	pool, err := pg.Connect(ctx)
@@ -38,7 +38,7 @@ func TestMigrateIdempotent(t *testing.T) {
 	}
 	again, err := pg.Migrate(ctx, pool, mig)
 	if err != nil || len(again) != 0 {
-		t.Fatalf("두 번째 적용: applied=%v err=%v", again, err)
+		t.Fatalf("second apply: applied=%v err=%v", again, err)
 	}
 	rows, err := pool.Query(ctx, `SELECT extname FROM pg_extension`)
 	if err != nil {
@@ -58,16 +58,16 @@ func TestMigrateIdempotent(t *testing.T) {
 	}
 	for _, e := range []string{"age", "vector", "btree_gist"} {
 		if !have[e] {
-			t.Errorf("확장 %s 없음", e)
+			t.Errorf("extension %s missing", e)
 		}
 	}
 }
 
-// 빈 DB 에서 풀 하나로 Migrate 직후 AGE 가 바로 동작해야 한다(재연결 없이).
+// On an empty DB, AGE must work right after Migrate with one pool (without reconnecting).
 func TestMigrateFreshDBSamePoolAGE(t *testing.T) {
 	dsn := os.Getenv("SL_PG_DSN")
 	if dsn == "" {
-		t.Fatal("SL_PG_DSN 이 필요하다")
+		t.Fatal("SL_PG_DSN is required")
 	}
 	ctx := context.Background()
 	admin, err := pg.Connect(ctx)
@@ -96,7 +96,7 @@ func TestMigrateFreshDBSamePoolAGE(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := fmt.Sprintf("g_%d", rand.Int63())
-	pool.Exec(ctx, fmt.Sprintf(`SELECT drop_graph('%s', true)`, g)) // 있으면 삭제(없으면 오류 무시)
+	pool.Exec(ctx, fmt.Sprintf(`SELECT drop_graph('%s', true)`, g)) // delete if present (ignore the error if absent)
 	if _, err := pool.Exec(ctx, fmt.Sprintf(`SELECT create_graph('%s')`, g)); err != nil {
 		t.Fatal(err)
 	}

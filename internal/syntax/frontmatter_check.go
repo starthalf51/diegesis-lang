@@ -78,7 +78,7 @@ func (p *parser) checkSugarDups() {
 			case *Beat:
 				walk(x.Body)
 			case *When:
-				if s.hasTime && x.Op != "lasts" { // lasts 는 시각이 아니라 길이다
+				if s.hasTime && x.Op != "lasts" { // lasts is a length, not a time of day
 					p.errAt(x.Pos, "dup-decl", "the scene's time is already given in frontmatter (when/date/time)")
 				}
 			case *Discourse:

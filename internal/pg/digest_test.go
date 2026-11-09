@@ -8,7 +8,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
-// 상자(box)는 hall 에 있고, 1화에서 비공개 사실(secret)을 a 가 보았다. 장면 2 의 요약을 본다.
+// The box is in the hall, and in episode 1 a saw a private fact (secret). Look at the summary for scene 2.
 const digestBody = `place hall "홀"
 thing box "녹슨 상자"
   name ko "녹슨 상자"
@@ -49,7 +49,7 @@ func digestOf(t *testing.T, body, scene string) (text, state string) {
 	return
 }
 
-// 이 장면이 심거나 거두는 복선이 비공개 사실이면 원문이 요약에 나오면 안 된다(음수 명제 포함).
+// If the setup planted or paid off in this scene is a private fact, its source text must not appear in the summary (negative propositions included).
 func TestDigestOmitsWithheldSetup(t *testing.T) {
 	for _, prop := range []string{"hid", "nhid"} {
 		body := `fact hid "숨김설정ABC" true
@@ -86,7 +86,7 @@ scene 2
   a sees box
 `
 
-// 상태 해시용 문자열은 상태 절만 담는다: 앞 장면의 행위 언급이 바뀌어도 같고, 사물의 위치 속성이 바뀌면 달라진다.
+// The string for the state hash holds only the state section: it stays the same when the act mentions in earlier scenes change, and differs when an object's location attribute changes.
 func TestDigestStateOnlyPart(t *testing.T) {
 	mk := func(loc, act string) (string, string) {
 		return digestOf(t, strings.NewReplacer("LOC", loc, "ACT", act).Replace(stateBody), "2")
@@ -126,7 +126,7 @@ func TestDigestOmitsWithheld(t *testing.T) {
 	}
 }
 
-// 나중 장면에서 옮겨지는 사물: 앞 장면 요약은 옛 위치만, 옮긴 장면 요약은 새 위치만 보인다(미래 값 누수 금지).
+// An object moved in a later scene: the earlier scene's summary shows only the old location, the moved scene's summary only the new location (no future-value leak).
 func TestDigestAttrTimeFilter(t *testing.T) {
 	body := `place hall "홀"
 place yard "마당"

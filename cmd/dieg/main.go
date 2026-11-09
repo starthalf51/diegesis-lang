@@ -1,4 +1,4 @@
-// dieg 는 Diegesis 컴파일러 CLI. 판정은 PG 가 하고 여기서는 호출·출력만 한다.
+// dieg is the Diegesis compiler CLI. PG makes the judgments; this only calls and prints.
 package main
 
 import (
@@ -14,7 +14,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
-// version 은 SemVer. 릴리스할 때 git 태그(v0.2.0)와 같이 올린다. 1.0 전까지 문법은 바뀔 수 있다.
+// version is SemVer. Bump it together with the git tag (v0.2.0) when releasing. Until 1.0 the grammar may change.
 var version = "0.9.0"
 
 func main() {
@@ -80,8 +80,8 @@ func main() {
 	os.Exit(2)
 }
 
-// load 는 ir.json 을 읽거나, 디렉터리면 build 와 같은 컴파일을 거쳐 적재하고 작품 ID 를 돌려준다.
-// 마이그레이션은 매번 확인한다(이미 적용됐으면 아무것도 하지 않는다). 진행 메시지는 out 으로.
+// load reads ir.json, or for a directory compiles it as build does, loads it, and returns the work ID.
+// It checks migrations every time (does nothing if already applied). Progress messages go to out.
 func load(path string, out io.Writer) (string, error) {
 	var w ir.Work
 	if st, err := os.Stat(path); err != nil {

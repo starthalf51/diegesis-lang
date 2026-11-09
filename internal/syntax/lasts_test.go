@@ -2,8 +2,8 @@ package syntax
 
 import "testing"
 
-// lasts <dur>..<dur>: 장면·사건의 길이(start→end 의 min/max). AST 는 When{Op: "lasts"}.
-// 프론트매터 when 과 함께 써도 dup-decl 이 아니다(시각이 아니라 길이다).
+// lasts <dur>..<dur>: the length of a scene/event (min/max of start→end). The AST is When{Op: "lasts"}.
+// Writing it together with frontmatter when is not a dup-decl (it is a length, not a time of day).
 func TestLastsParse(t *testing.T) {
 	src := "---\nmodule: m\nscene: \"1\"\nwhen: after 0\n---\n```sl\nlasts 0d..12h\nlasts 1d\n```\n"
 	f, diags := ParseFile("t.dieg.md", []byte(src))

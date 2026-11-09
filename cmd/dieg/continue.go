@@ -14,7 +14,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/write"
 )
 
-// cmdContinue runs `dieg continue <story-dir> --ep N [--brief "다음 화 방향" | --brief-file f] [--rounds N] [--scenes N]
+// cmdContinue runs `dieg continue <story-dir> --ep N [--brief "direction for the next episode" | --brief-file f] [--rounds N] [--scenes N]
 // [--no-render] [--backend id] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort e]`
 // on a dir made by `dieg write -o <story-dir>`. It writes story/epNN/ from the PG state digest, renders only that
 // episode's scenes (--scenes N: the first N of them), appends to calls.jsonl and re-concatenates novel.md.

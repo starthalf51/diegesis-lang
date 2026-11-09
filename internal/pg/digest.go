@@ -1,7 +1,7 @@
 package pg
 
-// Digest: 기존 표·함수만 읽어(SELECT 전용, 마이그레이션 없음) 한 장면 시점의 세계 상태 요약(한국어)을 만든다.
-// tools/statespike 에서 옮겼다. "독자가 이미 아는 것" 절은 뺐다(스파이크: 효과 없이 길이만 늘림).
+// Digest: reads only existing tables and functions (SELECT only, no migration) to build a summary of the world state at one scene's point (in Korean).
+// Moved from tools/statespike. The "what the reader already knows" section was dropped (spike: it only added length with no effect).
 
 import (
 	"context"
@@ -54,7 +54,7 @@ func hm(sec int64) string {
 	return fmt.Sprintf("%d분", m)
 }
 
-// Digest 는 장면 sceneID(짧은 ID)의 시점에서 PG 가 아는 세계 상태. 절 제목부터 끝까지의 텍스트이고, 장면이 없으면 오류다.
+// Digest is the world state PG knows at the point of scene sceneID (short ID). The text runs from the section title to the end; an error if there is no such scene.
 func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (text, state string, err error) {
 	rb, err := RenderScene(ctx, p, work, sceneID)
 	if err != nil {
@@ -75,7 +75,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	sid, startPt, placeShort, placeName = rows[0][0], rows[0][2], rows[0][3], rows[0][4]
 	fmt.Sscan(rows[0][1], &ord)
 
-	// 서술하면 안 되는 사실: 이 장면의 Withheld + 독자가 아직 모르는 withhold 대상.
+	// Facts that must not be narrated: this scene's Withheld + withhold targets the reader does not yet know.
 	hidden := map[string]bool{}
 	for _, w := range s.Withheld {
 		hidden[w] = true
@@ -103,7 +103,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	line("## 이 시점의 세계 상태 (어기지 말 것)")
 	line("아래는 이 이야기의 코드·그래프에서 뽑은 확정 상태다. 위 장면 명세와 겹치지 않는 한, 소품·장소·앎을 아래와 다르게 쓰지 않는다. 아래에 없는 소품 위치를 새로 옮기지 않는다.")
 
-	// 1. 장소·시간
+	// 1. place and time
 	tm, err := q(`SELECT coalesce((SELECT earliest FROM point WHERE id=$2),-1),
 	                     coalesce((SELECT p.earliest FROM scene x JOIN point p ON p.id=x.start_pt WHERE x.work_id=$1 AND x.shown AND x.discourse_ord<$3 ORDER BY x.discourse_ord DESC LIMIT 1),-1),
 	                     coalesce((SELECT lint_short(x.id) FROM scene x WHERE x.work_id=$1 AND x.shown AND x.discourse_ord<$3 ORDER BY x.discourse_ord DESC LIMIT 1),'')`, work, startPt, ord)
@@ -122,7 +122,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 		}
 	}
 
-	// 2. 코드에 있는 속성: 사물·장소, 그리고 이미 떠난 인물
+	// 2. attributes in code: objects and places, and characters who have already left
 	at, err := q(`SELECT lint_short(a.entity_id), render_name($1, a.entity_id,'ko'), e.kind, a.key, a.value, a.kind,
 	                     CASE WHEN a.kind='id' AND EXISTS (SELECT 1 FROM entity v WHERE v.id=a.value) THEN render_name($1, a.value,'ko') ELSE a.value END,
 	                     (SELECT count(*) FROM attribute z WHERE z.work_id=$1 AND z.entity_id=a.entity_id AND z.key=a.key), coalesce(lint_short(a.at_pt),''),
@@ -161,7 +161,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	}
 
 	inState = false
-	// 3. 이미 일어난 물건·동작 행위 (이 장면 이전, 서술 순서)
+	// 3. object/action acts that have already happened (before this scene, in narration order)
 	ac, err := q(`
 	  WITH last_here AS (SELECT id FROM scene WHERE work_id=$1 AND shown AND discourse_ord < $2 AND place_id = (SELECT place_id FROM scene WHERE id=$3)
 	                      ORDER BY discourse_ord DESC LIMIT 2)
@@ -192,7 +192,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	}
 
 	inState = true
-	// 4. 등장인물이 아는 것·믿는 것 (이 장면 이전에 얻은 것, 최근 순)
+	// 4. what characters know and believe (obtained before this scene, most recent first)
 	var cast []string
 	for _, e := range s.Cast {
 		cast = append(cast, e.ID)
@@ -200,7 +200,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	line("\n### 이 장면 인물이 이미 아는 것·믿는 것 (최근에 얻은 순)")
 	for _, id := range cast {
 		if k, _ := q(`SELECT 1 FROM entity WHERE work_id=$1 AND lint_short(id)=$2 AND kind='character'`, work, id); len(k) == 0 {
-			continue // 사물은 알지 못한다
+			continue // objects do not know
 		}
 		bl, err := q(`
 		  SELECT * FROM (
@@ -242,7 +242,7 @@ func Digest(ctx context.Context, p *pgxpool.Pool, work string, sceneID string) (
 	}
 
 	inState = false
-	// 5. 이 장면이 심거나 회수하는 복선의 원문
+	// 5. the source text of setups planted or paid off in this scene
 	su, err := q(`SELECT 'plant', coalesce(nullif(s.text,''), render_fact_text($1, s.prop_id), ''), coalesce(lint_short(s.prop_id),''), coalesce((SELECT lint_short(z.base) FROM prop_norm($1, s.prop_id) z LIMIT 1),'') FROM setup s WHERE s.work_id=$1 AND s.scene_id=$2
 	               UNION ALL
 	              SELECT 'payoff', coalesce(nullif(s.text,''), render_fact_text($1, s.prop_id), ''), coalesce(lint_short(s.prop_id),''), coalesce((SELECT lint_short(z.base) FROM prop_norm($1, s.prop_id) z LIMIT 1),'') FROM payoff p JOIN setup s ON s.id=p.setup_id WHERE p.work_id=$1 AND p.scene_id=$2`, work, sid)

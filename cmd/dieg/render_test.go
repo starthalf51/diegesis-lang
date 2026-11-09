@@ -7,19 +7,19 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
-// 판정 Jaccard 는 사실을 전하는 비입퇴장 액트만 센다고 밝히고, 모든 액트 Jaccard 는 참고로 함께 싣는다.
+// states that the judged Jaccard counts only non-entry/exit acts that convey facts, and lists the all-acts Jaccard alongside for reference.
 func TestCheckReportLabelsJaccard(t *testing.T) {
 	v := render.SceneVerdict{Work: "w", Scene: "s", Pass: true,
 		Jaccard: map[string]float64{"a~b": 0.95}, JaccardAll: map[string]float64{"a~b": 0.61}}
 	got := checkReport([]render.SceneVerdict{v}, nil, true)
-	for _, want := range []string{"사실을 전하는 비입퇴장 액트 — 판정): a~b 0.95", "모든 액트 — 참고, 판정에 쓰지 않음): a~b 0.61"} {
+	for _, want := range []string{"non-entry/exit acts that convey facts — judged): a~b 0.95", "all acts — reference only, not judged): a~b 0.61"} {
 		if !strings.Contains(got, want) {
 			t.Errorf("report lacks %q:\n%s", want, got)
 		}
 	}
 }
 
-// --only 는 --force·--force-extract 를 적힌 쌍에만 쓴다.
+// --only applies --force and --force-extract only to the listed pairs.
 func TestScopedForce(t *testing.T) {
 	f := render.Force{Render: true}
 	if got := scoped(f, map[string]bool{}, "w/s.b"); got != f {

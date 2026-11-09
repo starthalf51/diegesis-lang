@@ -19,7 +19,7 @@ func TestClassifyTone(t *testing.T) {
 	}
 }
 
-// 대사 속의 어미는 세지 않는다: 하십시오체 서술 + 해라체 대사.
+// Endings inside dialogue are not counted: hapsho narration + haera dialogue.
 func TestClassifyToneIgnoresDialogue(t *testing.T) {
 	prose := `그가 “나는 간다. 너도 와라. 늦었다.” 하고 말했습니다.` + "\n" +
 		`"빨리 가자. 시간이 없다." 그녀가 대답했습니다. 「죽여라. 살려 두지 마라.」 장군이 외쳤습니다.` + "\n" +
@@ -38,7 +38,7 @@ func TestLastEojeol(t *testing.T) {
 	}
 }
 
-// 대사를 따로 줄에 둔 서술: 대사 앞 이음 절("…가로되,", "…돌면서,")은 문장이 아니다.
+// Narration with the dialogue on its own line: the connective clause before the dialogue ("…he said,", "…turning around,") is not a sentence.
 func TestClassifyToneSkipsLeadInClauses(t *testing.T) {
 	for want, prose := range map[string]string{
 		"hapsho": `맥베스가 마녀들을 돌아보면서,
@@ -59,7 +59,7 @@ func TestClassifyToneSkipsLeadInClauses(t *testing.T) {
 	}
 }
 
-// ASCII 작은따옴표는 아포스트로피와 구별할 수 없으니 대사 따옴표로 보지 않는다.
+// An ASCII single quote cannot be told apart from an apostrophe, so it is not treated as a dialogue quote.
 func TestClassifyToneKeepsApostrophes(t *testing.T) {
 	got := ClassifyTone("Peter's 집에 갔습니다. 그는 떠났다. John's 말이 맞았습니다.")
 	if got["haera"] < 0.33 || got["hapsho"] < 0.66 {
@@ -67,7 +67,7 @@ func TestClassifyToneKeepsApostrophes(t *testing.T) {
 	}
 }
 
-// 세요는 해요체다.
+// 세요 is haeyo-style.
 func TestSeyoIsNotHapsho(t *testing.T) {
 	if got := toneOf("앉으세요"); got == "hapsho" {
 		t.Errorf("toneOf(앉으세요) = %s", got)

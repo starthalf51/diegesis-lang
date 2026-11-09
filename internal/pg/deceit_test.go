@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// Task 9(적벽): 읽은 문서도 증언이다. 의심은 그 앞에 읽은 문서의 믿음도 거둔다(47.14-16 조조가 황개의 서신을 읽고 의심한다).
+// Task 9 (Red Cliffs): a document read is also testimony. Doubt withdraws the belief from a document read before it too (47.14-16 Cao Cao reads Huang Gai's letter and doubts it).
 func TestDoubtsCancelReads(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -19,14 +19,14 @@ func TestDoubtsCancelReads(t *testing.T) {
 	}
 }
 
-// Task 9(적벽): 거짓인 줄 알면서 쓴 문서(위조 서신, 거짓 항복 서신)는 글로 한 거짓말이다.
-// 쓴 사람이 쓰는 시점에 ¬P 를 확정적으로 알면 deception 한 행이 생기고, letter-unknown-info·belief-contradiction 은 내지 않는다.
-// ¬P 를 모르는 채 쓴 P 는 여전히 letter-unknown-info 다.
+// Task 9 (Red Cliffs): a document written knowing it is false (a forged letter, a false surrender letter) is a lie told in writing.
+// If the writer definitely knows ¬P at the time of writing, one deception row is made, and letter-unknown-info and belief-contradiction do not emit.
+// A P written without knowing ¬P is still letter-unknown-info.
 func TestKnowinglyFalseWritesAreDeception(t *testing.T) {
 	pool := open(t)
 	for name, c := range map[string]struct {
 		body    string
-		dec     []string // deception: 행위/명제
+		dec     []string // deception: act/proposition
 		unknown []string // letter-unknown-info
 		contra  []string // belief-contradiction
 	}{

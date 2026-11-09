@@ -8,14 +8,14 @@ import (
 	"strings"
 )
 
-// 문장 단위 최소 수정(dieg revise): 옛 산문 + 새 장면 + 사실 차이를 주고 "옛 문장 → 새 문장" 목록(JSON)만 받아
-// 결정적으로 적용한다. 적용이 안 되거나 카드 검수를 못 넘으면 한 번 더, 그래도 안 되면 전체 렌더로 대체한다.
-// 프롬프트는 tools/serial/minedit.go(examples/value/minedit 에서 측정)를 JSON 편집 목록 출력으로 바꾼 것이다.
+// Sentence-level minimal edit (dieg revise): given the old prose + new scene + fact diff, receive only a list of "old sentence → new sentence" (JSON)
+// and apply it deterministically. If it fails to apply or fails the card check, once more; if still no good, replace with a full render.
+// The prompt is tools/serial/minedit.go (measured in examples/value/minedit) turned into output of a JSON edit list.
 
-// Edit 는 옛 산문의 한 구간(Old, 정확히 한 번 나오는 그대로)을 New 로 바꾼다.
+// Edit replaces one span of the old prose (Old, verbatim as it appears exactly once) with New.
 type Edit struct{ Old, New string }
 
-// ParsePatch 는 {"edits":[{"old":"…","new":"…"}]} 를 읽는다(```json 펜스 허용). 깨졌거나 edits 키가 없으면 badExtract.
+// ParsePatch reads {"edits":[{"old":"…","new":"…"}]} (a ```json fence is allowed). Broken, or without an edits key, is badExtract.
 func ParsePatch(text string) ([]Edit, error) {
 	body := text
 	if i := strings.Index(text, "```json"); i >= 0 {
@@ -46,7 +46,7 @@ func ParsePatch(text string) ([]Edit, error) {
 	return es, nil
 }
 
-// ApplyPatch 는 각 Old 가 prose 에 정확히 한 번 나오고 구간끼리 겹치지 않을 때만 적용한다. 아니면 badExtract.
+// ApplyPatch applies only when each Old appears exactly once in prose and the spans do not overlap. Otherwise badExtract.
 func ApplyPatch(prose string, es []Edit) (string, error) {
 	type span struct {
 		at, end int
@@ -229,7 +229,7 @@ func patchUser(oldProse string, nw Scene, b Backend, digest, diff, feedback stri
 	return u
 }
 
-// patchFeedback 은 직전 수정본의 카드 결과를 한국어로 알린다. 다시 옛 산문에서 고친다.
+// patchFeedback reports the previous revision's card result in Korean. The fix is again made from the old prose.
 func patchFeedback(s Scene, lang string, rep Report) string {
 	var b strings.Builder
 	b.WriteString("## 직전 수정본의 검수 결과\n직전 수정본은 아래 문제가 있었다. 같은 최소 수정 규칙으로 옛 산문에서 다시 고친다.\n")
@@ -245,9 +245,9 @@ func patchFeedback(s Scene, lang string, rep Report) string {
 	return b.String()
 }
 
-// PatchVerified 는 oldProse 를 새 장면 nw 에 맞게 문장 단위로 고친다: 패치 1회 → 카드. 적용이 안 되거나 카드가 실패면
-// 그 피드백으로 (옛 산문에서) 패치 1회 더. 그래도 안 되면 RenderVerified2 로 전체 렌더한다. digest 는 빈 줄로 시작하는
-// 요약 절(없으면 "")로 패치 프롬프트와 대체 렌더 모두에 붙는다. 검수는 카드 고정이다. 돌려주는 int 는 모델 렌더 시도 수(패치 + 대체 렌더).
+// PatchVerified fixes oldProse sentence by sentence to fit the new scene nw: one patch → card. If the patch does not apply or the card fails,
+// one more patch (from the old prose) with that feedback. If that still fails, do a full render with RenderVerified2. digest is a summary section starting with a blank line
+// ("" if none) attached to both the patch prompt and the fallback render. Verification is fixed to the card. The returned int is the number of model render attempts (patch + fallback render).
 func PatchVerified(ctx context.Context, cs Completers, work string, old, nw Scene, b Backend, oldProse, digest string, o VerifyOpts) (Render, int, error) {
 	rm, ad := SceneDiff(old, nw)
 	rm, ad = append(rm, prefixed(o.StateRm)...), append(ad, prefixed(o.StateAd)...)

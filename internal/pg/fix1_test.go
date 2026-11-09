@@ -15,7 +15,7 @@ import (
 
 var pgxReadOnly = pgx.TxOptions{AccessMode: pgx.ReadOnly}
 
-// 리뷰 1회차: 억제가 공유 SCC 의 진짜 순환을 덮지 않는다.
+// Review round 1: a suppression does not cover a real cycle in a shared SCC.
 func TestTimeCycleWaiverSharedSCC(t *testing.T) {
 	pool := open(t)
 	f := newFx()
@@ -44,7 +44,7 @@ func TestTimeCycleWaiverSharedSCC(t *testing.T) {
 	}
 }
 
-// 리뷰 1회차: 다른 곳의 모순이 무관한 시점의 경계를 지우지 않는다.
+// Review round 1: a contradiction elsewhere does not erase the bounds of unrelated points.
 func TestTimeCycleKeepsUnrelatedBounds(t *testing.T) {
 	pool := open(t)
 	f := newFx()
@@ -67,7 +67,7 @@ func TestTimeCycleKeepsUnrelatedBounds(t *testing.T) {
 	}
 }
 
-// 리뷰 1회차: precedes 는 미리 계산한 거리를 읽기만 한다. 500 시점 사슬에서 2000 회 < 2s.
+// Review round 1: precedes only reads precomputed distances. 2000 calls on a 500-point chain < 2s.
 func TestPrecedesSpeed(t *testing.T) {
 	pool := open(t)
 	ctx := context.Background()
@@ -125,7 +125,7 @@ func TestPrecedesSpeed(t *testing.T) {
 	t.Logf("derive(macbeth) = %v", time.Since(t0))
 }
 
-// 컨트롤러 판정: 명시적 believes 문장은 파생 believes 에 합친다. doubts 는 행을 만들지 않는다.
+// Controller verdict: explicit believes statements merge into derived believes. doubts makes no row.
 func TestDeclaredBeliefs(t *testing.T) {
 	pool := open(t)
 	f := newFx()
@@ -146,7 +146,7 @@ func TestDeclaredBeliefs(t *testing.T) {
 	}
 }
 
-// 컨트롤러 판정: 선후가 maybe 인 보유 경계는 적재를 깨지 않고 role-overlap 진단. 경계 시점의 행위는 새 보유자.
+// Controller verdict: a holding bound with maybe order does not break the load; it gives a role-overlap diagnostic. An act at the boundary point goes to the new holder.
 func TestRoleOverlapAndBoundary(t *testing.T) {
 	pool := open(t)
 	t.Run("maybe-ordered overlap warns", func(t *testing.T) {
@@ -156,7 +156,7 @@ func TestRoleOverlapAndBoundary(t *testing.T) {
 		f.Roles = []ir.Role{{ID: r, WorkID: f.id, SrcID: f.src()}}
 		p := f.pt("P")
 		f.edge(f.ref("start"), p, i64(5*day), i64(6*day))
-		q := f.pt("Q") // P 와 선후를 모른다
+		q := f.pt("Q") // order relative to P is unknown
 		xs, hs := f.src(), f.src()
 		f.RoleHolders = []ir.RoleHolder{
 			{RoleID: r, EntityID: x, UntilPt: p, SrcID: xs},

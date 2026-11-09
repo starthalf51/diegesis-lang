@@ -9,15 +9,15 @@ import (
 	"sort"
 )
 
-// Backend 는 교체할 수 있는 문체 백엔드 하나(styles/<id>.json): 언어, 목표 어투, 퍼블릭 도메인 샘플.
+// Backend is one swappable style backend (styles/<id>.json): language, target tone, public-domain sample.
 type Backend struct {
 	ID     string      `json:"id"`
 	Lang   string      `json:"lang"`
-	Tone   string      `json:"tone"` // haera | hapsho | gojeon | "" (어투 판정 없음)
+	Tone   string      `json:"tone"` // haera | hapsho | gojeon | "" (no tone judgment)
 	Sample StyleSample `json:"sample"`
 }
 
-// 한국어 목표 어투 지시. ClassifyTone 이 세는 어미와 같은 것을 요구한다.
+// Korean target-tone instructions. They require the same endings ClassifyTone counts.
 var toneRule = map[string]string{
 	"haera": "서술문은 해라체로 쓴다. 따옴표 밖의 모든 서술 문장을 '-다'(했다, 이었다, 있다, 보았다)로 끝낸다. " +
 		"'-습니다', '-요', '-더라', '-니라' 로 끝내지 않는다.",
@@ -31,8 +31,8 @@ var toneRule = map[string]string{
 const koDialogue = "대사(quote)는 원어 그대로 주어진다. 한국어로 옮겨 쓰되 뜻을 바꾸지 않고, 큰따옴표(“ ”) 안에 넣는다. " +
 	"어투 규칙은 따옴표 밖의 서술문에만 적용된다."
 
-// LoadBackends 는 dir/*.json 을 이름순으로 읽는다. 모르는 키, 언어가 다른 샘플, 퍼블릭 도메인이 아닌 샘플(2026),
-// 모르는 어투는 오류다.
+// LoadBackends reads dir/*.json in name order. Unknown keys, samples in a different language, samples that are not public domain (2026),
+// and unknown tones are errors.
 func LoadBackends(dir string) ([]Backend, error) {
 	paths, err := filepath.Glob(filepath.Join(dir, "*.json"))
 	if err != nil {
@@ -65,7 +65,7 @@ func LoadBackends(dir string) ([]Backend, error) {
 	return out, nil
 }
 
-// Prompt 는 M0 변형 c(샘플 + 렌더 지시어)에 목표 어투 지시를 더한다.
+// Prompt adds the target-tone instruction to M0 variant c (sample + render directive).
 func (b Backend) Prompt(s Scene) (system, user string, err error) {
 	system, user, err = BuildPrompt(s, VariantStyleDirectives, b.Lang, &b.Sample)
 	if err != nil {

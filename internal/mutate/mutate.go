@@ -1,9 +1,9 @@
-// Package mutate 는 IR 변이 연산자다. 작가가 쓴 작품 하나에 결함 하나를 넣은 변이본을 만들고,
-// 린터가 그 결함을 잡는지(Expect 규칙 중 하나가 새 warn 을 내는지)를 accept 가 판정한다.
+// Package mutate holds the IR mutation operators. It makes mutants by injecting one defect into a work the author wrote,
+// and accept decides whether the linter catches that defect (whether one of the Expect rules emits a new warn).
 //
-// 대상 고르기는 IR 의 구문만 본다(누가 어떤 명제를 어떤 행위에서 쓰는가). 시간 풀이와 믿음 파생은
-// 하지 않는다(ADR-010). "나중에 쓴다" 와 move-before 의 출처는 Mutation.Pairs/Uses 로 넘기고
-// 하네스(accept.RunMutants)가 PG 로 판정·보충한다.
+// Target selection looks only at IR syntax (who uses which proposition in which act). Time solving and belief derivation are
+// not done (ADR-010). "Used later" and move-before's sources are passed through Mutation.Pairs/Uses and
+// the harness (accept.RunMutants) decides and fills them in with PG.
 package mutate
 
 import (
@@ -14,15 +14,15 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/ir"
 )
 
-// Mutation: Op 연산자, Target 대상(행위 ID, `entity@scene`, `act prop`, setup ID, died 시점 ID, 간선 `from to`),
-// Expect 이 중 하나라도 새 warn 으로 Site 안에 나오면 탐지.
-// Site = 변이 지점(Review Focus 5): 변이한 행위·문장·setup·시점, 그 행위의 장면, 변이한 명제를 쓰는 행위,
-// 변이한 시점을 끝점으로 하는 간선의 다른 끝(장면 경계면 그 장면과 행위, born/died 면 그 사람의 행위).
-// 하네스는 새 진단의 대상(time-cycle 은 순환이 지나는 시점들 중 하나)이 Site 에 있을 때만 탐지로 센다.
-// Pairs = (정보를 받은 행위 시점, 그 정보를 쓰는 행위 시점) 후보. 하네스가 PG precedes 로 "쓰는 쪽이 뒤"인
-// 쌍이 하나라도 있는 변이만 돌린다(Go 는 시간을 판정하지 않는다). 비어 있으면 거르지 않는다.
-// Before = move-before 가 앞서야 할 출처 시점들. 하네스가 PG 의 believes 에서 채운다.
-// Uses = move-before 대상 행위가 쓰는 명제(정규형). 하네스가 그 출처를 찾을 때 쓴다.
+// Mutation: Op operator, Target (act ID, `entity@scene`, `act prop`, setup ID, died point ID, edge `from to`),
+// Expect: if any one of these appears as a new warn inside Site, it is detected.
+// Site = mutation site (Review Focus 5): the mutated act/statement/setup/point, that act's scene, acts that use the mutated proposition,
+// the other end of an edge whose endpoint is the mutated point (for a scene boundary that scene and its acts, for born/died that person's acts).
+// The harness counts a detection only when the new diagnostic's target (for time-cycle, one of the points the cycle passes through) is in Site.
+// Pairs = candidates of (point of the act that received the information, point of the act that uses it). The harness runs only mutants that have at least one
+// pair where "the user is later" by PG precedes (Go does not judge time). If empty, nothing is filtered.
+// Before = the source points that move-before must come ahead of. The harness fills them from PG's believes.
+// Uses = the propositions used by the move-before target act (canonical form). The harness uses them when looking up the source.
 type Mutation struct {
 	Op, Target string
 	Expect     []string
@@ -32,7 +32,7 @@ type Mutation struct {
 	Before     []string
 }
 
-// info-flow 와 그 동족. 셋은 같은 검사를 대상 행위 종류로 나눈 것이다(한 결함에 진단 하나, Task 6).
+// info-flow and its kin. The three are the same check split by target act kind (one diagnostic per defect, Task 6).
 var infoRules = []string{"info-flow", "letter-unknown-info", "because-unbelieved"}
 
 var opExpect = map[string][]string{
@@ -43,8 +43,8 @@ var opExpect = map[string][]string{
 	"drop-payoff":    {"unpaid-promise"},
 	"kill-early":     {"dead-actor"},
 	"flip-perceived": append([]string{"belief-contradiction"}, infoRules...),
-	// 시간을 원문과 모순되게 옮기면 드러나는 자리: 다른 제약과의 순환, 죽은 뒤의 행위, 아직 일어나지 않은 일을 아는 것.
-	// shift-duration 은 그 밖에 작품 질의 불일치로도 탐지된다(하네스가 질의를 다시 돌린다).
+	// Where it shows up when time is moved to contradict the source: a cycle with other constraints, an act after death, knowing something that has not happened yet.
+	// shift-duration is also detected otherwise by work query mismatch (the harness reruns the queries).
 	"shift-duration": append([]string{"time-cycle", "dead-actor"}, infoRules...),
 	"swap-order":     append([]string{"time-cycle", "dead-actor"}, infoRules...),
 }
@@ -52,11 +52,11 @@ var opExpect = map[string][]string{
 var ops = []string{"drop-tells", "drop-enter", "move-before", "drop-setup", "drop-payoff", "kill-early", "flip-perceived",
 	"shift-duration", "swap-order"}
 
-// Shift 는 shift-duration 이 구간에 더하는 값(50년, 초). 나이·햇수가 정확한 족보에서 반드시 어긋난다.
+// Shift is the value shift-duration adds to an interval (50 years, in seconds). It is bound to break a genealogy where ages and years are exact.
 const Shift = 50 * 365 * 24 * 3600
 
-// Generate 는 연산자마다 적용할 수 있는 대상을 모두 만든다(대상이 없는 연산자는 하나도 내지 않는다).
-// n > 0 이면 seed 로 섞어 n 개만 남긴다(원래 순서는 유지).
+// Generate makes every target each operator can apply to (an operator with no target emits nothing).
+// If n > 0, shuffle with seed and keep only n (original order preserved).
 func Generate(w *ir.Work, seed int64, n int) []Mutation {
 	x := index(w)
 	var out []Mutation
@@ -136,8 +136,8 @@ func Generate(w *ir.Work, seed int64, n int) []Mutation {
 				if op == "shift-duration" && (e.Min == nil || e.Max == nil) {
 					continue
 				}
-				// swap-order: 같은 사람의 born→died, 또는 `before`(문장 자신의 시점이 간선의 시작인 것)
-				// lasts(그 장면의 start→end)는 뒤집어도 같은 간선이라 뺀다
+				// swap-order: born→died of the same person, or `before` (where the statement's own point is the edge's start)
+				// lasts (the scene's start→end) is the same edge when flipped, so it is left out
 				if op == "swap-order" && (!(lifespan(e) || e.From == e.TargetID || strings.HasPrefix(e.From, e.TargetID+".")) ||
 					e.From == e.TargetID+".start" && e.To == e.TargetID+".end") {
 					continue
@@ -173,7 +173,7 @@ func uniq(s []string) []string {
 	return out
 }
 
-// usersOf: 명제(정규형) 중 하나를 쓰는(used) 행위들.
+// usersOf: acts that use (used) one of the propositions (canonical form).
 func (x *idx) usersOf(props []string) []string {
 	var out []string
 	for _, b := range x.w.Acts {
@@ -186,8 +186,8 @@ func (x *idx) usersOf(props []string) []string {
 	return out
 }
 
-// around: 시점들과 그 이웃 — 장면·사건의 경계면 그 컨테이너와 안의 행위, 행위 시점이면 그 행위,
-// `x.born`/`x.died` 면 x 의 행위, 그리고 이 시점을 끝점으로 하는 간선의 문장(waiver 대상).
+// around: points and their neighbors — for a scene/event boundary that container and the acts inside, for an act point that act,
+// for `x.born`/`x.died` x's acts, and the statements of edges with this point as an endpoint (waiver targets).
 func (x *idx) around(pts ...string) []string {
 	out := slices.Clone(pts)
 	for _, p := range pts {
@@ -221,10 +221,10 @@ func (x *idx) around(pts ...string) []string {
 	return out
 }
 
-// telling 은 drop-tells 의 대상 동사(정보를 전하는 발화). sends 는 약속이라 뺀다(전달은 tells 쪽이다).
+// telling is the target verb of drop-tells (an utterance that conveys information). sends is a promise so it is excluded (delivery is on the tells side).
 var telling = map[string]bool{"tells": true, "says": true, "whispers": true, "hails": true, "shows": true}
 
-// assertive 는 003 의 assertive() 와 같은 동사 목록이다(청중이 내용을 믿는다).
+// assertive is the same verb list as 003's assertive() (the audience believes the content).
 var assertive = map[string]bool{"tells": true, "says": true, "whispers": true, "hails": true, "lies": true,
 	"shows": true, "decrees": true, "sends": true}
 
@@ -241,7 +241,7 @@ type key struct{ entity, scene string }
 type idx struct {
 	w        *ir.Work
 	aud      map[string][]string // act → audience
-	alias    map[string]string   // fact → alias target (한 단계, lint_canon 과 같다)
+	alias    map[string]string   // fact → alias target (one level, same as lint_canon)
 	groups   map[string][]string // entity → groups it is a direct member of
 	presence []key
 }
@@ -274,7 +274,7 @@ func (x *idx) canon(p string) string {
 	return p
 }
 
-// up 은 e 와 e 가 (간접) 속한 그룹들.
+// up is e and the groups e (indirectly) belongs to.
 func (x *idx) up(e string) []string {
 	out := []string{e}
 	for i := 0; i < len(out); i++ {
@@ -292,7 +292,7 @@ func (x *idx) exempt(e string) bool {
 	return slices.ContainsFunc(x.w.Entities, func(en ir.Entity) bool { return en.Knows != "" && slices.Contains(ups, en.ID) })
 }
 
-// background: e(또는 속한 그룹)가 처음부터 P 를 믿는다(시점 없는 believes).
+// background: e (or a group it belongs to) believes P from the start (a believes with no point).
 func (x *idx) background(e, p string) bool {
 	ups := x.up(e)
 	return slices.ContainsFunc(x.w.Beliefs, func(b ir.Belief) bool {
@@ -300,7 +300,7 @@ func (x *idx) background(e, p string) bool {
 	})
 }
 
-// used 는 행위 a 의 화자가 그 행위에서 쓰는 명제(정규형): 진실한 단언의 내용, writes 의 문서 내용, because.
+// used is the proposition the speaker of act a uses in that act (canonical form): the content of a truthful assertion, the document content of writes, because.
 func (x *idx) used(a ir.Act) []string {
 	var out []string
 	switch {
@@ -322,8 +322,8 @@ func (x *idx) used(a ir.Act) []string {
 	return out
 }
 
-// usedElsewhere: e 가 a 의 내용 중 배경 지식이 아닌 명제를 쓰는 다른 행위마다 (a 시점, 그 행위 시점) 쌍.
-// "뒤에 쓰는가" 는 여기서 판정하지 않는다(하네스가 PG precedes 로 거른다).
+// usedElsewhere: for each other act where e uses a non-background proposition from a's content, a pair (a's point, that act's point).
+// "Is it used later" is not judged here (the harness filters with PG precedes).
 func (x *idx) usedElsewhere(e string, a ir.Act) [][2]string {
 	var out [][2]string
 	for _, p := range content(a) {
@@ -340,8 +340,8 @@ func (x *idx) usedElsewhere(e string, a ir.Act) [][2]string {
 	return out
 }
 
-// heardAndUsed: a 의 내용을 받은 사람(self = 화자 자신이 지각한 경우, 아니면 청중) 중 면제가 아닌 사람들의
-// usedElsewhere 쌍.
+// heardAndUsed: the usedElsewhere pairs of the non-exempt people among those who received a's content (self = when the speaker perceived it, otherwise the audience).
+// usedElsewhere pairs.
 func (x *idx) heardAndUsed(a ir.Act, self bool) [][2]string {
 	who := x.aud[a.ID]
 	if self {
@@ -356,7 +356,7 @@ func (x *idx) heardAndUsed(a ir.Act, self bool) [][2]string {
 	return out
 }
 
-// lastAct 는 e 가 화자인 마지막 행위(IR 순서 = 원문 순서)의 시점. 없으면 "".
+// lastAct is the point of the last act where e is the speaker (IR order = source order). "" if none.
 func (x *idx) lastAct(e string) string {
 	last := ""
 	for _, a := range x.w.Acts {

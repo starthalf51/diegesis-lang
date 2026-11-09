@@ -7,8 +7,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// RunQueries 는 질의마다 SQL 을 $1 = 작품 ID 로 돌려 모든 값을 문자열로 바꾼다(NULL → "").
-// 실패한 질의는 rows 에 없고 errs 에 사유가 있다(Judge 가 불일치로 센다).
+// RunQueries runs each query's SQL with $1 = work ID and converts all values to strings (NULL → "").
+// A failed query is absent from rows and its reason is in errs (Judge counts it as a mismatch).
 func RunQueries(ctx context.Context, db *pgxpool.Pool, work string, qs []Query) (map[string][][]string, map[string]string) {
 	out, errs := map[string][][]string{}, map[string]string{}
 	for _, q := range qs {
@@ -27,7 +27,7 @@ func strRows(ctx context.Context, db *pgxpool.Pool, sql string, args ...any) ([]
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx) // 질의는 읽기만 한다. 무엇을 쓰든 되돌린다
+	defer tx.Rollback(ctx) // queries only read. Roll back whatever was written
 	if _, err := tx.Exec(ctx, `SET LOCAL search_path = public, ag_catalog`); err != nil {
 		return nil, err
 	}

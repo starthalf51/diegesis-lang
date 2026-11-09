@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// VerifyOpts: K 는 재추출 횟수, Retries 는 첫 렌더 뒤 최대 재렌더 횟수.
-// Verifier "card" 이면 재추출 대신 체크리스트 채점(ScoreCard, Card 옵션), 그 밖(""·"open")은 열린 재추출.
+// VerifyOpts: K is the number of re-extractions, Retries the maximum number of re-renders after the first render.
+// Verifier "card" scores with a checklist (ScoreCard, Card option) instead of re-extraction; anything else (""·"open") is open re-extraction.
 type VerifyOpts struct {
 	K, Retries int
 	Verifier   string
@@ -19,21 +19,21 @@ type VerifyOpts struct {
 	StateRm, StateAd []string
 }
 
-// Passed 는 사실 기준 통과 여부. 열린 경로는 ADR-019(환각 0, 누출 0, 누락 ≤ MaxMissing), 카드 경로는 ADR-028(누출 0, 누락+종류 틀림 ≤ 1, G2 는 경고만 — Hallucinated 가 늘 비어 있다).
-// render-check 의 ADR-012(누락 ≤ 1 허용)보다 열린 경로가 엄격하다. 채점이 깨졌으면(ExtractError) 통과가 아니다.
+// Passed is whether the fact criteria pass. The open path is ADR-019 (hallucination 0, leak 0, missing ≤ MaxMissing); the card path is ADR-028 (leak 0, missing+wrong kind ≤ 1, G2 is a warning only — Hallucinated is always empty).
+// The open path is stricter than render-check's ADR-012 (missing ≤ 1 allowed). If scoring broke (ExtractError) it is not a pass.
 func Passed(r Render) bool {
 	p := r.Report
 	return p.ExtractError == "" && len(p.Hallucinated) == 0 && len(p.Leaked) == 0 && len(p.Missing) <= MaxMissing
 }
 
-// RenderVerified 는 렌더 → 재추출 → diff 를 통과할 때까지 최대 1+Retries 번 반복한다. 실패한 diff 는 다음 렌더의
-// 사용자 프롬프트 끝에 피드백으로 붙는다. 상한에 닿으면 마지막 렌더를 nil 오류로 돌려준다(통과 여부는 Passed 로 본다).
-// Completer 오류는 그대로 돌려준다.
+// RenderVerified repeats render → re-extract → diff up to 1+Retries times until it passes. The failed diff is attached as feedback to the end of the next render's
+// user prompt. At the limit it returns the last render with a nil error (see Passed for whether it passed).
+// A Completer error is returned as is.
 func RenderVerified(ctx context.Context, c Completer, work string, s Scene, b Backend, o VerifyOpts) (Render, int, error) {
 	return RenderVerified2(ctx, Completers{c, c}, work, s, b, o)
 }
 
-// Completers 는 역할별 모델: 렌더 호출은 Render, 재추출 호출은 Extract 로 간다.
+// Completers are the per-role models: render calls go to Render, re-extraction calls to Extract.
 type Completers struct{ Render, Extract Completer }
 
 func RenderVerified2(ctx context.Context, cs Completers, work string, s Scene, b Backend, o VerifyOpts) (Render, int, error) {
@@ -54,7 +54,7 @@ func RenderVerified2(ctx context.Context, cs Completers, work string, s Scene, b
 	}
 }
 
-// feedback 은 사람이 읽을 사실 문장·인물 이름으로 쓴 "## Fix from the previous draft" 절.
+// feedback is the "## Fix from the previous draft" section written with human-readable fact sentences and character names.
 func feedback(s Scene, lang string, rep Report) string {
 	var rm, inc []string
 	for _, h := range rep.Hallucinated {
@@ -83,7 +83,7 @@ func feedback(s Scene, lang string, rep Report) string {
 	return b.String()
 }
 
-// describe 는 "actor|class|fact" 키를 "이름 (class): 사실문장" 으로, 사실 ID 하나면 문장으로 풀어 쓴다. 모르면 그대로.
+// describe turns an "actor|class|fact" key into "name (class): fact sentence", and a lone fact ID into a sentence. Unknown ones stay as is.
 func describe(s Scene, lang, key string) string {
 	p := strings.Split(key, "|")
 	text := func(id string) string {

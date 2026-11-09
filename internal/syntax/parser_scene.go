@@ -97,7 +97,7 @@ func (c *cur) stmt() Node {
 	switch t.Val {
 	case "when":
 		n = c.when()
-	case "lasts": // 장면·사건의 길이: start→end 간선 하나(AST 는 When{Op: "lasts"})
+	case "lasts": // the length of a scene/event: one start→end edge (the AST is When{Op: "lasts"})
 		c.k++
 		w := &When{Pos: t.Pos, Op: "lasts"}
 		lo, hi := c.durRange()
@@ -327,7 +327,7 @@ func (c *cur) durRange() (Dur, Dur) {
 	return lo, c.dur()
 }
 
-// belief: <who> believes|doubts prop [because tref] (장면 안, 또는 최상위 배경 지식)
+// belief: <who> believes|doubts prop [because tref] (inside a scene, or top-level background knowledge)
 func (c *cur) belief() Node {
 	t, next := c.peek(), c.peekN(1)
 	c.k += 2

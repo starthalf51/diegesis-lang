@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// `X sees p`(콜론 없음): 사실 객체는 내용(with)으로 옮기고, 엔티티 객체는 그대로 둔다.
+// `X sees p` (no colon): a fact object moves into the content (with), and an entity object stays.
 func TestSeesFactObject(t *testing.T) {
 	w, diags := build(t, `module t.s
 import t.cast
@@ -42,7 +42,7 @@ scene 1 at room
 	}
 }
 
-// 배경 지식: 최상위 `X believes P` 와 인물·그룹 선언 블록의 `believes P` 는 시점 없는(처음부터) 믿음이다.
+// Background knowledge: a top-level `X believes P` and a `believes P` in a character/group declaration block are beliefs with no point (from the start).
 func TestBackgroundBelief(t *testing.T) {
 	w, diags := build(t, `module t.s
 import t.cast
@@ -77,7 +77,7 @@ place yard "Y"
 	}
 }
 
-// 무대 밖 sends: 전령만 듣는다. 받는 사람은 전령이 말해 줄 때 안다.
+// Offstage sends: only the messenger hears. The recipient knows when the messenger tells them.
 func TestOffstageSendsAudience(t *testing.T) {
 	w, diags := build(t, `module t.s
 import t.cast
@@ -90,8 +90,8 @@ event e "E"
 	}
 }
 
-// Task 2: 태어나기 전에 죽을 수 없다. born 과 dies 가 둘 다 있으면 @x.born → @x.died (min 0) 순서 간선을 낸다
-// (둘이 다른 모듈에 있어도). 이 간선이 없으면 "죽음이 출생보다 앞선다"는 결함을 시간 풀이가 보지 못한다.
+// Task 2: one cannot die before being born. If both born and dies exist, it emits an order edge @x.born → @x.died (min 0)
+// (even if they are in different modules). Without this edge the time solver cannot see the defect "death comes before birth".
 func TestLifeOrder(t *testing.T) {
 	w, diags := build(t, `module t.s
 import t.cast
@@ -112,7 +112,7 @@ dies b
 	}
 }
 
-// `shows` 의 목적어로 사물을 허용한다. 사물은 청중이 되지 않는다.
+// Allows an object as the object of `shows`. An object does not become an audience.
 func TestShowsThing(t *testing.T) {
 	w, diags := build(t, `module t.s
 import t.cast

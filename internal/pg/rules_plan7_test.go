@@ -14,7 +14,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
-// 사실 텍스트에 상대 시간("N일 뒤", "in N days")이 박혀 있으면 경고한다. 절대 날짜는 조용하다.
+// Warn if a fact text has a relative time embedded ("N days later" in Korean, "in N days"). An absolute date is quiet.
 func TestRelativeTimeFact(t *testing.T) {
 	pool := open(t)
 	cases := []struct {
@@ -42,7 +42,7 @@ const retellScenes = `scene 1
   a tells b: p
 `
 
-// 청자가 이미 믿는 사실을 같은 화자가 다시 알려 주면 경고한다(장면 3). 모르는 청자(c)면 조용하다.
+// Warn if the same speaker tells a listener something they already believe (scene 3). Quiet if the listener doesn't know (c).
 func TestRetellKnown(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, retellScenes+`scene 3
@@ -64,7 +64,7 @@ func TestRetellKnown(t *testing.T) {
 }
 
 
-// 같은 술어·같은 첫 인자인데 나머지 인자가 다른 참 사실 둘 → 경고. 하나가 not 이거나 나머지 인자가 같으면 조용하다.
+// Two true facts with the same predicate and first argument but different remaining arguments → warn. Quiet if one is not or the remaining arguments are the same.
 func TestFactConflict(t *testing.T) {
 	pool := open(t)
 	cases := []struct {
@@ -84,7 +84,7 @@ func TestFactConflict(t *testing.T) {
 	}
 }
 
-// compileLoadFiles 는 compileLoad 와 같되 파일 여러 개(첫 파일에 cast)를 한 작품으로 적재한다.
+// compileLoadFiles is like compileLoad but loads several files (cast in the first) as one work.
 func compileLoadFiles(t *testing.T, pool *pgxpool.Pool, bodies ...string) string {
 	t.Helper()
 	id := fmt.Sprintf("t_%d", rand.Int63())
@@ -128,8 +128,8 @@ scene 2
   a tells b: lens_broke_in_fight
 `
 
-// 텍스트뿐인 참 사실 둘이 다른 파일·같은 선두 토큰이고 둘 다 서술되면 후보 충돌을 경고한다(B10).
-// 같은 파일이거나, 서술되지 않거나, 선두 토큰이 다르면 조용하다.
+// Two true facts that are text only, in different files with the same leading token and both narrated, warn a candidate conflict (B10).
+// Quiet if in the same file, not narrated, or the leading tokens differ.
 func TestFactConflictTextFacts(t *testing.T) {
 	pool := open(t)
 	id := compileLoadFiles(t, pool, lensA, lensB)
@@ -159,7 +159,7 @@ fact lens_broke_in_fight "다투던 끝에 도경태가 뿌리친 오른손이 �
 	}
 }
 
-// 청중에 아직 모르는 사람(c)이 섞인 발화는 되풀이가 아니다(공지·뒤늦은 폭로).
+// An utterance with someone who doesn't know yet (c) mixed into the audience is not repetition (announcement, late revelation).
 func TestRetellKnownMixedAudience(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, retellScenes+`scene 3
@@ -172,7 +172,7 @@ func TestRetellKnownMixedAudience(t *testing.T) {
 	}
 }
 
-// retell-known 제외 사례: 사이에 의심, 다른 화자, 다른 인용문, sends 는 되풀이가 아니다. 같은 말 그대로면 걸린다.
+// retell-known exclusion cases: a doubt in between, a different speaker, a different quote, and sends are not repetition. The same words exactly are caught.
 func TestRetellKnownExclusions(t *testing.T) {
 	pool := open(t)
 	for name, c := range map[string]struct {

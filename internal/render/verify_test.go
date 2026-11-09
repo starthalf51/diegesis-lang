@@ -20,7 +20,7 @@ func verifyFixture(t *testing.T) (Scene, Backend, string, string) {
 func verifyReplies(parts ...string) []string {
 	var out []string
 	for i := 0; i < len(parts); i += 2 {
-		out = append(out, parts[i], parts[i+1]) // K=1: 렌더 1 + 재추출 1
+		out = append(out, parts[i], parts[i+1]) // K=1: render 1 + re-extraction 1
 	}
 	return out
 }
@@ -85,7 +85,7 @@ func TestRenderVerified2UsesBoth(t *testing.T) {
 	}
 }
 
-// cardReply 는 체크리스트 답: miss 번호(E1..)는 없음, leak 이면 W1 누출, 늘 G2 후보 하나.
+// cardReply is the checklist answer: no miss numbers (E1..), W1 leak if leak, always one G2 candidate.
 func cardReply(s Scene, miss map[int]bool, leak bool) string {
 	var it []string
 	for i := range CardItems(s) {

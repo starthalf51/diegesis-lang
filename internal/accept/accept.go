@@ -1,6 +1,6 @@
-// Package accept 는 코퍼스 합격 판정기다. expect.yaml(원작·학계 기준의 기대값)과 실제 결과
-// (컴파일 오류 수, 진단, 이름 붙은 질의, 변이 탐지)를 비교한다. 판정 규칙 자체는 PG 가 낸 결과를
-// 대조할 뿐이다(ADR-010: 믿음·시간·린트 판정은 PG 에 있다).
+// Package accept is the corpus acceptance judge. It compares expect.yaml (expected values from the source work and scholarship) with the actual results
+// (compile error count, diagnostics, named queries, mutation detection). The judging rules themselves only check the results PG produced
+// (ADR-010: belief, time and lint verdicts live in PG).
 package accept
 
 import (
@@ -15,7 +15,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
-// Expect 는 expect.yaml.
+// Expect is expect.yaml.
 type Expect struct {
 	Work                        string  `yaml:"work"`
 	CompileErrors               int     `yaml:"compile_errors"`
@@ -23,12 +23,12 @@ type Expect struct {
 	Queries                     []Query `yaml:"queries"`
 	MutationMinRate             float64 `yaml:"mutation_min_rate"`
 	MutationMinRateWoMoveBefore float64 `yaml:"mutation_min_rate_wo_move_before"`
-	RenderScene                 string  `yaml:"render_scene"` // dieg render-check 가 렌더할 장면(짧은 ID)
+	RenderScene                 string  `yaml:"render_scene"` // the scene dieg render-check renders (short ID)
 	Patterns                    []WantPattern `yaml:"patterns"`
 }
 
-// Want 는 반드시 나와야 하는 진단 하나. Target 은 작품 ID 를 뺀 대상 ID(`macbeth.act1/1.3#a5`).
-// Severity 기본값은 warn. Why 는 원작·학계 근거(보고서에 옮긴다).
+// Want is one diagnostic that must appear. Target is the target ID without the work ID (`macbeth.act1/1.3#a5`).
+// Severity defaults to warn. Why is the source/scholarly basis (carried into the report).
 type Want struct {
 	Rule     string `yaml:"rule"`
 	Target   string `yaml:"target"`
@@ -37,8 +37,8 @@ type Want struct {
 	Why      string `yaml:"why"`
 }
 
-// WantPattern 은 반드시 나와야 하는 패턴 매치 하나. Target 은 작품 ID 를 뺀 대상 ID 이고 정확히 같아야 한다(Review Focus 1).
-// SpanFrom 을 적으면 구간 시작(discourse_ord)도 같아야 한다. Why 는 원문 근거(줄 번호).
+// WantPattern is one pattern match that must appear. Target is the target ID without the work ID and must match exactly (Review Focus 1).
+// If SpanFrom is given, the span start (discourse_ord) must match too. Why is the evidence in the source text (line number).
 type WantPattern struct {
 	Pattern  string `yaml:"pattern"`
 	Target   string `yaml:"target"`
@@ -46,7 +46,7 @@ type WantPattern struct {
 	Why      string `yaml:"why"`
 }
 
-// Query 는 이름 붙은 SQL($1 = 작품 ID)과 기대 행(순서까지 같아야 한다).
+// Query is a named SQL ($1 = work ID) and the expected rows (must match including order).
 type Query struct {
 	Name string     `yaml:"name"`
 	SQL  string     `yaml:"sql"`
@@ -54,7 +54,7 @@ type Query struct {
 	Why  string     `yaml:"why"`
 }
 
-// Parse 는 모르는 키를 오류로 본다(오타가 조용히 기대값을 지우지 않게).
+// Parse treats unknown keys as errors (so a typo cannot silently erase an expectation).
 func Parse(b []byte) (*Expect, error) {
 	dec := yaml.NewDecoder(bytes.NewReader(b))
 	dec.KnownFields(true)
@@ -76,22 +76,22 @@ func Parse(b []byte) (*Expect, error) {
 	return &e, nil
 }
 
-// Outcome 은 변이 하나의 결과.
+// Outcome is the result of one mutant.
 type Outcome string
 
 const (
-	Detected Outcome = "detected" // 기대 규칙 중 하나가 변이 지점(Site)에서 새 warn 을 냈다
-	// DetectedByQuery: 지점 안의 기대 warn 은 없지만 expect.yaml 질의 결과가 원본과 달라졌다(R1) — 탐지로 센다
+	Detected Outcome = "detected" // one of the expected rules produced a new warn at the mutation site (Site)
+	// DetectedByQuery: no expected warn within the site, but the expect.yaml query results differ from the original (R1) — counted as detection
 	DetectedByQuery Outcome = "detected-by-query"
-	Caught          Outcome = "caught"     // 컴파일러(구문·의미 분석)가 변이본을 거부했다 — 탐지로 센다. IR 변이에서는 나오지 않는다
-	Equivalent      Outcome = "equivalent" // 탐지되지 않았고 파생 행이 원본과 같다 — 비율에서 뺀다
+	Caught          Outcome = "caught"     // the compiler (syntax/semantic analysis) rejected the mutant — counted as detection. Does not occur for IR mutations
+	Equivalent      Outcome = "equivalent" // not detected and derived rows equal the original — excluded from the rate
 	Survived        Outcome = "survived"
-	// NotApplicable: PG 로 확정해 보니 결함이 생기지 않는 변이(받은 정보를 뒤에서 쓰지 않음, 출처 없음).
-	// 돌리지 않고 목록에만 남긴다. 비율에서 뺀다.
+	// NotApplicable: mutants that PG confirms produce no defect (the received information is not used later, no source).
+	// Not run, only left in the list. Excluded from the rate.
 	NotApplicable Outcome = "n/a"
 )
 
-// Mutant 는 변이 하나와 결과. Rules = 변이본에서 새로 나온 억제되지 않은 warn 의 규칙들.
+// Mutant is one mutation and its result. Rules = the rules of the new unsuppressed warns from the mutant.
 type Mutant struct {
 	Mutation mutate.Mutation
 	Outcome  Outcome
@@ -100,14 +100,14 @@ type Mutant struct {
 	Note     string
 }
 
-// Input 은 실제 결과. Diags 에는 린트 진단과 컴파일 경고를 함께 넣는다.
-// Rows 는 질의 이름 → 행(실행하지 못한 질의는 없다). Mutants nil = 변이를 돌리지 않았다.
+// Input is the actual result. Diags holds lint diagnostics and compile warnings together.
+// Rows maps query name → rows (queries that could not run are absent). Mutants nil = mutants were not run.
 type Input struct {
 	CompileErrors int
 	Diags         []pg.Diagnostic
 	Rows          map[string][][]string
 	QueryErrors   map[string]string
-	Patterns      []pg.Match // pg.Patterns 의 결과(작품 전체)
+	Patterns      []pg.Match // result of pg.Patterns (whole work)
 	Mutants       []Mutant
 }
 
@@ -116,22 +116,22 @@ type Result struct {
 	Failures                             []string
 	Missing                              []Want
 	FalsePositives                       []pg.Diagnostic
-	Undeclared                           []pg.Diagnostic // 억제됐지만 expect.yaml 에 없는 warn
+	Undeclared                           []pg.Diagnostic // suppressed but not in expect.yaml warns
 	BadQueries                           []string
 	MissingPatterns                      []WantPattern
 	Rate                                 float64
-	Counted                              int // 비율의 분모(동등 변이 제외)
-	Hit                                  int // 분자(detected + caught)
+	Counted                              int // denominator of the rate (excluding equivalent mutants)
+	Hit                                  int // numerator (detected + caught)
 	RateWoMoveBefore                     float64
 	CountedWoMoveBefore, HitWoMoveBefore int
-	// 린트만(detected-by-query 를 뺀 분자, 분모는 같다). 보고용이고 판정에는 쓰지 않는다(R1).
+	// Lint only (the numerator without detected-by-query, same denominator). For reporting and not used in the verdict (R1).
 	HitLint, HitLintWoMoveBefore   int
 	RateLint, RateLintWoMoveBefore float64
 }
 
-// Judge: 컴파일 오류 수 일치 ∧ expected 전부 있음 ∧ expected 밖의 warn = 0(억제되지 않은 것은 오탐,
-// 억제된 것은 선언되지 않은 억제)
-// ∧ 질의 결과 일치 ∧ 변이 탐지율 ≥ 기준.
+// Judge: compile error count matches ∧ all expected present ∧ warns outside expected = 0 (unsuppressed ones are false positives,
+// suppressed ones are undeclared suppressions)
+// ∧ query results match ∧ mutation detection rate ≥ threshold.
 func Judge(e *Expect, in Input) Result {
 	var r Result
 	fail := func(f string, a ...any) { r.Failures = append(r.Failures, fmt.Sprintf(f, a...)) }
@@ -157,7 +157,7 @@ func Judge(e *Expect, in Input) Result {
 		case !d.Waived:
 			r.FalsePositives = append(r.FalsePositives, d)
 			fail("false positive: %s", d)
-		default: // 모든 억제는 기대값으로 선언돼야 한다(Review Focus 1)
+		default: // every suppression must be declared as an expectation (Review Focus 1)
 			r.Undeclared = append(r.Undeclared, d)
 			fail("waived warn not declared in expect.yaml: %s", d)
 		}
@@ -201,7 +201,7 @@ func Judge(e *Expect, in Input) Result {
 	if e.MutationMinRate > 0 && (r.Counted == 0 || r.Rate < e.MutationMinRate) {
 		fail("mutation detection %d/%d = %.2f, want ≥ %.2f", r.Hit, r.Counted, r.Rate, e.MutationMinRate)
 	}
-	// move-before 는 거의 언제나 잡힌다(출처 앞으로 옮기면 모른다). 나머지 연산자만으로도 기준을 넘어야 한다(ADR-014)
+	// move-before is caught almost always (moving before the source means not knowing). The other operators alone must also clear the threshold (ADR-014)
 	if e.MutationMinRate > 0 && (r.CountedWoMoveBefore == 0 || r.RateWoMoveBefore < e.MutationMinRateWoMoveBefore) {
 		fail("mutation detection without move-before %d/%d = %.2f, want ≥ %.2f", r.HitWoMoveBefore, r.CountedWoMoveBefore,
 			r.RateWoMoveBefore, e.MutationMinRateWoMoveBefore)
@@ -216,7 +216,7 @@ func rowsEqual(a, b [][]string) bool {
 	return slices.EqualFunc(a, b, func(x, y []string) bool { return slices.Equal(x, y) })
 }
 
-// Report 는 out/accept/<work>.md 의 본문.
+// Report is the body of out/accept/<work>.md.
 func Report(e *Expect, in Input, r Result) string {
 	var b strings.Builder
 	p := func(f string, a ...any) { fmt.Fprintf(&b, f, a...) }
@@ -224,59 +224,59 @@ func Report(e *Expect, in Input, r Result) string {
 	if r.Pass {
 		verdict = "PASS"
 	}
-	p("# 합격 판정 — %s: **%s**\n\n", e.Work, verdict)
-	p("| 항목 | 결과 | 기준 |\n|---|---|---|\n")
-	p("| 컴파일 오류 | %d | %d |\n", in.CompileErrors, e.CompileErrors)
-	p("| 기대 진단 | %d/%d | 전부 |\n", len(e.Expected)-len(r.Missing), len(e.Expected))
-	p("| 오탐(기대 밖 억제되지 않은 warn) | %d | 0 |\n", len(r.FalsePositives))
-	p("| 선언되지 않은 억제(기대 밖 억제된 warn) | %d | 0 |\n", len(r.Undeclared))
-	p("| 질의 | %d/%d | 전부 |\n", len(e.Queries)-len(r.BadQueries), len(e.Queries))
-	p("| 기대 패턴 | %d/%d | 전부 |\n", len(e.Patterns)-len(r.MissingPatterns), len(e.Patterns))
-	p("| 변이 탐지율 | %d/%d = %.2f | ≥ %.2f |\n", r.Hit, r.Counted, r.Rate, e.MutationMinRate)
-	p("| 변이 탐지율(move-before 제외) | %d/%d = %.2f | ≥ %.2f |\n\n", r.HitWoMoveBefore, r.CountedWoMoveBefore,
+	p("# Acceptance verdict — %s: **%s**\n\n", e.Work, verdict)
+	p("| item | result | criterion |\n|---|---|---|\n")
+	p("| compile errors | %d | %d |\n", in.CompileErrors, e.CompileErrors)
+	p("| expected diagnostics | %d/%d | all |\n", len(e.Expected)-len(r.Missing), len(e.Expected))
+	p("| false positives (unsuppressed warns outside expected) | %d | 0 |\n", len(r.FalsePositives))
+	p("| undeclared suppressions (suppressed warns outside expected) | %d | 0 |\n", len(r.Undeclared))
+	p("| queries | %d/%d | all |\n", len(e.Queries)-len(r.BadQueries), len(e.Queries))
+	p("| expected patterns | %d/%d | all |\n", len(e.Patterns)-len(r.MissingPatterns), len(e.Patterns))
+	p("| mutation detection rate | %d/%d = %.2f | ≥ %.2f |\n", r.Hit, r.Counted, r.Rate, e.MutationMinRate)
+	p("| mutation detection rate (excluding move-before) | %d/%d = %.2f | ≥ %.2f |\n\n", r.HitWoMoveBefore, r.CountedWoMoveBefore,
 		r.RateWoMoveBefore, e.MutationMinRateWoMoveBefore)
 	if len(r.Failures) > 0 {
-		p("## 불합격 사유\n\n")
+		p("## Reasons for failure\n\n")
 		for _, f := range r.Failures {
 			p("- %s\n", f)
 		}
 		p("\n")
 	}
-	p("## 기대 진단\n\n| 규칙 | 대상 | 등급 | 억제 | 결과 | 근거 |\n|---|---|---|---|---|---|\n")
+	p("## Expected diagnostics\n\n| rule | target | severity | suppression | result | basis |\n|---|---|---|---|---|---|\n")
 	for _, w := range e.Expected {
-		st := "있음"
+		st := "present"
 		if slices.Contains(r.Missing, w) {
-			st = "**없음**"
+			st = "**absent**"
 		}
 		p("| %s | `%s` | %s | %v | %s | %s |\n", w.Rule, w.Target, w.Severity, w.Waived, st, cell(w.Why))
 	}
-	p("\n## 전체 진단\n\n")
+	p("\n## All diagnostics\n\n")
 	if len(in.Diags) == 0 {
-		p("(없음)\n")
+		p("(none)\n")
 	}
 	for _, d := range in.Diags {
-		p("- `%s` — 대상 `%s`\n", d, short(e.Work, d.TargetID))
+		p("- `%s` — target `%s`\n", d, short(e.Work, d.TargetID))
 	}
-	p("\n## 질의\n\n")
+	p("\n## Queries\n\n")
 	for _, q := range e.Queries {
-		st := "일치"
+		st := "match"
 		if slices.Contains(r.BadQueries, q.Name) {
-			st = "**불일치**"
+			st = "**mismatch**"
 		}
-		p("### %s — %s\n\n%s\n\n```sql\n%s\n```\n\n기대 `%v` · 실제 `%v` %s\n\n", q.Name, st, q.Why, strings.TrimSpace(q.SQL),
+		p("### %s — %s\n\n%s\n\n```sql\n%s\n```\n\nexpected `%v` · actual `%v` %s\n\n", q.Name, st, q.Why, strings.TrimSpace(q.SQL),
 			q.Rows, in.Rows[q.Name], in.QueryErrors[q.Name])
 	}
 	patternTables(&b, e, in, r)
-	p("## 변이\n\n")
+	p("## Mutants\n\n")
 	if in.Mutants == nil {
-		p("(돌리지 않았다)\n")
+		p("(not run)\n")
 		return b.String()
 	}
 	mutantTables(&b, e.Work, in.Mutants)
 	return b.String()
 }
 
-// mutantTables 는 연산자별 집계(생성/탐지/동등/생존)와 변이별 표.
+// mutantTables is the per-operator tally (generated/detected/equivalent/survived) and the per-mutant table.
 func mutantTables(b *strings.Builder, work string, ms []Mutant) {
 	type tally struct{ gen, det, query, caught, eq, surv, na int }
 	var ops []string
@@ -304,7 +304,7 @@ func mutantTables(b *strings.Builder, work string, ms []Mutant) {
 			t.surv++
 		}
 	}
-	fmt.Fprintf(b, "| 연산자 | 생성 | 해당 없음(제외) | 탐지(규칙, 지점 안) | 탐지(질의) | 탐지(컴파일러) | 동등(제외) | 생존 |\n|---|---|---|---|---|---|---|---|\n")
+	fmt.Fprintf(b, "| operator | generated | not applicable (excluded) | detected (rule, in site) | detected (query) | detected (compiler) | equivalent (excluded) | survived |\n|---|---|---|---|---|---|---|---|\n")
 	var all, noMove tally
 	for _, op := range ops {
 		t := by[op]
@@ -323,7 +323,7 @@ func mutantTables(b *strings.Builder, work string, ms []Mutant) {
 		}
 		return fmt.Sprintf("%d/%d = %.2f", t.det+t.caught, n, float64(t.det+t.caught)/float64(n))
 	}
-	lintOnly := func(t tally) string { // 질의 탐지를 뺀 분자, 분모는 같다
+	lintOnly := func(t tally) string { // the numerator without query detection, same denominator
 		n := t.det + t.caught + t.surv
 		if n == 0 {
 			return "-"
@@ -331,9 +331,9 @@ func mutantTables(b *strings.Builder, work string, ms []Mutant) {
 		k := t.det - t.query + t.caught
 		return fmt.Sprintf("%d/%d = %.2f", k, n, float64(k)/float64(n))
 	}
-	fmt.Fprintf(b, "\n탐지율: 전체 %s · move-before 제외 %s\n", rate(all), rate(noMove))
-	fmt.Fprintf(b, "\n린트만(질의 탐지 제외, 판정에는 쓰지 않는다): 전체 %s · move-before 제외 %s\n", lintOnly(all), lintOnly(noMove))
-	fmt.Fprintf(b, "\n| # | 연산자 | 대상 | 기대 규칙 | 결과 | 새 warn 규칙 | 비고 |\n|---|---|---|---|---|---|---|\n")
+	fmt.Fprintf(b, "\ndetection rate: all %s · excluding move-before %s\n", rate(all), rate(noMove))
+	fmt.Fprintf(b, "\nlint only (query detection excluded, not used in the verdict): all %s · excluding move-before %s\n", lintOnly(all), lintOnly(noMove))
+	fmt.Fprintf(b, "\n| # | operator | target | expected rule | result | new warn rule | note |\n|---|---|---|---|---|---|---|\n")
 	for i, m := range ms {
 		fmt.Fprintf(b, "| m%d | %s | `%s` | %s | %s | %s | %s |\n", i+1, m.Mutation.Op, cell(shortAll(work, m.Mutation.Target)),
 			strings.Join(m.Mutation.Expect, ", "), m.Outcome, strings.Join(m.Rules, ", "), cell(m.Note))

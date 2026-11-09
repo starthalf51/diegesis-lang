@@ -14,8 +14,8 @@ const patternYAML = expectYAML + `patterns:
 
 func intp(n int) *int { return &n }
 
-// Review Focus 1: 기대 패턴은 대상까지 같아야 한다. 같은 패턴이 다른 대상에서 매치되면 FAIL.
-// span_from 을 적으면 구간 시작도 같아야 한다.
+// Review Focus 1: an expected pattern must match the target too. The same pattern matching a different target is FAIL.
+// If span_from is given, the span start must match too.
 func TestPatternTargetMustMatch(t *testing.T) {
 	e, err := Parse([]byte(patternYAML))
 	if err != nil {

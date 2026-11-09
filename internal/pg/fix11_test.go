@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// Task 11 (a): 별칭은 부정 안에서도 풀린다. `not q`(q = p) ≡ `not p`, 이중 부정 `not r`(r = not p) ≡ p.
+// Task 11 (a): aliases are resolved inside a negation too. `not q` (q = p) ≡ `not p`, double negation `not r` (r = not p) ≡ p.
 func TestCanonNegatedAlias(t *testing.T) {
 	pool := open(t)
 	for name, c := range map[string]struct {
@@ -38,7 +38,7 @@ scene 1
 			t.Errorf("%s: info-flow = %v, want %v", name, got, c.want)
 		}
 	}
-	// 반대 판정도 같은 정규형을 쓴다: `not q` 를 본 사람이 p 를 말하면 모순.
+	// The opposite verdict uses the same canonical form: someone who saw `not q` and says p is a contradiction.
 	id := compileLoad(t, pool, `fact q = p
 scene 1
   enter a, b
@@ -50,7 +50,7 @@ scene 1
 	}
 }
 
-// Task 11 (b): derive 진단(time-cycle)은 순환 간선을 만든 `when` 문장의 대상을 가진다. 억제는 그 대상과 정확히 같아야 한다.
+// Task 11 (b): a derive diagnostic (time-cycle) carries the target of the `when` statement that made the cycle edge. Suppression must match that target exactly.
 func TestTimeCycleTarget(t *testing.T) {
 	pool := open(t)
 	for name, c := range map[string]struct {
@@ -90,7 +90,7 @@ scene 2
 	}
 }
 
-// Task 11 (c): 그래프의 BELIEVES 간선은 거둔 시점(until)을 가진다.
+// Task 11 (c): a graph BELIEVES edge has the withdrawal point (until).
 func TestGraphBelievesUntil(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -106,7 +106,7 @@ func TestGraphBelievesUntil(t *testing.T) {
 	}
 }
 
-// Task 11 (d): 007 이 거짓인 줄 알고 쓴 것으로 본 문서 하나마다 info 하나(작가의 실수도 보이게).
+// Task 11 (d): one info per document that 007 judged to be written knowing it was false (so an author's mistake shows too).
 func TestInferredDeceptionInfo(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `a believes np
