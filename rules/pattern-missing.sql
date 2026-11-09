@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: pattern
--- summary: a narrative pattern the author declared was not detected in the work
+-- summary: 작가가 선언한 서사 패턴이 작품에서 검출되지 않았다
 --
 -- Target: each `pattern <id> [at <scene>]` declaration (suppression target = that declaration, ID `<scene or module>#<pattern>`).
 -- Violation: none of the matches of the same pattern covers the declaration (pattern_covers: a declaration without a scene = any match; with a scene, a match touching that scene).

@@ -41,7 +41,7 @@ if [ $SKIP_DOCKER = 0 ]; then
 fi
 
 # (2) dieg: PATH -> go build -> release download
-if command -v dieg >/dev/null 2>&1; then DIEG=dieg
+if command -v dieg >/dev/null 2>&1 && dieg 2>&1 | grep -q "| demo"; then DIEG=dieg   # a stale dieg without demo falls through
 elif command -v go >/dev/null 2>&1; then
   mkdir -p bin; go build -o ./bin/dieg ./cmd/dieg || die "go build failed"; DIEG=./bin/dieg
 else

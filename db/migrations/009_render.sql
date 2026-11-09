@@ -25,11 +25,11 @@ CREATE FUNCTION render_fact_text(w text, f text) RETURNS text
 LANGUAGE plpgsql STABLE SET search_path = public, ag_catalog AS $$
 DECLARE d jsonb; t text;
 BEGIN
-  FOR i IN 1..32 LOOP -- FOR i IN 1..32 LOOP -- guard against alias cycles
+  FOR i IN 1..32 LOOP -- guard against alias cycles
     SELECT x.def, x.text INTO d, t FROM fact x WHERE x.work_id = w AND x.id = f;
-    IF NOT FOUND AND f LIKE w || '/not %' THEN -- IF NOT FOUND AND f LIKE w || '/not %' THEN -- a negation with no row, made by lint_neg
+    IF NOT FOUND AND f LIKE w || '/not %' THEN -- a negation with no row, made by lint_neg
       RETURN 'It is not true that ' || render_fact_text(w, substr(f, length(w) + 6));
-    ELSIF d ? 'alias' AND nullif(t, '') IS NULL THEN -- ELSIF d ? 'alias' AND nullif(t, '') IS NULL THEN -- if the alias has an author sentence, use it (ELSE below)
+    ELSIF d ? 'alias' AND nullif(t, '') IS NULL THEN -- if the alias has an author sentence, use it (ELSE below)
       f := d->>'alias';
     ELSIF d ? 'not' THEN
       RETURN 'It is not true that ' || render_fact_text(w, d->>'not');
@@ -71,7 +71,7 @@ CREATE FUNCTION render_scene(w text, s text) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SET search_path = public, ag_catalog AS $$
 DECLARE
   sc scene; n int; pov_v text; pov text; acts jsonb; beats jsonb; cast_ids text[]; facts text[]; held text[];
-  facts_c text[]; held_c text[]; -- facts_c text[]; held_c text[]; -- canonical propositions (for comparison)
+  facts_c text[]; held_c text[]; -- canonical propositions (for comparison)
 BEGIN
   SELECT count(*) INTO n FROM scene x WHERE x.work_id = w AND (x.id = s OR lint_short(x.id) = s);
   IF n <> 1 THEN

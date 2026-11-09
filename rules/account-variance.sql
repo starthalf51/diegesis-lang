@@ -2,7 +2,7 @@
 -- severity: info
 -- layer: lint
 -- target: act
--- summary: accounts of the same event contain different facts
+-- summary: 같은 사건의 기록(account)끼리 담긴 사실이 다르다
 --
 -- Target: events with two or more accounts. The propositions in account A = the contents of acts inside A (prop_id ∪ with, any verb), normalized with lint_canon.
 -- Report: for each proposition P of A, report it if another account B of the same event lacks P. If B has ¬P (lint_opposite) it is contradicted,

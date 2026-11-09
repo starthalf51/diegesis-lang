@@ -21,7 +21,7 @@ inplay AS (
   UNION
   SELECT b.scene_id, z.base FROM belief b CROSS JOIN LATERAL prop_norm($1, b.prop_id) z
    WHERE b.work_id = $1 AND b.scene_id IS NOT NULL AND b.prop_id IS NOT NULL),
-engaged AS (  -- engaged AS (  -- characters who touched that fact in that scene: actor/audience of an act conveying it, subject of a belief/doubt statement about it
+engaged AS (  -- characters who touched that fact in that scene: actor/audience of an act conveying it, subject of a belief/doubt statement about it
   SELECT a.scene_id, a.base, a.actor_id AS entity_id FROM act_props($1) a
   UNION
   SELECT a.scene_id, a.base, au.entity_id FROM act_props($1) a JOIN audience au ON au.act_id = a.act_id

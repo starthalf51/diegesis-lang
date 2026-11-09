@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: attribute
--- summary: the same attribute of the same entity is asserted with mutually inconsistent values
+-- summary: 같은 엔티티의 같은 속성이 서로 맞지 않는 값으로 단언된다
 --
 -- Target: attr assertions outside an account (inside an account is account-variance's job). Point = at_pt, or origin if none (background).
 --   Values are compared as (kind, canonical value): id via lint_canon (alias resolution), int normalized by sema (07 ≡ 7), str as is.

@@ -52,6 +52,7 @@
 - `info-flow`, `letter-unknown-info` and `because-unbelieved` are the same check split by the kind of target act. One defect yields one diagnostic. `lies` and false documents are excluded from this check (deception is not an information-flow violation).
 - Knowing is judged by `lint_known`. A belief withdrawn by doubt (`until_pt`) counts as not known. If the order is not settled (`precedes` = possible), the level drops to info.
 - `attribute-conflict` looks at static conflicts (e.g. wound location shoulder vs. leg) and at elapsed-time contradictions in numeric attributes such as age. For age, it uses `point_dist` to weigh the upper and lower bounds on the gap between points separately, so it can decide with only one bound.
+- `status` and `at` are exempt from attribute-conflict (stays-gone and object-location read them per point). A status takes effect from its position in the source, and leaving is not an event within a scene.
 
 ## Rule file format
 

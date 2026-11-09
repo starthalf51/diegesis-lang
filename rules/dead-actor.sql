@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: a dead character speaks or acts
+-- summary: 죽은 인물이 말하거나 행동한다
 --
 -- Target: acts whose actor (the resolved speaker; the audience is not looked at) X has a `dies X` point @X.died.
 -- Violation: the death is necessarily before the act — precedes(@X.died, act) = yes and precedes(act, @X.died) ≠ yes

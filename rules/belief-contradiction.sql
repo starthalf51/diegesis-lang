@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: truthfully asserts a proposition opposite to a fact the speaker perceived directly
+-- summary: 직접 지각한 사실과 반대되는 명제를 진실하게 주장한다
 --
 -- Target: actor X truthfully asserting P at point t. A truthful assertion = the content proposition of an assertive utterance (assertive verbs except lies and decrees),
 --   or a proposition held in `writes art`. `because P` is not an assertion.

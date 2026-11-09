@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: setup
--- summary: a promise setup was not paid off
+-- summary: promise 복선이 회수되지 않았다
 --
 -- Target: setups with kind = promise for which no payoff in the same work points at that setup.
 -- hint and symbol do not require payoff. The order of payoffs is covered by payoff-without-setup.

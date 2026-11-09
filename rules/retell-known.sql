@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: the same speaker tells a listener something the listener already believes, in the same words (and the listener's beliefs did not change in between)
+-- summary: 청자가 이미 믿는 사실을 같은 화자가 같은 말로 다시 알려 준다 (그 사이 청자의 믿음은 변하지 않았다)
 --
 -- Aims at duplicates left behind by revisions (the old place of a moved line). Literary repetition ("let me say it again") uses different words, so it is not caught.
 -- Target: for each content proposition P of an assertive utterance (excluding lies, decrees, sends), listener B (excluding the speaker). sends hands delivery to a messenger, so it is not repetition.
@@ -18,7 +18,7 @@ WITH told AS (
     FROM act_content c JOIN act a ON a.id = c.act_id JOIN audience au ON au.act_id = c.act_id
    WHERE c.work_id = $1 AND assertive(c.verb) AND c.verb NOT IN ('lies', 'decrees', 'sends')
      AND c.actor_id IS NOT NULL AND au.entity_id <> c.actor_id),
-cand AS MATERIALIZED (  -- cand AS MATERIALIZED (  -- filter on the cheap conditions first (same speaker, listener, proposition, quote) to cut precedes calls
+cand AS MATERIALIZED (  -- filter on the cheap conditions first (same speaker, listener, proposition, quote) to cut precedes calls
   SELECT t.*, k.cause_act, k.from_pt AS k_pt
     FROM told t
     JOIN believes k ON k.work_id = $1 AND k.entity_id = t.hearer AND k.value AND NOT k.declared
@@ -31,7 +31,7 @@ SELECT DISTINCT ON (t.act_id, t.hearer, t.cp)
        jsonb_build_object('hearer', t.hearer, 'prop', t.prop_id, 'first', t.cause_act) AS data
   FROM cand t
  WHERE precedes($1, t.k_pt, t.pt) = 'yes'
-   AND NOT EXISTS (  -- AND NOT EXISTS (  -- an utterance with a new listener mixed in (an announcement, a late revelation) is not repetition: everyone in the audience must already know
+   AND NOT EXISTS (  -- an utterance with a new listener mixed in (an announcement, a late revelation) is not repetition: everyone in the audience must already know
    SELECT 1 FROM audience au
     WHERE au.act_id = t.act_id AND au.entity_id <> t.actor_id
       AND NOT EXISTS (SELECT 1 FROM cand u WHERE u.act_id = t.act_id AND u.cp = t.cp AND u.hearer = au.entity_id))

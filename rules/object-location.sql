@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: an object is handled in a scene at a place other than where it is declared to be
+-- summary: 사물이 있다고 선언된 곳과 다른 장소의 장면에서 그 사물을 다룬다
 --
 -- Convention: an object's location is `attr <thing>.at = <place>`, a scene's place is scene.place_id.
 -- Target: acts whose object (including the target of does) X is a thing or artifact and whose scene has a place.

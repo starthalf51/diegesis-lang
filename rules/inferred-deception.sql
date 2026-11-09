@@ -2,7 +2,7 @@
 -- severity: info
 -- layer: lint
 -- target: act
--- summary: a document judged to be written by someone who knew it was false (007) — check whether it is the author's mistake
+-- summary: 쓴 사람이 거짓인 줄 알고 쓴 것으로 판정된 문서(007) — 작가의 실수인지 확인하라
 --
 -- Target: `X writes art` that has a deception row (007: the writer definitely knows ¬P at the time of writing). One finding per document,
 --   listing every proposition seen as false. Unlike lies, the author did not write it as a lie but the engine inferred it, so it is shown.

@@ -17,7 +17,7 @@ LANGUAGE plpgsql STABLE SET search_path = public, ag_catalog AS $$
 DECLARE d jsonb;
 BEGIN
   base := p; val := true;
-  FOR i IN 1..32 LOOP -- FOR i IN 1..32 LOOP -- guard against alias cycles
+  FOR i IN 1..32 LOOP -- guard against alias cycles
     SELECT x.def INTO d FROM fact x WHERE x.work_id = w AND x.id = base;
     IF NOT FOUND AND base LIKE w || '/not %' THEN
       base := substr(base, length(w) + 6); val := NOT val;
@@ -151,6 +151,6 @@ LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
     SELECT v, (pt IS NULL OR ((pt <> at OR declared) AND precedes(w, pt, at) = 'yes'))
               AND (upt IS NULL OR (precedes(w, at, upt) = 'yes' AND precedes(w, upt, at) <> 'yes')) AS sure
       FROM src WHERE (pt IS NULL OR ((pt <> at OR declared) AND precedes(w, pt, at) <> 'no'))
-                 AND (upt IS NULL OR precedes(w, upt, at) <> 'yes')) -- AND (upt IS NULL OR precedes(w, upt, at) <> 'yes')) -- a definitely withdrawn belief is not even maybe
+                 AND (upt IS NULL OR precedes(w, upt, at) <> 'yes')) -- a definitely withdrawn belief is not even maybe
   SELECT CASE WHEN bool_or(sure AND v = fv) THEN 'yes' WHEN bool_or(sure AND v <> fv) THEN 'opp'
               WHEN bool_or(v = fv) THEN 'maybe' ELSE 'no' END FROM held $$;

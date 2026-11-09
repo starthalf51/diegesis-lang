@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: `… because P`, but the actor does not believe P at that point
+-- summary: `… because P` 인데 그 시점에 행위자가 P 를 믿지 않는다
 --
 -- Target: acts carrying because P (any verb). Actor = the resolved speaker (skipped if role: speaker is ambiguous; role-ambiguous covers that separately).
 -- Exemption and verdict are the same as info-flow: lint_exempt, lint_known(actor, canonical P, act point) → 2 fine, 1 info, 0 warn.

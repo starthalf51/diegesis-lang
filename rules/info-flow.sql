@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: a character says a proposition they have never come to know before
+-- summary: 인물이 그 전에 알게 된 적 없는 명제를 말한다
 --
 -- Target: for each content proposition of a truthful assertive utterance (assertive verbs except lies and decrees), one uses(speaker, P, act point) line.
 --   writes is covered by letter-unknown-info and `because P` by because-unbelieved (not reported twice).

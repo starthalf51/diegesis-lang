@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: the message of `sends m to t with P` was not delivered to t
+-- summary: `sends m to t with P` 의 전갈이 t 에게 전해지지 않았다
 --
 -- Target: one pair each of a sends act's recipient t (the to list) and content proposition P (prop_id ∪ with).
 --   (The audience of an offstage sends is only the messenger. t knows only through delivery.)

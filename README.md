@@ -43,17 +43,26 @@ Try it without a Claude subscription: `dieg demo`. It loads a small embedded Kor
 ```text
 == Consistency warnings ==
 1.3.dieg.md:13:19: warn stays-gone: dobi enters after leaving (status gone at 1.3.dieg.md:12)
+1.3.dieg.md:14:1: warn stays-gone: dobi says after leaving (status gone at 1.3.dieg.md:12)
 cast.dieg.md:35:1: warn relative-time-fact: fact storm_coming names a relative time: 폭풍이 열흘 뒤에 온다
 
 == Who knows what (scene 1.3) ==
-- 미나: 「폭풍이 열흘 뒤에 온다」 — 참이라고 믿는다
-- 하루: 「등대 문은 잠겨 있다」 — 참이라고 믿는다
+- 도비: 「등대 문은 잠겨 있다」 — believes it is true
+- 미나: 「폭풍이 열흘 뒤에 온다」 — believes it is true
+- 하루: 「폭풍이 열흘 뒤에 온다」 — believes it is true
+- 하루: 「등대 문은 잠겨 있다」 — believes it is true
 
-== World state for scene 1.3 ==
+== World state for scene 1.3 == (excerpt)
+### 장소와 시간
+- 이 장면의 장소: 항구(harbor)
+
 ### 코드에 적힌 속성
 - 도비: 이미 이야기에서 떠났다(status)
 - 놋쇠 열쇠(key): at = 등대
+- 이 장면의 장소(항구)에 없는 물건: 놋쇠 열쇠(등대). 장면에서 직접 옮기는 행위가 없으면 그 자리에 둔다.
 ```
+
+The world-state block is the Korean prompt text the renderer receives.
 
 ## Manual setup
 

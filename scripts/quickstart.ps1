@@ -42,7 +42,7 @@ if (-not $SkipDocker) {
 
 # (2) dieg: PATH -> go build -> release download
 $bin = Join-Path (Get-Location) 'bin'
-if (Get-Command dieg -ErrorAction SilentlyContinue) { $Dieg = 'dieg' }
+if ((Get-Command dieg -ErrorAction SilentlyContinue) -and ((& { $ErrorActionPreference = 'Continue'; & dieg 2>&1 | Out-String }) -like '*| demo*')) { $Dieg = 'dieg' }  # a stale dieg without demo falls through
 elseif (Get-Command go -ErrorAction SilentlyContinue) {
   New-Item -ItemType Directory -Force $bin | Out-Null
   $Dieg = Join-Path $bin 'dieg.exe'

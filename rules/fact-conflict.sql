@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: fact
--- summary: two true facts with the same predicate and first argument but different remaining arguments (e.g. broke(lens, A) and broke(lens, B)), or two text facts with the same leading token in different files (candidate)
+-- summary: 같은 술어·같은 첫 인자인데 나머지 인자가 다른 참 사실이 둘 있다 (예: broke(lens, A) 와 broke(lens, B)), 또는 같은 선두 토큰의 텍스트 사실이 다른 파일에 둘 있다(후보)
 --
 -- True fact = a predicate row declared as `fact x = pred(args)` (the one an alias points at). `not`, alias rows, and predicate rows made during inference are not counted.
 -- Emitted once per pair (on the smaller id side). If both really are true (a relation that allows several), waive it.

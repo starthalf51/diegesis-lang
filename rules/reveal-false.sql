@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: reveal
--- summary: reveals to the reader a fact declared false
+-- summary: 거짓으로 선언된 사실을 독자에게 공개한다
 --
 -- Target: reveal statements (target kind reveal = that scene ID, suppression uses the same key). The same fact in one scene is emitted once.
 -- Violation: the revealed proposition is false within the work — render_fact_true judges it following aliases and negation

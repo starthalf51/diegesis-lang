@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: a character declared to have left the story (status gone) acts or appears again
+-- summary: 이야기에서 떠났다(status gone)고 선언된 인물이 다시 행동하거나 등장한다
 --
 -- Convention: when a character leaves the story `attr <X>.status = gone`, when they return `attr <X>.status = present`.
 -- Target: acts of actor X (target act), and X's stage appearance (enter; presence rows have no id, so

@@ -51,7 +51,7 @@ LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
       FROM reveal r LEFT JOIN scene sr ON sr.id = r.scene_id AND sr.shown
       CROSS JOIN LATERAL prop_norm(w, r.prop_id) z
      WHERE r.work_id = w AND r.prop_id IS NOT NULL AND coalesce(point_ord(w, r.at_pt), sr.discourse_ord) IS NOT NULL),
-  dupe AS (  -- dupe AS (  -- deceived speaker: heard that (b, v) only from deceptive disclosures
+  dupe AS (  -- deceived speaker: heard that (b, v) only from deceptive disclosures
     SELECT e.id, e.base, e.val FROM ev e
      WHERE NOT e.dec AND e.actor IS NOT NULL
        AND EXISTS (SELECT 1 FROM believes b CROSS JOIN LATERAL prop_norm(w, b.prop_id) z

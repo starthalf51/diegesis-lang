@@ -13,7 +13,7 @@ CREATE OR REPLACE FUNCTION lint_canon(w text, p text) RETURNS text
 LANGUAGE plpgsql STABLE SET search_path = public, ag_catalog AS $$
 DECLARE d jsonb;
 BEGIN
-  FOR i IN 1..32 LOOP -- FOR i IN 1..32 LOOP -- guard against alias cycles
+  FOR i IN 1..32 LOOP -- guard against alias cycles
     SELECT def INTO d FROM fact WHERE work_id = w AND id = p;
     IF d ? 'alias' THEN
       p := d->>'alias';

@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: payoff
--- summary: there is no setup, or it does not come before the payoff
+-- summary: 복선(setup)이 없거나 회수보다 앞서지 않는다
 --
 -- Target: each payoff statement (suppression target is (payoff, setup ID) as in sema; position is that payoff statement).
 -- Violation: warn if there is no setup. If both have points, precedes(setup, payoff):

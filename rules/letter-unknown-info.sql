@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: act
--- summary: a document holds a proposition the writer did not believe before writing
+-- summary: 쓴 사람이 쓰기 전에 믿지 않은 명제가 문서에 담겼다
 --
 -- Target: for each `X writes art`, one row per proposition P held in art (uses(X, P, time of writing)).
 -- Excluded: propositions written while knowing ¬P (deception row, 007 — forged or false letters are lies told in writing).

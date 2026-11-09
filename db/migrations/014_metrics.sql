@@ -59,7 +59,7 @@ LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
 -- What is counted is not people but deceptions (act, proposition): 1 if at least one recipient still believes.
 CREATE FUNCTION metric_active_deceptions(w text) RETURNS TABLE (ord int, n int)
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
-  WITH live AS (  -- WITH live AS (  -- interval during which a belief stands for each (deception act, proposition, recipient) [from, until)
+  WITH live AS (  -- interval during which a belief stands for each (deception act, proposition, recipient) [from, until)
     SELECT d.act_id, d.prop_id,
            (SELECT x.discourse_ord FROM act c JOIN scene x ON x.id = c.scene_id AND x.shown WHERE c.id = b.cause_act) f,
            point_ord(w, b.until_pt) u

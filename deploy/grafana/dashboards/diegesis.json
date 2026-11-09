@@ -17,7 +17,7 @@
    {
     "name": "work",
     "type": "query",
-    "label": "작품",
+    "label": "work",
     "datasource": {
      "type": "grafana-postgresql-datasource",
      "uid": "diegesis-pg"
@@ -38,8 +38,8 @@
  "panels": [
   {
    "id": 1,
-   "title": "인물 등장 히트맵",
-   "description": "행 = 인물, 열 = 서술 위치(ord), 칸 = 그 장면 행위 수(색이 진할수록 많음). 말없이 선 인물은 0. 표 패널의 색 셀로 그린 히트맵이다.",
+   "title": "Character appearance heatmap",
+   "description": "Row = character, column = narrative position (ord), cell = number of acts in that scene (darker = more). A character who stands silent is 0. Drawn with the coloured cells of a table panel.",
    "type": "table",
    "datasource": {
     "type": "grafana-postgresql-datasource",
@@ -120,8 +120,8 @@
   },
   {
    "id": 2,
-   "title": "지식 비대칭",
-   "description": "인물별: 독자는 참이라고 믿는데 그 인물이 모르는(no·opp) 명제 수. 예언자·전지 인물은 뺀다.",
+   "title": "Knowledge asymmetry",
+   "description": "Per character: the number of propositions the reader believes true that the character does not know (no/opp). Prophets and omniscient characters are excluded.",
    "type": "barchart",
    "datasource": {
     "type": "grafana-postgresql-datasource",
@@ -212,8 +212,8 @@
   },
   {
    "id": 3,
-   "title": "미해결 복선",
-   "description": "그 위치까지 나온 setup 중 아직 payoff 가 오지 않은 수.",
+   "title": "Unresolved setups",
+   "description": "Setups up to that position whose payoff has not yet come.",
    "type": "barchart",
    "datasource": {
     "type": "grafana-postgresql-datasource",
@@ -235,7 +235,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT ord, n AS \"열린 setup\" FROM metric_open_setups(${work:sqlstring}) ORDER BY 1"
+     "rawSql": "SELECT ord, n AS \"open setups\" FROM metric_open_setups(${work:sqlstring}) ORDER BY 1"
     }
    ],
    "options": {
@@ -277,8 +277,8 @@
   },
   {
    "id": 4,
-   "title": "활성 기만",
-   "description": "거짓말·거짓 문서를 받은 사람 중 누군가가 그 위치에서 아직 거짓을 믿는 기만(행위, 명제) 수.",
+   "title": "Active deceptions",
+   "description": "Deceptions (act, proposition) in which at least one recipient of a lie or false document still believes the falsehood at that position.",
    "type": "barchart",
    "datasource": {
     "type": "grafana-postgresql-datasource",
@@ -300,7 +300,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT ord, n AS \"활성 기만\" FROM metric_active_deceptions(${work:sqlstring}) ORDER BY 1"
+     "rawSql": "SELECT ord, n AS \"active deceptions\" FROM metric_active_deceptions(${work:sqlstring}) ORDER BY 1"
     }
    ],
    "options": {
@@ -342,8 +342,8 @@
   },
   {
    "id": 5,
-   "title": "긴장도",
-   "description": "열린 복선·활성 기만·dramatic-irony/mystery 패턴 매치를 가중합(각 항은 작품 안 최댓값으로 정규화). 패턴 항은 `dieg patterns <작품>` 을 돌려야 채워진다(아니면 0).",
+   "title": "Tension",
+   "description": "Weighted sum of open setups, active deceptions and dramatic-irony/mystery pattern matches (each term normalised by its maximum within the work). The pattern term is filled only after running `dieg patterns <work>` (otherwise 0).",
    "type": "barchart",
    "datasource": {
     "type": "grafana-postgresql-datasource",
@@ -365,7 +365,7 @@
      "format": "table",
      "editorMode": "code",
      "rawQuery": true,
-     "rawSql": "SELECT ord, value AS \"긴장도\" FROM metric_tension(${work:sqlstring}) ORDER BY 1"
+     "rawSql": "SELECT ord, value AS \"tension\" FROM metric_tension(${work:sqlstring}) ORDER BY 1"
     }
    ],
    "options": {
@@ -407,8 +407,8 @@
   },
   {
    "id": 6,
-   "title": "아나크로니 산점도",
-   "description": "x = 서술 위치(ord), y = 장면 시작의 이야기 시간(초). 시간 제약이 있는(앵커된) 장면만 찍는다. macbeth·chibi·odyssey 처럼 앵커가 없는 작품은 0행이라 빈 그래프다(오류 아님). 수치 x 의 점만 찍는 trend 패널로 그린 산점도다.",
+   "title": "Anachrony scatter",
+   "description": "x = narrative position (ord), y = story time at scene start (seconds). Only scenes with time constraints (anchored) are plotted. Works without anchors, such as macbeth, chibi and odyssey, give 0 rows and an empty graph (not an error). Drawn with a trend panel that plots only points with a numeric x.",
    "type": "trend",
    "datasource": {
     "type": "grafana-postgresql-datasource",
@@ -445,7 +445,7 @@
       "showPoints": "always",
       "pointSize": 7,
       "fillOpacity": 0,
-      "axisLabel": "이야기 시간"
+      "axisLabel": "story time"
      },
      "unit": "s"
     },
@@ -466,7 +466,7 @@
        },
        {
         "id": "custom.axisLabel",
-        "value": "서술 순서"
+        "value": "narrative order"
        }
       ]
      }
@@ -475,8 +475,8 @@
   },
   {
    "id": 7,
-   "title": "장면 속도",
-   "description": "장면의 이야기 시간 폭(초) 대 행위 수. 시간 제약이 없는 점이 끝이면 span_s 는 비어 있다.",
+   "title": "Scene pace",
+   "description": "Story-time span of the scene (seconds) against its number of acts. If the end point has no time constraint, span_s is empty.",
    "type": "table",
    "datasource": {
     "type": "grafana-postgresql-datasource",
@@ -511,8 +511,8 @@
   },
   {
    "id": 8,
-   "title": "인물 관계 그래프",
-   "description": "노드 = 인물(크기 = 행위 수). 간선 = 함께 출석한 보이는 장면 수 + TOLD 수.",
+   "title": "Character relationship graph",
+   "description": "Node = character (size = number of acts). Edge = number of visible scenes attended together + number of TOLD.",
    "type": "nodeGraph",
    "datasource": {
     "type": "grafana-postgresql-datasource",
@@ -558,8 +558,8 @@
   },
   {
    "id": 9,
-   "title": "패턴 매치",
-   "description": "서사 패턴 라이브러리의 마지막 실행(pattern_result 뷰). `dieg patterns <작품>` 을 돌리기 전에는 비어 있다.",
+   "title": "Pattern matches",
+   "description": "Last run of the narrative pattern library (pattern_result view). Empty until `dieg patterns <work>` is run.",
    "type": "table",
    "datasource": {
     "type": "grafana-postgresql-datasource",
@@ -594,8 +594,8 @@
   },
   {
    "id": 10,
-   "title": "진단",
-   "description": "diagnostic 표: 규칙, 심각도, 소스 위치, 억제(waived) 여부.",
+   "title": "Diagnostics",
+   "description": "diagnostic table: rule, severity, source position, waived or not.",
    "type": "table",
    "datasource": {
     "type": "grafana-postgresql-datasource",

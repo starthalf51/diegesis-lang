@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: derive
 -- target: when
--- summary: the time constraints form a cycle (no schedule satisfies them)
+-- summary: 시간 제약이 순환한다(만족하는 일정이 없다)
 --
 -- The verdict is made at load time by solve_time() (db/migrations/002_time.sql): for order cycles (strongly connected components of min ≥ 0 edges) and
 -- for each other negative cycle, one run_id 'derive' diagnostic (src = the earliest statement among the cycle edges, data.edges = time_edge.ord).

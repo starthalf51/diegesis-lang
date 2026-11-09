@@ -2,7 +2,7 @@
 -- severity: warn
 -- layer: lint
 -- target: fact
--- summary: a fact text has a relative time embedded ("twelve days later" in Korean, "in twelve days")
+-- summary: 사실 텍스트에 상대 시간("열이틀 뒤", "in twelve days")이 박혀 있다
 --
 -- A fact must read the same even when the scene changes. An "N days later" with no reference point is a trace of editing gone wrong (use an absolute date or `when`).
 -- Target: fact.text (an alias fact's text is a name, so it is not caught). Korean numeral+unit+later/after/before/within, English in|after N days|weeks|months|years.
