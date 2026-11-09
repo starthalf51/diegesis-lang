@@ -59,7 +59,7 @@ func runConvert(file string, o write.Opts, force bool) error {
 		return err
 	}
 	title := strings.TrimSuffix(filepath.Base(file), filepath.Ext(file))
-	idea, err := write.ConvertIdea(title, string(b))
+	idea, paras, err := write.ConvertIdea(title, string(b))
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,8 @@ func runConvert(file string, o write.Opts, force bool) error {
 	m, _, k := meters(o, f)
 	o.Reserved = corpusWorks()
 	summary := summaryLine("convert", m, k, o.Out)
-	res, err := write.Loop(context.Background(), m, writeChecker(o.Reserved), idea, refs, o)
+	o.Coverage = write.SrcCoverage
+	res, err := write.Loop(context.Background(), m, write.CoverageChecker(writeChecker(o.Reserved), paras), idea, refs, o)
 	if err != nil {
 		summary(res, 0, nil)
 		return err

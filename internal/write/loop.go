@@ -50,6 +50,7 @@ type Opts struct {
 	Skip                                 []string // Rerender: scene ids never rendered even if stale (CLI: revise --skip)
 	Verifier                             string   // "card" (default, render.ScoreCard checklist) or "open" (open re-extraction)
 	AllowWarn                            bool     // Loop: warn diagnostics do not block and are not fed back (errors still do)
+	Coverage                             func(dir string) int // Loop: how much of the source a round's code covers; when set, an error-free round wins, then the higher coverage, so dropping scenes cannot buy fewer errors
 }
 
 func DefaultOpts() Opts {
@@ -103,7 +104,7 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 	}
 	var best map[string]string // best well-formed bundle: fewest errors, then fewest warns, the earlier round on a tie
 	var bestDiags []Diag       // its diagnostics
-	var bestE, bestW int
+	var bestE, bestW, bestC int
 	var bundle string
 	user := CodePrompt(idea, refs, o.Reserved, o.Skeleton)
 	for r := 1; r <= o.Rounds; r++ {
@@ -148,8 +149,17 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 					w++
 				}
 			}
-			if best == nil || e < bestE || e == bestE && w < bestW {
-				best, bestDiags, bestE, bestW = files, res.Diags, e, w
+			cov, better := 0, e < bestE || e == bestE && w < bestW
+			if o.Coverage != nil {
+				cov = o.Coverage(rdir)
+				if (e == 0) != (bestE == 0) {
+					better = e == 0
+				} else if cov != bestC {
+					better = cov > bestC
+				}
+			}
+			if best == nil || better {
+				best, bestDiags, bestE, bestW, bestC = files, res.Diags, e, w, cov
 			}
 			res.Clean = len(blk(res.Diags)) == 0
 		}

@@ -316,3 +316,20 @@ func TestLoopAllowWarn(t *testing.T) {
 		t.Error("fix prompt should carry the error only")
 	}
 }
+
+func TestLoopCoveragePrefersFullRound(t *testing.T) {
+	out := t.TempDir()
+	f := &fakeLLM{replies: []string{goodWith("full"), goodWith("short")}}
+	chk, _ := checks([]Diag{rerr("e1"), rerr("e2")}, []Diag{rerr("e3")})
+	cov := func(dir string) int {
+		if b, _ := PackFiles(dir); strings.Contains(b, "full") {
+			return 10
+		}
+		return 1
+	}
+	res, err := Loop(ctx, f, chk, "idea", testRefs(t), Opts{Rounds: 2, Out: out, Coverage: cov})
+	if err != nil || len(res.Diags) != 2 {
+		t.Fatalf("%+v %v", res, err)
+	}
+	storyHas(t, out, "full") // fewer errors from dropping scenes does not win
+}
