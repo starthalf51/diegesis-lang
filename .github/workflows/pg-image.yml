@@ -2,6 +2,7 @@ name: pg-image
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths: ['deploy/postgres/**']
 permissions:
   contents: read
@@ -23,6 +24,8 @@ jobs:
           context: deploy/postgres
           platforms: linux/amd64,linux/arm64
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             ghcr.io/starthalf51/diegesis-pg:age1.8.0-pgvector0.8.7
             ghcr.io/starthalf51/diegesis-pg:latest
