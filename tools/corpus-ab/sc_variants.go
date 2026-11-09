@@ -1,6 +1,6 @@
 package main
 
-// 스코어카드 스파이크: 변형본(정답이 기계적으로 정해진) 정의·생성. 호출 없음.
+// Scorecard spike: definition and generation of variants (whose ground truth is set mechanically). No calls.
 
 import (
 	"context"
@@ -18,10 +18,10 @@ type edit struct{ Old, New string }
 type vdef struct {
 	Name, Base, Kind string
 	Edits            []edit
-	Absent           []string // 이 사실이 산문에서 빠진다(fact_present=false)
-	Wrong            []string // 사실은 있되 주체·동사가 틀린다(as_stated=false)
-	Leak             []string // 숨길 사실 W* 가 드러난다
-	Invented         []string // 끼워 넣은 문장(있는 그대로)
+	Absent           []string // this fact is missing from the prose (fact_present=false)
+	Wrong            []string // the fact is there but the subject/verb is wrong (as_stated=false)
+	Leak             []string // a fact W* to be hidden is revealed
+	Invented         []string // an inserted sentence (verbatim)
 }
 
 type iTruth struct{ Present, AsStated, Unsure bool }
@@ -32,10 +32,10 @@ type vTruth struct {
 	Withheld         map[string]bool
 	Invented         []string
 	Mutated          []string
-	Target           int // S4 목표 글자(원본 산문)
+	Target           int // S4 target characters (original prose)
 }
 
-// haejin 은 withheld 가 없어서 스파이크 안에서만 minjae_leaves 를 숨긴다: 해당 문장을 지운 것이 기준 산문이다.
+// haejin has no withheld, so minjae_leaves is hidden only inside the spike: the baseline prose is the one with the relevant sentence removed.
 var haejinW = []edit{{"\n\n“급한 회사 일이 생겨서 오늘 오후 배로 육지에 나가야 해. 섬에는 돌아오지 않을 거야.”\n\n서윤은 그 말을 듣고도 한동안 말이 없었다. 이윽고", "\n\n서윤은 한동안 말이 없었다. 이윽고"}}
 
 var chibiD1 = edit{"그때 주유가 고개를 들고 게슴츠레한 눈으로 장간을 바라보며 말합니다.\n\n“친구, 하루 이틀 안에 조조의 머리를 보여 주겠소.”\n\n", ""}
@@ -54,7 +54,7 @@ const invChibi = "그때 장막 밖에서 큰 불길이 일어 군량을 쌓아 
 const invHaejin = "그때 문이 벌컥 열리고 이웃집 노인이 뛰어 들어와 서윤의 손에 낡은 돈 봉투를 쥐여 주고는 말없이 돌아갔다."
 const invMac = "그때 로스가 품에서 던컨 왕의 인장이 찍힌 서신을 꺼내 맥베스의 손에 쥐여 주었다."
 
-// 변형 목록 = 실행 우선순위 순서.
+// variant list = run priority order.
 var scVariants = []vdef{
 	{Name: "orig-chibi", Base: "chibi/45.88.ko-hapsho", Kind: "orig"},
 	{Name: "d1-chibi", Base: "chibi/45.88.ko-hapsho", Kind: "D1", Edits: []edit{chibiD1}, Absent: []string{"E5"}},
@@ -71,7 +71,7 @@ var scVariants = []vdef{
 	{Name: "h-haejin", Base: "haejin/s3.ko-haera", Kind: "H", Edits: []edit{{"서윤은 민재를 돌아보았다.", invHaejin + "\n\n서윤은 민재를 돌아보았다."}}, Invented: []string{invHaejin}},
 	{Name: "l-haejin", Base: "haejin/s3.ko-haera", Kind: "L", Edits: []edit{{"민재는 잠깐 서윤을 바라보다가 시선을 내렸다.", "민재는 잠깐 서윤을 바라보다가 시선을 내렸다.\n\n“나 오늘 오후 배 타고 육지로 나가. 회사 일이 급해서, 이제 섬에는 돌아오지 않아.”"}}, Leak: []string{"W1"}},
 	{Name: "orig-odyssey", Base: "odyssey/19.1.ko-haera", Kind: "orig"},
-	// 예산이 남으면 쓰는 추가분
+	// extras used if budget remains
 	{Name: "h-macbeth", Base: "macbeth/1.3.ko-haera", Kind: "H", Edits: []edit{{"앵거스가 말머리를 돌렸다.", invMac + "\n\n앵거스가 말머리를 돌렸다."}}, Invented: []string{invMac}},
 }
 
@@ -94,7 +94,7 @@ func applyEdits(p string, es []edit) (string, error) {
 	return p, nil
 }
 
-// scBase: 장면(스파이크용 withheld 반영)·백엔드·기준 산문.
+// scBase: scene (with the spike's withheld applied), backend, baseline prose.
 func scBase(ctx context.Context, pair string) (render.Scene, render.Backend, string, error) {
 	d := baseDefOf(pair)
 	s, b, prose, err := scScene(ctx, d)

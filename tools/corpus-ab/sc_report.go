@@ -1,6 +1,6 @@
 package main
 
-// 스코어카드 스파이크: 정답(truth)과 실행 결과를 맞대 축별 지표를 낸다. 호출 없음.
+// Scorecard spike: compares the ground truth with the run results and emits per-axis metrics. No calls.
 
 import (
 	"context"
@@ -37,7 +37,7 @@ func norm(s string) []rune {
 	}, s))
 }
 
-// overlap: 두 문자열의 최장 공통 부분문자열 길이(룬).
+// overlap: length (runes) of the longest common substring of two strings.
 func overlap(a, b string) int {
 	x, y := norm(a), norm(b)
 	best := 0
@@ -72,8 +72,8 @@ func scReport(ctx context.Context, out string) {
 	var maxd float64
 	scores := map[string][2]float64{}
 	t2 := 0
-	fmt.Println("### 변형별 (run1 / run2)")
-	fmt.Println("| 변형 | 호출 | S1 | S2 | S3 | S4 | 점수 | G1 실패 | G2 실패 | 후보(확정) |\n|---|---|---|---|---|---|---|---|---|---|")
+	fmt.Println("### Per variant (run1 / run2)")
+	fmt.Println("| variant | calls | S1 | S2 | S3 | S4 | score | G1 failures | G2 failures | candidates (confirmed) |\n|---|---|---|---|---|---|---|---|---|---|")
 	for _, vd := range scVariants {
 		t0 := vd
 		_, t := readVariant(out, t0.Name)
@@ -115,7 +115,7 @@ func scReport(ctx context.Context, out string) {
 				cs = append(cs, fmt.Sprintf("%s[%s%s]", c.Quote, c.Verdict, map[bool]string{true: ",IR", false: ""}[c.Covered]))
 			}
 			fmt.Printf("| %s r%d | %d | %.2f | %.2f | %.2f | %.2f | %.3f | %v | %v | %s |\n", t0.Name, i+1, r.Calls, r.S1, r.S2, r.S3, r.S4, r.Score, r.G1Fail, r.G2Fail, strings.Join(cs, "; "))
-			// 항목별 검출·오경보
+			// per-item detection and false alarms
 			for id, tr := range t.Expect {
 				if tr.Unsure {
 					continue
@@ -180,14 +180,14 @@ func scReport(ctx context.Context, out string) {
 			maxd = max(maxd, d)
 		}
 	}
-	fmt.Println("\n### 축별 지표 (시행 = 변형 × 실행)")
-	fmt.Println("| 축 | 검출 | 오경보 | 두 실행 일치(항목/변형) |\n|---|---|---|---|")
+	fmt.Println("\n### Per-axis metrics (trial = variant × run)")
+	fmt.Println("| axis | detected | false alarms | agreement across two runs (item/variant) |\n|---|---|---|---|")
 	for _, k := range []string{"S1", "S2", "G1", "G2"} {
 		fmt.Printf("| %s | %s | %s | %s |\n", k, det[k], fa[k], agree[k])
 	}
-	fmt.Printf("\nS2 검출(삭제 항목도 포함): %s / 게이트 일치: %s / 점수 |Δ| 평균 %.4f 최대 %.4f\n", det["S2(D)"], agree["gate"], dscore/float64(max(1, agree["gate"].n)), maxd)
-	fmt.Printf("실행 %d회: 렌더당 평균 호출 %.2f, 가중 토큰 %.0f, 2단 발동 %d/%d\n", int(nr), calls/max(nr, 1), wt/max(nr, 1), t2, int(nr))
-	fmt.Println("\n### 점수 순서 (원본 > D1 > D3)")
+	fmt.Printf("\nS2 detection (deleted items included): %s / gate agreement: %s / mean score |Δ| %.4f max %.4f\n", det["S2(D)"], agree["gate"], dscore/float64(max(1, agree["gate"].n)), maxd)
+	fmt.Printf("%d runs: mean calls per render %.2f, weighted tokens %.0f, stage 2 fired %d/%d\n", int(nr), calls/max(nr, 1), wt/max(nr, 1), t2, int(nr))
+	fmt.Println("\n### Score order (original > D1 > D3)")
 	var bs []string
 	for _, b := range []string{"chibi", "macbeth", "bible"} {
 		bs = append(bs, b)
@@ -196,11 +196,11 @@ func scReport(ctx context.Context, out string) {
 	for _, b := range bs {
 		o, d1, d3 := scores["orig-"+b], scores["d1-"+b], scores["d3-"+b]
 		for i := 0; i < 2; i++ {
-			fmt.Printf("%s r%d: orig %.3f  D1 %.3f  D3 %.3f  원본>D1 %v  D1>D3 %v\n", b, i+1, o[i], d1[i], d3[i], o[i] > d1[i], d1[i] > d3[i] || d3[i] == 0)
+			fmt.Printf("%s r%d: orig %.3f  D1 %.3f  D3 %.3f  orig>D1 %v  D1>D3 %v\n", b, i+1, o[i], d1[i], d3[i], o[i] > d1[i], d1[i] > d3[i] || d3[i] == 0)
 		}
 	}
-	// 옛 검증기
-	fmt.Println("\n### 옛 검증기 K=3")
+	// old verifier
+	fmt.Println("\n### Old verifier K=3")
 	files, _ := filepath.Glob(filepath.Join(out, "old", "*.json"))
 	var ow, oc float64
 	for _, f := range files {
@@ -218,7 +218,7 @@ func scReport(ctx context.Context, out string) {
 		fmt.Printf("%s: passed=%v missing=%v hall=%v leak=%v weighted=%.0f err=%s\n", rec.Variant, rec.Passed, rec.Report.Missing, rec.Report.Hallucinated, rec.Report.Leaked, rec.Weighted, rec.Err)
 	}
 	if len(files) > 0 {
-		fmt.Printf("옛: 렌더당 호출 3, 가중 토큰 %.0f (%d개)\n", ow/float64(len(files)), len(files))
+		fmt.Printf("old: 3 calls per render, weighted tokens %.0f (%d items)\n", ow/float64(len(files)), len(files))
 	}
 	_ = utf8.RuneLen
 }

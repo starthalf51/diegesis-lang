@@ -1,6 +1,6 @@
 package main
 
-// 스코어카드 스파이크: 이미 적재된 작품만 PG 에서 읽는다(재적재 없음 → work_pkey 중복 없음).
+// Scorecard spike: reads only already loaded works from PG (no reload → no work_pkey duplicates).
 
 import (
 	"context"

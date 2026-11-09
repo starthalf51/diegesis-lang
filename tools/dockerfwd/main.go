@@ -1,7 +1,7 @@
-// dockerfwd 는 이 PC 의 127.0.0.1:<port> 를 컨테이너 안의 127.0.0.1:<port> 로 잇는다.
-// 연결마다 `docker exec -i <container> nc 127.0.0.1 <port>` 를 띄워 표준입출력으로 나른다.
-// 포트를 호스트에 publish 하지 않으므로 LAN 에 노출되지 않는다
-// (Rancher Desktop/Windows 는 127.0.0.1 publish 가 호스트에서 닿지 않는다).
+// dockerfwd connects 127.0.0.1:<port> on this PC to 127.0.0.1:<port> inside a container.
+// For each connection it starts `docker exec -i <container> nc 127.0.0.1 <port>` and carries the traffic over stdin/stdout.
+// The port is not published on the host, so it is not exposed to the LAN
+// (on Rancher Desktop/Windows a 127.0.0.1 publish is not reachable from the host).
 //
 //	go run ./tools/dockerfwd deploy-grafana-1 3000 3300   → http://127.0.0.1:3300
 package main
@@ -36,7 +36,7 @@ func main() {
 		}
 		go func(c net.Conn) {
 			defer c.Close()
-			// ponytail: 연결마다 docker exec 를 띄운다(수백 ms). 느리면 컨테이너에 socat 을 두고 스트림 하나로 묶는다
+			// ponytail: starts a docker exec per connection (hundreds of ms). If slow, put socat in the container and bundle everything into one stream
 			cmd := exec.Command("docker", "--context", "default", "exec", "-i", container, "nc", "127.0.0.1", port)
 			cmd.Stdin = c
 			cmd.Stdout = c

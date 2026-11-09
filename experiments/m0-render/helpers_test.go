@@ -8,7 +8,7 @@ import (
 	. "github.com/starthalf51/diegesis-lang/internal/render"
 )
 
-// 장면·문체 픽스처는 internal/render/testdata 에 있다. min.json 은 실험의 -scenes 기본 디렉터리 밖에 둔다.
+// The scene and style fixtures are in internal/render/testdata. min.json is kept outside the experiment's default -scenes directory.
 const fixtures = "../../internal/render/testdata/"
 
 func mustLoad(t *testing.T, path string) Scene {

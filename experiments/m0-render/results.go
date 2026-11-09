@@ -32,7 +32,7 @@ func LoadRecords(outDir string) ([]Record, error) {
 	return rs, nil
 }
 
-// oldScores parses an existing results.md table: key -> non-empty last (판정) cell.
+// oldScores parses an existing results.md table: key -> non-empty last (verdict) cell.
 func oldScores(path string) map[string]string {
 	out := map[string]string{}
 	b, err := os.ReadFile(path)
@@ -74,7 +74,7 @@ func WriteResults(records []Record, failed map[string]string, path string) error
 	sort.Strings(keys)
 
 	var sb, detail strings.Builder
-	sb.WriteString("| key | 손실 | 환각 | 누출 | 추출오류 | 비용($) | 판정(1-5) |\n|---|---|---|---|---|---|---|\n")
+	sb.WriteString("| key | missed | hallucinated | leaked | extract error | cost($) | verdict(1-5) |\n|---|---|---|---|---|---|---|\n")
 	var total float64
 	for _, k := range keys {
 		r := byKey[k]
@@ -102,9 +102,9 @@ func WriteResults(records []Record, failed map[string]string, path string) error
 			fmt.Fprintf(&detail, "- ExtractError: %s\n", rep.ExtractError)
 		}
 	}
-	fmt.Fprintf(&sb, "\n총비용: $%.4f\n", total)
+	fmt.Fprintf(&sb, "\nTotal cost: $%.4f\n", total)
 	if detail.Len() > 0 {
-		sb.WriteString("\n## 상세\n" + detail.String())
+		sb.WriteString("\n## Details\n" + detail.String())
 	}
 	return os.WriteFile(path, []byte(sb.String()), 0o644)
 }

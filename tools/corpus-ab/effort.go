@@ -1,10 +1,10 @@
 package main
 
-// -spike effort: 렌더 effort A/B (플랜 6 태스크 5). 6장면 × {medium, low}, haiku 렌더 + card 검증(RenderVerified2, Retries 2).
-// 장면마다 medium → low 순으로 끼워 돌려서 예산이 끊겨도 공정하다. 호출마다 예산 가드가 앞선다(counter).
-//   go run ./tools/corpus-ab -spike effort -budget 60 -out examples/effort-ab      (실호출)
-//   go run ./tools/corpus-ab -spike effort-dry                                      (가짜 완성기, 0회)
-//   go run ./tools/corpus-ab -spike effort-report -out examples/effort-ab           (호출 없음, 표·판정만)
+// -spike effort: render effort A/B (Plan 6 Task 5). 6 scenes × {medium, low}, haiku render + card verification (RenderVerified2, Retries 2).
+// Run medium → low interleaved per scene so it stays fair even if the budget is cut off. The budget guard comes before each call (counter).
+//   go run ./tools/corpus-ab -spike effort -budget 60 -out examples/effort-ab      (real calls)
+//   go run ./tools/corpus-ab -spike effort-dry                                      (fake completer, 0 calls)
+//   go run ./tools/corpus-ab -spike effort-report -out examples/effort-ab           (no calls, table and verdict only)
 
 import (
 	"context"
@@ -21,7 +21,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
-// effortCompleter 는 드라이런이 가짜로 바꾼다.
+// effortCompleter is replaced by a fake in the dry run.
 var effortCompleter = func(model, effort string) render.Completer { return render.NewClaudeCLIWith(model, effort) }
 
 type effScene struct {
@@ -31,7 +31,7 @@ type effScene struct {
 
 type effRun struct {
 	Scene, Effort          string
-	Done                   bool // 예산·오류로 끊기지 않고 끝남
+	Done                   bool // finished without being cut off by budget or error
 	Pass                   bool
 	Attempts               int
 	Score, S1, S2, S3      float64
@@ -45,7 +45,7 @@ type effRun struct {
 
 var effCorpus = [][2]string{{"bible", "mark_denial"}, {"chibi", "45.88"}, {"macbeth", "1.3"}, {"odyssey", "19.1"}}
 
-// effLoad: 적재된 작품은 다시 적재하지 않는다(work_pkey 중복·불필요한 쓰기 방지). 드라이런은 적재하지 않는다.
+// effLoad: an already loaded work is not loaded again (avoids work_pkey duplicates and needless writes). The dry run does not load.
 func effLoad(ctx context.Context, load bool) ([]effScene, error) {
 	pool, err := pg.Connect(ctx)
 	if err != nil {
@@ -105,7 +105,7 @@ func effLoad(ctx context.Context, load bool) ([]effScene, error) {
 		if err != nil {
 			return nil, err
 		}
-		s.FreeDialogue = true // 연재는 skeleton 모드
+		s.FreeDialogue = true // a serial story uses skeleton mode
 		ser = append(ser, effScene{"haejin/" + filepath.Base(id), "haejin", s})
 	}
 	sort.SliceStable(ser, func(i, j int) bool { return acts(ser[i].S) > acts(ser[j].S) })
@@ -175,7 +175,7 @@ func runEffort(ctx context.Context, dry bool, budget int, out string) {
 	lp := filepath.Join(out, "calls.jsonl")
 	lf, _ := os.OpenFile(lp, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	defer lf.Close()
-	used := countLines(lp) // 하드 캡은 이 디렉터리의 호출 전체에 대해
+	used := countLines(lp) // the hard cap applies to all calls in this directory
 	fmt.Fprintln(os.Stderr, "effort: calls so far", used, "budget", budget)
 loop:
 	for _, sc := range scs {
@@ -186,7 +186,7 @@ loop:
 			}
 			r, cut := effArm(ctx, sc, b, e, &used, budget, lf, out)
 			fmt.Fprintf(os.Stderr, "%-26s %-6s done=%v pass=%v att=%d score=%.3f render=%d card=%d used=%d %s\n", sc.Name, e, r.Done, r.Pass, r.Attempts, r.Score, r.RenderCalls, r.CardCalls, used, r.Err)
-			if !r.Done || cut { // 오류·예산: 더 태우지 않고 멈춘다
+			if !r.Done || cut { // error or budget: stop without burning more
 				break loop
 			}
 		}
@@ -197,7 +197,7 @@ loop:
 	}
 }
 
-// fakeEff: 렌더 모델은 정해진 산문, 그 밖은 기존 가짜 채점기.
+// fakeEff: the render model returns fixed prose, everything else is the existing fake scorer.
 type fakeEff struct {
 	f      *fakeC
 	render bool
@@ -239,7 +239,7 @@ func effReport(out string, calls int) {
 		return a < b || (a == b && order[i] < order[j])
 	})
 	var sb strings.Builder
-	sb.WriteString("| 장면 | effort | 통과 | 시도 | Score | S1 | S2 | S3 | 렌더 출력토큰/호출 | 렌더 호출 | 채점 호출 | 가중 토큰 |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n")
+	sb.WriteString("| scene | effort | pass | attempts | Score | S1 | S2 | S3 | render output tokens/call | render calls | scoring calls | weighted tokens |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n")
 	var n int
 	var dScore, pm, pl float64
 	var om, ol, cm, cl int64
@@ -247,12 +247,12 @@ func effReport(out string, calls int) {
 		for _, e := range []string{"medium", "low"} {
 			r, ok := by[sc][e]
 			if !ok {
-				fmt.Fprintf(&sb, "| %s | %s | (실행 안 함) | | | | | | | | | |\n", sc, e)
+				fmt.Fprintf(&sb, "| %s | %s | (not run) | | | | | | | | | |\n", sc, e)
 				continue
 			}
 			note := ""
 			if !r.Done {
-				note = " (끊김)"
+				note = " (cut off)"
 			}
 			fmt.Fprintf(&sb, "| %s | %s%s | %s | %d | %.3f | %.2f | %.2f | %.2f | %.0f | %d | %d | %.0f |\n", sc, e, note, map[bool]string{true: "✓", false: "✗"}[r.Pass], r.Attempts, r.Score, r.S1, r.S2, r.S3, r.RenderOutPerCall, r.RenderCalls, r.CardCalls, r.Weighted)
 		}
@@ -276,11 +276,11 @@ func effReport(out string, calls int) {
 		if dScore <= 0.02 && pl >= pm && perL < perM {
 			verdict = "low"
 		}
-		fmt.Fprintf(&sb, "\n비교 장면 n=%d (두 팔 모두 끝난 장면만)\n- 평균 Score 하락(medium−low): %.4f (기준 ≤ 0.02)\n- 통과 장면: medium %.0f, low %.0f (기준: low ≥ medium)\n- 렌더 출력 토큰/호출(합산): medium %.1f, low %.1f (기준: low < medium)\n", n, dScore, pm, pl, perM, perL)
+		fmt.Fprintf(&sb, "\ncompared scenes n=%d (only scenes finished in both arms)\n- mean Score drop (medium−low): %.4f (criterion ≤ 0.02)\n- passing scenes: medium %.0f, low %.0f (criterion: low ≥ medium)\n- render output tokens/call (total): medium %.1f, low %.1f (criterion: low < medium)\n", n, dScore, pm, pl, perM, perL)
 	} else {
-		sb.WriteString("\n비교 가능한 장면 없음\n")
+		sb.WriteString("\nno comparable scenes\n")
 	}
-	fmt.Fprintf(&sb, "\n기본 effort: %s\n실제 호출 수: %d\n", verdict, calls)
+	fmt.Fprintf(&sb, "\ndefault effort: %s\nactual calls: %d\n", verdict, calls)
 	_ = os.WriteFile(filepath.Join(out, "table.md"), []byte(sb.String()), 0o644)
 	fmt.Print(sb.String())
 }

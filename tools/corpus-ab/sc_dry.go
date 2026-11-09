@@ -1,6 +1,6 @@
 package main
 
-// 드라이런: 가짜 완성기(정해진 JSON)로 파이프라인 전체를 돈다. 실제 호출 0회.
+// Dry run: runs the whole pipeline with a fake completer (fixed JSON). 0 real calls.
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func (f *fakeC) Complete(_ context.Context, sys, user string) (render.Result, er
 		return ok(`{"acts":[],"facts_stated":[],"new_events":[]}`)
 	}
 	if f.n == 2 {
-		return render.Result{Text: "```json\n{broken", StopReason: "end_turn"}, nil // 깨진 JSON → 재시도 경로
+		return render.Result{Text: "```json\n{broken", StopReason: "end_turn"}, nil // broken JSON → retry path
 	}
 	tier2 := strings.Contains(sys, "re-check")
 	var items []string
@@ -39,7 +39,7 @@ func (f *fakeC) Complete(_ context.Context, sys, user string) (render.Result, er
 	for _, m := range idRe.FindAllStringSubmatch(sec, -1) {
 		a := "yes"
 		if m[1] == "E1" && !tier2 {
-			a = "no" // 1단에서 E1 없음 → 2단 발동
+			a = "no" // no E1 in stage 1 → stage 2 fires
 		}
 		items = append(items, fmt.Sprintf(`{"id":%q,"fact_present":%q,"as_stated":%q,"quote":"q"}`, m[1], a, a))
 	}

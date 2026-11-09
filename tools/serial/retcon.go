@@ -560,16 +560,16 @@ func (s *rcState) doJudge(ctx context.Context, r retcon, arm, dir, text string) 
 			fmt.Fprintf(&q, "\n%s%d. %s — %s\n", g.n[:1], n+1, it.Where, it.Why)
 			for _, qu := range it.Quotes {
 				all++
-				mark := "없음"
+				mark := "absent"
 				if strings.Contains(src, norm(qu)) {
-					mark, ok = "있음", ok+1
+					mark, ok = "present", ok+1
 				}
 				fmt.Fprintf(&q, "   - (%s) %s\n", mark, qu)
 			}
 		}
 	}
 	res.QuotesOK = fmt.Sprintf("%d/%d", ok, all)
-	return res, write(filepath.Join(dir, "judge", name+".quotes.md"), "# 판정 인용 자동 대조 (있음 = 원문에 그대로 있음; 지적의 옳고 그름은 verification.md)\n\n"+q.String())
+	return res, write(filepath.Join(dir, "judge", name+".quotes.md"), "# Automatic quote check of judge findings (present = verbatim in the source; whether a finding is right is in verification.md)\n\n"+q.String())
 }
 
 func joinUnits(ids []string, text map[string]string, label string) string {

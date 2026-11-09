@@ -148,16 +148,16 @@ func RunJudge(ctx context.Context, c render.Completer, n int, out string) error 
 	}
 	src := map[string]string{"A": norm(na), "B": norm(nb)}
 	var b strings.Builder
-	b.WriteString("# 판정 지적과 인용 대조 (자동)\n\n인용이 원문에 그대로 있는지만 본다. 지적이 맞는지는 verification.md 에서 사람이 가린다.\n")
+	b.WriteString("# Judge findings vs. quote check (automatic)\n\nOnly checks whether the quotes appear verbatim in the source text. Whether a finding is right is decided by a person in verification.md.\n")
 	for _, xy := range []string{"X", "Y"} {
 		a := arm[xy]
-		fmt.Fprintf(&b, "\n## %s (= %s) — %d건\n", xy, a, len(got[xy]))
+		fmt.Fprintf(&b, "\n## %s (= %s) — %d findings\n", xy, a, len(got[xy]))
 		for i, cl := range got[xy] {
-			fmt.Fprintf(&b, "\n%s%d. [%s] 장면 %v — %s\n", a, i+1, cl.Category, cl.Scene, cl.Why)
+			fmt.Fprintf(&b, "\n%s%d. [%s] scene %v — %s\n", a, i+1, cl.Category, cl.Scene, cl.Why)
 			for _, q := range cl.Quotes {
-				mark := "없음"
+				mark := "absent"
 				if strings.Contains(src[a], norm(q)) {
-					mark = "있음"
+					mark = "present"
 				}
 				fmt.Fprintf(&b, "   - (%s) %s\n", mark, q)
 			}

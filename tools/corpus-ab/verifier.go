@@ -1,6 +1,6 @@
 package main
 
-// 일회용 스파이크: 검증기 재현성(열린 추출 S1 vs 닫힌 체크리스트 S2). 프로덕션 프롬프트는 건드리지 않는다.
+// One-off spike: verifier reproducibility (open extraction S1 vs closed checklist S2). Does not touch production prompts.
 //   -spike dump|s1|s2|report  (-out examples/corpus-ab/verifier, -budget N)
 
 import (
@@ -23,7 +23,7 @@ type vItem struct{ ID, Key, Text string }
 
 type vSet struct {
 	Pair, Prose string
-	Expect      []vItem // E1.. : Diff 가 기대하는 (행위자|동사류|사실) 키, 중복은 하나로
+	Expect      []vItem // E1..: the (actor|verb class|fact) keys Diff expects, duplicates merged into one
 	Withheld    []vItem // W1..
 	Want        map[string]int
 }
@@ -191,7 +191,7 @@ type truth map[string]map[string]struct {
 	Unsure  bool
 }
 
-// verdict: 한 판정(투표 또는 6회 다수)의 항목별 답(E*: 있음, W*: 누설)과 보고 집합
+// verdict: per-item answers of one verdict (a vote or a 6-run majority) (E*: present, W*: leaked) and the reported set
 type verdict struct {
 	Ans                 map[string]bool
 	Missing, Hall, Leak []string
@@ -221,7 +221,7 @@ func s1Verdict(sc render.Scene, v vSet, xs []render.Extracted) verdict {
 
 func s2Verdict(v vSet, ms []map[string]bool) verdict {
 	d := verdict{Ans: map[string]bool{}, Missing: []string{}, Hall: []string{}, Leak: []string{}}
-	need := len(ms)/2 + 1 // 6개면 4, 3개면 2
+	need := len(ms)/2 + 1 // 4 if 6, 2 if 3
 	for _, i := range append(append([]vItem{}, v.Expect...), v.Withheld...) {
 		y := 0
 		for _, m := range ms {
@@ -299,7 +299,7 @@ func runReport(out string, scs []scene, bs []render.Backend, only string) {
 				return s2Verdict(v, ms[lo:hi])
 			}
 			A, B, M := vd(0, 3), vd(3, 6), vd(0, 6)
-			fmt.Printf("\n%s\n| id | 항목 | 정답 | x/6 | 다수6 | 투표A | 투표B |\n|---|---|---|---|---|---|---|\n", p)
+			fmt.Printf("\n%s\n| id | item | truth | x/6 | majority6 | voteA | voteB |\n|---|---|---|---|---|---|---|\n", p)
 			for _, it := range append(append([]vItem{}, v.Expect...), v.Withheld...) {
 				t := tr[p][it.ID]
 				gt := t.Present
@@ -343,9 +343,9 @@ func runReport(out string, scs []scene, bs []render.Backend, only string) {
 			if eq(A.Leak, B.Leak) {
 				leakSame++
 			}
-			fmt.Printf("투표A pass=%v miss=%v hall=%v leak=%v\n투표B pass=%v miss=%v hall=%v leak=%v\n", A.Pass, A.Missing, A.Hall, A.Leak, B.Pass, B.Missing, B.Hall, B.Leak)
+			fmt.Printf("voteA pass=%v miss=%v hall=%v leak=%v\nvoteB pass=%v miss=%v hall=%v leak=%v\n", A.Pass, A.Missing, A.Hall, A.Leak, B.Pass, B.Missing, B.Hall, B.Leak)
 		}
-		fmt.Printf("\n%s 요약: 항목일치 %.1f%% / 정확도(6다수) %.1f%% / 정확도(K3 투표) %.1f%% / pass 일치 %d/%d / missing 일치 %d/%d / hall 일치 %d/%d / leak 일치 %d/%d\n",
+		fmt.Printf("\n%s summary: item agreement %.1f%% / accuracy (majority of 6) %.1f%% / accuracy (K3 vote) %.1f%% / pass agreement %d/%d / missing agreement %d/%d / hall agreement %d/%d / leak agreement %d/%d\n",
 			mode, 100*agreeSum/nItems, 100*accMaj/nItems, 100*accVote/nVotes, passSame, nPairs, missSame, nPairs, hallSame, nPairs, leakSame, nPairs)
 	}
 }

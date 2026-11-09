@@ -1,6 +1,6 @@
 package main
 
-// 스코어카드 스파이크: 실행(새 검증기 2회 / 옛 검증기 K=3) 드라이버.
+// Scorecard spike: run driver (new verifier twice / old verifier K=3).
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
-// scCompleter 는 테스트가 가짜로 바꾼다. 기본은 구독 claude CLI(sonnet/low).
+// scCompleter is replaced by a fake in tests. The default is the subscription claude CLI (sonnet/low).
 var scCompleter = func() render.Completer { return render.NewClaudeCLIWith(sonnet, "low") }
 
 func countLines(p string) int {
@@ -24,7 +24,7 @@ func countLines(p string) int {
 
 func pick(only string) []vdef {
 	if only == "" {
-		return scVariants[:len(scVariants)-1] // 추가분은 이름을 줘야 돈다
+		return scVariants[:len(scVariants)-1] // extras only run when given a name
 	}
 	var o []vdef
 	for _, n := range strings.Split(only, ",") {
@@ -47,7 +47,7 @@ func runSC(ctx context.Context, mode string, budget int, out string, only string
 	lp := filepath.Join(out, "calls.jsonl")
 	lf, _ := os.OpenFile(lp, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	defer lf.Close()
-	used := countLines(lp) // 하드 캡은 이 디렉터리의 호출 전체에 대해
+	used := countLines(lp) // the hard cap applies to all calls in this directory
 	fmt.Fprintln(os.Stderr, mode, "calls so far", used, "budget", budget)
 	switch mode {
 	case "sc-gen":
@@ -104,7 +104,7 @@ func runSC(ctx context.Context, mode string, budget int, out string, only string
 			_ = os.WriteFile(f, j, 0o644)
 			fmt.Fprintf(os.Stderr, "%s r%d calls=%d used=%d g1=%v g2=%v score=%.3f err=%q\n", vd.Name, run, r.Calls, used, r.G1Fail, r.G2Fail, r.Score, r.Err)
 			if r.Err != "" {
-				return // 오류가 나면 더 태우지 않고 멈춘다
+				return // on error, stop without burning more
 			}
 		}
 	}

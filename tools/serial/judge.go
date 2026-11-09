@@ -148,8 +148,8 @@ func runJudge(ctx context.Context, t *tracker) judgeOutcome {
 	defer f.Close()
 	out := judgeOutcome{Status: "ok", resid: map[string]map[int]int{"A": {}, "B": {}}}
 	var q, r strings.Builder
-	q.WriteString("# 판정 지적과 인용 대조 (자동)\n\n인용이 원문에 그대로 있는지만 본다. 지적이 맞는지는 사람이 가린다.\n")
-	r.WriteString("# 수정 반영 일관성 (판정자 표시, 미검증)\n")
+	q.WriteString("# Judge findings vs. quote check (automatic)\n\nOnly checks whether the quotes appear verbatim in the source text. Whether a finding is right is decided by a person.\n")
+	r.WriteString("# Revision consistency (marked by the judge, unverified)\n")
 	src := map[string]string{"A": norm(text("A", 1, t.cut)), "B": norm(text("B", 1, t.cut))}
 	for i, rg := range ranges {
 		prompt := build(rg[0], rg[1])
@@ -186,28 +186,28 @@ func runJudge(ctx context.Context, t *tracker) judgeOutcome {
 			if xy == "Y" {
 				cl = got.Y
 			}
-			fmt.Fprintf(&q, "\n## 부분 %d: %s (= %s) — %d건\n", i+1, xy, a, len(cl))
+			fmt.Fprintf(&q, "\n## Part %d: %s (= %s) — %d findings\n", i+1, xy, a, len(cl))
 			for n, c := range cl {
-				fmt.Fprintf(&q, "\n%s%d. [%s] 화/장면 %v — %s\n", a, n+1, c.Category, c.Scene, c.Why)
+				fmt.Fprintf(&q, "\n%s%d. [%s] episode/scene %v — %s\n", a, n+1, c.Category, c.Scene, c.Why)
 				for _, qu := range c.Quotes {
-					mark := "없음"
+					mark := "absent"
 					if strings.Contains(src[a], norm(qu)) {
-						mark = "있음"
+						mark = "present"
 					}
 					fmt.Fprintf(&q, "   - (%s) %s\n", mark, qu)
 				}
 			}
-			fmt.Fprintf(&r, "\n## 부분 %d: %s (= %s)\n", i+1, xy, a)
+			fmt.Fprintf(&r, "\n## Part %d: %s (= %s)\n", i+1, xy, a)
 			for _, rv := range got.Revision[xy] {
 				bad := 0
 				for _, e := range rv.Episodes {
 					if !e.Applied {
 						bad++
-						fmt.Fprintf(&r, "- 수정 %d, %d화: 미반영 — %s\n", rv.Revision, e.Ep, e.Note)
+						fmt.Fprintf(&r, "- revision %d, episode %d: not applied — %s\n", rv.Revision, e.Ep, e.Note)
 					}
 				}
 				out.resid[a][rv.Revision] += bad
-				fmt.Fprintf(&r, "- 수정 %d: 표시된 화 %d개, 잔여 불일치 %d개\n", rv.Revision, len(rv.Episodes), bad)
+				fmt.Fprintf(&r, "- revision %d: %d episodes marked, %d residual mismatches\n", rv.Revision, len(rv.Episodes), bad)
 			}
 		}
 	}

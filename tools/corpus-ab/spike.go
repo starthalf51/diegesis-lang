@@ -1,6 +1,6 @@
 package main
 
-// 일회용 스파이크(H1 수리 패스, H2 추출 어휘). 프로덕션 프롬프트는 건드리지 않는다.
+// One-off spike (H1 repair pass, H2 extraction vocabulary). Does not touch production prompts.
 //   go run ./tools/corpus-ab -spike h2|h1 -budget N -out examples/corpus-ab/spike
 
 import (
@@ -39,7 +39,7 @@ func readP1(pair string) (prose string, prev Run) {
 	return strings.TrimSpace(string(b)), prev
 }
 
-// actLine 은 렌더 프롬프트(BuildPrompt)의 "## Acts" 한 줄과 같은 꼴.
+// actLine has the same shape as one line of "## Acts" in the render prompt (BuildPrompt).
 func actLine(s render.Scene, lang string, a render.Act) string {
 	name := func(id string) string {
 		if e, ok := s.Entity(id); ok && len(e.Names[lang]) > 0 {
@@ -76,7 +76,7 @@ func actLine(s render.Scene, lang string, a render.Act) string {
 	return line
 }
 
-// ---- H2: 추출 프롬프트 변형 (장면의 지은이 행위 어휘를 덧붙인다)
+// ---- H2: extraction prompt variant (append the scene's author-act vocabulary)
 func vocabPrompt(s render.Scene, lang, prose string) (string, string) {
 	sys, user := render.BuildExtractPrompt(s, lang, prose)
 	sys = strings.Replace(sys, "- Judge only from", "- Authored actions: the catalog lists this scene's authored `does` actions (action word, actor, targets). When a sentence re-tells one of these authored actions, report it with that exact action word (in new_events \"action\", with that actor and those targets), whatever words the prose uses for it.\n- Judge only from", 1)
@@ -109,7 +109,7 @@ func extractVocab(ctx context.Context, c render.Completer, s render.Scene, lang,
 	return render.Diff(s, render.Vote(s, xs)), nil
 }
 
-// ---- H1: 수리 패스. 지시문은 렌더 프롬프트 관례대로 영어, 한국어 백엔드는 대사·어투 규칙 꼬리를 그대로 붙인다.
+// ---- H1: repair pass. The instruction is in English per render-prompt convention, and for Korean backends the dialogue/tone rule tail is appended as is.
 func repairPrompt(s render.Scene, b render.Backend, prose string, missing []string) (string, string) {
 	sys, _, _ := b.Prompt(s)
 	tail := ""
@@ -143,7 +143,7 @@ func repairPrompt(s render.Scene, b render.Backend, prose string, missing []stri
 	return sys, u.String()
 }
 
-// editSize: 단어 LCS 기준으로 추가·삭제된 단어의 글자 수 합.
+// editSize: by word LCS, the sum of characters of added and deleted words.
 func editSize(a, b string) int {
 	x, y := strings.Fields(a), strings.Fields(b)
 	l := make([][]int, len(x)+1)

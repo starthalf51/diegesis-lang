@@ -1,8 +1,8 @@
-// statespike: 스파이크(버릴 코드). run3 B 의 5개 장면을 PG 상태 요약 있음(D)/없음(0) 으로 다시 렌더한다.
+// statespike: a spike (throwaway code). Re-renders the 5 scenes of run3 B with (D) / without (0) the PG state summary.
 //
-//	go run ./tools/statespike -digest            호출 0: 5개 장면의 요약만 출력·저장
-//	go run ./tools/statespike                    가짜 완성기 전체 드라이런(호출 0)
-//	go run ./tools/statespike -real              진짜 호출(claude -p, 구독). 호출 상한 -budget
+//	go run ./tools/statespike -digest            0 calls: only print and save the summaries of the 5 scenes
+//	go run ./tools/statespike                    full dry run with a fake completer (0 calls)
+//	go run ./tools/statespike -real              real calls (claude -p, subscription). Call cap -budget
 package main
 
 import (
@@ -25,7 +25,7 @@ const work = "yeoul"
 
 var scenes = []string{"s2", "s21", "s25", "s27", "s29"}
 
-// guard 는 호출 직전에 상한을 확인하고 세는 완성기. 상한이면 호출하지 않고 오류.
+// guard is a completer that checks and counts the cap right before a call. At the cap it does not call and returns an error.
 type guard struct {
 	inner render.Completer
 	mu    *sync.Mutex
@@ -55,11 +55,11 @@ func (g *guard) Complete(ctx context.Context, sys, user string) (render.Result, 
 	return r, err
 }
 
-// withDigest 는 렌더 사용자 프롬프트 끝에 요약을 붙인다(재시도 피드백 뒤).
+// withDigest appends the summary to the end of the render user prompt (after the retry feedback).
 type withDigest struct {
 	inner  render.Completer
 	digest string
-	save   string // 첫 호출의 전체 사용자 프롬프트를 여기에 쓴다
+	save   string // the full user prompt of the first call is written here
 }
 
 func (w withDigest) Complete(ctx context.Context, sys, user string) (render.Result, error) {
@@ -80,12 +80,12 @@ type cell struct {
 }
 
 func main() {
-	real := flag.Bool("real", false, "진짜 호출")
-	onlyDigest := flag.Bool("digest", false, "요약만 만들고 끝")
-	budget := flag.Int("budget", 50, "진짜 호출 상한")
-	reserve := flag.Int("reserve", 18, "한 쌍(D,0)을 시작하려면 남아야 하는 호출 수")
-	runs := flag.Int("runs", 2, "장면·팔당 최대 실행 수")
-	out := flag.String("out", "examples/state-digest", "출력 폴더")
+	real := flag.Bool("real", false, "real calls")
+	onlyDigest := flag.Bool("digest", false, "build the summaries only and stop")
+	budget := flag.Int("budget", 50, "cap on real calls")
+	reserve := flag.Int("reserve", 18, "calls that must remain to start one pair (D,0)")
+	runs := flag.Int("runs", 2, "max runs per scene and arm")
+	out := flag.String("out", "examples/state-digest", "output folder")
 	flag.Parse()
 	ctx := context.Background()
 	if !*real {
@@ -135,7 +135,7 @@ func main() {
 		return
 	}
 
-	// 호출 기록·카운터. 이미 기록된 호출은 상한에 포함한다.
+	// call log and counter. Already recorded calls count toward the cap.
 	logPath := filepath.Join(*out, "calls.jsonl")
 	used := 0
 	if f, err := os.Open(logPath); err == nil {
@@ -174,7 +174,7 @@ func main() {
 		}
 		return false
 	}
-	// 팔 순서는 장면·실행마다 번갈아(교차). 한 쌍(D,0)은 기대 호출의 여유(+18)가 있을 때만 시작한다.
+	// Arm order alternates per scene and run (crossover). A pair (D,0) starts only when there is headroom (+18) of expected calls.
 	for run := 1; run <= *runs; run++ {
 		for i, id := range scenes {
 			arms := []string{"D", "0"}
@@ -182,7 +182,7 @@ func main() {
 				arms = []string{"0", "D"}
 			}
 			if used+*reserve > *budget {
-				fmt.Printf("stop: used=%d, run %d scene %s 쌍을 시작할 여유 없음\n", used, run, id)
+				fmt.Printf("stop: used=%d, run %d scene %s no headroom to start a pair\n", used, run, id)
 				goto end
 			}
 			for _, arm := range arms {
@@ -228,7 +228,7 @@ func must(err error) {
 	}
 }
 
-// fake 는 드라이런용 가짜 완성기: 렌더에는 정해진 산문, 카드 채점에는 전부 'yes' 인 JSON.
+// fake is a fake completer for the dry run: fixed prose for render, JSON of all 'yes' for card scoring.
 type fake struct{}
 
 var idRe = regexp.MustCompile(`(?m)^(E\d+)\. `)
