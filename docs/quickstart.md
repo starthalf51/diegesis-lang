@@ -66,4 +66,4 @@ dieg write "등대지기가 편지 한 통을 숨긴다" -o out/story1
 The prose is Korean by default (backend `ko-haera`; the coding prompt requires Korean), so write the idea in Korean or expect Korean output either way. This asks the model for Diegesis code, feeds `check`/`lint` diagnostics back, then renders and verifies each scene. Output: `out/story1/story/` (code), `novel.md` (prose), `calls.jsonl` (token log). Use `--no-render` to stop at code, and `DIEG_CALL_CAP=N` to hard-limit model calls.
 Then `dieg continue out/story1 --ep 2` adds an episode and `dieg revise out/story1 "change request"` edits the story.
 
-More: [docs index](README.md) (Korean). Design notes and ADRs referenced there are not published.
+More: [docs index](README.md). Design notes and ADRs referenced there are not published.

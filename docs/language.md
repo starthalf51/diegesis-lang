@@ -1,39 +1,41 @@
-> 공개용 스냅샷(2026-11-09). 설계 기준은 프로젝트 설계 노트.
+> Public snapshot (2026-11-09). The design notes are the reference and are not published.
 
-# 언어 — 개념 모델과 문법
+# Language — concept model and grammar
 
-> 0.x 동안은 바뀐다. 문법의 단일 기준은 [`spec/grammar.ebnf`](../spec/grammar.ebnf) 이고, 이 문서는 개념과 쓰는 법을 설명한다.
+> This changes during 0.x. The single source of truth for the grammar is [`spec/grammar.ebnf`](../spec/grammar.ebnf); this document explains the concepts and how to write them.
 
-## 문법 원칙
+## Grammar principles
 
-- **한 줄에 한 문장, 블록은 들여쓰기(2칸).** 줄 단위 diff가 깨끗하고, LLM이 만든 출력이 틀린 위치를 줄 번호로 짚을 수 있다.
-- **의미는 ID로, 문장은 따옴표로.** 따옴표 안의 문자열은 검사 대상이 아니다. 렌더러와 사람을 위한 참고일 뿐이다.
-- **원문 인용은 복사하지 않고 줄 번호로 참조한다** (`src 1.3.48`). 코퍼스 파일이 가벼워지고, 라운드트립 비교 때 원문과 줄을 맞출 수 있다.
-- 키워드는 영어 소문자다. 식별자에는 유니코드 글자를 허용한다(`曹操`, `조조`).
-- 주석은 `#`, 검사 억제 지시어는 `#!`.
-- 이 문서의 문법은 `.dieg.md` 파일의 ```` ```sl ```` 블록 안에 쓰는 언어다. 프론트매터는 이 언어의 설탕이다 → [file-format](file-format.md)
+- **One statement per line, blocks by indentation (2 spaces).** Line-based diffs stay clean, and a wrong position in LLM output can be pointed at by line number.
+- **Meaning by ID, sentences in quotes.** Strings inside quotes are not checked. They are only a reference for the renderer and for people.
+- **Source quotations are referenced by line number, not copied** (`src 1.3.48`). Corpus files stay small, and round-trip comparison can line up with the original text.
+- Keywords are lowercase English. Identifiers may use Unicode letters (`曹操`, `조조`).
+- Comments start with `#`; check-waiver directives start with `#!`.
+- The grammar in this document is the language written inside the ```` ```sl ```` blocks of a `.dieg.md` file. Front matter is sugar for this language → [file-format](file-format.md)
 
-## 개념 모델
+## Concept model
 
-| 개념 | 선언 | 비고 |
+| Concept | Declaration | Notes |
 |---|---|---|
-| 작품 | `work` | 시간 단위(`unit`)와 원점(`start`)을 가진다 |
-| 모듈 | `module a.b`, `import a.b` | 한 파일이 한 모듈이다. 장·권 단위로 나눈다 |
-| 엔티티 | `character` `group` `place` `thing` `faction` | 고유 ID와 중요도 `major` / `minor` / `extra` 를 가진다 |
-| 역할 | `role` | **시간 구간이 붙는 별칭.** "Thane of Cawdor", "승상"처럼 보유자가 바뀌는 호칭 |
-| 명제 | `fact` | 세계에 대한 진술. 참/거짓이 고정이거나 상태 술어로 정의된다 |
-| 속성 | `attr 개체.키 = 값` | 수·문자열·ID. 시점에 묶으면 시간에 따라 바뀐다 |
-| 사건 / 장면 | `scene`, `event` | 장면에는 장소와 출석부가 있다. `event` 는 무대 밖 사건이다 |
-| 발화·지각 | `tells` `says` `lies` `aside` `sees` `reads` … | 수신자는 출석부에서 계산한다 |
-| 문서 | `artifact` | 편지, 위조 서신. 담긴 명제를 읽는 사람에게 옮긴다 |
-| 서사 줄기 | `thread` | 병렬로 진행되는 줄기 |
-| 복선 | `setup`, `payoff` | 종류는 `promise`(반드시 회수) / `hint` / `symbol` |
-| 패턴 선언 | `pattern` | 작가가 "이 서사 패턴이 있다"고 선언한다 |
-| 독자 | `reveal`, `withhold`, `discourse` | 서술 순서와 정보 공개 일정 |
-| 렌더 지시어 | `render` 블록 | 시점, 속도, 긴장도, 묘사 대상, 생략 |
-| 기록·관점 | `account` | 같은 사건을 다르게 적은 기록들(정사 vs 연의, 복음서) |
+| Work | `work` | Has a time unit (`unit`) and an origin (`start`) |
+| Module | `module a.b`, `import a.b` | One file is one module. Split by chapter or volume |
+| Entity | `character` `group` `place` `thing` `faction` | Has a unique ID and an importance `major` / `minor` / `extra` |
+| Role | `role` | **An alias with time spans.** A title whose holder changes, such as "Thane of Cawdor" or "Chancellor" |
+| Proposition | `fact` | A statement about the world. Its truth is fixed, or defined by a state predicate |
+| Attribute | `attr entity.key = value` | A number, string or ID. Tied to a point in time, it changes over time |
+| Event / scene | `scene`, `event` | A scene has a place and an attendance list. An `event` happens offstage |
+| Speech / perception | `tells` `says` `lies` `aside` `sees` `reads` … | Recipients are computed from the attendance list |
+| Document | `artifact` | A letter, a forged letter. Carries propositions to whoever reads it |
+| Narrative thread | `thread` | A strand that runs in parallel |
+| Foreshadowing | `setup`, `payoff` | Kinds: `promise` (must be paid off) / `hint` / `symbol` |
+| Pattern declaration | `pattern` | The author declares "this narrative pattern is present" |
+| Reader | `reveal`, `withhold`, `discourse` | Telling order and the schedule of information disclosure |
+| Render directive | `render` block | Viewpoint, pace, tension, what to describe, omissions |
+| Record / perspective | `account` | Records that write the same event differently (official history vs. the romance, the Gospels) |
 
-### 선언과 작품
+### Declarations and the work
+
+In `sl` blocks, Korean strings such as `"작은 이야기"` and `"안나"` are story data and are left as written (the work title "A small story", the name "Anna").
 
 <!-- check -->
 ```sl
@@ -52,9 +54,9 @@ fact door_locked "The cellar door is locked" true
 fact key_hidden "The key is hidden in the hall"
 ```
 
-### 시간 표현
+### Time expressions
 
-시점은 `@장면`, `@장면.비트`, `@장면.end`, `start` 로 가리킨다. 장면과 사건은 `when` 으로 위치를 잡고, `lasts` 로 길이를 준다.
+A point in time is referred to with `@scene`, `@scene.beat`, `@scene.end`, `start`. Scenes and events are placed with `when` and given a length with `lasts`.
 
 <!-- check -->
 ```sl
@@ -68,30 +70,30 @@ scene 1.1 at hall
   when after start
   lasts 1h..2h
 scene 1.2 at hall
-  when after 1.1 by 0d..1d      # 1.1 끝난 뒤 0~1일 사이
+  when after 1.1 by 0d..1d      # between 0 and 1 day after 1.1 ends
 scene 1.3 at hall
-  when before 1.4               # 순서만 안다
+  when before 1.4               # only the order is known
 scene 1.4 at hall
-  when at 208-11                # 절대 시각 (정밀도는 월 단위)
+  when at 208-11                # absolute time (precision is a month)
 scene 1.5 at hall
-  when during 1.4               # 1.4 안에서
+  when during 1.4               # inside 1.4
 ```
 
-컴파일러는 이 표현을 STN 제약으로 바꾼다 → [compiler](compiler.md#시간-모델)
+The compiler turns these expressions into STN constraints → [compiler](compiler.md#time-model)
 
-### 명제 식
+### Proposition expressions
 
 ```
-fact cawdor_traitor "Cawdor sided with Norway" true      # 고정된 참
-holds(thane_of_cawdor, macbeth)                           # 상태 술어: 역할 보유
-alive(duncan)  at(macbeth, inverness)                     # 내장 술어
+fact cawdor_traitor "Cawdor sided with Norway" true      # fixed truth
+holds(thane_of_cawdor, macbeth)                           # state predicate: role holding
+alive(duncan)  at(macbeth, inverness)                     # built-in predicates
 not P
-fact king_hereafter = holds(king, macbeth)                # 예언: 지금은 거짓, 나중에 참이 된다
+fact king_hereafter = holds(king, macbeth)                # prophecy: false now, true later
 ```
 
-상태 술어로 정의한 명제의 참/거짓은 **시점마다** 계산한다. 예언은 별도 개념이 아니라 "미래 시점에 참이 되는 명제를 주장한 발화"다.
+The truth of a proposition defined by a state predicate is computed **at each point in time**. A prophecy is not a separate concept; it is "a speech act that asserts a proposition which becomes true at a future point".
 
-### 장면, 비트, 행위
+### Scenes, beats, acts
 
 <!-- check -->
 ```sl
@@ -116,11 +118,11 @@ scene 2.1 at hall
   exit all
 ```
 
-행위의 꼴은 `행위자 동사 [대상] [: 명제] ["인용"] [because 명제] [src 줄번호]` 다. 행위자 자리에 역할을 쓸 수 있다: `role:chancellor tells …`. 컴파일러가 그 시점의 보유자로 해석하고, 그 시점에 보유자가 바뀔 가능성이 있으면 모호하다고 경고한다.
+The shape of an act is `actor verb [target] [: proposition] ["quotation"] [because proposition] [src line-number]`. A role may stand in the actor position: `role:chancellor tells …`. The compiler resolves it to the holder at that point in time, and warns that it is ambiguous if the holder might change at that point.
 
-동사는 `tells` `says` `hails` `asks` `lies` `whispers` `aside` `thinks` `sees` `shows` `reads` `writes` `sends` `orders` `decrees` `does` `enacts` 다. `enacts` 는 공연·재연이다(극중극): 무대 위 모두에게 보이지만 단언이 아니라서 믿음을 만들지 않는다.
+The verbs are `tells` `says` `hails` `asks` `lies` `whispers` `aside` `thinks` `sees` `shows` `reads` `writes` `sends` `orders` `decrees` `does` `enacts`. `enacts` is a performance or re-enactment (a play within the play): everyone on stage sees it, but it is not an assertion, so it creates no beliefs.
 
-### 역할과 문서
+### Roles and documents
 
 <!-- check -->
 ```sl
@@ -146,23 +148,23 @@ scene 3.1 at court
   king reads letter
 ```
 
-## 지식과 믿음
+## Knowledge and belief
 
-- 저장하는 것은 `believes(누가, 명제, 언제부터, 원인 사건)` 뿐이다.
-- **안다** = 믿는다 ∧ 그 시점에 세계에서 참. 파생해서 계산한다.
-- **기만** = `lies` 발화(화자는 ¬P를 믿으면서 P를 주장한다), 또는 거짓 명제를 담은 `artifact` 를 만든 것.
-- 수신자의 믿음은 기본적으로 들은 대로 바뀐다. `doubts` 로 수용하지 않음을 표시한다.
-- 믿음이 행동을 바꾸는 인과는 `does X because P` 로 쓴다. 린터는 그 시점에 실제로 P를 믿었는지 확인한다.
-- 정보원이 따로 있는 엔티티는 선언한다. `knows oracle`(초자연), `knows omniscient`(서술자). 이렇게 선언하면 정보 흐름 검사는 면제하되, 출처는 기록에 남긴다.
-- 인물의 배경 지식(극 이전부터 아는 것)은 선언 안의 `believes P` 로 쓴다.
+- The only thing stored is `believes(who, proposition, since when, causing event)`.
+- **Knows** = believes ∧ true in the world at that point. It is derived and computed.
+- **Deception** = a `lies` speech act (the speaker asserts P while believing ¬P), or creating an `artifact` that carries a false proposition.
+- A recipient's belief changes as told, by default. `doubts` marks non-acceptance.
+- Causation where a belief changes behavior is written `does X because P`. The linter checks that the actor really believed P at that point.
+- An entity with a separate source of information is declared: `knows oracle` (supernatural), `knows omniscient` (narrator). With this declaration the information-flow check is waived, but the source is kept on record.
+- A character's background knowledge (what they know from before the play) is written as `believes P` inside the declaration.
 
-## 독자
+## Reader
 
-- 장면은 기본적으로 파일에 적힌 순서대로 서술된다. 그 순서를 바꾸려면 `discourse after <scene>` 으로 덮어쓴다.
-- 보여 주는 장면에서 일어난 발화와 지각은 그 서술 위치에서 독자에게 공개된다.
-- `aside`, `thinks` 는 **독자만** 받는다.
-- 기본 공개 규칙과 다르게 하려면 `withhold P until <scene>`, `reveal P at <beat>` 를 쓴다.
-- 극적 아이러니는 독자는 아는데 인물은 모르는 구간이다. 미스터리는 참인데 독자가 아직 모르는 구간이다. 패턴 질의가 이 구간들을 **보고서**로 낸다(경고가 아니다).
+- By default, scenes are told in the order they are written in the file. To change that order, override it with `discourse after <scene>`.
+- Speech and perception that happen in a shown scene are disclosed to the reader at that position in the telling.
+- `aside` and `thinks` are received by **the reader only**.
+- To depart from the default disclosure rule, use `withhold P until <scene>` and `reveal P at <beat>`.
+- Dramatic irony is a span where the reader knows and the character does not. A mystery is a span where something is true but the reader does not yet know. Pattern queries output these spans as a **report** (not as a warning).
 
 <!-- check -->
 ```sl
@@ -196,9 +198,9 @@ scene 4.2 at hall
   exit all
 ```
 
-## 문법 요약
+## Grammar summary
 
-전체 문법은 [`spec/grammar.ebnf`](../spec/grammar.ebnf) 에 있다. 뼈대만 옮긴다.
+The full grammar is in [`spec/grammar.ebnf`](../spec/grammar.ebnf). Only the skeleton is copied here.
 
 ```ebnf
 file        = header { top } ;
@@ -208,7 +210,7 @@ top         = work | decl | scene | event | account | setup | distance | parent 
 decl        = kind ident [string {"," string}] [tier] ["=" prop] [bool] ["tag" ident] [BLOCK(attr)] ;
 kind        = "character"|"group"|"place"|"thing"|"faction"|"role"|"fact"|"artifact"|"thread" ;
 scene       = "scene" sid ["at" ident] ["in" ident] [BLOCK(stmt)] ;
-event       = "event" ident [string] [BLOCK(stmt)] ;              (* 무대 밖 사건 *)
+event       = "event" ident [string] [BLOCK(stmt)] ;              (* offstage event *)
 account     = "account" ident "of" qname "by" ident [BLOCK(stmt)] ;
 stmt        = when | lasts | presence | beat | act | belief | reader | render | setup | payoff
             | discourse | parent | life | attribute | pattern | pragma ;
@@ -220,13 +222,13 @@ act         = actor verb [ident] [idlist] ["to" idlist] ["with" proplist]
 reader      = "reveal" prop ["at" tref] | "withhold" prop "until" tref ;
 setup       = "setup" ident ("promise"|"hint"|"symbol") ":" (prop|string) ;
 payoff      = "payoff" qname ;
-pragma      = "#!" "allow" ruleid ":" string ;                    (* 바로 다음 문장에 붙는다 *)
+pragma      = "#!" "allow" ruleid ":" string ;                    (* attaches to the next statement *)
 render      = "render" BLOCK(rkey rvalue) ;
 rkey        = "pov"|"pace"|"tension"|"focus"|"omit"|"show" ;
 ```
 
-## 의도적으로 뺀 것
+## Deliberately left out
 
-- 조건 분기와 변수 — 이 언어는 인터랙티브 픽션(Ink)이 아니다. 실행하지 않고 **기술**한다.
-- 문장 단위 산문 — 렌더러가 만든다.
-- 확률적 믿음 강도 — 필요한 사례가 나오면 `believes P 0.7` 을 검토한다.
+- Conditional branches and variables — this language is not interactive fiction (Ink). It **describes** rather than executes.
+- Sentence-level prose — the renderer produces it.
+- Probabilistic belief strength — if a case needs it, `believes P 0.7` will be considered.

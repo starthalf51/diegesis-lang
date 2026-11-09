@@ -135,7 +135,7 @@ The same steps, with more detail: [docs/quickstart.md](docs/quickstart.md).
 
 ## Documentation
 
-Reference docs are in Korean: [docs/README.md](docs/README.md) (language, file format, compiler, checks, storage, rendering). Design notes and ADRs referenced in the docs are not published.
+Reference docs: [docs/README.md](docs/README.md) (language, file format, compiler, checks, storage, rendering). Design notes and ADRs referenced in the docs are not published.
 
 ## Tests
 

@@ -138,7 +138,7 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 
 이력(이전 측정, 현재 주장 아님): retcon2(재설정 3건, n=3)는 모순 4 대 0, 무관한 글자 945 대 33자, 비용 1.02배였고 판정은 "약함"이었다. 상태만 바뀐 장면의 패치가 사실상 빈 패치였던 문제가 뒤에 드러나 이 수치는 낙관적이다. [`examples/value/retcon2`](examples/value/retcon2/README.md)
 
-문서에서 가리키는 설계 노트와 ADR 은 공개하지 않는다. `docs/` 와 retcon README 는 한국어다.
+문서에서 가리키는 설계 노트와 ADR 은 공개하지 않는다. `docs/` 는 영어이고, retcon README 는 한국어다.
 
 ## 측정 결과
 
