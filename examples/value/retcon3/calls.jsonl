@@ -265,3 +265,5 @@
 {"cache_read":3068,"cache_write":358,"err":"","input":2,"label":"r6-B-extract-s25-a1","ms":8477,"output":562,"stop":"end_turn","t":"2026-11-09T00:22:58Z"}
 {"t":"2026-11-09T00:23:06Z","label":"r6-judge-A","input":2,"output":2070,"cache_read":0,"cache_write":47753,"stop":"end_turn","err":"","ms":23377}
 {"t":"2026-11-09T00:23:30Z","label":"r6-judge-B","input":2,"output":1491,"cache_read":0,"cache_write":44608,"stop":"end_turn","err":"","ms":18061}
+{"t":"2026-11-09T00:35:28Z","label":"r3-judge-B2","input":2,"output":4584,"cache_read":0,"cache_write":45667,"stop":"end_turn","err":"","ms":39503}
+{"t":"2026-11-09T00:36:08Z","label":"r5-judge-B2","input":2,"output":3368,"cache_read":0,"cache_write":43831,"stop":"end_turn","err":"","ms":31880}
