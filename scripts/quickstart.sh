@@ -15,14 +15,15 @@ while [ $# -gt 0 ]; do
   shift
 done
 die() { echo "quickstart: $*" >&2; exit 1; }
+HINT="install Go 1.27.3, or run again after a Release is published"
 
 # release_asset: sets URL and ASSET for this OS/arch (finds the latest tag unless TAG given)
 release_asset() {
-  case $(uname -s) in Linux) os=linux; ext= ;; Darwin) os=darwin; ext= ;; MINGW*|MSYS*|CYGWIN*) os=windows; ext=.exe ;; *) die "unsupported OS: $(uname -s)" ;; esac
-  case $(uname -m) in x86_64|amd64) arch=amd64 ;; aarch64|arm64) arch=arm64 ;; *) die "unsupported CPU: $(uname -m)" ;; esac
+  case $(uname -s) in Linux) os=linux; ext= ;; Darwin) os=darwin; ext= ;; MINGW*|MSYS*|CYGWIN*) os=windows; ext=.exe ;; *) die "unsupported OS: $(uname -s) - $HINT" ;; esac
+  case $(uname -m) in x86_64|amd64) arch=amd64 ;; aarch64|arm64) arch=arm64 ;; *) die "unsupported CPU: $(uname -m) - $HINT" ;; esac
   if [ -z "$TAG" ]; then
     TAG=$(curl -fsSL -o /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest" | sed 's|.*/tag/||') || TAG=
-    case $TAG in v*) ;; *) die "cannot find the latest release of $REPO" ;; esac
+    case $TAG in v*) ;; *) die "cannot find the latest release of $REPO - $HINT" ;; esac
   fi
   ASSET="dieg_${TAG#v}_${os}_${arch}${ext}"
   BASE="https://github.com/$REPO/releases/download/$TAG"
@@ -45,11 +46,13 @@ elif command -v go >/dev/null 2>&1; then
   mkdir -p bin; go build -o ./bin/dieg ./cmd/dieg || die "go build failed"; DIEG=./bin/dieg
 else
   command -v curl >/dev/null 2>&1 || die "no dieg, no Go, no curl: install Go 1.27.3 or wait for a public Release, then run again"
-  release_asset 2>/dev/null || die "no dieg, no Go, and no Release found: install Go 1.27.3 or run again after the Release is public"
-  mkdir -p bin; DIEG=./bin/dieg
-  curl -fsSL -o "$DIEG" "$URL" && curl -fsSL -o bin/checksums.txt "$BASE/checksums.txt" || die "download failed: install Go 1.27.3 or run again after the Release is public"
+  release_asset
+  mkdir -p bin; DIEG=./bin/dieg$ext
+  curl -fsSL -o "$DIEG" "$URL" && curl -fsSL -o bin/checksums.txt "$BASE/checksums.txt" || { rm -f "$DIEG"; die "download failed - $HINT"; }
   want=$(grep " $ASSET\$" bin/checksums.txt | cut -d' ' -f1)
-  have=$( (sha256sum "$DIEG" 2>/dev/null || shasum -a 256 "$DIEG") | cut -d' ' -f1)
+  if command -v sha256sum >/dev/null 2>&1; then have=$(sha256sum "$DIEG" | cut -d' ' -f1)
+  elif command -v shasum >/dev/null 2>&1; then have=$(shasum -a 256 "$DIEG" | cut -d' ' -f1)
+  else rm -f "$DIEG"; die "neither sha256sum nor shasum found, cannot verify the download - $HINT"; fi
   [ -n "$want" ] && [ "$want" = "$have" ] || { rm -f "$DIEG"; die "checksum mismatch for $ASSET"; }
   chmod +x "$DIEG"
 fi
@@ -58,21 +61,23 @@ echo "dieg: $DIEG"
 # (3)(4) pg container
 if [ $SKIP_DOCKER = 0 ]; then
   C="docker compose -f deploy/compose.yaml"
-  cid=$($C ps -q pg 2>/dev/null || true)
+  cid=$($C ps -q pg) || die "docker compose ps failed - is the Docker daemon running?"
   if [ -n "$cid" ] && [ "$(docker inspect -f '{{.State.Running}}' "$cid" 2>/dev/null)" = true ]; then
     echo "pg container already running, reusing it"
   else
-    if command -v nc >/dev/null 2>&1 && nc -z 127.0.0.1 55432 >/dev/null 2>&1; then
+    if [ -z "${QUICKSTART_SKIP_PORT_CHECK:-}" ] && command -v nc >/dev/null 2>&1 && nc -z 127.0.0.1 55432 >/dev/null 2>&1; then
       die "port 55432 is in use by something other than this project's pg container - free it and run again"
     fi
     $C pull pg >/dev/null 2>&1 || echo "prebuilt image not available, building locally (first run takes a few minutes)"
     $C up -d pg || die "docker compose up failed"
   fi
   cid=$($C ps -q pg)
+  [ -n "$cid" ] || die "pg container not found after up"
+  limit=${QUICKSTART_HEALTH_TIMEOUT:-120}
   i=0
   until [ "$(docker inspect -f '{{.State.Health.Status}}' "$cid" 2>/dev/null)" = healthy ]; do
     i=$((i + 2))
-    if [ $i -gt 120 ]; then $C logs --tail 20 pg >&2 || true; die "pg not healthy after 120s"; fi
+    if [ $i -gt "$limit" ]; then $C logs --tail 20 pg >&2 || true; die "pg not healthy after ${limit}s"; fi
     sleep 2
   done
 fi

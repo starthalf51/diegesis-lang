@@ -6,6 +6,14 @@ $ErrorActionPreference = 'Stop'
 $Repo = 'starthalf51/diegesis-lang'
 $Dsn = 'postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 function Die($m) { [Console]::Error.WriteLine("quickstart: $m"); exit 1 }
+# native docker calls: stderr must not throw under $ErrorActionPreference=Stop
+function Dk { $q = $args[0] -eq "-Quiet"; $a = if ($q) { $args[1..($args.Count - 1)] } else { $args }
+  $e = $ErrorActionPreference; $ErrorActionPreference = "Continue"
+  try { if ($q) { & docker @a 2>&1 | Out-Null } else { & docker @a 2>&1 | Out-Host }; $script:DkCode = $LASTEXITCODE } finally { $ErrorActionPreference = $e }
+  return $script:DkCode }
+function DkOut { $e = $ErrorActionPreference; $ErrorActionPreference = "Continue"
+  try { $o = & docker @args 2>&1 | Where-Object { $_ -isnot [Management.Automation.ErrorRecord] }; $script:DkCode = $LASTEXITCODE } finally { $ErrorActionPreference = $e }
+  return ($o | Out-String).Trim() }
 
 function Get-ReleaseAsset {
   $arch = if ($env:PROCESSOR_ARCHITECTURE -match 'ARM64') { 'arm64' } else { 'amd64' }
@@ -29,8 +37,7 @@ Set-Location (Join-Path $PSScriptRoot '..')
 # (1) docker + compose v2
 if (-not $SkipDocker) {
   if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { Die 'docker not found - install Docker Desktop first' }
-  & docker compose version *> $null
-  if ($LASTEXITCODE -ne 0) { Die "docker compose v2 not found - update Docker (the 'docker compose' plugin is required)" }
+  if ((Dk -Quiet compose version) -ne 0) { Die "docker compose v2 not found - update Docker (the 'docker compose' plugin is required)" }
 }
 
 # (2) dieg: PATH -> go build -> release download
@@ -53,24 +60,24 @@ elseif (Get-Command go -ErrorAction SilentlyContinue) {
   } catch { Die "no dieg and no Go, and the Release download failed ($_): install Go 1.27.3 or run again after the Release is public" }
 }
 Write-Host "dieg: $Dieg"
-
 # (3)(4) pg container
 if (-not $SkipDocker) {
   $c = @('compose', '-f', 'deploy/compose.yaml')
-  $cid = (& docker @c ps -q pg 2>$null)
-  $running = $cid -and ((& docker inspect -f '{{.State.Running}}' $cid 2>$null) -eq 'true')
+  $cid = DkOut @c ps -q pg
+  if (-not $cid -and $script:DkCode -ne 0) { Die 'docker compose ps failed - is the Docker daemon running?' }
+  $running = $cid -and ((DkOut inspect -f '{{.State.Running}}' $cid) -eq 'true')
   if ($running) { Write-Host 'pg container already running, reusing it' }
   else {
-    $inUse = $null -ne (Get-NetTCPConnection -LocalPort 55432 -State Listen -ErrorAction SilentlyContinue)
+    $inUse = (-not $env:QUICKSTART_SKIP_PORT_CHECK) -and $null -ne (Get-NetTCPConnection -LocalPort 55432 -State Listen -ErrorAction SilentlyContinue)
     if ($inUse) { Die "port 55432 is in use by something other than this project's pg container - free it and run again" }
-    & docker @c pull pg *> $null
-    if ($LASTEXITCODE -ne 0) { Write-Host 'prebuilt image not available, building locally (first run takes a few minutes)' }
-    & docker @c up -d pg
-    if ($LASTEXITCODE -ne 0) { Die 'docker compose up failed' }
+    if ((Dk -Quiet @c pull pg) -ne 0) { Write-Host 'prebuilt image not available, building locally (first run takes a few minutes)' }
+    if ((Dk @c up -d pg) -ne 0) { Die 'docker compose up failed' }
   }
-  $cid = (& docker @c ps -q pg)
-  for ($i = 0; (& docker inspect -f '{{.State.Health.Status}}' $cid 2>$null) -ne 'healthy'; $i += 2) {
-    if ($i -ge 120) { & docker @c logs --tail 20 pg; Die 'pg not healthy after 120s' }
+  $cid = DkOut @c ps -q pg
+  if (-not $cid) { Die 'pg container not found after up' }
+  $limit = if ($env:QUICKSTART_HEALTH_TIMEOUT) { [int]$env:QUICKSTART_HEALTH_TIMEOUT } else { 120 }
+  for ($i = 0; (DkOut inspect -f '{{.State.Health.Status}}' $cid) -ne 'healthy'; $i += 2) {
+    if ($i -ge $limit) { Dk @c logs --tail 20 pg | Out-Null; Die "pg not healthy after ${limit}s" }
     Start-Sleep 2
   }
 }
