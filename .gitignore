@@ -14,3 +14,4 @@ examples/idea-to-novel/prompts/b3-change.txt
 examples/idea-to-novel/prompts/b4-change-fix1.txt
 examples/idea-to-novel/prompts/judge[12].txt
 bin/
+/data/

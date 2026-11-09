@@ -38,6 +38,9 @@ func NewClaudeCLIWith(model, effort string) *ClaudeCLI {
 var KnownModels = []string{"claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5", "claude-fable-5-1"}
 
 func ValidModel(m string) error {
+	if strings.HasPrefix(m, OllamaPrefix) && len(m) > len(OllamaPrefix) {
+		return nil
+	}
 	for _, k := range KnownModels {
 		if m == k {
 			return nil

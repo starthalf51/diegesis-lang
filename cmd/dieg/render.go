@@ -133,7 +133,7 @@ func renderOnce(target, scene, id, out, styles string, verify bool, retries int,
 	var text string
 	pass := true
 	if verify {
-		r, n, err := render.RenderVerified2(context.Background(), render.Completers{Render: render.NewClaudeCLIWith(rm, re), Extract: render.NewClaudeCLIWith(xm, "low")}, target, s, b, render.VerifyOpts{K: 1, Retries: retries, Verifier: verifier})
+		r, n, err := render.RenderVerified2(context.Background(), render.Completers{Render: render.NewCompleter(rm, re), Extract: render.NewCompleter(xm, "low")}, target, s, b, render.VerifyOpts{K: 1, Retries: retries, Verifier: verifier})
 		if err != nil {
 			return false, err
 		}
@@ -153,7 +153,7 @@ func renderOnce(target, scene, id, out, styles string, verify bool, retries int,
 		if err != nil {
 			return false, err
 		}
-		res, err := render.NewClaudeCLIWith(rm, re).Complete(context.Background(), sys, user)
+		res, err := render.NewCompleter(rm, re).Complete(context.Background(), sys, user)
 		if err != nil {
 			return false, err
 		}

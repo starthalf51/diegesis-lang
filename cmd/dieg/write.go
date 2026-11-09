@@ -246,11 +246,11 @@ func commonFlag(args []string, i int, o *write.Opts, styles *string, limit *int)
 // meters builds the metered completers: coding on o.CodeModel at o.CodeEffort, render and extract on their own
 // models, all logged into one Meter writing f and counted in one counter.
 func meters(o write.Opts, f io.Writer) (*render.Meter, render.Completers, *counter) {
-	k := &counter{c: render.NewClaudeCLIWith(o.CodeModel, o.CodeEffort), n: new(atomic.Int64)}
+	k := &counter{c: render.NewCompleter(o.CodeModel, o.CodeEffort), n: new(atomic.Int64)}
 	m := render.NewMeter(k, f)
 	cs := render.Completers{
-		Render:  m.With(&counter{c: render.NewClaudeCLIWith(o.RenderModel, o.RenderEffort), n: k.n}),
-		Extract: m.With(&counter{c: render.NewClaudeCLIWith(o.ExtractModel, "low"), n: k.n}),
+		Render:  m.With(&counter{c: render.NewCompleter(o.RenderModel, o.RenderEffort), n: k.n}),
+		Extract: m.With(&counter{c: render.NewCompleter(o.ExtractModel, "low"), n: k.n}),
 	}
 	return m, cs, k
 }
