@@ -13,6 +13,7 @@ services:
       interval: 3s
       retries: 20
 
+  # 비밀번호는 deploy/.env(.env.example 참고)에서 읽는다. 없어도 pg 는 뜬다; ro-init·grafana 는 비어 있으면 안내하고 멈춘다.
   # sl_ro(015_readonly_role.sql 이 NOLOGIN 으로 만든다)에 로그인 비밀번호를 건다. 비밀번호는 환경변수 SL_RO_PASSWORD.
   # 역할이 먼저 있어야 하므로 `dieg db migrate` 를 한 번 돌린 뒤에 쓴다. 이미 도는 pg 는 다시 만들지 않는다.
   ro-init:
@@ -22,8 +23,8 @@ services:
     restart: "no"
     environment:
       PGPASSWORD: sl
-      SL_RO_PASSWORD: ${SL_RO_PASSWORD:?SL_RO_PASSWORD 를 설정한다}
-    entrypoint: ["sh", "-c", "echo \"ALTER ROLE sl_ro LOGIN PASSWORD :'pw'\" | psql -v ON_ERROR_STOP=1 -h pg -U sl -d sl -v pw=\"$$SL_RO_PASSWORD\""]
+      SL_RO_PASSWORD: ${SL_RO_PASSWORD:-}
+    entrypoint: ["sh", "-c", "[ -n \"$$SL_RO_PASSWORD\" ] || { echo 'SL_RO_PASSWORD is empty: copy deploy/.env.example to deploy/.env and set it' >&2; exit 1; }; echo \"ALTER ROLE sl_ro LOGIN PASSWORD :'pw'\" | psql -v ON_ERROR_STOP=1 -h pg -U sl -d sl -v pw=\"$$SL_RO_PASSWORD\""]
 
   grafana:
     image: grafana/grafana-oss:13.0.2
@@ -31,10 +32,11 @@ services:
       ro-init: {condition: service_completed_successfully}
     ports: ["127.0.0.1:3000:3000"]
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GF_ADMIN_PASSWORD:?GF_ADMIN_PASSWORD 를 설정한다}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_ADMIN_PASSWORD:-}
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
-      SL_RO_PASSWORD: ${SL_RO_PASSWORD:?SL_RO_PASSWORD 를 설정한다}
+      SL_RO_PASSWORD: ${SL_RO_PASSWORD:-}
+    entrypoint: ["sh", "-c", "[ -n \"$$GF_SECURITY_ADMIN_PASSWORD\" ] && [ -n \"$$SL_RO_PASSWORD\" ] || { echo 'GF_ADMIN_PASSWORD or SL_RO_PASSWORD is empty: copy deploy/.env.example to deploy/.env and set both' >&2; exit 1; }; exec /run.sh"]
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro

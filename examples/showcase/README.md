@@ -42,4 +42,6 @@ B's scene s24 (`r4/b/novel/s24.ko-haera.md`):
 
 ## Caveats
 
+R4 is the retcon where A got a re-selection after its first pick failed (the empty-pick rule was added mid-run; R6 did not get one). B cost 1.31x A in R4, with 3 code rounds.
+
 The two stories were written independently, so the scenes are parallel, not line-for-line. This is one of six retcons (one run per arm, one verifier): A left 6 confirmed contradictions and B 3 across all six, and B costs about as much only under one reading of the data and makes 6.7x the calls. See the retcon3 README for the full verdict.

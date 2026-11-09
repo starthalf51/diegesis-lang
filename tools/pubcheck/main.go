@@ -24,7 +24,7 @@ var rules = []pat{
 	{"secret:aws-key", regexp.MustCompile(`AKIA[0-9A-Z]{16}`)},
 	{"secret:private-key", regexp.MustCompile(`-----BEGIN [A-Z ]*PRIVATE KEY-----`)},
 	{"secret:generic", regexp.MustCompile(`(?i)(api[_-]?key|secret|token)\s*[:=]\s*['"][^'"]{12,}`)},
-	{"path:personal", regexp.MustCompile(`(?i)(c:.users.sg671|/c/users/sg671|sg671)`)},
+	{"path:personal", regexp.MustCompile(`(?i)[a-z]:[\\/]users[\\/][^\\/\s]+|/home/[^/\s]+/|(?i)/Users/[^/\s]+/`)},
 	{"path:vault", regexp.MustCompile(`Obsidian Vault`)},
 	{"word:vault", regexp.MustCompile(`(?i)\bvault\b`)},
 }
@@ -32,8 +32,8 @@ var rules = []pat{
 // allow lists intentional local-dev defaults.
 var allow = []string{"postgres://sl:sl@localhost"}
 
-// ponytail: pubcheck's own sources hold the patterns, so they are skipped by path.
-var skipFile = []string{"tools/pubcheck/", "corpus/macbeth/texts/"} // Shakespeare says "vault"
+// ponytail: pubcheck's own two source files hold the patterns and fixtures; only they are skipped by path.
+var skipFile = []string{"tools/pubcheck/main.go", "tools/pubcheck/main_test.go", "corpus/macbeth/texts/"} // Shakespeare says "vault"
 
 func rule(line string) string {
 	for _, a := range allow {

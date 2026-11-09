@@ -10,9 +10,10 @@ func TestPubcheckRules(t *testing.T) {
 		"aws":       "AKIA" + "ABCDEFGHIJKLMNOP",
 		"pem":       "-----BEGIN RSA PRIVATE KEY-----",
 		"generic":   `api_key = "abcdefghijklmnop"`,
-		"path":      `C:\Users\sg671\Documents`,
-		"path2":     "/c/users/sg671/x",
-		"user":      "home sg671 here",
+		"path":      `C:\Users\alice\Documents`,
+		"path2":     "/c/users/alice/x",
+		"user":      "/home/alice/x",
+		"mac":       "/Users/alice/x",
 		"vault":     "see Obsidian Vault notes",
 		"vaultword": "the Vault holds it",
 	}

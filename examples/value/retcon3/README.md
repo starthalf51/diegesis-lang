@@ -1,6 +1,23 @@
+# Retcon benchmark re-run (plan 8): English summary
+
+Diegesis v0.7.0, 6 retcons (R1-R6) of a 12-episode story, one run per arm, one verifier. B = `dieg revise` (Diegesis), A = direct AI edit. The rest of this file is Korean.
+
+| | A (direct edit) | B (`dieg revise`) |
+|---|---|---|
+| Confirmed residual + new contradictions | 6 (8 with boundary items) | 3 (5 with boundary items) |
+| Unrelated text changed (characters) | 2,247 | 47 |
+| Priced weighted cost | 1,339,803 | 1,247,242 (0.93x of A) |
+| Calls (judging excluded) | 33 | 221 (6.7x) |
+
+- The pre-registered rule is met ("evidence for revision"), but a cost advantage is NOT established. 0.93x depends on A editing nothing in R6; treating R4 like R6 gives 1.12x.
+- Caveat: 1,069 of A's 2,247 unrelated characters come from a keyword-dictionary gap in R3 e04; excluding it gives about 1,178 vs 47, so the conclusion holds.
+- Limitations: n=1 per arm, one verifier, 12 episodes (favours A), A's cost varies a lot (R2: 3.7x the previous run). R6 A may be under-counted (judge possibly missed e08:41); this favours A.
+
+---
+
 # 재설정 벤치마크 재측정(plan 8) — v0.7.0, R1~R6, 두 팔 모두 새로
 
-**요약:** v0.7.0 재설정 6건(각 팔 1회, 검증자 1명): 확정 잔여+새 모순 B 3 대 A 6, 무관한 글 변경 47자 대 2,247자. 가격 가중 비용은 B ≈ A(0.93×). 단 이 값은 A 가 R6 에서 아무것도 고치지 않은 것에 기대며, R4 처리를 R6 과 같게 하면 1.12× 다(리뷰어 1.13×). 호출 수는 B 가 6.7배. 사전 규칙상 '수정 근거 있음'이지만 비용 우위는 입증되지 않았다. (12화 길이, R2 의 A 비용 분산 3.7배 유의.)
+**요약:** v0.7.0 재설정 6건(각 팔 1회, 검증자 1명): 확정 잔여+새 모순 B 3 대 A 6, 무관한 글 변경 47자 대 2,247자(A 의 1,069자는 R3 e04 키워드 사전 누락에서 나왔다. 이를 빼면 약 1,178자 대 47자, 결론 그대로). 가격 가중 비용은 B ≈ A(0.93×). 단 이 값은 A 가 R6 에서 아무것도 고치지 않은 것에 기대며, R4 처리를 R6 과 같게 하면 1.12× 다(리뷰어 1.13×). 호출 수는 B 가 6.7배. 사전 규칙상 '수정 근거 있음'이지만 비용 우위는 입증되지 않았다. (12화 길이, R2 의 A 비용 분산 3.7배 유의.)
 
 # 사전 기록 (정직한 출처: 재설정 6건·판정 규칙은 retcon2 커밋 cc8eb45 와 바이트 동일하다. 이 README 파일 자체는 첫 실호출 뒤에 만들어졌고, 곳마다 1건으로 세는 규칙은 이번 실행에서 새로 정했다)
 
@@ -49,8 +66,8 @@ retcon2 와 같다: 재료 `examples/serial/run3`, 재설정마다 두 팔 모�
 - 드라이런: `noclaude` 껍데기 아래 `go vet`·`go test -count=1 ./...` 통과, 가짜 완성기 전체 실행(`-rc-dry`, 6건, 호출 0). 실제 명령은 retcon2 와 같다: `dieg stamp <base/b>` 한 번, `dieg revise <rN/b> "<요청>" --skip s32,s33,s34,s35 --render-effort low` (N=1..6).
 - 실행: 껍데기를 뺀 프로세스로 `go run ./tools/serial retcon -rc-out examples/value/retcon3 -rc-list examples/value/retcon3/retcons.json -rc-budget 320 -rc-b-reserve 60`. `dieg stamp`: 31/35 장면에 도장(IR 불일치 0). 로그 `run-1.log`.
 - **R4 에서 멈춤(도구 문제)**: A 선택 호출이 "[12]"(제외된 12화)만 골라 `no episode` 오류로 프로세스가 끝났다(`results-r1-3.json`, `run-1.log`; 호출 1 소모, 낭비). 최소 수정(`tools/serial/retcon.go` arm_A): `-rc-list` 모드에서 선택이 비면 오류 대신 "A 는 아무것도 고치지 않음"으로 진행(요약 갱신 호출도 생략). 그 뒤 `-rc-only 4,5,6` 으로 프로세스를 한 번 더 돌렸다(`run-2.log`; 앞 프로세스는 이미 끝난 뒤, 동시 실행 없음). R4 선택은 다시 불렀고(새 호출) 이번엔 정상 선택했다. R6 에서는 A 선택이 또 12화만 골라 A 가 아무것도 고치지 않았다(호출 1).
-- 호출 **269 / 320** (A 33, B 221, 판정 12 + 재판정 2, 낭비 1). 6건 모두 완료. 표의 호출·비용에는 재판정 2회를 넣지 않았다(판정 호출은 비용 제외).
-- `calls.jsonl`(267행 전체), B 의 호출은 `rN/b/calls.jsonl`, A 는 `rN/a/calls.jsonl`.
+- 호출 **267 / 320** (A 33, B 221, 판정 12, 낭비 1; 재판정 2회를 더하면 269). 6건 모두 완료. 표의 호출·비용에는 재판정 2회를 넣지 않았다(판정 호출은 비용 제외).
+- `calls.jsonl`(269행: 주 실행 267 + 재판정 2), B 의 호출은 `rN/b/calls.jsonl`, A 는 `rN/a/calls.jsonl`.
 
 # 결과 (6건 전부)
 
@@ -99,6 +116,8 @@ R1~R3 만 합치면 A 22 호출·934,277·부수 2,022, B 91 호출·527,981·�
 
 # 한계
 
+- **A 의 R6 은 과소 집계되었을 수 있다**(판정자가 e08:41 을 놓쳤을 가능성). 이는 A 에 유리하게 작용한다.
+- 단서: A 의 2,247자 중 1,069자는 R3 e04 의 키워드 사전 누락에서 나왔다. 이를 빼면 약 1,178자 대 47자이고, 결론은 그대로다.
 - n = 6, 12화, 단일 검증자, 각 팔 1회(분산 미측정): A 비용이 같은 재설정에서 retcon2 와 3.7배(R2)까지 달랐다.
 - **A 의 R6 은 선택 단계가 12화만 골라 아무것도 고치지 않았다**(제외 범위 때문에 못 쓰는 선택). 이것을 "A 실패"로 셌다(잔여 1). R4 도 첫 선택이 같은 이유로 실패해 한 번 다시 불렀다(재선택은 프로토콜 밖의 재시도; 비용 1 호출은 낭비로 적고 가격 가중에는 넣지 않았다).
 - 실행이 두 프로세스로 나뉘었다(도구 수정 때문). 앞 프로세스는 R3 까지 완료 후 R4 선택에서 종료했고 모델 호출 상태는 남지 않는다. 둘 다 같은 `calls.jsonl` 에 이어서 기록했고 호출 가드의 누적은 이어졌다.

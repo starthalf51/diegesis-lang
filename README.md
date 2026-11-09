@@ -8,13 +8,14 @@ A programming language for novels: you write characters, facts, scenes and speec
 
 The claim is narrow: when you change something in the middle of a story, Diegesis propagates the change more completely than asking an AI to edit the text directly. It is not shown to be cheaper.
 
-Measured in [`examples/value/retcon3`](examples/value/retcon3/README.md) (v0.7.0, 6 retcons of a 12-episode story, one run per arm, one verifier; B = `dieg revise`, A = direct AI edit):
+Measured in [`examples/value/retcon3`](examples/value/retcon3/README.md) (English summary at the top, details in Korean; v0.7.0, 6 retcons of a 12-episode story, one run per arm, one verifier; B = `dieg revise`, A = direct AI edit):
 
 - Confirmed residual contradictions plus new ones: B 3 vs A 6 (5 vs 8 counting boundary items).
-- Unrelated text changed: B 47 vs A 2,247 characters.
+- Unrelated text changed: B 47 vs A 2,247 characters. Caveat: 1,069 of A's 2,247 unrelated characters come from a keyword-dictionary gap in R3 e04; excluding it gives about 1,178 vs 47, so the conclusion holds.
 - Priced weighted cost: B about 0.93x of A. This depends on A editing nothing in R6; treating R4 like R6 gives 1.12x.
 - Calls: B makes 6.7x as many.
 - The pre-registered rule is met, but a cost advantage is NOT established. 12 episodes favour A, and A's cost varies a lot (A's R2 cost was 3.7x the previous run).
+- Limitations: n=1 run per arm, one verifier, 12 episodes. R6 A may be under-counted (judge possibly missed e08:41); this favours A.
 - Cost alone is not a reason to use Diegesis: the cost-curve analysis in [`examples/value/cost-curve`](examples/value/cost-curve) found direct writing's per-episode cost flat.
 
 See a concrete case in [`examples/showcase`](examples/showcase/README.md).
@@ -22,12 +23,15 @@ See a concrete case in [`examples/showcase`](examples/showcase/README.md).
 ## Install
 
 ```sh
+git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang
 docker compose -f deploy/compose.yaml up -d pg && export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go install github.com/starthalf51/diegesis-lang/cmd/dieg@latest
 dieg db migrate && dieg test corpus/macbeth
 ```
 
-Docs: [docs/README.md](docs/README.md), [docs/quickstart.md](docs/quickstart.md). Needs Go 1.27+, Docker, and (for `dieg write`) a logged-in `claude` CLI subscription.
+Step-by-step: [docs/quickstart.md](docs/quickstart.md) (English). Reference docs: [docs/README.md](docs/README.md) (Korean). Needs Go 1.27.3, Docker, and (for `dieg write`) a logged-in `claude` CLI subscription.
+
+**Output language:** `dieg write` / `continue` / `revise` produce Korean prose by default (backend `ko-haera`; the coding prompt requires Korean), whatever language the idea is in. Design notes and ADRs referenced in the docs are not published.
 
 License: Apache-2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)).
 
@@ -44,7 +48,7 @@ Go 컴파일러 `dieg` 가 이야기 IR 로 바꿔 PostgreSQL(Apache AGE + pgvec
 
 ## 준비물
 
-- Go 1.27 이상
+- Go 1.27.3
 - Docker(compose v2)
 - `dieg render`·`render-check` 를 쓰려면 렌더 백엔드(LLM CLI)
 
@@ -140,7 +144,11 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 
 ## 디제시스를 쓸 이유
 
-디제시스가 있을 이유는 이야기 한가운데의 변경을 빠짐없이 퍼뜨리는 것이다. 잰 표본(재설정 3건, 31장면 중 다시 렌더한 장면은 재설정마다 7·14·21개)에서 직접 쓰기는 모순 4개를 남겼고 디제시스는 0개를 남겼다. 상관없는 글자는 직접 쓰기가 945자, 디제시스가 33자 바꿨고, 비용(가격 가중)은 거의 같았다(1.02배. 호출은 93 대 15). 비용 자체는 이유가 아니다(`examples/value/cost-curve`: 길어져도 직접 쓰기가 비싸지지 않는다). 판정은 사전 기준으로 "약함"이다: 비용 조건이 2% 차로 빗나갔고 이는 단일 실행 잡음 안이다. 첫 실행(229호출)은 비용 2.42배, 남은 모순 B 2 대 A 4였는데 원인이 플랜 7 자신의 경고와 해시였고, 고쳐서 B 만 다시 쟀다. 첫 실행의 모순 우위는 세는 방식에 민감했다: 자리별로 세면 B 4 대 A 4 다. 공개: 재실행에서 상태만 바뀐 29장면의 패치는 사실상 빈 패치였다(변경 내역이 비어 모델이 `{"edits":[]}` 를 냈다; 지금은 고쳤다). 그래서 1.02배는 상태 변경을 실제로 퍼뜨리는 비용을 낮게 잡은 값이고, 다시 쟬 계획이다. n=3, 단일 실행이다. [`examples/value/retcon2`](examples/value/retcon2/README.md)
+디제시스가 있을 이유는 이야기 한가운데의 변경을 빠짐없이 퍼뜨리는 것이다. 최신 측정은 retcon3(v0.7.0, 12화 이야기의 재설정 6건, 팔마다 1회, 검증자 1명)이다. 확정 잔여+새 모순은 디제시스(B) 3 대 직접 쓰기(A) 6(경계 포함 5 대 8), 무관한 글 변경은 47자 대 2,247자다. 단서: A 의 2,247자 중 1,069자는 R3 e04 의 키워드 사전 누락에서 나왔다. 이를 빼면 약 1,178자 대 47자이고, 결론은 그대로다. 가격 가중 비용은 B 가 A 의 0.93배이지만 A 가 R6 에서 아무것도 고치지 않은 데 기댄 값이고, R4 를 R6 처럼 처리하면 1.12배다. **비용 우위는 입증되지 않았다.** 호출은 B 가 6.7배다. 한계: n=1, 검증자 1명, 12화이며, R6 의 A 는 과소 집계되었을 수 있다(판정자가 e08:41 을 놓쳤을 가능성; A 에 유리하게 작용). 비용 자체는 이유가 아니다(`examples/value/cost-curve`: 길어져도 직접 쓰기가 비싸지지 않는다). [`examples/value/retcon3`](examples/value/retcon3/README.md)
+
+이력(이전 측정, 현재 주장 아님): retcon2(재설정 3건, n=3)는 모순 4 대 0, 무관한 글자 945 대 33자, 비용 1.02배였고 판정은 "약함"이었다. 상태만 바뀐 장면의 패치가 사실상 빈 패치였던 문제가 뒤에 드러나 이 수치는 낙관적이다. [`examples/value/retcon2`](examples/value/retcon2/README.md)
+
+문서에서 가리키는 설계 노트와 ADR 은 공개하지 않는다. `docs/` 와 retcon README 는 한국어다.
 
 ## 측정 결과
 

@@ -4,7 +4,7 @@ Diegesis is Go plus PostgreSQL. Everything below uses the same commands on Linux
 
 ## Prerequisites
 
-- Go 1.27 or newer
+- Go 1.27.3
 - Docker with compose v2
 - For `dieg write` / `continue` / `revise` / `render`: the `claude` CLI, logged in to a subscription (no API key is used)
 
@@ -12,9 +12,11 @@ Diegesis is Go plus PostgreSQL. Everything below uses the same commands on Linux
 
 ```sh
 git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang
-docker compose -f deploy/compose.yaml up -d pg    # 127.0.0.1:55432, user/password/db = sl/sl/sl
+docker compose -f deploy/compose.yaml up -d pg    # 127.0.0.1:55432, user/password/db = sl/sl/sl; no .env needed
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 ```
+
+Only the optional Grafana stack (`ro-init`, `grafana`) needs passwords: copy `deploy/.env.example` to `deploy/.env` and change the values first. Those services stop with a message if they are empty.
 
 ## 2. Get `dieg`
 
@@ -43,10 +45,10 @@ dieg test corpus/macbeth   # compile, load, lint, query, patterns, mutations; re
 
 ```sh
 claude                     # log in once with your subscription
-dieg write "a lighthouse keeper hides a letter" -o out/story1
+dieg write "등대지기가 편지 한 통을 숨긴다" -o out/story1
 ```
 
-This asks the model for Diegesis code, feeds `check`/`lint` diagnostics back, then renders and verifies each scene. Output: `out/story1/story/` (code), `novel.md` (prose), `calls.jsonl` (token log). Use `--no-render` to stop at code, and `DIEG_CALL_CAP=N` to hard-limit model calls.
+The prose is Korean by default (backend `ko-haera`; the coding prompt requires Korean), so write the idea in Korean or expect Korean output either way. This asks the model for Diegesis code, feeds `check`/`lint` diagnostics back, then renders and verifies each scene. Output: `out/story1/story/` (code), `novel.md` (prose), `calls.jsonl` (token log). Use `--no-render` to stop at code, and `DIEG_CALL_CAP=N` to hard-limit model calls.
 Then `dieg continue out/story1 --ep 2` adds an episode and `dieg revise out/story1 "change request"` edits the story.
 
-More: [docs index](README.md).
+More: [docs index](README.md) (Korean). Design notes and ADRs referenced there are not published.
