@@ -1,5 +1,7 @@
 > Public snapshot (2026-11-09). The design notes are the reference and are not published.
 
+**Status: experimental preview.** Diegesis is 0.x: the grammar, IR and commands may change in any minor release.
+
 # Diegesis docs
 
 - [language](language.md) — the language's concept model, grammar principles, examples

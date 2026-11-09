@@ -42,3 +42,5 @@ jobs:
           files: |
             dieg_*
             checksums.txt
+          prerelease: ${{ startsWith(github.ref_name, 'v0.') }}
+          body: "Experimental preview (0.x): grammar, IR and commands may change in any minor release."

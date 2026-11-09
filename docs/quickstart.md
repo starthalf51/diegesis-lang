@@ -1,5 +1,7 @@
 # Quickstart
 
+**Status: experimental preview** (0.x; commands and grammar may change).
+
 Diegesis is Go plus PostgreSQL. Everything below uses the same commands on Linux, macOS and Windows (any POSIX-style shell or PowerShell; set the environment variable in the way your shell does).
 
 ## Fast path

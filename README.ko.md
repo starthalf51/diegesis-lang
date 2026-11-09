@@ -2,6 +2,8 @@
 
 > English: [README.md](README.md)
 
+**상태: 실험 단계 미리보기(experimental preview).** 0.x 판에서는 문법·IR·명령이 바뀔 수 있다.
+
 
 소설을 위한 프로그래밍 언어. 인물·사실·장면·발화(`tells`, `lies`, `sees` …)를 `.dieg.md` 파일에 적으면
 Go 컴파일러 `dieg` 가 이야기 IR 로 바꿔 PostgreSQL(Apache AGE + pgvector)에 적재한다.
