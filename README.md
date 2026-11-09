@@ -154,7 +154,7 @@ go vet ./...
 
 ## Security
 
-Experimental preview, no warranty. The default install builds from source; PostgreSQL is built locally from the official `apache/age` image (no Diegesis image is published). Release binaries come with `checksums.txt` and GitHub build provenance (`gh attestation verify <file> --repo starthalf51/diegesis-lang`), and the quickstart scripts check both before running a download. Report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
+Experimental preview, no warranty. The default install builds from source; PostgreSQL is built locally from the official `apache/age` image (no Diegesis image is published). Release binaries come with `checksums.txt` and GitHub build provenance (`gh attestation verify <file> --repo starthalf51/diegesis-lang --signer-workflow starthalf51/diegesis-lang/.github/workflows/release.yml`). When the quickstart scripts download a binary they always check the checksum, and check provenance when a logged-in `gh` is available. Report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
 
 ## Versioning
 

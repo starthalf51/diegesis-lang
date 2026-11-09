@@ -15,12 +15,12 @@ No PG image is published. `deploy/postgres/Dockerfile` builds AGE + pgvector loc
 ## 3. Verify
 
 - `go install github.com/starthalf51/diegesis-lang/cmd/dieg@latest && dieg version` prints the new version.
-- `gh attestation verify dieg_<ver>_linux_amd64 --repo starthalf51/diegesis-lang` passes for a downloaded asset.
+- `gh attestation verify dieg_<ver>_linux_amd64 --repo starthalf51/diegesis-lang --signer-workflow starthalf51/diegesis-lang/.github/workflows/release.yml` passes for a downloaded asset.
 - On a machine without Go: `./scripts/quickstart.sh` (and `quickstart.ps1`) downloads the asset, passes the checksum and provenance checks, and `dieg demo` runs. `--print-release-url` shows the URL the script will use.
 
 ## 4. Repository settings (once, by hand)
 
 - Account: two-factor authentication, preferably a passkey.
-- Settings, Rules: protect `main` (no force push, no deletion) and tags matching `v*` (only maintainers create, no deletion or update).
+- Settings, Rules: protect `main` (no force push, no deletion) and tags matching `v[0-9]*` (only maintainers create, no deletion or update).
 - Settings, Security: enable **Private vulnerability reporting** (see [SECURITY.md](../SECURITY.md)) and Dependabot alerts.
 - Clean-up after v0.9.0: delete the `diegesis-pg` package (profile, Packages, Package settings, Delete) and the v0.9.0 Release assets (built before provenance), then tag `v0.9.1`.

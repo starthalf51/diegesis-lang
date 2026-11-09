@@ -28,6 +28,7 @@ function Get-ReleaseAsset {
   }
   $asset = "dieg_$($t.TrimStart('v'))_windows_${arch}.exe"
   $base = if ($env:QUICKSTART_RELEASE_BASE) { $env:QUICKSTART_RELEASE_BASE } else { "https://github.com/$Repo/releases/download/$t" }
+  if ($env:QUICKSTART_RELEASE_BASE) { [Console]::Error.WriteLine("quickstart: QUICKSTART_RELEASE_BASE is set - checksums come from the same place, only the provenance check protects this download") }
   @{ Asset = $asset; Base = $base; Url = "$base/$asset" }
 }
 
@@ -64,12 +65,12 @@ elseif (Get-Command go -ErrorAction SilentlyContinue) {
     $e = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
     $gh = $false
     if (Get-Command gh -ErrorAction SilentlyContinue) { & gh auth status 2>&1 | Out-Null; $gh = $LASTEXITCODE -eq 0 }
-    if ($gh) { & gh attestation verify $Dieg --repo $Repo 2>&1 | Out-Null; $ok = $LASTEXITCODE -eq 0 }
+    if ($gh) { & gh attestation verify $Dieg --repo $Repo --signer-workflow "$Repo/.github/workflows/release.yml" 2>&1 | Out-Null; $ok = $LASTEXITCODE -eq 0 }
     $ErrorActionPreference = $e
     if (-not $gh) { Write-Host 'provenance not verified (install and log in to gh to verify)' }
     elseif (-not $ok) { Remove-Item $Dieg -Force; throw 'build provenance check failed' }
     else { Write-Host 'provenance verified (gh attestation)' }
-  } catch { Die "no dieg and no Go, and the Release download failed ($_): install Go 1.27.3 or run again after the Release is public" }
+  } catch { Die "no dieg and no Go, and getting the Release binary failed ($_): install Go 1.27.3 to build from source" }
 }
 Write-Host "dieg: $Dieg"
 # (3)(4) pg container

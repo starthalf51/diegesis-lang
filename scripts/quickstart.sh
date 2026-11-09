@@ -27,6 +27,7 @@ release_asset() {
   fi
   ASSET="dieg_${TAG#v}_${os}_${arch}${ext}"
   BASE=${QUICKSTART_RELEASE_BASE:-"https://github.com/$REPO/releases/download/$TAG"}
+  [ -z "${QUICKSTART_RELEASE_BASE:-}" ] || echo "quickstart: QUICKSTART_RELEASE_BASE is set - checksums come from the same place, only the provenance check protects this download" >&2
   URL="$BASE/$ASSET"
 }
 
@@ -56,7 +57,7 @@ else
   [ -n "$want" ] && [ "$want" = "$have" ] || { rm -f "$DIEG"; die "checksum mismatch for $ASSET"; }
   # build provenance (GitHub attestation); needs a logged-in gh
   if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
-    gh attestation verify "$DIEG" --repo "$REPO" >/dev/null 2>&1 || { rm -f "$DIEG"; die "build provenance check failed for $ASSET"; }
+    gh attestation verify "$DIEG" --repo "$REPO" --signer-workflow "$REPO/.github/workflows/release.yml" >/dev/null 2>&1 || { rm -f "$DIEG"; die "build provenance check failed for $ASSET"; }
     echo "provenance verified (gh attestation)"
   else echo "provenance not verified (install and log in to gh to verify)"; fi
   chmod +x "$DIEG"

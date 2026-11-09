@@ -20,7 +20,7 @@ Use GitHub private vulnerability reporting: the repository's **Security** tab, *
 
 ```sh
 sha256sum -c checksums.txt --ignore-missing
-gh attestation verify dieg_<ver>_<os>_<arch> --repo starthalf51/diegesis-lang
+gh attestation verify dieg_<ver>_<os>_<arch> --repo starthalf51/diegesis-lang --signer-workflow starthalf51/diegesis-lang/.github/workflows/release.yml
 ```
 
 `scripts/quickstart.sh` and `quickstart.ps1` run both checks when they download a binary (the provenance check needs a logged-in `gh`) and delete the file if either fails.
