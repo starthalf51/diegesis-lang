@@ -8,6 +8,32 @@ Go 컴파일러 `dieg` 가 이야기 IR 로 바꿔 PostgreSQL(Apache AGE + pgvec
 판정(시간 모순, 누가 무엇을 아는가, 기만, 서사 패턴, 지표)은 전부 PG 안의 SQL 이 한다.
 문법의 단일 기준은 `spec/grammar.ebnf`, 예제 코퍼스는 `corpus/`(macbeth chibi bible odyssey hamlet othello holmes).
 
+## 빠른 시작
+
+도커만 있으면 된다(Go 는 선택. 미리 빌드한 바이너리·이미지는 첫 공개 판 이후부터 쓸 수 있고, 그 전에는 스크립트가 소스로 빌드한다).
+
+```sh
+git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang && ./scripts/quickstart.sh
+```
+
+Windows(PowerShell): `powershell -ExecutionPolicy Bypass -File scripts\quickstart.ps1`
+
+스크립트는 도커로 PG 를 띄우고, `dieg` 를 구하고(PATH → `go build` → Release 내려받기+sha256 검사), 마이그레이션한 뒤 `dieg demo` 를 돌린다. 모델 호출 없음. 자세히: [scripts/README.md](scripts/README.md).
+
+Claude 구독 없이 `dieg demo`: 내장된 작은 이야기(등대)를 적재하고 SQL 이 찾은 것을 찍는다. 모델 호출 없음.
+
+```text
+== Consistency warnings ==
+1.3.dieg.md:13:19: warn stays-gone: dobi enters after leaving (status gone at 1.3.dieg.md:12)
+cast.dieg.md:35:1: warn relative-time-fact: fact storm_coming names a relative time: 폭풍이 열흘 뒤에 온다
+
+== Who knows what (scene 1.3) ==
+- 미나: 「폭풍이 열흘 뒤에 온다」 — 참이라고 믿는다
+- 하루: 「등대 문은 잠겨 있다」 — 참이라고 믿는다
+```
+
+아래는 수동 설정이다.
+
 ## 준비물
 
 - Go 1.27.3
@@ -18,6 +44,7 @@ Go 컴파일러 `dieg` 가 이야기 IR 로 바꿔 PostgreSQL(Apache AGE + pgvec
 
 ```sh
 cd deploy
+docker compose pull pg || true     # 미리 빌드한 이미지(첫 공개 판 이후). 없으면 로컬 빌드
 docker compose up -d pg            # 127.0.0.1:55432, 사용자/암호/DB = sl/sl/sl, 데이터는 볼륨 sl_pgdata
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go run ./cmd/dieg db migrate       # db/migrations/*.sql 을 이름순으로 한 번씩 적용
@@ -33,6 +60,7 @@ dieg check corpus/macbeth          # 구문·의미 검사(오류가 있으면 e
 dieg test corpus/macbeth           # 컴파일·적재·린트·질의·패턴·변이 → expect.yaml 대로인지. 보고서 out/accept/macbeth.md
 dieg patterns hamlet               # 서사 패턴 라이브러리(patterns/*.sql)를 작품 하나에
 dieg stats macbeth                 # 지표(metric_*): 출석, 정보 비대칭, 긴장도, 아나크로니 …
+dieg demo                          # 내장 데모 이야기: 경고·누가 무엇을 아는가·세계 상태(PG 필요, 모델 호출 없음)
 dieg render-check corpus/macbeth   # 장면을 산문으로 렌더하고 다시 추출해 IR 과 비교(캐시 사용)
 ```
 
@@ -176,6 +204,7 @@ go vet ./...
 | v0.6.0 | 플랜 6: 기본 채점기 card(`--verifier open` 으로 예전 방식), 지어낸 사건은 경고만, 기본 `--render-effort low`, 계층형 렌더러(`--renderer`·`--beat-retries`) 삭제, 연재 run3 |
 | v0.7.0 | 플랜 7: 렌더 프롬프트에 세계 상태 요약(`--no-digest`), 상태 해시 낡음·`dieg stamp`, `revise` 문장 패치(`patched=N`), 경고 3개, `revise` 는 새 진단만 막음, `--skip`·`DIEG_CALL_CAP`, 수정 재측정(retcon2) |
 | v0.8.0 | 플랜 8: 공개 준비(Apache-2.0, 위생 점검 `tools/pubcheck`, `docs/`), 영어 README·`docs/quickstart.md`·`examples/showcase`, 재설정 재측정(retcon3) |
+| v0.9.0 | 플랜 9: 첫 사용 경험(`dieg demo`, `scripts/quickstart.sh`·`.ps1`, 컴포즈 ghcr 이미지, 릴리스 워크플로, `docs/releasing.md`), `attribute-conflict` 가 `X.at` 이동도 허용 |
 
 ## 라이선스
 

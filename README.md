@@ -28,6 +28,35 @@ A concrete side-by-side case: [`examples/showcase`](examples/showcase/README.md)
 
 ## Quickstart
 
+Needs only Docker (Go optional; prebuilt binaries and the PG image become available after the first public release, until then the script builds from source).
+
+```sh
+git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang && ./scripts/quickstart.sh
+```
+
+Windows (PowerShell): `powershell -ExecutionPolicy Bypass -File scripts\quickstart.ps1`
+
+The script starts PostgreSQL in Docker, gets `dieg` (PATH, then `go build`, then a Release download with a sha256 check), migrates, and runs `dieg demo`. No model calls. Details: [scripts/README.md](scripts/README.md).
+
+Try it without a Claude subscription: `dieg demo`. It loads a small embedded Korean story (a lighthouse) and prints what the SQL layer finds, with no model calls:
+
+```text
+== Consistency warnings ==
+1.3.dieg.md:13:19: warn stays-gone: dobi enters after leaving (status gone at 1.3.dieg.md:12)
+cast.dieg.md:35:1: warn relative-time-fact: fact storm_coming names a relative time: 폭풍이 열흘 뒤에 온다
+
+== Who knows what (scene 1.3) ==
+- 미나: 「폭풍이 열흘 뒤에 온다」 — 참이라고 믿는다
+- 하루: 「등대 문은 잠겨 있다」 — 참이라고 믿는다
+
+== World state for scene 1.3 ==
+### 코드에 적힌 속성
+- 도비: 이미 이야기에서 떠났다(status)
+- 놋쇠 열쇠(key): at = 등대
+```
+
+## Manual setup
+
 ### Prerequisites
 
 - Go 1.27.3
@@ -40,6 +69,7 @@ The commands are the same on Linux, macOS and Windows (set the environment varia
 
 ```sh
 git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang
+docker compose -f deploy/compose.yaml pull pg || true   # prebuilt image (after the first public release); otherwise built locally
 docker compose -f deploy/compose.yaml up -d pg    # 127.0.0.1:55432, user/password/db = sl/sl/sl; no .env needed
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 ```
@@ -89,6 +119,7 @@ The same steps, with more detail: [docs/quickstart.md](docs/quickstart.md).
 | `dieg lint <work>` | Run the PG lint rules (`rules/*.sql`) | no |
 | `dieg patterns <work>` | Run the narrative pattern library (`patterns/*.sql`) | no |
 | `dieg stats <work>` | Metrics: presence, information asymmetry, tension, anachrony ... | no |
+| `dieg demo` | Load the embedded demo story; print warnings, who knows what, world state (needs PG) | no |
 | `dieg write` / `continue` / `revise` | Idea → code → checked → rendered prose; next episode; edit | yes |
 | `dieg render <work> <scene> --backend <id> [--verify]` | Render one scene | yes |
 | `dieg stamp <work-dir>` | Add state hashes to stories written before v0.7.0 | no |
@@ -115,7 +146,7 @@ go vet ./...
 
 ## Versioning
 
-[SemVer](https://semver.org/). Before 1.0, grammar and IR may change in MINOR releases. Releases are git tags (`v0.8.0`); `dieg version` prints the version. Release history: [README.ko.md](README.ko.md#버전) (Korean).
+[SemVer](https://semver.org/). Before 1.0, grammar and IR may change in MINOR releases. Releases are git tags (`v0.9.0`); `dieg version` prints the version. Release history: [README.ko.md](README.ko.md#버전) (Korean).
 
 ## License
 

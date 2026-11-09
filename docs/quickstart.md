@@ -2,6 +2,18 @@
 
 Diegesis is Go plus PostgreSQL. Everything below uses the same commands on Linux, macOS and Windows (any POSIX-style shell or PowerShell; set the environment variable in the way your shell does).
 
+## Fast path
+
+Needs only Docker (Go optional; prebuilt binaries and the PG image become available after the first public release, until then the script builds from source).
+
+```sh
+git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang && ./scripts/quickstart.sh
+```
+
+Windows (PowerShell): `powershell -ExecutionPolicy Bypass -File scripts\quickstart.ps1`
+
+It starts PostgreSQL, gets `dieg`, migrates and runs `dieg demo` (no model calls, no subscription). See [scripts/README.md](../scripts/README.md). The steps below are the same flow by hand.
+
 ## Prerequisites
 
 - Go 1.27.3
@@ -12,6 +24,7 @@ Diegesis is Go plus PostgreSQL. Everything below uses the same commands on Linux
 
 ```sh
 git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang
+docker compose -f deploy/compose.yaml pull pg || true   # prebuilt image (after the first public release); otherwise built locally
 docker compose -f deploy/compose.yaml up -d pg    # 127.0.0.1:55432, user/password/db = sl/sl/sl; no .env needed
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 ```
@@ -40,6 +53,8 @@ dieg test corpus/macbeth   # compile, load, lint, query, patterns, mutations; re
 ```
 
 `dieg test` needs the repository checkout (it reads `corpus/`, `rules/` and `patterns/`). A passing run takes a couple of minutes and ends with a `PASS macbeth: ...` line and exit code 0.
+
+Try `dieg demo` here too: it loads an embedded story and prints warnings, who knows what, and world state (no model calls).
 
 ## 4. Write a story (model calls)
 
