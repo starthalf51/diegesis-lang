@@ -1,37 +1,37 @@
-# 비용 곡선 영점 분석 — 긴 연재에서 B(Diegesis)가 A(직접)보다 싸지는가
+# Cost curve zero-point analysis — does B (Diegesis) get cheaper than A (direct) in a long serial?
 
-가설 ①: A 의 입력비는 연재가 길수록 늘고(매 화 앞 내용을 실어야 하므로), B 의 화당 비용은 PG 가 상태를 쥐고 다이제스트만 보내므로 평평하다. 그러므로 길수록 B 가 싸진다.
+Hypothesis ①: A's input cost grows as the serial gets longer (since each episode must carry the earlier content), while B's per-episode cost is flat, because PG holds the state and only a digest is sent. So the longer it gets, the cheaper B becomes.
 
-**모델 호출 0회.** `examples/serial/run1~run3` 의 기록 파일만 읽었다. 프로그램은 `tools/costcurve/main.go` (`go run ./tools/costcurve`), 산출은 이 폴더의 CSV 다.
+**0 model calls.** We only read the record files of `examples/serial/run1~run3`. The program is `tools/costcurve/main.go` (`go run ./tools/costcurve`), and the outputs are the CSVs in this folder.
 
-## 결론
+## Conclusion
 
-**비용 근거 없음.** (사전 고정 규칙: B 기울기 ≤ A 의 절반, 그리고 50화 누적 B/A ≤ 0.7. 합산 적합에서 B 기울기는 A 의 0.85배, 50화 누적 B/A 는 1.09 로 둘 다 미달. 방향이 맞다는 "약함" 조건도 B/A < 1 이 필요하다고 읽었는데 그것도 아니다 — 규칙에 "방향"의 정의가 없어 이 해석을 밝혀 둔다.)
+**No cost evidence.** (Pre-registered rule: B slope ≤ half of A's, and cumulative B/A at 50 episodes ≤ 0.7. In the pooled fit, B's slope is 0.85× A's and cumulative B/A at 50 episodes is 1.09, so both fall short. The "weak" condition that the direction be right, which I read as also requiring B/A < 1, is not met either — the rule has no definition of "direction", so I state this interpretation.)
 
-핵심 이유는 가설의 전제가 코드와 맞지 않아서다. **A 는 앞 화 전문을 싣지 않는다.** 그래서 A 의 입력은 연재가 길어져도 거의 늘지 않는다(아래). A 의 화당 비용이 늘어난 것은 대부분 출력(후반 화가 길어짐) 때문이고, B 의 입력은 오히려 A 보다 빨리 늘었다.
+The main reason is that the hypothesis's premise does not match the code. **A does not carry the full text of earlier episodes.** So A's input barely grows as the serial gets longer (below). Most of the growth in A's per-episode cost is from output (later episodes get longer), and B's input actually grew faster than A's.
 
-## 1. A 와 B 가 매 화 받는 컨텍스트 (코드 기준)
+## 1. The context A and B receive each episode (from the code)
 
-- **A** (`tools/serial/direct.go` `EpisodePrompt`): 하네스 규칙 + `확정된 수정` + 아이디어 + 개요(1회 쓴 것, 고정) + **누적 요약**(매 화 뒤 `sum-N` 호출이 갱신, "1500자 안팎") + **직전 화 전문 1개**. 앞 화 전문 전체나 최근 N화는 없다. 그러므로 A 는 설계상 이미 (b)의 "요약" 방식이다. 호출은 화당 2회(`ep-N`, `sum-N`).
-- **B** (`tools/serial/b.go` → `dieg continue`; `internal/write/prompt.go` `ContinuePrompt`): 규칙 + 기존 **cast 선언 파일 묶음** + **PG 상태 다이제스트** + 브리프. 과거 장면 코드는 싣지 않는다. 화당 `code` 라운드 1~2회 + 장면마다 render(haiku)·extract(sonnet).
+- **A** (`tools/serial/direct.go` `EpisodePrompt`): harness rules + `confirmed revisions` + idea + outline (written once, fixed) + **cumulative summary** (updated by the `sum-N` call after each episode, "around 1500 characters") + **the full text of the previous episode only**. There is no full text of all earlier episodes or of the last N. So A is already, by design, the "summary" approach of (b). Two calls per episode (`ep-N`, `sum-N`).
+- **B** (`tools/serial/b.go` → `dieg continue`; `internal/write/prompt.go` `ContinuePrompt`): rules + the existing **bundle of cast declaration files** + **PG state digest** + brief. Past scene code is not carried. Per episode, 1–2 `code` rounds + render (haiku) and extract (sonnet) for each scene.
 
-실측 프롬프트 크기(= 입력 + 캐시읽기 + 캐시쓰기, 토큰):
+Measured prompt size (= input + cache read + cache write, tokens):
 
-| 대상 | 호출 | 1화 | 11~12화 | 화당 증가(적합, n) | 200k 도달 |
+| Target | Call | Ep 1 | Ep 11–12 | Growth per episode (fit, n) | Reaches 200k |
 |---|---|--:|--:|--:|--:|
-| A | `ep-N` | 약 4.3k | 약 11~12k | +341 (SE 88, R² 0.31, n=35) | 562화(외삽) |
-| B | 최대 code 호출 | 약 15k | 약 25~28k | +950 (SE 49, R² 0.93, n=33) | 195화(외삽) |
+| A | `ep-N` | about 4.3k | about 11–12k | +341 (SE 88, R² 0.31, n=35) | episode 562 (extrapolated) |
+| B | largest code call | about 15k | about 25–28k | +950 (SE 49, R² 0.93, n=33) | episode 195 (extrapolated) |
 
-- A 의 입력은 2화 이후 10~12k 에서 평평하다(요약 길이 상한이 있고 직전 화만 싣는다).
-- B 의 입력은 늘어난다 — (c)의 확인: **B 의 입력은 유계가 아니다.** 다이제스트 크기도 선형으로 큰다(`digest.csv`: run3 2.3KB(2화) → 6.7KB(12화), 화당 약 +0.45KB). code 프롬프트의 증가분(+950 토큰/화)은 다이제스트만으로는 설명되지 않고, 늘어나는 cast 선언 묶음이 보태는 것으로 보이지만 분해는 하지 않았다. 100화까지는 약 11만 토큰으로 200k 창 안이다(외삽).
+- A's input is flat at 10–12k from episode 2 on (the summary has a length cap and only the previous episode is carried).
+- B's input grows — confirming (c): **B's input is not bounded.** The digest size also grows linearly (`digest.csv`: run3 2.3KB (ep 2) → 6.7KB (ep 12), about +0.45KB per episode). The growth of the code prompt (+950 tokens/episode) is not explained by the digest alone, and appears to be added to by the growing bundle of cast declarations, but we did not break it down. Up to episode 100 it is about 110k tokens, inside the 200k window (extrapolated).
 
-## 2. 화별 표 (비용 = 모델계수 × (입력 + 0.1×캐시읽기 + 1.25×캐시쓰기 + 5×출력), opus 1 / sonnet 0.6 / haiku 0.2)
+## 2. Per-episode table (cost = model factor × (input + 0.1×cache read + 1.25×cache write + 5×output), opus 1 / sonnet 0.6 / haiku 0.2)
 
-단계 경계는 각 run 의 `metrics.csv` 누적 호출 수를 쓴다. 모델은 라벨로 정한다(`render-` haiku, `extract-` sonnet, 나머지 opus; `tools/serial` `modelOf`). 수정(`rev1`·`rev2`)은 따로 둔 행이다. 전체 데이터는 `steps.csv`.
-run1 A 는 12화까지 쓰고(판정 밖) B 는 11화에서 잘렸다. 12화 행도 A 적합에 들어 있다.
+Stage boundaries use the cumulative call counts of each run's `metrics.csv`. The model is decided by label (`render-` haiku, `extract-` sonnet, the rest opus; `tools/serial` `modelOf`). Revisions (`rev1`, `rev2`) are separate rows. All data is in `steps.csv`.
+Run1 A wrote up to episode 12 (outside the verdict) and B was cut off at episode 11. The episode 12 row is also in A's fit.
 
 ### run1
-| 단계 | A 호출 | A 미캐시입력 | A 캐시읽기 | A 캐시쓰기 | A 출력 | A 비용 | B 호출 | B 미캐시입력 | B 캐시읽기 | B 캐시쓰기 | B 출력 | B 비용 |
+| Stage | A calls | A uncached input | A cache read | A cache write | A output | A cost | B calls | B uncached input | B cache read | B cache write | B output | B cost |
 |---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
 | outline | 1 | 2 | 0 | 3222 | 3588 | 21970 | - | - | - | - | - | - |
 | ep1 | 2 | 4 | 0 | 9666 | 9071 | 57442 | 7 | 14 | 6162 | 25736 | 13762 | 69773 |
@@ -49,7 +49,7 @@ run1 A 는 12화까지 쓰고(판정 밖) B 는 11화에서 잘렸다. 12화 행
 | ep11 | 2 | 4 | 0 | 20514 | 12681 | 89052 | 11 | 22 | 10270 | 42412 | 17189 | 91201 |
 | ep12 | 2 | 4 | 0 | 20043 | 13839 | 94253 | - | - | - | - | - | - |
 ### run2
-| 단계 | A 호출 | A 미캐시입력 | A 캐시읽기 | A 캐시쓰기 | A 출력 | A 비용 | B 호출 | B 미캐시입력 | B 캐시읽기 | B 캐시쓰기 | B 출력 | B 비용 |
+| Stage | A calls | A uncached input | A cache read | A cache write | A output | A cost | B calls | B uncached input | B cache read | B cache write | B output | B cost |
 |---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
 | outline | 1 | 2 | 0 | 3150 | 3139 | 19634 | - | - | - | - | - | - |
 | ep1 | 2 | 4 | 0 | 9295 | 7844 | 50843 | 13 | 26 | 13985 | 34469 | 34056 | 94945 |
@@ -66,7 +66,7 @@ run1 A 는 12화까지 쓰고(판정 밖) B 는 11화에서 잘렸다. 12화 행
 | ep10 | 2 | 4 | 0 | 17612 | 12524 | 84639 | 7 | 14 | 6441 | 35009 | 20082 | 91475 |
 | ep11 | 2 | 4 | 0 | 18500 | 9943 | 72844 | - | - | - | - | - | - |
 ### run3
-| 단계 | A 호출 | A 미캐시입력 | A 캐시읽기 | A 캐시쓰기 | A 출력 | A 비용 | B 호출 | B 미캐시입력 | B 캐시읽기 | B 캐시쓰기 | B 출력 | B 비용 |
+| Stage | A calls | A uncached input | A cache read | A cache write | A output | A cost | B calls | B uncached input | B cache read | B cache write | B output | B cost |
 |---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
 | outline | 1 | 2 | 0 | 3189 | 3138 | 19678 | - | - | - | - | - | - |
 | ep1 | 2 | 4 | 0 | 9638 | 8832 | 56212 | 5 | 10 | 4048 | 22634 | 16886 | 70877 |
@@ -84,64 +84,64 @@ run1 A 는 12화까지 쓰고(판정 밖) B 는 11화에서 잘렸다. 12화 행
 | ep11 | 2 | 4 | 0 | 18127 | 11231 | 78818 | 5 | 10 | 4048 | 35524 | 24383 | 128759 |
 | ep12 | 2 | 4 | 0 | 18753 | 9971 | 73300 | 5 | 10 | 4048 | 36472 | 18839 | 104942 |
 
-## 3. 화당 비용 기울기 (수정·outline 제외, 화 번호에 대한 단순 선형)
+## 3. Per-episode cost slope (revisions and outline excluded, simple linear in episode number)
 
-`fits.csv`. 비용 단위는 위 가중 토큰.
+`fits.csv`. The cost unit is the weighted tokens above.
 
-| 계열 | n | 절편 | 기울기/화 | SE | R² |
+| Series | n | Intercept | Slope/episode | SE | R² |
 |---|--:|--:|--:|--:|--:|
-| A 전체(3 run) | 35 | 55,250 | **+2,875** | 515 | 0.49 |
-| B 전체(3 run) | 33 | 77,568 | **+2,457** | 1,540 | 0.08 |
+| A overall (3 runs) | 35 | 55,250 | **+2,875** | 515 | 0.49 |
+| B overall (3 runs) | 33 | 77,568 | **+2,457** | 1,540 | 0.08 |
 | A run1 / run2 / run3 | 12 / 11 / 12 | | +4,002 / +2,511 / +1,928 | | 0.52 / 0.76 / 0.49 |
 | B run1 / run2 / run3 | 11 / 10 / 12 | | +1,289 / +3,216 / +2,692 | | 0.03 / 0.09 / 0.12 |
 
-- **n 이 작다.** 한 계열에 점 10~12개, 합산해도 33~35개이고 그것도 같은 아이템 한 개를 세 번 돌린 것이라 독립 표본이 아니다.
-- A 는 기울기가 양수이고 SE 의 5배 정도라 증가 자체는 믿을 만하다. B 는 SE 가 기울기의 60% 이고 R² 0.08 이라, "평평하다"도 "A 와 같이 늘어난다"도 구별되지 않는다. B 화당 비용은 retry 와 장면 검증 횟수(호출 수 10~16)에 휘둘린다.
-- A 의 기울기 약 2,900 중 컨텍스트 몫은 작다: 프롬프트 증가 341 토큰 × 캐시쓰기 1.25 ≈ 430, 약 15%. 나머지는 출력(×5)이다 — 후반 화(특히 9~11화)가 길다(ep 호출 출력 약 5k → 8~13k 토큰). 이것은 컨텍스트 누적이 아니라 이야기 후반의 회수 분량이 커진 효과로 보이며, 화 번호 50, 100 으로 선형 외삽할 근거가 약하다.
+- **n is small.** Each series has 10–12 points, 33–35 when pooled, and those are the same single item run three times, so they are not independent samples.
+- A's slope is positive and about 5× its SE, so the increase itself is credible. B's SE is 60% of its slope and R² is 0.08, so neither "flat" nor "grows like A" can be distinguished. B's per-episode cost is driven by retries and scene verification counts (10–16 calls).
+- Of A's slope of about 2,900, the context share is small: a prompt growth of 341 tokens × cache write 1.25 ≈ 430, about 15%. The rest is output (×5) — later episodes (especially 9–11) are long (the ep call output goes from about 5k to 8–13k tokens). This looks like the effect of larger payoff volume in the late story rather than context accumulation, and there is weak ground to extrapolate it linearly to episode 50 or 100.
 
-## 4. 누적 비용 투영 (B/A, 수정 제외, 화당 비용 = 적합선, 음수는 0 으로 자름)
+## 4. Cumulative cost projection (B/A, revisions excluded, per-episode cost = fitted line, negatives clipped to 0)
 
 `projection.csv`.
 
-| 가정 | 12화 | 24화 | 50화 | 100화 |
+| Assumption | 12 ep | 24 ep | 50 ep | 100 ep |
 |---|--:|--:|--:|--:|
-| (a) A 현행 정책 + 합산 적합 | 1.27 | 1.19 | **1.09** | 1.01 |
-| (a) run1 적합만 | 1.09 | 0.91 | 0.71 | 0.56 |
-| (a) run2 적합만 | 1.35 | 1.33 | 1.32 | 1.31 |
-| (a) run3 적합만 | 1.38 | 1.38 | 1.39 | 1.39 |
-| (b') A 가 앞 화 전문을 모두 싣는 가상 정책, 전부 캐시읽기(0.1) | 1.21 | 1.10 | 0.97 | 0.87 |
-| (b') 같은 가상 정책, 전부 캐시쓰기(1.25) | 0.79 | 0.59 | **0.43** | 0.34 |
+| (a) A's current policy + pooled fit | 1.27 | 1.19 | **1.09** | 1.01 |
+| (a) run1 fit only | 1.09 | 0.91 | 0.71 | 0.56 |
+| (a) run2 fit only | 1.35 | 1.33 | 1.32 | 1.31 |
+| (a) run3 fit only | 1.38 | 1.38 | 1.39 | 1.39 |
+| (b') hypothetical policy where A carries all earlier full texts, all as cache reads (0.1) | 1.21 | 1.10 | 0.97 | 0.87 |
+| (b') same hypothetical policy, all as cache writes (1.25) | 0.79 | 0.59 | **0.43** | 0.34 |
 
-가정:
+Assumptions:
 
-- **(a) A 현행 정책을 계속한다.** 위 1절대로 A 의 컨텍스트는 200k 창에 닿지 않는다(프롬프트 증가식 외삽으로 약 562화). 그러므로 가설 ① 이 말한 "입력이 길이에 비례해 는다"는 A 의 현행 정책에서는 일어나지 않는다. 투영은 비용 곡선 전체를 선형 외삽한 것이고(3절 주의: 출력 증가가 주 원인), run 에 따라 0.56~1.39 로 갈린다. 부호가 갈리는 것은 B 의 SE 가 크기 때문이다.
-- **(b) 창을 넘으면 A 는 요약해야 한다.** A 는 이미 요약을 쓴다. 가상으로 앞 화 전문을 모두 싣는 정책(`A-full`: 화당 출력 평균 6,498 토큰이 쌓임, 1화 프롬프트 4,320)이면 **약 31화**에서 200k 를 넘는다. 그 뒤에는 요약해야 하고, 요약은 세부를 잃는다 — 이 지점이 B 의 이점(상태가 PG 에 정확히 남음)이 의미를 갖는 곳이다. 위 (b') 행은 `A-full` 의 비용만 더한 것이며 31화 이후에도 전문을 계속 싣는다고 놓은 비현실적 상한이다. 캐시 적중률 가정에 결과가 극단적으로 흔들린다(50화 0.97 ↔ 0.43). **품질(세부 손실, 연속성 오류)은 여기서 측정할 수 없다.** 비용 곡선만으로는 그 효과를 못 잡는다.
-- **(c) B 의 다이제스트가 유계라고 가정한다.** 실측으로는 유계가 아니다(1절). 투영의 B 는 실측 기울기를 그대로 쓰므로 이미 반영되어 있다. 다이제스트·cast 가 유계라고 가정하면 B 의 기울기는 2,457 보다 작아질 수 있으나 그 증거는 이 데이터에 없다.
-- 수정 비용은 제외했다. 수정 1회의 비용은 A 가 약 94k~565k, B 가 약 113k~153k(run1·run3 기준) 로 분산이 커서 화당 기울기와 섞지 않았다.
+- **(a) A keeps its current policy.** As in section 1, A's context does not reach the 200k window (about episode 562 by extrapolating the prompt growth). So the "input grows in proportion to length" that hypothesis ① speaks of does not occur under A's current policy. The projection is a linear extrapolation of the whole cost curve (see the caution in section 3: output growth is the main cause), and splits into 0.56–1.39 depending on the run. The sign flips because B's SE is large.
+- **(b) Past the window, A must summarize.** A already uses a summary. Under the hypothetical policy of carrying all earlier full texts (`A-full`: average output of 6,498 tokens per episode accumulates, episode 1 prompt 4,320), it exceeds 200k at **about episode 31**. After that it would have to summarize, and a summary loses detail — this is the point where B's advantage (state is kept exactly in PG) has meaning. The (b') rows above add only the cost of `A-full`, and are an unrealistic upper bound that assumes full texts keep being carried after episode 31. The result swings wildly with the cache hit-rate assumption (50 episodes 0.97 ↔ 0.43). **Quality (loss of detail, continuity errors) cannot be measured here.** The cost curve alone cannot capture that effect.
+- **(c) Assume B's digest is bounded.** Measurement says it is not (section 1). The B in the projection uses the measured slope as it is, so this is already reflected. If the digest and cast were assumed bounded, B's slope might fall below 2,457, but this data has no evidence for that.
+- Revision cost is excluded. The cost of one revision varies widely, about 94k–565k for A and about 113k–153k for B (by run1 and run3), so we did not mix it into the per-episode slope.
 
-## 5. 판정
+## 5. Verdict
 
-| 조건 | 값 | 충족 |
+| Condition | Value | Met |
 |---|---|---|
-| A 화당 비용 기울기 > 0 이고 B 기울기 ≤ A 의 절반 | A +2,875, B +2,457 (0.85배) | 아니오 |
-| 50화 누적 B/A ≤ 0.7 | 1.09 (run1 만 0.71) | 아니오 |
-| 방향이 맞음(B 기울기 < A, 50화 B/A < 1) | 기울기는 약하게 맞고 B/A 는 1 초과 | 아니오 |
+| A per-episode cost slope > 0 and B slope ≤ half of A's | A +2,875, B +2,457 (0.85×) | No |
+| Cumulative B/A at 50 episodes ≤ 0.7 | 1.09 (only run1 at 0.71) | No |
+| Direction is right (B slope < A, B/A at 50 episodes < 1) | slope weakly right, B/A above 1 | No |
 
-**비용 근거 없음.** 단 한계 때문에 "B 가 길수록 싸지지 않는다고 증명했다"는 말은 못 한다. 이 데이터의 B 기울기는 구별 불가능할 만큼 불확실하다.
+**No cost evidence.** However, because of the limitations, we cannot say "we proved that B does not get cheaper as it gets longer". B's slope in this data is too uncertain to distinguish.
 
-## 6. 한계
+## 6. Limitations
 
-- 점이 적고(n=10~12/run), 같은 아이템·같은 plan·같은 수정 요청의 반복이라 독립이 아니다. 12화를 넘는 데이터가 없으므로 24·50·100화는 모두 외삽이다.
-- 선형 적합은 비용 증가의 원인(출력 증가)을 분해하지 않는다. 50화에서 화당 비용이 A 약 20만(합산 적합), 100화 약 34만이 되는 외삽은 비현실적일 수 있다.
-- 가격은 가정(s=0.6, h=0.2, 출력=입력×5)이며 실제 가격표가 아니다. 구독 사용량이 아니라 토큰 가중이다.
-- 라벨→모델 대응은 `modelOf` 의 가정이다(기록에 모델이 없다).
-- **품질은 보지 않았다.** 길어질수록 A 가 요약으로 세부를 잃고 연속성 오류가 늘 수 있고, B 는 PG 가 검증하므로 그렇지 않을 수 있다. 가설 ① 은 비용 주장이고 이 분석은 비용만 본다. B 가 이길 가능성이 있다면 비용이 아니라 연속성 오류율 쪽이며, 그것은 이 분석으로는 모른다.
-- A 와 B 의 화 수가 다르다: run1 A 12 / B 11, run2 A 11 / B 10, run3 둘 다 12. 합산 적합의 n 이 35 대 33 인 이유다.
+- Few points (n=10–12 per run), and they are repetitions of the same item, the same plan, and the same revision requests, so they are not independent. There is no data past 12 episodes, so 24, 50, and 100 are all extrapolations.
+- The linear fit does not decompose the cause of the cost growth (output growth). The extrapolation to a per-episode cost of about 200k for A at 50 episodes (pooled fit) and about 340k at 100 may be unrealistic.
+- Prices are assumptions (s=0.6, h=0.2, output = input × 5), not an actual price list. It is a token weighting, not subscription usage.
+- The label→model mapping is an assumption in `modelOf` (the records have no model).
+- **Quality was not examined.** The longer it gets, the more A may lose detail through summaries and gain continuity errors, while B may not, since PG verifies. Hypothesis ① is a cost claim and this analysis looks only at cost. If B has a chance of winning, it is on continuity error rate, not cost, and this analysis cannot tell us that.
+- A and B have different episode counts: run1 A 12 / B 11, run2 A 11 / B 10, run3 both 12. That is why the pooled fit n is 35 vs 33.
 
-## 파일
+## Files
 
-- `steps.csv` — run·팔·단계별 호출, 미캐시입력, 캐시읽기, 캐시쓰기, 출력, 가중 비용, 최대 프롬프트
-- `fits.csv` — 선형 적합 (n, 절편, 기울기, SE, R²)
-- `projection.csv` — 12/24/50/100화 누적 비용과 B/A
-- `digest.csv` — B 다이제스트 크기
-- `a_ep_calls.csv` — A `ep-N` 호출의 프롬프트·출력 토큰
+- `steps.csv` — per run, arm, and stage: calls, uncached input, cache read, cache write, output, weighted cost, largest prompt
+- `fits.csv` — linear fits (n, intercept, slope, SE, R²)
+- `projection.csv` — cumulative cost at 12/24/50/100 episodes and B/A
+- `digest.csv` — B digest size
+- `a_ep_calls.csv` — prompt and output tokens of A's `ep-N` calls

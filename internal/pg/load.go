@@ -10,8 +10,8 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/ir"
 )
 
-// Load 는 IR 하나를 한 트랜잭션으로 적재한다. 작품 행을 지우고(CASCADE 로 하위 행까지)
-// 모든 테이블을 COPY 한 뒤 derive 를 부른다. 판정과 파생은 전부 PG 가 한다(ADR-010).
+// Load loads one IR in one transaction. It deletes the work row (CASCADE to the child rows),
+// COPYs every table, then calls derive. Judgment and derivation are all done by PG (ADR-010).
 func Load(ctx context.Context, db *pgxpool.Pool, w *ir.Work) error {
 	if w == nil || len(w.Works) != 1 || w.Works[0].ID == "" {
 		return fmt.Errorf("load: IR must have exactly one works row")
@@ -48,7 +48,7 @@ type table struct {
 	rows [][]any
 }
 
-// nz: 빈 참조는 NULL. sid: src_id 0(합성 행)은 NULL. arr: nil 목록은 '{}'.
+// nz: empty reference is NULL. sid: src_id 0 (a synthetic row) is NULL. arr: a nil list is '{}'.
 func nz(s string) any {
 	if s == "" {
 		return nil
@@ -80,7 +80,7 @@ func each[T any](xs []T, f func(T) []any) [][]any {
 
 func cols(s ...string) []string { return append([]string{"work_id"}, s...) }
 
-// copies 는 FK 순서(work → src → 나머지)로 테이블을 나열한다. 열 순서는 ir 구조체 필드 순서다.
+// copies lists the tables in FK order (work → src → the rest). Column order is the ir struct field order.
 func copies(w *ir.Work, id string) []table {
 	r := func(v ...any) []any { return append([]any{id}, v...) }
 	ord := 0
@@ -138,7 +138,7 @@ func copies(w *ir.Work, id string) []table {
 			return r(x.EntityID, x.Verb, nz(x.PropID), nz(x.SceneID), nz(x.AtPt), nz(x.BecausePt), sid(x.SrcID))
 		})},
 		{"fact", cols("id", "text", "truth", "def", "tag", "src_id"), each(w.Facts, func(x ir.Fact) []any {
-			var def any // typed nil 포인터는 JSON null 이 되므로 SQL NULL 로 바꾼다
+			var def any // a typed nil pointer becomes JSON null, so turn it into SQL NULL
 			if x.Def != nil {
 				def = x.Def
 			}

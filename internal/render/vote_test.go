@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-// rep 는 렌더 한 번 + 재추출 DefaultK 번의 답이다.
+// rep is the answers of one render + DefaultK re-extractions.
 func rep(prose, extract string) []string {
 	out := []string{prose}
 	for range DefaultK {
@@ -37,7 +37,7 @@ func voteScene() Scene {
 
 func keys(s Scene, e Extracted) map[string]int { return ContentKeys(s, e, true) }
 
-// R1: 3회 중 2회 이상 나온 액트 키·facts_stated 만 채택한다. 숨긴 사실은 1회만 나와도 누출이다(fail-closed).
+// R1: adopt only act keys and facts_stated that appear in 2 or more of 3 runs. A hidden fact is a leak even if it appears only once (fail-closed).
 func TestExtractKMajority(t *testing.T) {
 	s := voteScene()
 	act := func(actor, verb, fact string) ExtractedAct { return ExtractedAct{Actor: actor, Verb: verb, Fact: fact} }
@@ -57,11 +57,11 @@ func TestExtractKMajority(t *testing.T) {
 	if f.calls != 3 || len(raws) != 3 || !reflect.DeepEqual(raws[1], runs[1]) {
 		t.Fatalf("calls %d, raws %d", f.calls, len(raws))
 	}
-	// a|assert|f1 은 세 번 모두 두 번씩 → 2. a|assert|f2(1회), b|perceive|f2(1회), b|assert|w(1회) 는 탈락.
+	// a|assert|f1 is twice in all three → 2. a|assert|f2 (1 time), b|perceive|f2 (1 time), b|assert|w (1 time) drop out.
 	if k := keys(s, got); !reflect.DeepEqual(k, map[string]int{"a|assert|f1": 2}) {
 		t.Errorf("acts: %v", k)
 	}
-	// f1(3회)·f2(2회) 채택, w 는 액트로 1회 → 누출 판정용으로 채택. new_events 는 2회 이상 나온 개수(1)만.
+	// f1 (3 times) and f2 (2 times) adopted; w is an act once → adopted for the leak verdict. new_events only the count that appeared 2 or more times (1).
 	if want := []string{"f1", "f2", "w"}; !reflect.DeepEqual(got.FactsStated, want) {
 		t.Errorf("facts_stated %v", got.FactsStated)
 	}
@@ -72,13 +72,13 @@ func TestExtractKMajority(t *testing.T) {
 	if !reflect.DeepEqual(r.Leaked, []string{"w"}) || len(r.Missing) != 0 {
 		t.Errorf("diff %+v", r)
 	}
-	// 캐시에서 다시 판정하면 같은 다수결이 나온다(호출 없음).
+	// Re-judging from cache gives the same majority (no calls).
 	if again := Vote(s, raws); !reflect.DeepEqual(again, got) {
 		t.Errorf("vote not reproducible: %+v vs %+v", again, got)
 	}
 }
 
-// 재추출 하나라도 깨지면 ExtractError 다(다수결을 일부로 하지 않는다). Completer 오류는 그대로 돌려준다.
+// If even one re-extraction breaks, it is ExtractError (no majority over the partial ones). A Completer error is returned as is.
 func TestExtractKFailures(t *testing.T) {
 	s := voteScene()
 	f := &fakeCompleter{replies: []Result{xjson(t, Extracted{Acts: []ExtractedAct{}, FactsStated: []string{}}), {Text: "not json", StopReason: "end_turn"}, xjson(t, Extracted{Acts: []ExtractedAct{}, FactsStated: []string{}})}}
@@ -96,7 +96,7 @@ func TestExtractKFailures(t *testing.T) {
 	}
 }
 
-// R4: 원본보다 많이 뽑힌 사실 액트는 초과분만큼 환각이다(원본에 없는 사실 액트도).
+// R4: fact acts extracted in excess of the original are hallucinations by the excess count (fact acts not in the original too).
 func TestDiffExtraActs(t *testing.T) {
 	s := voteScene()
 	e := Extracted{
@@ -113,7 +113,7 @@ func TestDiffExtraActs(t *testing.T) {
 	}
 }
 
-// R3: 방백·생각의 명제는 그 인물의 단언이다.
+// R3: the proposition of an aside or thought is that character's assertion.
 func TestExtractPromptAsides(t *testing.T) {
 	sys, _ := BuildExtractPrompt(Scene{}, "en", "")
 	if !strings.Contains(sys, "An aside or a character's thoughts assert their proposition") {
@@ -121,7 +121,7 @@ func TestExtractPromptAsides(t *testing.T) {
 	}
 }
 
-// --force-extract: 산문은 캐시를 쓰고 재추출만 다시 한다. 재추출이 없거나 깨진 기록은 플래그 없이도 다시 뽑는다.
+// --force-extract: keeps the prose cache and only re-extracts. A record with no re-extraction or a broken one is re-extracted even without the flag.
 func TestRenderCachedForceExtract(t *testing.T) {
 	s := mustLoad(t, "testdata/min.json")
 	b := mustBackends(t)[2] // ko-haera
@@ -140,7 +140,7 @@ func TestRenderCachedForceExtract(t *testing.T) {
 			t.Errorf("re-extract must use the cached prose: %q", p)
 		}
 	}
-	// 재추출이 하나뿐인 옛 기록: 플래그 없이 재추출만 다시 한다.
+	// An old record with only one re-extraction: only re-extract again, without the flag.
 	rec := filepath.Join(dir, "w", "s1.ko-haera.json")
 	var x Render
 	raw, _ := os.ReadFile(rec)
@@ -157,7 +157,7 @@ func TestRenderCachedForceExtract(t *testing.T) {
 	if err != nil || len(r.prompts) != 1+3*DefaultK || len(got.Extractions) != DefaultK || got.Prose != toneProse["haera"] {
 		t.Fatalf("incomplete extraction not redone: %v, %d prompts", err, len(r.prompts))
 	}
-	// 재추출 프롬프트가 바뀌어도 산문은 그대로다(렌더 해시는 같다).
+	// The prose stays the same even if the re-extraction prompt changes (the render hash is the same).
 	x.ExtractHash = "old"
 	x.Extractions = got.Extractions
 	raw, _ = json.Marshal(x)
@@ -168,7 +168,7 @@ func TestRenderCachedForceExtract(t *testing.T) {
 	}
 }
 
-// 판정은 기록의 Extracted 를 믿지 않고 원본 재추출들로 다수결을 다시 한다.
+// The verdict does not trust the record's Extracted and redoes the majority from the original re-extractions.
 func TestScoreRevotesFromExtractions(t *testing.T) {
 	s := mustLoad(t, "testdata/min.json")
 	e := extractedFromScene(s)

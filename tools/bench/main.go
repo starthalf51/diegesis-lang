@@ -204,14 +204,14 @@ var summaryRE = regexp.MustCompile(`write: rounds=(\d+) clean=(\w+) scenes=(\d+)
 func Summary(w io.Writer, out string) error {
 	a, errA := ReadCalls(filepath.Join(out, "a", "calls.jsonl"))
 	b, errB := ReadCalls(filepath.Join(out, "b", "calls.jsonl"))
-	fmt.Fprintf(w, "### %s\n\n| 팔 | 호출 | 실패 | input | cache_read | cache_write | 총 input | output | 분 |\n|---|---|---|---|---|---|---|---|---|\n", filepath.Base(out))
+	fmt.Fprintf(w, "### %s\n\n| arm | calls | failures | input | cache_read | cache_write | total input | output | min |\n|---|---|---|---|---|---|---|---|---|\n", filepath.Base(out))
 	for _, r := range []struct {
 		n   string
 		t   Totals
 		err error
 	}{{"A", a, errA}, {"B", b, errB}} {
 		if r.err != nil {
-			fmt.Fprintf(w, "| %s | (없음: %v) |\n", r.n, r.err)
+			fmt.Fprintf(w, "| %s | (none: %v) |\n", r.n, r.err)
 			continue
 		}
 		fmt.Fprintf(w, "| %s | %d | %d | %d | %d | %d | %d | %d | %.1f |\n", r.n, r.t.Calls, r.t.Errs, r.t.Input, r.t.CacheRead,
@@ -232,9 +232,9 @@ func Summary(w io.Writer, out string) error {
 			code = append(code, fmt.Sprintf("%s in=%d out=%d", l, In(u), u.Output))
 		}
 	}
-	fmt.Fprintf(w, "\nB 코드: %s\n\n| 장면 | A 입력 | A 출력 | B render 입력 | B extract 입력 | B 출력 |\n|---|---|---|---|---|---|\n", strings.Join(code, ", "))
+	fmt.Fprintf(w, "\nB code: %s\n\n| scene | A input | A output | B render input | B extract input | B output |\n|---|---|---|---|---|---|\n", strings.Join(code, ", "))
 	ua := a.ByLabel["outline"]
-	fmt.Fprintf(w, "| 개요 | %d | %d | | | |\n", In(ua), ua.Output)
+	fmt.Fprintf(w, "| outline | %d | %d | | | |\n", In(ua), ua.Output)
 	for i := 1; ; i++ {
 		ua, okA := a.ByLabel[fmt.Sprintf("scene-%d", i)]
 		var rin, ein, bout int64

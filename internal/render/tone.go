@@ -6,8 +6,8 @@ import (
 	"unicode"
 )
 
-// 따옴표 쌍 안(대사)은 어투 판정에서 뺀다. 대사는 원작 언어의 인용이라 백엔드가 고르는 서술 어투가 아니다.
-// ASCII 작은따옴표는 아포스트로피(Peter's)와 구별되지 않으니 대사 따옴표로 보지 않는다.
+// Inside paired quotes (dialogue) is excluded from the tone judgment. Dialogue is a quotation in the source language, not the narration tone the backend chooses.
+// An ASCII single quote cannot be told apart from an apostrophe (Peter's), so it is not treated as a dialogue quote.
 var quoted = regexp.MustCompile(`“[^”]*”|"[^"]*"|「[^」]*」|『[^』]*』|‘[^’]*’`)
 
 var sentenceEnd = regexp.MustCompile(`[.!?…\n]+`)
@@ -18,9 +18,9 @@ var (
 	haeraEnd  = regexp.MustCompile(`(다|라|냐|자)$`)
 )
 
-// ClassifyTone 은 서술 문장의 종결어미 분포(비율)를 낸다: hapsho(하십시오체) → gojeon(고전소설체) → haera(해라체) → other
-// 순서로 문장의 마지막 어절을 분류한다. 한글이 없는 문장, 쉼표·쌍점으로 끝나는 이음 절(대사를 다음 줄에 둔
-// "…가로되,")은 세지 않는다. 빈 결과 = 셀 문장이 없다.
+// ClassifyTone produces the distribution (ratio) of sentence-ending forms of narration sentences: it classifies the last word of a sentence in the order hapsho (formal polite) → gojeon (classical novel) → haera (plain) → other.
+// Sentences with no Hangul, and connective clauses ending in a comma or colon (a dialogue placed on the next line
+// "…he said,") are not counted. An empty result = no sentence to count.
 func ClassifyTone(prose string) map[string]float64 {
 	counts := map[string]int{}
 	n := 0
@@ -51,7 +51,7 @@ func toneOf(w string) string {
 	return "other"
 }
 
-// bieupNida: 받침 ㅂ 음절 + 니다/니까(합니다, 갑니까 — 정규식의 `ㅂ니다` 를 완성형 음절에서 본다).
+// bieupNida: a syllable with final ㅂ + 니다/니까 (합니다, 갑니까 — sees the regex's `ㅂ니다` on precomposed syllables).
 func bieupNida(w string) bool {
 	r := []rune(w)
 	if len(r) < 3 || !(strings.HasSuffix(w, "니다") || strings.HasSuffix(w, "니까")) {
@@ -61,7 +61,7 @@ func bieupNida(w string) bool {
 	return s >= 0xAC00 && s <= 0xD7A3 && (s-0xAC00)%28 == 17
 }
 
-// lastEojeol 은 문장의 마지막 어절에서 끝의 문장부호를 떼어 낸다. 한글이 없거나 이음 절(끝이 , : 、)이면 "".
+// lastEojeol strips the trailing punctuation from the last word of a sentence. "" if there is no Hangul or it is a connective clause (ends in , : 、).
 func lastEojeol(s string) string {
 	f := strings.Fields(s)
 	if len(f) == 0 || strings.ContainsAny(lastRune(f[len(f)-1]), ",:、，：") {

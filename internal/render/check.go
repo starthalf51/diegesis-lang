@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// 합격 기준(ADR-012). 낮추지 않는다.
+// Acceptance criteria (ADR-012). Not lowered.
 const (
 	MaxMissing      = 1
 	MaxHallucinated = 1
@@ -20,8 +20,8 @@ const (
 	MinToneShare    = 0.8
 )
 
-// Render 는 (장면, 백엔드) 하나의 렌더 → 재추출 k 번 → 다수결 → diff 결과. out/render/<work>/<scene>.<backend>.json 에 남는다.
-// Extracted·Report·Tones 는 기록 당시 값(참고용)이다. Judge 는 Score 로 산문·원본 재추출(Extractions)에서 다시 센다.
+// Render is the result of render → k re-extractions → majority vote → diff for one (scene, backend). Stored in out/render/<work>/<scene>.<backend>.json.
+// Extracted, Report and Tones are the values at recording time (for reference). Judge recounts from Score using the prose and the original re-extractions (Extractions).
 type Render struct {
 	Work        string             `json:"work"`
 	Scene       string             `json:"scene"`
@@ -31,11 +31,11 @@ type Render struct {
 	Prose       string             `json:"prose"`
 	StopReason  string             `json:"stop_reason"`
 	Extracted   Extracted          `json:"extracted"`   // Vote(Extractions)
-	Extractions []Extracted        `json:"extractions"` // 원본 재추출 DefaultK 개
+	Extractions []Extracted        `json:"extractions"` // DefaultK original re-extractions
 	Report      Report             `json:"report"`
 	Tones       map[string]float64 `json:"tones"`
-	RenderHash  string             `json:"render_hash"`  // RenderHash(장면, 백엔드). 다르면 다시 렌더한다
-	ExtractHash string             `json:"extract_hash"` // ExtractHash(장면, 언어). 다르면 산문은 두고 다시 뽑는다
+	RenderHash  string             `json:"render_hash"`  // RenderHash(scene, backend). If different, render again
+	ExtractHash string             `json:"extract_hash"` // ExtractHash(scene, language). If different, keep the prose and extract again
 }
 
 func sum(parts ...string) string {
@@ -43,7 +43,7 @@ func sum(parts ...string) string {
 	return hex.EncodeToString(h[:])
 }
 
-// RenderHash 는 렌더 시스템·사용자 프롬프트의 sha256. 장면·백엔드·렌더 프롬프트 코드 중 하나라도 바뀌면 달라진다.
+// RenderHash is the sha256 of the render system and user prompts. It changes if any of the scene, backend or render prompt code changes.
 func RenderHash(s Scene, b Backend) (string, error) {
 	sys, user, err := b.Prompt(s)
 	if err != nil {
@@ -52,13 +52,13 @@ func RenderHash(s Scene, b Backend) (string, error) {
 	return sum(sys, user), nil
 }
 
-// ExtractHash 는 (산문을 뺀) 재추출 프롬프트와 횟수의 sha256.
+// ExtractHash is the sha256 of the re-extraction prompt (without prose) and the count.
 func ExtractHash(s Scene, lang string) string {
 	xs, xu := BuildExtractPrompt(s, lang, "")
 	return sum(xs, xu, fmt.Sprint(DefaultK))
 }
 
-// Score 는 결정적인 판정 입력(어투 비율, 다수결, diff)을 산문·원본 재추출에서 다시 센다. 렌더·재추출 오류(ExtractError)는 남긴다.
+// Score recounts the deterministic judgment inputs (tone ratio, majority vote, diff) from the prose and the original re-extractions. Render and re-extraction errors (ExtractError) are kept.
 func Score(s Scene, r Render) Render {
 	r.Tones = nil
 	if r.Lang == "ko" {
@@ -73,14 +73,14 @@ func Score(s Scene, r Render) Render {
 	return r
 }
 
-// RenderOne 은 백엔드 프롬프트로 렌더하고, 백엔드를 모르는 재추출 프롬프트(BuildExtractPrompt)로 DefaultK 번 다시 뽑아
-// 다수결로 diff 한다. Completer 오류는 그대로 돌려준다(아무것도 남기지 않으니 다시 돌리면 재시도한다).
+// RenderOne renders with the backend prompt, extracts again DefaultK times with a backend-agnostic re-extraction prompt (BuildExtractPrompt),
+// and diffs by majority vote. A Completer error is returned as is (nothing is recorded, so rerunning retries).
 func RenderOne(ctx context.Context, c Completer, work string, s Scene, b Backend) (Render, error) {
 	return renderWith(ctx, c, c, work, s, b, DefaultK, "", "", nil)
 }
 
-// renderWith 는 RenderOne 의 본체. 재추출을 k 번 하고, extra 가 있으면 사용자 프롬프트 끝에 붙여 렌더한다
-// (RenderHash 는 extra 없는 프롬프트 기준이라 캐시 키가 변하지 않는다).
+// renderWith is the body of RenderOne. It re-extracts k times, and if extra is given, appends it to the end of the user prompt and renders
+// (RenderHash is based on the prompt without extra, so the cache key does not change).
 func renderWith(ctx context.Context, c, x Completer, work string, s Scene, b Backend, k int, suffix, extra string, card *CardOpts) (Render, error) {
 	r := Render{Work: work, Scene: s.ID, Backend: b.ID, Lang: b.Lang, Tone: b.Tone}
 	sys, user, err := b.Prompt(s)
@@ -101,7 +101,7 @@ func renderWith(ctx context.Context, c, x Completer, work string, s Scene, b Bac
 		r.Report.ExtractError = stopped("render", res.StopReason)
 		return r, nil
 	}
-	if card != nil { // 카드 모드: 재추출 칸(Extracted·Extractions·ExtractHash)은 비워 둔다
+	if card != nil { // card mode: leave the re-extraction fields (Extracted, Extractions, ExtractHash) empty
 		rep, err := ScoreCard(ctx, x, s, b, r.Prose, *card)
 		r.Report = rep
 		if err != nil {
@@ -112,7 +112,7 @@ func renderWith(ctx context.Context, c, x Completer, work string, s Scene, b Bac
 	return r, reextract(ctx, x, s, &r, k)
 }
 
-// reextract 는 r.Prose 를 다시 뽑아 r 의 재추출·판정 칸을 새로 채운다. 답이 깨지면 ExtractError 로 남긴다.
+// reextract re-extracts r.Prose and refills r's re-extraction and judgment fields. If the answer is broken it is left as ExtractError.
 func reextract(ctx context.Context, c Completer, s Scene, r *Render, k int) error {
 	r.ExtractHash = ExtractHash(s, r.Lang)
 	r.Extracted, r.Extractions, r.Report = Extracted{}, nil, Report{}
@@ -136,17 +136,17 @@ func stopped(what, reason string) string {
 	return what + " stopped: " + reason
 }
 
-// ProsePath 는 산문 파일의 dir 기준 상대 경로.
+// ProsePath is the prose file's path relative to dir.
 func ProsePath(work, scene, backend string) string {
 	return filepath.ToSlash(filepath.Join(work, scene+"."+backend+".md"))
 }
 
-// Force 는 캐시를 무시할 범위. Render 면 다시 렌더한다(재추출도), Extract 면 산문은 캐시를 쓰고 다시 뽑기만 한다.
+// Force is the scope in which to ignore the cache. Render means render again (and re-extract), Extract means keep the prose cache and only re-extract.
 type Force struct{ Render, Extract bool }
 
-// RenderCached 는 dir/<work>/<scene>.<backend>.{md,json} 이 둘 다 있고 기록의 render_hash 가 지금 렌더 프롬프트와 같으면
-// 산문을 다시 부르지 않는다(구독 한도). 재추출은 extract_hash 가 다르거나, DefaultK 개가 없거나, 깨졌거나, f.Extract 면
-// 다시 한다. 렌더가 멈춘 기록은 f.Render 전까지 그대로 둔다. 기록(.json)을 마지막에 쓴다.
+// RenderCached skips calling for prose again (subscription limit) if both dir/<work>/<scene>.<backend>.{md,json} exist and the record's render_hash equals the current render prompt.
+// Re-extraction happens again if extract_hash differs, there are not DefaultK of them, it is broken, or f.Extract is set.
+// A record where the render stopped is left alone until f.Render. The record (.json) is written last.
 func RenderCached(ctx context.Context, c Completer, dir, work string, s Scene, b Backend, f Force) (Render, error) {
 	md := filepath.Join(dir, filepath.FromSlash(ProsePath(work, s.ID, b.ID)))
 	rec := strings.TrimSuffix(md, ".md") + ".json"
@@ -191,27 +191,27 @@ func RenderCached(ctx context.Context, c Completer, dir, work string, s Scene, b
 	return r, os.WriteFile(rec, raw, 0o644)
 }
 
-// Row 는 렌더 하나의 판정.
+// Row is the verdict for one render.
 type Row struct {
 	Render
-	Top  string   `json:"top"` // 비율 1위 어투
+	Top  string   `json:"top"` // the top-ratio tone
 	Pass bool     `json:"pass"`
 	Why  []string `json:"why"`
 }
 
-// SceneVerdict 는 한 장면을 모든 백엔드로 렌더한 판정. Jaccard 키는 "a~b"(백엔드 ID 이름순).
-// Jaccard = 사실을 전하는 비입퇴장 액트(판정), JaccardAll = 모든 액트(참고, 판정에 쓰지 않는다).
+// SceneVerdict is the verdict for one scene rendered with every backend. The Jaccard key is "a~b" (backend IDs in name order).
+// Jaccard = non-entry/exit acts that convey facts (judged), JaccardAll = all acts (reference, not used in the verdict).
 type SceneVerdict struct {
 	Work, Scene string
 	Rows        []Row
 	Jaccard     map[string]float64
 	JaccardAll  map[string]float64
 	Pass        bool
-	Why         []string // 장면 단위 실패(Jaccard, 1위 어투 겹침)
+	Why         []string // scene-level failures (Jaccard, top-tone overlap)
 }
 
-// ContentKeys 는 재추출한 액트 중 사실을 전하는 것(입·퇴장 제외)의 키 멀티셋. Diff 가 원본과 비교하는 것과 같은 키
-// (사실은 정규 명제)다. all 이면 모든 액트를 센다(참고용).
+// ContentKeys is the key multiset of the re-extracted acts that convey facts (excluding entries/exits). The same keys Diff compares with the original
+// (facts are canonical propositions). If all, count every act (for reference).
 func ContentKeys(s Scene, e Extracted, all bool) map[string]int {
 	m := map[string]int{}
 	for _, a := range e.Acts {
@@ -222,7 +222,7 @@ func ContentKeys(s Scene, e Extracted, all bool) map[string]int {
 	return m
 }
 
-// Jaccard 는 멀티셋 Jaccard(Σmin / Σmax). 둘 다 비면 1.
+// Jaccard is the multiset Jaccard (Σmin / Σmax). 1 if both are empty.
 func Jaccard(a, b map[string]int) float64 {
 	lo, hi := 0, 0
 	for k := range union(a, b) {
@@ -256,9 +256,9 @@ func topTone(t map[string]float64) string {
 	return best
 }
 
-// Judge: 내용 동일(각 렌더 missing ≤ 1, hallucinated ≤ 1, leaked = 0, 백엔드끼리 Jaccard ≥ 0.9)과
-// 어투 상이(어투가 있는 백엔드는 목표 비율 ≥ 0.8, 그들끼리 1위 어투가 모두 다르다).
-// 기록된 Report·Tones 는 쓰지 않고 Score 로 다시 센다.
+// Judge: same content (each render missing ≤ 1, hallucinated ≤ 1, leaked = 0, Jaccard between backends ≥ 0.9) and
+// different tones (backends with a tone have target ratio ≥ 0.8, and their top tones are all different).
+// Does not use the recorded Report and Tones; recounts with Score.
 func Judge(work string, s Scene, rs []Render) SceneVerdict {
 	v := SceneVerdict{Work: work, Scene: s.ID, Jaccard: map[string]float64{}, JaccardAll: map[string]float64{}, Pass: true}
 	rs = append([]Render{}, rs...)

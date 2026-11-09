@@ -1,8 +1,8 @@
 package main
 
-// 계획6 T1: 2단 필요 여부 오프라인 판정. 저장된 1단 원문(calls/<변형>_r<n>_t1_a.json)만 다시 채점한다. 호출 0.
-// 정의는 sc_report.go 와 같다(S1=fact_present, S2=fact_present&&as_stated, G1=revealed, Unsure 제외).
-// G2 는 PG 의 장면(IR)이 있어야 걸러지므로 여기서는 재계산하지 않는다(판정 규칙도 S1 만 쓴다).
+// Plan 6 T1: offline verdict on whether stage 2 is needed. Re-scores only the stored stage-1 raw answers (calls/<variant>_r<n>_t1_a.json). 0 calls.
+// Definitions are the same as sc_report.go (S1=fact_present, S2=fact_present&&as_stated, G1=revealed, Unsure excluded).
+// G2 is filtered only with the PG scene (IR), so it is not recomputed here (the verdict rule uses only S1 too).
 
 import (
 	"encoding/json"
@@ -15,9 +15,9 @@ func tier1(out string) {
 	det := map[string]*ctr{"S1": {}, "S2": {}, "S2(D)": {}, "G1": {}}
 	fa := map[string]*ctr{"S1": {}, "S2": {}, "G1": {}}
 	ag := map[string]*ctr{"S1": {}, "S2": {}, "G1": {}}
-	same := &ctr{} // 1단 답 == 저장된 최종 답(2단 덮어쓰기 안 된 항목)
-	over := 0      // 2단이 덮어쓴 항목 수
-	flipped := 0   // 덮어쓰기로 Present 가 바뀐 항목
+	same := &ctr{} // stage-1 answer == stored final answer (items not overwritten by stage 2)
+	over := 0      // number of items stage 2 overwrote
+	flipped := 0   // items whose Present changed by the overwrite
 	nr := 0
 	for _, vd := range scVariants {
 		_, t := readVariant(out, vd.Name)
@@ -114,9 +114,9 @@ func tier1(out string) {
 		verdict = "off"
 	}
 	fmt.Printf("Tier2: %s\n\n", verdict)
-	fmt.Printf("규칙: 1단만 S1 검출 >= 90%% 그리고 오경보 <= 5%% 이면 off, 아니면 absent-only. S1 검출 %s, 오경보 %s.\n\n", s1d, s1f)
-	fmt.Printf("1단 원문 %d실행 재채점 (2단 덮어쓰기 없음). 시행 = 변형 x 실행\n\n", nr)
-	fmt.Println("| 축 | 검출(변형 항목) | 오경보 | 두 실행 일치 | 뒤집힘 |\n|---|---|---|---|---|")
+	fmt.Printf("rule: off if stage 1 alone has S1 detection >= 90%% and false alarms <= 5%%, otherwise absent-only. S1 detection %s, false alarms %s.\n\n", s1d, s1f)
+	fmt.Printf("stage-1 raw answers re-scored over %d runs (no stage-2 overwrite). trial = variant x run\n\n", nr)
+	fmt.Println("| axis | detected (variant items) | false alarms | agreement across two runs | flipped |\n|---|---|---|---|---|")
 	for _, k := range []string{"S1", "S2", "G1"} {
 		fl := "n/a"
 		if ag[k].n > 0 {
@@ -124,6 +124,6 @@ func tier1(out string) {
 		}
 		fmt.Printf("| %s | %s | %s | %s | %s |\n", k, det[k], fa[k], ag[k], fl)
 	}
-	fmt.Printf("\nS2 검출(삭제 항목 포함): %s\n", det["S2(D)"])
-	fmt.Printf("점검: 2단이 덮어쓴 항목 %d개(그중 Present 가 바뀐 것 %d), 덮어쓰지 않은 항목의 1단 답 == 최종 답: %s\n", over, flipped, same)
+	fmt.Printf("\nS2 detection (deleted items included): %s\n", det["S2(D)"])
+	fmt.Printf("check: %d items overwritten by stage 2 (of which %d changed Present), stage-1 answer == final answer for items not overwritten: %s\n", over, flipped, same)
 }

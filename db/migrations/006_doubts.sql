@@ -1,9 +1,9 @@
--- 006: 의심이 들은 믿음을 거둔다(Task 9). 003 의 derive_beliefs 와 005 의 lint_known 을 바꾼다.
---   `X doubts P` (시점 t) — X 가 t 이전(t 와 같은 시점 포함)에 들어서 얻은 P 의 믿음 행은 t 부터 거둔다:
---   그 행의 until_pt = t(그런 의심 중 가장 이른 것). 들은 믿음 = 단언 발화(assertive, shows 제외)의 청중 행.
---   지각(sees)·읽기(reads)·명시적 believes·배경 지식은 거두지 않는다. t 뒤의 새 출처는 새 행이라 다시 믿는다.
---   배경 doubts(시점 없음)는 행을 만들지 않고 아무것도 거두지 않는다 — 처음부터 믿지 않는다는 뜻 그대로다.
---   ponytail: 의심한 사람 자신의 행만 거둔다(그룹이 들은 것은 그대로). 그룹 의심이 필요해지면 lint_self_and_groups 로 넓힌다.
+-- 006: doubt withdraws a belief that was heard (Task 9). Changes 003's derive_beliefs and 005's lint_known.
+--   `X doubts P` (point t) — X's belief row for P, acquired by hearing it before t (including at the same point as t), is withdrawn from t:
+--   that row's until_pt = t (the earliest such doubt). Heard beliefs = audience rows of assertive utterances (excluding shows).
+--   Perception (sees), reading (reads), explicit believes and background knowledge are not withdrawn. A new source after t is a new row, so it is believed again.
+--   A background doubts (no point) creates no row and withdraws nothing — it just means not believing from the start.
+--   ponytail: only the doubter's own rows are withdrawn (what a group heard stays). If group doubt is needed, widen it with lint_self_and_groups.
 SET LOCAL search_path = public, ag_catalog;
 
 ALTER TABLE believes ADD COLUMN until_pt text;
@@ -33,7 +33,7 @@ BEGIN
   SELECT w, b.entity_id, b.prop_id, true, b.at_pt, (SELECT id FROM act WHERE id = b.because_pt), true, b.src_id
     FROM belief b WHERE b.work_id = w AND b.verb = 'believes' AND b.prop_id IS NOT NULL;
 
-  -- 의심: 들은 행(청중 행, 화자 아님, 선언 아님)마다 그 뒤(precedes yes, 같은 시점 포함)의 가장 이른 의심.
+  -- Doubt: for each heard row (audience row, not the speaker, not declared), the earliest doubt after it (precedes yes, same point included).
   UPDATE believes bl SET until_pt = (
       SELECT b.at_pt FROM belief b JOIN point p ON p.id = b.at_pt
        WHERE b.work_id = w AND b.verb = 'doubts' AND b.entity_id = bl.entity_id AND b.at_pt IS NOT NULL
@@ -59,9 +59,9 @@ BEGIN
     FROM act_content c WHERE c.work_id = w AND c.verb = 'lies' AND c.actor_id IS NOT NULL;
 END $$;
 
--- lint_known(005)에 거둠을 더한다: until_pt 가 at 보다 확정적으로 앞이면(같은 시점이 아님) 그 행은 출처가 아니다.
--- 같은 시점은 의심이 그 행위 뒤에 적힌 경우다(문장 시점 = 직전 행위 시점) → 그 행위 때는 아직 믿었다.
--- 선후가 maybe 이면 확정이 아니므로 그 행은 많아야 1(info)로 센다.
+-- Add withdrawal to lint_known (005): if until_pt is definitely before at (not the same point), that row is not a source.
+-- The same point is the case where the doubt was written after that act (sentence point = previous act's point) → they still believed at the time of that act.
+-- If the order is maybe it is not definite, so that row counts at most 1 (info).
 CREATE OR REPLACE FUNCTION lint_known(w text, e text, c text, at text) RETURNS int
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   WITH src(pt, declared, until_pt) AS (

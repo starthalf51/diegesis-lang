@@ -1,10 +1,10 @@
 -- pattern: red-herring
 -- layer: information
--- summary: 독자가 거짓 사실을 한동안 믿다가 나중에 반대(참)를 받는다 — 붉은 청어
+-- summary: the reader believes a false fact for a while, then later receives the opposite (true) — a red herring
 --
--- 독자 믿음의 변화점(reader_knows)마다: 기저 사실 b 가 상태 술어가 아니고(시점마다 바뀌는 상태는 정정이 아니라 변화다)
--- 선언된 진리값이 독자의 값과 반대이며(truth_at ≠ value), 그 뒤에 다음 변화점(= 반대 값, 곧 참)이 있다.
--- 대상 = 기저 사실. span = 거짓을 믿기 시작한 위치 ~ 정정된 위치. 한 사실에 여러 번이면 여러 행.
+-- For each change point of reader belief (reader_knows): base fact b is not a state predicate (a state that changes per point is a change, not a correction),
+-- its declared truth value is the opposite of the reader's value (truth_at ≠ value), and after it there is a next change point (= the opposite value, i.e. the truth).
+-- Target = base fact. span = position where the false belief started ~ the corrected position. Several times for one fact gives several rows.
 WITH k AS (
   SELECT r.*, lead(r.from_ord) OVER (PARTITION BY r.fact_id ORDER BY r.from_ord) AS next_ord FROM reader_knows($1) r),
 ev AS (SELECT * FROM reader_events($1))

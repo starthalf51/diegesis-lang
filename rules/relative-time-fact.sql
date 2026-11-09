@@ -4,9 +4,9 @@
 -- target: fact
 -- summary: 사실 텍스트에 상대 시간("열이틀 뒤", "in twelve days")이 박혀 있다
 --
--- 사실은 장면이 바뀌어도 같은 말이어야 한다. 기준점이 없는 "N일 뒤"는 고치다 어긋난 흔적이다(절대 날짜나 `when` 으로 쓴다).
--- 대상: fact.text(별칭 사실의 text 는 이름이라 걸리지 않는다). 한국어 수사+단위+뒤/후/전에/만에, 영어 in|after N days|weeks|months|years.
--- 단위 없이 걸리는 것은 그 자체로 기간인 낱말(이틀·사흘·보름 …)뿐이다. "확인한 뒤"(한+뒤)·"그 일 후"(일+후)는 수사가 아니므로 단위가 있어야 한다.
+-- A fact must read the same even when the scene changes. An "N days later" with no reference point is a trace of editing gone wrong (use an absolute date or `when`).
+-- Target: fact.text (an alias fact's text is a name, so it is not caught). Korean numeral+unit+later/after/before/within, English in|after N days|weeks|months|years.
+-- What matches without a unit is only words that are a duration by themselves (two days, three days, a half month …). "after confirming" and "after that" are not numerals, so a unit is required.
 SELECT 'fact' AS target_kind, f.id AS target_id, f.src_id,
        format('fact %s names a relative time: %s', lint_short(f.id), f.text) AS message,
        '{}'::jsonb AS data

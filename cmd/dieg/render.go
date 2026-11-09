@@ -16,7 +16,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
-// sceneRequest 는 작품(ID 또는 코퍼스 디렉터리 — 디렉터리면 먼저 적재한다)의 장면 렌더 요청을 PG 에서 받는다.
+// sceneRequest fetches a scene render request from PG for a work (an ID or a corpus directory — a directory is loaded first).
 func sceneRequest(target, scene string) (string, render.Scene, error) {
 	work := target
 	if _, err := os.Stat(target); err == nil {
@@ -54,8 +54,8 @@ func backend(dir, id string) (render.Backend, error) {
 	return render.Backend{}, fmt.Errorf("no backend %q in %s", id, dir)
 }
 
-// cmdRender runs `dieg render <work|dir> <scene> --backend <id> [--verify] [--retries N] [--render-model M] [--extract-model M] [-o file] [--styles dir]`: 산문을 낸다.
-// --verify 면 재추출·대조·피드백 재렌더(최대 1+retries 회)를 거치고, 통과하지 못하면 산문은 쓰되 3 으로 끝난다.
+// cmdRender runs `dieg render <work|dir> <scene> --backend <id> [--verify] [--retries N] [--render-model M] [--extract-model M] [-o file] [--styles dir]`: emits prose.
+// With --verify it goes through re-extraction, comparison and feedback re-rendering (at most 1+retries times); if it does not pass, the prose is still written and the exit code is 3.
 func cmdRender(args []string) int {
 	var pos []string
 	id, out, styles, verify, retries := "", "", "styles", false, 2
@@ -120,7 +120,7 @@ func cmdRender(args []string) int {
 	return 0
 }
 
-// renderOnce 는 pass=false 여도 산문은 쓴다(--verify 가 상한까지 가도 통과 못 한 경우).
+// renderOnce writes the prose even when pass=false (--verify went to the limit and still did not pass).
 func renderOnce(target, scene, id, out, styles string, verify bool, retries int, rm, xm, re, verifier string) (bool, error) {
 	b, err := backend(styles, id)
 	if err != nil {
@@ -170,9 +170,9 @@ func renderOnce(target, scene, id, out, styles string, verify bool, retries int,
 	return pass && err == nil, err
 }
 
-// cmdRenderCheck runs `dieg render-check <corpus...> [--force | --force-extract] [--only <work>/<scene>.<backend>]... [--styles dir]`: 코퍼스마다 expect.yaml 의 render_scene 을
-// 모든 백엔드로 렌더 → 재추출 → diff 하고 ADR-012 로 판정한다. 보고서는 out/render-check.md, 산문은 out/render/.
-// 합격이면 0.
+// cmdRenderCheck runs `dieg render-check <corpus...> [--force | --force-extract] [--only <work>/<scene>.<backend>]... [--styles dir]`: for each corpus, renders the expect.yaml render_scene
+// with every backend → re-extracts → diffs, and judges per ADR-012. The report is out/render-check.md, prose is in out/render/.
+// Exit 0 on pass.
 func cmdRenderCheck(args []string) int {
 	var dirs []string
 	var f render.Force
@@ -210,7 +210,7 @@ func cmdRenderCheck(args []string) int {
 	return 0
 }
 
-// only 가 있으면 f 는 거기 적힌 쌍(<work>/<scene>.<backend>)에만 쓴다. 나머지 쌍은 캐시로 판정한다. 맞는 쌍이 없는 항목은 오류다.
+// If only is given, f applies only to the pairs listed there (<work>/<scene>.<backend>). The other pairs are judged from cache. An entry with no matching pair is an error.
 func renderCheck(dirs []string, styles string, f render.Force, only map[string]bool) (bool, error) {
 	bs, err := render.LoadBackends(styles)
 	if err != nil {
@@ -238,7 +238,7 @@ func renderCheck(dirs []string, styles string, f render.Force, only map[string]b
 		var rs []render.Render
 		for _, b := range bs {
 			r, err := render.RenderCached(context.Background(), c, filepath.Join("out", "render"), work, s, b, scoped(f, only, work+"/"+s.ID+"."+b.ID))
-			if err != nil { // 기록하지 않았으니 다음 실행이 다시 시도한다
+			if err != nil { // nothing was recorded, so the next run retries
 				errs = append(errs, err.Error())
 				fmt.Fprintln(os.Stderr, "dieg:", err)
 				continue
@@ -270,7 +270,7 @@ func renderCheck(dirs []string, styles string, f render.Force, only map[string]b
 	return pass, nil
 }
 
-// scoped 는 only 가 비었으면 f, 아니면 key 가 only 에 있을 때만 f 를 쓴다(맞은 항목은 표시한다).
+// scoped uses f if only is empty, otherwise only when key is in only (marking the matched entries).
 func scoped(f render.Force, only map[string]bool, key string) render.Force {
 	if len(only) == 0 {
 		return f
@@ -300,14 +300,14 @@ func shares(t map[string]float64) string {
 
 func checkReport(vs []render.SceneVerdict, errs []string, pass bool) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "# 렌더 판정 (ADR-012) — %s\n\n", map[bool]string{true: "PASS", false: "FAIL"}[pass])
-	fmt.Fprintf(&b, "기준: 렌더마다 missing ≤ %d, hallucinated ≤ %d, leaked = 0. 같은 장면의 백엔드끼리 Jaccard ≥ %.1f — 재추출 액트 중 "+
-		"사실을 전하는 비입퇴장 액트만의 actor|동사류|정규 사실 키 멀티셋이다(모든 액트 Jaccard 는 참고로만 싣는다). "+
-		"한국어 백엔드는 목표 어투 비율 ≥ %.1f, 1위 어투가 서로 다르다. 어투 비율은 따옴표 밖 서술 문장의 종결어미로 센다.\n",
+	fmt.Fprintf(&b, "# Render verdict (ADR-012) — %s\n\n", map[bool]string{true: "PASS", false: "FAIL"}[pass])
+	fmt.Fprintf(&b, "Criteria: per render missing ≤ %d, hallucinated ≤ %d, leaked = 0. Jaccard between backends of the same scene ≥ %.1f — over the re-extracted acts, "+
+		"the multiset of actor|verb-class|canonical-fact keys of the non-entry/exit acts that convey facts (the all-acts Jaccard is listed for reference only). "+
+		"Korean backends need a target-tone ratio ≥ %.1f, and the top tones must differ from each other. The tone ratio is counted from the sentence endings of narration outside quotes.\n",
 		render.MaxMissing, render.MaxHallucinated, render.MinJaccard, render.MinToneShare)
 	for _, v := range vs {
 		fmt.Fprintf(&b, "\n## %s %s — %s\n\n", v.Work, v.Scene, map[bool]string{true: "PASS", false: "FAIL"}[v.Pass])
-		b.WriteString("| 백엔드 | missing | halluc | leaked | haera | hapsho | gojeon | other | 1위 | 판정 | 산문 |\n|---|---|---|---|---|---|---|---|---|---|---|\n")
+		b.WriteString("| backend | missing | halluc | leaked | haera | hapsho | gojeon | other | top | verdict | prose |\n|---|---|---|---|---|---|---|---|---|---|---|\n")
 		for _, r := range v.Rows {
 			tone := func(k string) string {
 				if r.Tones == nil {
@@ -329,7 +329,7 @@ func checkReport(vs []render.SceneVerdict, errs []string, pass bool) string {
 		for _, j := range []struct {
 			label string
 			m     map[string]float64
-		}{{"Jaccard(사실을 전하는 비입퇴장 액트 — 판정)", v.Jaccard}, {"Jaccard(모든 액트 — 참고, 판정에 쓰지 않음)", v.JaccardAll}} {
+		}{{"Jaccard (non-entry/exit acts that convey facts — judged)", v.Jaccard}, {"Jaccard (all acts — reference only, not judged)", v.JaccardAll}} {
 			b.WriteString("\n" + j.label + ": ")
 			for i, k := range ks {
 				if i > 0 {
@@ -344,18 +344,18 @@ func checkReport(vs []render.SceneVerdict, errs []string, pass bool) string {
 			for _, it := range []struct {
 				n  string
 				xs []string
-			}{{"missing", rep.Missing}, {"hallucinated", rep.Hallucinated}, {"leaked", rep.Leaked}, {"실패", r.Why}} {
+			}{{"missing", rep.Missing}, {"hallucinated", rep.Hallucinated}, {"leaked", rep.Leaked}, {"failure", r.Why}} {
 				if len(it.xs) > 0 {
 					fmt.Fprintf(&b, "- %s %s: %s\n", r.Backend, it.n, strings.Join(it.xs, "; "))
 				}
 			}
 		}
 		for _, w := range v.Why {
-			fmt.Fprintf(&b, "- 장면 실패: %s\n", w)
+			fmt.Fprintf(&b, "- scene failure: %s\n", w)
 		}
 	}
 	for _, e := range errs {
-		fmt.Fprintf(&b, "\n- 오류: %s\n", e)
+		fmt.Fprintf(&b, "\n- error: %s\n", e)
 	}
 	return b.String()
 }

@@ -85,7 +85,7 @@ func TestSerialDryRun(t *testing.T) {
 	if strings.Contains(jp, "첫 장면") || strings.Count(jp, "### 화 ") != 6 || !strings.Contains(jp, "수정 1 (2화 뒤에 받음)") {
 		t.Errorf("judge prompt not blind, wrong episode count or no revision request")
 	}
-	if q := rd("judge/quotes.md"); !strings.Contains(q, "(있음) 종이 울렸다.") || !strings.Contains(q, "(없음) 지어낸 인용") {
+	if q := rd("judge/quotes.md"); !strings.Contains(q, "(present) 종이 울렸다.") || !strings.Contains(q, "(absent) 지어낸 인용") {
 		t.Errorf("quote check:\n%s", q)
 	}
 

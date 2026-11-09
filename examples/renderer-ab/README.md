@@ -1,147 +1,160 @@
-# 렌더러·모델 A/B (플랜 5 태스크 5)
+# Renderer and model A/B (Plan 5, Task 5)
 
-단일 렌더러(`render.RenderVerified2`)와 계층형 렌더러(`narrate.RenderLayered`)를 비교하고, 렌더 모델로 sonnet 과 haiku 를 비교했다. 목적은 기본 렌더러와 기본 렌더 모델을 정하는 것이다. 특히 haiku 로 렌더해도 되는지를 봤다. 그러면 사용 한도에 덜 걸리고 토큰도 덜 든다.
+We compared the single renderer (`render.RenderVerified2`) with the layered renderer (`narrate.RenderLayered`), and compared sonnet with haiku as the render model. The goal is to choose the default renderer and the default render model. In particular we looked at whether rendering with haiku is acceptable, since it hits usage limits less and costs fewer tokens.
 
-- 하네스는 `tools/renderer-ab` 다(`go run ./tools/renderer-ab -out examples/renderer-ab`). 모든 호출이 `render.Meter` 를 거쳐 `<팔>/calls.jsonl` 에 남았다.
-- 산출물은 산문 `<팔>/<작품>_<장면>.<백엔드>.md`, 실행별 기록 `runs.json`, 집계 `summary.json`·`table.md`, 진행 로그 `run.log` 다.
-- 렌더 역할 effort 는 sonnet 과 haiku 모두 medium 이다. haiku 는 `--effort` 를 받는다(사전 확인 1회). 재추출은 모든 팔에서 `claude-sonnet-5-5`/low 로 고정했다.
-- 백엔드는 ko-haera 다. 문체 교체만 ko-hapsho 로 쟀다.
-- 실험 중에 프롬프트와 검증기는 바꾸지 않았다.
+- The harness is `tools/renderer-ab` (`go run ./tools/renderer-ab -out examples/renderer-ab`). Every call went through `render.Meter` and was logged to `<arm>/calls.jsonl`.
+- Artifacts are the prose `<arm>/<work>_<scene>.<backend>.md`, the per-run record `runs.json`, the aggregates `summary.json` and `table.md`, and the progress log `run.log`.
+- The render-role effort is medium for both sonnet and haiku. haiku accepts `--effort` (checked once beforehand). Re-extraction was fixed at `claude-sonnet-5-5`/low in all arms.
+- The backend is ko-haera. Only the style swap was measured with ko-hapsho.
+- Prompts and the verifier were not changed during the experiment.
 
-## 실제 호출 수
+## Actual call count
 
-**118회**다(예산 ≤ 120). 하네스가 117회, haiku `--effort` 사전 확인이 1회다. `calls.jsonl` 의 줄 수를 합하면 117이다. 호출 오류는 0건이었다.
+**118 calls** (budget ≤ 120). The harness made 117, and the haiku `--effort` pre-check made 1. The line count of `calls.jsonl` sums to 117. There were 0 call errors.
 
-## 장면과 예산 조정 (브리프와 다른 점)
+## Scenes and budget adjustment (differences from the brief)
 
-브리프가 정한 장면 4개는 아래와 같다. 계층형의 비트 수는 `PlanScene` 이 장면의 beat 를 그대로 쓴 값이다.
+The brief set the 4 scenes below. The layered beat count is the scene's beats as used by `PlanScene`.
 
-| 장면 | 행위 | 비트 |
+| Scene | Acts | Beats |
 |---|---|---|
 | macbeth/1.3 | 26 | 11 |
 | chibi/45.88 | 24 | 10 |
-| haejin/s3 (연재, ep02) | 12 | 4 |
-| haejin/s19 (연재, ep07) | 12 | 4 |
+| haejin/s3 (serial, ep02) | 12 | 4 |
+| haejin/s19 (serial, ep07) | 12 | 4 |
 
-브리프는 계층형을 장면당 약 9회(비트 3개)로 잡았다. 그런데 코퍼스 장면은 비트가 10~11개라 계층형 1회가 재시도 없이도 25회쯤 든다. 판정에 쓰는 세 팔(S-son·L-son·L-hai)을 4장면 모두 돌리면 최소 약 150회라 예산 안에 들어가지 않는다.
+The brief budgeted layered at about 9 calls per scene (3 beats). But the corpus scenes have 10–11 beats, so one layered run costs about 25 calls even with no retries. Running the three arms used for the verdict (S-son, L-son, L-hai) on all 4 scenes would take at least about 150 calls, which does not fit the budget.
 
-그래서 실행 순서를 장면 단위로 바꿨다.
+So we changed the run order to be per scene.
 
-- 장면을 비트가 적은 순으로 놓고, 장면마다 세 팔을 한꺼번에 돌렸다.
-- 세 팔의 추정치가 남은 예산에 들어갈 때만 그 장면을 시작했다. 따라서 판정에 든 장면은 세 팔이 모두 같은 장면이다.
-- 결과로 판정에는 **연재 2장면(s3, s19)만** 들어갔다. chibi·macbeth 는 85회 시점에 각각 추정 82회·88회가 필요해서 건너뛰었다.
-- 남은 예산으로 판정 밖의 참고 실행을 했다. chibi 에 S-son·S-hai, macbeth 에 S-son 을 돌렸고, macbeth S-hai 는 예산 때문에 건너뛰었다.
+- Scenes were ordered by fewest beats, and for each scene the three arms were run together.
+- A scene was started only if the three arms' estimates fit in the remaining budget. So the scenes in the verdict are ones where all three arms ran the same scene.
+- As a result, **only the 2 serial scenes (s3, s19)** entered the verdict. chibi and macbeth were skipped because at the 85-call mark they needed an estimated 82 and 88 calls respectively.
+- With the remaining budget we made reference runs outside the verdict: S-son and S-hai on chibi, and S-son on macbeth; macbeth S-hai was skipped because of the budget.
 
-## 결과 (판정 장면 2개, ko-haera)
+## Results (2 verdict scenes, ko-haera)
 
-| 팔 | n | 통과 | 평균 호출 | sonnet 토큰 in/out | haiku 토큰 in/out | 가중 토큰/장면 | 어투 | 글자(목표 2500) | 비트 재시도 | 환각 new_event/사실형 |
+| Arm | n | Pass | Mean calls | sonnet tokens in/out | haiku tokens in/out | Weighted tokens/scene | Register | Chars (target 2500) | Beat retries | Hallucinated new_event/fact form |
 |---|---|---|---|---|---|---|---|---|---|---|
-| S-son (단일+sonnet) | 2 | 1/2 (50%) | 6.0 | 36252/12725 | 0/0 | 149816 | 1.00 | 690 | – | 2/1 |
-| L-son (계층+sonnet) | 2 | 0/2 (0%) | 18.0 | 74205/27413 | 0/0 | 316905 | 0.99 | 1444 | 6 | 3/1 |
-| L-hai (계층+haiku) | 2 | 1/2 (50%) | 17.0 | 41697/4074 | 30409/50226 | 233870 | 1.00 | 1469 | 5 | 1/0 |
-| S-hai (단일+haiku) | 2 | 1/2 (50%) | 4.0 | 12428/1842 | 13069/16526 | 80306 | 1.00 | 1048 | – | 2/0 |
+| S-son (single+sonnet) | 2 | 1/2 (50%) | 6.0 | 36252/12725 | 0/0 | 149816 | 1.00 | 690 | – | 2/1 |
+| L-son (layered+sonnet) | 2 | 0/2 (0%) | 18.0 | 74205/27413 | 0/0 | 316905 | 0.99 | 1444 | 6 | 3/1 |
+| L-hai (layered+haiku) | 2 | 1/2 (50%) | 17.0 | 41697/4074 | 30409/50226 | 233870 | 1.00 | 1469 | 5 | 1/0 |
+| S-hai (single+haiku) | 2 | 1/2 (50%) | 4.0 | 12428/1842 | 13069/16526 | 80306 | 1.00 | 1048 | – | 2/0 |
 
-- 토큰 in 은 input+cache_read+cache_write 다. sonnet 토큰에는 모든 팔의 재추출(sonnet)이 들어 있다.
-- 가중 토큰은 상대 가중치 sonnet 3:15, haiku 1:5(in:out)로 계산했다. 이 값은 가정이고 `-weights` 로 바꿀 수 있다.
-- 글자는 공백을 뺀 글자 수이고, 장면 2개의 평균이다.
+- Token in is input+cache_read+cache_write. The sonnet tokens include the re-extraction (sonnet) of all arms.
+- Weighted tokens are computed with relative weights sonnet 3:15, haiku 1:5 (in:out). These values are assumptions and can be changed with `-weights`.
+- Chars are characters excluding whitespace, averaged over the 2 scenes.
 
-실행별 결과는 아래와 같다.
+Per-run results:
 
-| 팔 | 장면 | 통과 | 호출 | 비트별 시도 | 최종 채택본 | 실패 사유 |
+| Arm | Scene | Pass | Calls | Attempts per beat | Final adopted | Failure reason |
 |---|---|---|---|---|---|---|
-| S-son | s3 | ✗ | 6 (렌더 3회) | – | – | 누락 1 + 사실형 1(`seoyun` 의 song_line 이 assert 대신 perceive) + new_event 2 |
-| S-son | s19 | ✓ | 6 (렌더 3회) | – | – | – |
-| L-son | s3 | ✗ | 20 | 1,3,3,1 | unstitched | 사실형 1(`extra-act:seoyun\|assert\|memorial_day`) + new_event 1 |
-| L-son | s19 | ✗ | 16 | 1,1,1,3 (비트 4 실패) | stitched | new_event 2 |
+| S-son | s3 | ✗ | 6 (3 renders) | – | – | missing 1 + fact form 1 (`seoyun`'s song_line is perceive instead of assert) + new_event 2 |
+| S-son | s19 | ✓ | 6 (3 renders) | – | – | – |
+| L-son | s3 | ✗ | 20 | 1,3,3,1 | unstitched | fact form 1 (`extra-act:seoyun\|assert\|memorial_day`) + new_event 1 |
+| L-son | s19 | ✗ | 16 | 1,1,1,3 (beat 4 failed) | stitched | new_event 2 |
 | L-hai | s3 | ✓ | 19 | 2,2,3,1 | stitched | – |
 | L-hai | s19 | ✗ | 15 | 1,2,1,1 | unstitched | new_event 1 |
-| S-hai | s3 | ✓ | 2 (렌더 1회) | – | – | – |
-| S-hai | s19 | ✗ | 6 (렌더 3회) | – | – | new_event 2 |
+| S-hai | s3 | ✓ | 2 (1 render) | – | – | – |
+| S-hai | s19 | ✗ | 6 (3 renders) | – | – | new_event 2 |
 
-참고 실행(판정 밖, 단일 렌더러)의 결과는 아래와 같다.
+Results of the reference runs (outside the verdict, single renderer):
 
-| 팔 | 장면 | 통과 | 호출 | 글자 | 실패 사유 |
+| Arm | Scene | Pass | Calls | Chars | Failure reason |
 |---|---|---|---|---|---|
-| S-son | chibi/45.88 | ✗ | 6 | 743 | new_event 3(도망·편지 훔침·취한 척) |
-| S-hai | chibi/45.88 | ✗ | 6 | 1111 | 누락 2 + new_event 2 |
-| S-son | macbeth/1.3 | ✗ | 6 | 1380 | 누락 2(`holds(king,macbeth)` ×2) + new_event 2 |
+| S-son | chibi/45.88 | ✗ | 6 | 743 | new_event 3 (flees, steals the letter, feigns drunkenness) |
+| S-hai | chibi/45.88 | ✗ | 6 | 1111 | missing 2 + new_event 2 |
+| S-son | macbeth/1.3 | ✗ | 6 | 1380 | missing 2 (`holds(king,macbeth)` ×2) + new_event 2 |
 
-## 비트 재시도
+## Beat retries
 
-- 비트 재시도는 L-son 이 6회(비트 8개 중 3개에서), L-hai 가 5회(비트 8개 중 4개에서)였다.
-- 상한(BeatRetries 2)을 넘긴 비트는 L-son s19 의 비트 4 하나뿐이다. 장면은 그대로 조립됐다.
-- 문체 층은 4회 모두 통과했다(StyleOK).
-- 연결본이 채택된 것은 2/4 다. 나머지 2회는 연결본이 대조에서 더 나빠서 연결 전 글로 돌아갔다.
+- Beat retries were 6 for L-son (in 3 of 8 beats) and 5 for L-hai (in 4 of 8 beats).
+- The only beat that exceeded the cap (BeatRetries 2) is beat 4 of L-son s19. The scene was assembled anyway.
+- The style layer passed all 4 times (StyleOK).
+- The stitched version was adopted in 2/4. In the other 2, the stitched version did worse in the comparison, so we went back to the pre-stitch text.
 
-## new_event 분해 (추출기 잡음과 계층 부작용 구분)
+## new_event breakdown (separating extractor noise from layering side effects)
 
-판정 장면에서 나온 환각 11건은 new_event 8건, 사실형 3건이다. new_event 8건을 원본 IR 과 맞대 보니 **모두 IR 에 이미 있는 행위를 다시 말한 것**이었다.
+The 11 hallucinations in the verdict scenes are 8 new_event and 3 fact-form. Matching the 8 new_event items against the source IR, **all of them restated acts that are already in the IR**.
 
-| 팔 | new_event | IR 의 해당 행위 | 유형 |
+| Arm | new_event | The corresponding act in the IR | Type |
 |---|---|---|---|
-| S-son s3 | 서윤이 반짇고리에 손을 뻗다가 거둔다 | `seoyun does reach sewing_box` | 사실 없는 does |
-| S-son s3 | 셋이 말순의 집을 나선다 | `exit all` | 등퇴장 |
-| L-son s3 | 서윤이 반짇고리 뚜껑을 만지다 제지당한다 | `seoyun does reach sewing_box` | 사실 없는 does |
-| L-son s19 | 하은이 표를 코트 깊이 숨긴다 | `haeun does hide ferry_ticket` | 사실 없는 does |
-| L-son s19 | 서윤이 공책을 덮고 나가고 하은이 따라간다 | `exit seoyun`, `exit haeun` | 등퇴장 |
-| L-hai s19 | 하은이 표를 서랍 깊이 숨긴다 | `haeun does hide ferry_ticket` | 사실 없는 does |
-| S-hai s19 | 하은과 서윤이 함께 교실을 나간다 | `exit …` | 등퇴장 |
-| S-hai s19 | 하은이 표를 안주머니 깊이 숨긴다 | `haeun does hide ferry_ticket` | 사실 없는 does |
+| S-son s3 | Seo-yun reaches for the sewing box and withdraws her hand | `seoyun does reach sewing_box` | fact-less does |
+| S-son s3 | The three leave Mal-sun's house | `exit all` | entrance/exit |
+| L-son s3 | Seo-yun touches the sewing box lid and is stopped | `seoyun does reach sewing_box` | fact-less does |
+| L-son s19 | Ha-eun hides the ticket deep in her coat | `haeun does hide ferry_ticket` | fact-less does |
+| L-son s19 | Seo-yun closes the notebook and leaves, and Ha-eun follows | `exit seoyun`, `exit haeun` | entrance/exit |
+| L-hai s19 | Ha-eun hides the ticket deep in a drawer | `haeun does hide ferry_ticket` | fact-less does |
+| S-hai s19 | Ha-eun and Seo-yun leave the classroom together | `exit …` | entrance/exit |
+| S-hai s19 | Ha-eun hides the ticket deep in her inner pocket | `haeun does hide ferry_ticket` | fact-less does |
 
-- 팔별로 보면 S-son 은 사실 없는 does 1·등퇴장 1, L-son 은 2·1, L-hai 는 1·0, S-hai 는 1·1 이다.
-- 사실형은 S-son 1, L-son 1, L-hai 0, S-hai 0 이다.
-- **판정 장면의 new_event 는 모두 추출기·대조 쪽 잡음이다.** `render.Diff` 는 사실이 없는 행위와 presence 행위를 기대 목록에서 빼지만, 재추출기는 그 행위를 new_events 로 보고한다. 이 8건 가운데 계층형에만 나타난 부작용은 없다. s19 의 "표를 숨긴다" 는 L-son·L-hai·S-hai 세 팔에서 똑같이 나왔다.
-- 참고 장면(chibi·macbeth)의 new_event(도망, 편지 훔침, 마녀가 사라짐, 로스·앵거스 도착)도 같은 꼴로 보인다(등퇴장이거나 사실 없는 does). 다만 IR 과 하나씩 맞대 보지는 않았다.
-- 반사실 셈이다(판정에 쓰지 않았다). new_event 가 IR 행위를 다시 말한 것을 환각에서 빼면 통과율은 S-son 1/2, L-son 1/2, L-hai 2/2, S-hai 2/2 다.
-- 검증기를 고치는 것은 이 태스크 범위 밖이라 그대로 두었다.
+- By arm: S-son has 1 fact-less does and 1 entrance/exit, L-son 2 and 1, L-hai 1 and 0, S-hai 1 and 1.
+- Fact-form: S-son 1, L-son 1, L-hai 0, S-hai 0.
+- **All new_events in the verdict scenes are noise from the extractor/comparison side.** `render.Diff` removes fact-less acts and presence acts from the expected list, but the re-extractor reports those acts as new_events. Of these 8, none is a side effect that appeared only in layered. In s19, "hides the ticket" appeared identically in three arms: L-son, L-hai, and S-hai.
+- The new_events of the reference scenes (chibi, macbeth) (flees, steals the letter, the witches vanish, Ross and Angus arrive) appear to have the same shape (entrances/exits or fact-less does). However, we did not match them one by one against the IR.
+- Counterfactual count (not used in the verdict): if new_events that restate IR acts are removed from the hallucinations, the pass rates are S-son 1/2, L-son 1/2, L-hai 2/2, S-hai 2/2.
+- Fixing the verifier is outside this task's scope, so we left it as is.
 
-## 문체 교체 비용 (L-hai, haejin/s3 → ko-hapsho)
+## Style swap cost (L-hai, haejin/s3 → ko-hapsho)
 
-s3 의 L-hai 비트 글([1]·[2] 결과)을 그대로 두고 [3] 문체·[4] 연결·최종 대조만 ko-hapsho 로 다시 돌렸다. 하네스는 `narrate.Beats` + `narrate.Finish` 로 나눈 진입점을 쓴다.
+We kept the L-hai beat prose for s3 (the [1] and [2] results) and re-ran only [3] style, [4] stitching, and the final comparison with ko-hapsho. The harness uses entry points split into `narrate.Beats` + `narrate.Finish`.
 
-| 방식 | 호출 | 렌더 모델 in/out | 재추출(sonnet) in/out | 가중 토큰 | 통과 | 어투 |
+| Method | Calls | Render model in/out | Re-extraction (sonnet) in/out | Weighted tokens | Pass | Register |
 |---|---|---|---|---|---|---|
-| 교체만 ([3]·[4]+최종) | **3** (haiku 2 + sonnet 1) | haiku 7044/9211 | 3997/436 | 71630 | ✓ | 1.00 (합쇼체) |
-| 같은 장면 L-hai 전체 (haera) | 19 | haiku 17256/28925 | 20148/1950 | 251575 | ✓ | 1.00 |
-| 같은 장면 S-son 전체 (hapsho) | 6 (렌더 3회) | sonnet 10894/5565 | 8437/1607 | 165573 | ✓ | 1.00 |
+| Swap only ([3], [4] + final) | **3** (haiku 2 + sonnet 1) | haiku 7044/9211 | 3997/436 | 71630 | ✓ | 1.00 (hapsho register) |
+| Same scene, full L-hai (haera) | 19 | haiku 17256/28925 | 20148/1950 | 251575 | ✓ | 1.00 |
+| Same scene, full S-son (hapsho) | 6 (3 renders) | sonnet 10894/5565 | 8437/1607 | 165573 | ✓ | 1.00 |
 
-계층형에서 문체를 바꾸는 비용은 전체 렌더의 약 1/6 호출(3 대 19)과 약 28% 가중 토큰이다. 같은 장면을 hapsho 로 단일 렌더할 때와 비교하면 호출은 절반, 가중 토큰은 약 43% 다. 위 수치는 1회 측정값이다.
+Changing the style in layered costs about 1/6 of the calls of a full render (3 vs 19) and about 28% of the weighted tokens. Compared with rendering the same scene as single in hapsho, calls are half and weighted tokens about 43%. The figures above are single measurements.
 
-## 산문 비교 (haejin/s3 첫머리, 팔마다)
+## Prose comparison (opening of haejin/s3, per arm)
 
-**S-son** (통과 ✗, 662자)
+English glosses in brackets are mine.
+
+**S-son** (pass ✗, 662 chars)
 > 방 안에는 바닷바람에 절은 나무 냄새가 배어 있었다. 오말순은 윗목에 앉아 무릎을 천천히 흔들며 입속으로 무슨 가락을 굴리고 있었다. 가락은 이내 말이 되어 흘러나왔다.
 >
 > "열한 물때에 불이 잔다."
+>
+> [The room was steeped in the smell of wood cured by sea wind. Oh Mal-sun sat at the warm end, slowly rocking her knees, turning some tune over in her mouth. The tune soon became words. "At the eleventh tide the fire sleeps."]
 
-**L-son** (통과 ✗, 1409자)
+**L-son** (pass ✗, 1409 chars)
 > 오말순은 바늘귀에 실을 꿰다 말고 입속으로 가락을 굴렸다. 처음엔 숨소리에 가까웠던 것이 차츰 말마디를 갖췄다. "열한 물때에 불이 잔다, 열한 물때에 불이 잔다. 우리 어머니가 부엌에서 그렇게 불렀다. 뒷말은 다 잊고 이 대목만 남았구나."
+>
+> [Oh Mal-sun stopped threading the needle and turned a tune over in her mouth. What was at first close to breathing gradually took on words. "At the eleventh tide the fire sleeps, at the eleventh tide the fire sleeps. My mother sang it that way in the kitchen. I forgot all the rest, and only this part is left."]
 
-**L-hai** (통과 ✓, 1477자)
+**L-hai** (pass ✓, 1477 chars)
 > 한서윤은 방 한쪽 낮은 자개장 위에 놓인 오말순의 반짇고리를 본다. 뚜껑이 반쯤 열려 있고, 그 안에서 실패 몇 개가 누렇게 바랜 천 조각 사이로 드러나 있다. 창으로 들어온 오후 햇빛이 바늘쌈지 끝에 얇게 걸려 있다. 방 안은 조용하다.
+>
+> [Han Seo-yun looks at Oh Mal-sun's sewing box on the low mother-of-pearl chest at one side of the room. The lid is half open, and a few spools show among yellowed scraps of cloth. The afternoon sun through the window hangs thinly on the tip of the needle case. The room is quiet.]
 
-**S-hai** (통과 ✓, 1200자)
+**S-hai** (pass ✓, 1200 chars)
 > 말순 할머니의 집은 마을 끝 언덕 아래 낮은 슬레이트 지붕 아래에 있었다. 마루에 앉으니 바다에서 올라온 바람이 문풍지를 가늘게 울렸다. 서윤은 무릎에 두 손을 모으고 할머니가 찻잔에 물을 따르는 손끝을 보았다.
+>
+> [Grandmother Mal-sun's house stood under a low slate roof below the hill at the end of the village. Sitting on the wooden floor, the wind from the sea set the paper window thinly humming. Seo-yun folded her hands on her knees and watched the fingertips of the grandmother pouring water into the teacups.]
 
-**L-hai → ko-hapsho 교체** (통과 ✓)
+**L-hai → ko-hapsho swap** (pass ✓)
 > 방 한쪽 낮은 자개장 위에 오말순의 반짇고리가 놓여 있습니다. 뚜껑이 반쯤 열려 있고, 그 안에서 실패 몇 개가 누렇게 바랜 천 조각 사이로 드러나 있습니다.
+>
+> [On the low mother-of-pearl chest at one side of the room sits Oh Mal-sun's sewing box. The lid is half open, and a few spools show among yellowed scraps of cloth.]
 
-L-hai 는 현재형 단문이 이어져 다소 건조하다(haiku 비트 글을 문체 층이 시제까지 바꾸지는 않는다). S-son·S-hai·L-son 은 과거형 서술이다. 전체 산문은 각 팔 폴더에 있다.
+L-hai is somewhat dry, with a run of present-tense short sentences (the style layer does not change the tense of haiku's beat prose). S-son, S-hai, and L-son narrate in the past tense. The full prose is in each arm's folder.
 
-## 판정 (브리프 규칙 적용)
+## Verdict (applying the brief's rules)
 
-- **기본 렌더러:** 통과율이 가장 높은 팔은 S-son·L-hai·S-hai 로, 셋 다 50% 다. 동률이면 가중 토큰이 적은 쪽을 고르므로 S-hai(80306)다. 따라서 **기본 렌더러는 `single`** 이다(변경 없음).
-- **기본 렌더 모델:** 단일 렌더러에서 haiku(S-hai) 50%, sonnet(S-son) 50% 다. −10%p 이내이므로 **기본 렌더 모델은 `claude-haiku-5-5`** 다.
-- 결정은 `write.DefaultOpts` 에 반영했다. `Renderer: "single"`(그대로), `RenderModel: "claude-haiku-5-5"`(sonnet 에서 바꿈)이다. 재추출 모델은 sonnet 그대로다.
-- `dieg render --verify` 도 같은 기본값을 쓴다. `--render-model`·`--renderer` 플래그는 그대로이고, README 와 refs 사본도 고쳤다.
+- **Default renderer:** the arms with the highest pass rate are S-son, L-hai, and S-hai, all at 50%. On a tie we pick the one with fewer weighted tokens, which is S-hai (80306). So **the default renderer is `single`** (no change).
+- **Default render model:** in the single renderer, haiku (S-hai) is 50% and sonnet (S-son) is 50%. Within −10 pp, so **the default render model is `claude-haiku-5-5`**.
+- The decision is reflected in `write.DefaultOpts`: `Renderer: "single"` (unchanged), `RenderModel: "claude-haiku-5-5"` (changed from sonnet). The re-extraction model stays sonnet.
+- `dieg render --verify` uses the same defaults. The `--render-model` and `--renderer` flags are unchanged, and the README and refs copies were fixed too.
 
-- 이 결정은 가중치에 따라 뒤집히지 않는다. 단일이 계층형을 호출, 원시 토큰, 출력 토큰에서 앞서고, haiku 규칙은 토큰을 보지 않는다. 다만 haiku 의 비용 우위는 가중치에 달렸다. haiku 출력이 sonnet 보다 +44% 많기 때문이다.
-- 후속 수정(new_event 판정에서 IR 에 지은이가 쓴 사실 없는 행위를 환각에서 뺌)을 적용하면 통과율이 오를 것이다(반사실: L-hai 2/2, S-hai 2/2). 위 측정 수치는 그대로 둔다.
-## 한계
+- This decision does not flip with the weights. Single beats layered in calls, raw tokens, and output tokens, and the haiku rule does not look at tokens. However, haiku's cost advantage depends on the weights, because haiku's output is +44% more than sonnet's.
+- Applying the follow-up fix (in the new_event judgment, drop the author's fact-less acts that are in the IR from hallucinations) should raise the pass rate (counterfactual: L-hai 2/2, S-hai 2/2). The measured figures above are left as they are.
 
-- **n = 2.** 판정은 연재 2장면만으로 했다. 통과율이 50%p 단위로 움직이므로 판정은 일화 수준이다. 코퍼스 장면(10~11비트)에서 계층형은 측정하지 못했다.
-- **판정을 가른 것이 잡음이다.** 실패의 대부분(new_event 8/8)이 IR 에 이미 있는 행위를 추출기가 new_events 로 다시 보고한 것이다. 잡음을 빼면 haiku 두 팔이 sonnet 두 팔보다 같거나 낫다. 그래도 표본이 작다.
-- **분량.** 단일 렌더러는 목표 2500자의 27~55%(662~1380자)만 썼다. 계층형도 약 58%(1444~1477자)다. 분량 지시가 어느 쪽에서도 충분히 듣지 않는다.
-- **비용 가중치는 가정이다**(sonnet 3:15, haiku 1:5). 구독 CLI 의 cache 토큰이 in 에 섞여 있다.
-- haiku 의 출력 토큰은 같은 글자 수에서 sonnet 보다 2~3배 많다(추론 토큰으로 보인다). 그래도 가중치가 낮아 가중 토큰은 적다. 다만 사용 한도가 출력 토큰 수로 잡힌다면 이 이점은 줄어든다.
-- 계층형은 4비트 장면에서도 장면당 15~20회를 불렀다(단일은 2~6회). 호출 수 기준 한도에서는 계층형이 불리하다.
+## Limitations
+
+- **n = 2.** The verdict rests on only 2 serial scenes. Pass rate moves in steps of 50 pp, so the verdict is anecdote-level. Layered could not be measured on the corpus scenes (10–11 beats).
+- **Noise decided the verdict.** Most failures (new_event 8/8) are the extractor re-reporting acts that are already in the IR as new_events. With the noise removed, the two haiku arms are equal to or better than the two sonnet arms. Still, the sample is small.
+- **Length.** The single renderer wrote only 27–55% (662–1380 chars) of the 2500-character target. Layered wrote about 58% (1444–1477 chars). The length instruction is not followed well enough by either.
+- **The cost weights are assumptions** (sonnet 3:15, haiku 1:5). The subscription CLI's cache tokens are mixed into in.
+- haiku's output tokens are 2–3× sonnet's for the same character count (they appear to be reasoning tokens). The weight is low, so weighted tokens are still fewer. However, if usage limits are counted by output token count, this advantage shrinks.
+- Layered made 15–20 calls per scene even on 4-beat scenes (single made 2–6). Under a limit counted in calls, layered is at a disadvantage.

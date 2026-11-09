@@ -93,8 +93,8 @@ func TestBuildPromptNarrationAndReportedSpeech(t *testing.T) {
 	}
 }
 
-// 지각 액트는 행위자가 보거나 듣는다고 써야 하고, 사실이 붙은 액트는 그 사실을 전해야 한다(live 판정: "닭이 울더라" 만
-// 쓰고 베드로가 들었다는 것을 빼 재추출이 지각을 잃었다).
+// A perception act must be written as the actor seeing or hearing, and an act with a fact must convey that fact (live verdict: only "the rooster crowed" was
+// written and that Peter heard it was dropped, so re-extraction lost the perception).
 func TestBuildPromptMakesPerceptionAndFactsExplicit(t *testing.T) {
 	sys, _, err := BuildPrompt(mustLoad(t, "testdata/min.json"), VariantIROnly, "ko", nil)
 	if err != nil {
@@ -107,7 +107,7 @@ func TestBuildPromptMakesPerceptionAndFactsExplicit(t *testing.T) {
 	}
 }
 
-// 산문은 명세의 액트만 쓴다: 원작의 다른 대사를 간접화법으로 끼워 넣지 않는다(live 판정: "borrowed robes" 가 끼어들었다).
+// The prose writes only the spec's acts: do not slip in other lines of the original as indirect speech (live verdict: "borrowed robes" crept in).
 func TestBuildPromptForbidsSourceLines(t *testing.T) {
 	sys, _, _ := BuildPrompt(mustLoad(t, "testdata/min.json"), VariantIROnly, "en", nil)
 	if !strings.Contains(sys, "Do not add any speech, even reported speech, that is not an act") {
@@ -115,8 +115,8 @@ func TestBuildPromptForbidsSourceLines(t *testing.T) {
 	}
 }
 
-// 사실은 그 사실을 가진 액트로만 전한다: 인물의 생각·반응으로 되풀이하지 않는다(live 판정: 고전소설체가 대사 뒤에
-// "맥베스의 생각에 …" 로 사실을 다시 말해 재추출 thinks 액트가 늘었다).
+// A fact is conveyed only by the act that has it: do not repeat it as a character's thought or reaction (live verdict: the classical-novel tone restated the fact after a line with
+// "in Macbeth's thought …" and re-extracted thinks acts increased).
 func TestBuildPromptNoFactsThroughAddedThoughts(t *testing.T) {
 	sys, _, _ := BuildPrompt(mustLoad(t, "testdata/min.json"), VariantIROnly, "ko", nil)
 	if !strings.Contains(sys, "Do not restate a fact through a character's thoughts or reactions") {
@@ -124,7 +124,7 @@ func TestBuildPromptNoFactsThroughAddedThoughts(t *testing.T) {
 	}
 }
 
-// 거짓 사실을 담은 액트(says/lies)는 서술자가 사실로 단정하지 않도록 표시한다(데모 s4 "종은 울렸고").
+// An act holding a false fact (says/lies) is marked so the narrator does not state it as fact (demo s4 "the bell rang").
 func TestPromptMarksFalseFacts(t *testing.T) {
 	const tag = "(false — the speaker believes or claims it; the narrator must not assert it)"
 	s := Scene{

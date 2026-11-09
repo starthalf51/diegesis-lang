@@ -10,7 +10,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
-// loadCorpus 는 corpus/<work> 를 고유한 작품 ID 로 적재한다.
+// loadCorpus loads corpus/<work> under a unique work ID.
 func loadCorpus(t *testing.T, pool *pgxpool.Pool, work string) string {
 	t.Helper()
 	w, id := corpusIR(t, work)
@@ -21,7 +21,7 @@ func loadCorpus(t *testing.T, pool *pgxpool.Pool, work string) string {
 	return id
 }
 
-// sceneOrd 는 장면 ID 끝 부분(예: "1.3")으로 서술 위치를 찾는다.
+// sceneOrd finds the narration position from the end part of a scene ID (e.g. "1.3").
 func sceneOrd(t *testing.T, pool *pgxpool.Pool, work, suffix string) int {
 	t.Helper()
 	var o int
@@ -109,7 +109,7 @@ func TestMetricAsymmetryOdyssey(t *testing.T) {
 	}
 }
 
-// 시계열은 장면마다 한 행이고 긴장은 [0, 가중치 합] 안이다.
+// The time series has one row per scene and tension is within [0, sum of weights].
 func TestMetricTensionRange(t *testing.T) {
 	pool := open(t)
 	id := loadCorpus(t, pool, "macbeth")
@@ -131,7 +131,7 @@ var metricQueries = []string{
 	"metric_anachrony", "metric_pace", "graph_nodes", "graph_edges",
 }
 
-// Review Focus 3: 빈 작품은 오류 없이 0행.
+// Review Focus 3: an empty work gives 0 rows with no error.
 func TestMetricsEmptyWork(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, "")
@@ -140,13 +140,13 @@ func TestMetricsEmptyWork(t *testing.T) {
 		if err := pool.QueryRow(context.Background(), `SELECT count(*) FROM `+f+`($1)`, id).Scan(&n); err != nil {
 			t.Fatalf("%s: %v", f, err)
 		}
-		if n != 0 && f != "graph_nodes" { // 빈 작품에도 cast 의 인물은 노드다
+		if n != 0 && f != "graph_nodes" { // even an empty work has the cast's characters as nodes
 			t.Errorf("%s: %d rows, want 0", f, n)
 		}
 	}
 }
 
-// 무대 밖 사건만 있거나 시간이 없는 장면에서도 오류가 없고, pace 의 span 은 NULL 이다.
+// No error even for scenes with only offstage events or no time, and pace's span is NULL.
 func TestMetricsNoTimeScene(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -203,7 +203,7 @@ func TestGraphColumns(t *testing.T) {
 	}
 }
 
-// 시간 제약이 없는 점(풀이 기본값 earliest = 0)은 착행 그래프에 오르지 않는다. 앵커 없는 작품은 0행, 앵커 있는 작품은 가짜 0 이 없다.
+// A point with no time constraint (solver default earliest = 0) does not appear in the time-warp graph. A work with no anchor gives 0 rows, and a work with an anchor has no fake 0.
 func TestMetricAnachronyUnconstrained(t *testing.T) {
 	pool := open(t)
 	ctx := context.Background()

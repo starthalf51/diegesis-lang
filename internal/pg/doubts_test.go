@@ -5,13 +5,13 @@ import (
 	"testing"
 )
 
-// Task 9 엔진 수정: `X doubts P` 는 그 앞에 들은 P 를 거둔다(그 시점부터). 뒤의 출처(sees, 다시 들음, reads,
-// 명시적 believes)는 다시 믿게 한다. 지각과 배경 지식은 거두지 않는다. 배경 doubts 는 처음부터 믿지 않는다(행 없음).
+// Task 9 engine fix: `X doubts P` withdraws a P heard before it (from that point). A later source (sees, heard again, reads,
+// explicit believes) makes them believe again. Perception and background knowledge are not withdrawn. A background doubts is not believed from the start (no row).
 func TestDoubtsCancelHearsay(t *testing.T) {
 	pool := open(t)
 	for name, c := range map[string]struct {
 		body string
-		want map[string][]string // 규칙 → 진단
+		want map[string][]string // rule → diagnostics
 	}{
 		"doubt cancels earlier hearsay": {`scene 1
   enter a, b, o
@@ -105,7 +105,7 @@ scene 1
 	}
 }
 
-// 거둔 행은 남기되 until_pt 에 의심 시점을 적는다(질의·설명이 "언제까지 믿었나"를 볼 수 있게).
+// Keep the withdrawn row but record the doubt point in until_pt (so queries and explanations can see "until when they believed").
 func TestDoubtsUntilPt(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1

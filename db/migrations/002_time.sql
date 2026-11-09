@@ -1,19 +1,19 @@
--- 002: STN 풀이(solve_time), 시점 간 최단 거리(point_dist), 선후 판정(precedes).
+-- 002: STN solving (solve_time), shortest distance between points (point_dist), ordering verdicts (precedes).
 --
--- time_edge 한 행 (from, to, min, max) 은 min ≤ t_to − t_from ≤ max 다. 거리 그래프로 바꾸면
---   from → to  가중치 max   (t_to − t_from ≤ max)
---   to → from  가중치 −min  (t_from − t_to ≤ −min)
--- 이고, 최단 거리 d(u,v) 는 t_v − t_u 의 가장 빡빡한 상한이다. NULL 경계는 간선이 없다(무한).
+-- A time_edge row (from, to, min, max) means min ≤ t_to − t_from ≤ max. As a distance graph:
+--   from → to  weight max   (t_to − t_from ≤ max)
+--   to → from  weight −min  (t_from − t_to ≤ −min)
+-- and the shortest distance d(u,v) is the tightest upper bound on t_v − t_u. A NULL bound has no edge (unbounded).
 --   latest(p) = d(origin, p),  earliest(p) = −d(p, origin)
 SET LOCAL search_path = public, ag_catalog;
 
--- 풀이 간선 집합(억제 간선과 순환 간선을 뺀 것)에서의 최단 거리. 닿지 않는 쌍은 행이 없다(무한).
--- 자기 자신(d = 0) 행도 둔다. 린트가 gap_max = d(a,b), gap_min = −d(b,a) 로 쓸 수 있다.
+-- Shortest distance over the solving edge set (without suppressed edges and cycle edges). Unreachable pairs have no row (unbounded).
+-- The self row (d = 0) is kept too. Lint can use gap_max = d(a,b), gap_min = −d(b,a).
 CREATE TABLE point_dist (
   work_id text NOT NULL REFERENCES work(id) ON DELETE CASCADE,
   src text NOT NULL, dst text NOT NULL, d int8 NOT NULL, PRIMARY KEY (src, dst));
 
--- 거리 그래프를 임시 테이블 _stn_e 에 싣는다. skip 은 빼고 싶은 time_edge.ord 들.
+-- Load the distance graph into the temp table _stn_e. skip lists the time_edge.ord values to leave out.
 CREATE FUNCTION stn_edges(w text, with_waived bool, skip int[] DEFAULT '{}') RETURNS void
 LANGUAGE plpgsql SET search_path = public, ag_catalog AS $$
 BEGIN
@@ -31,8 +31,8 @@ BEGIN
   ANALYZE _stn_e;
 END $$;
 
--- 음수 사이클 검출: 모든 점을 0 에서 시작하는(가상 출발점) Bellman-Ford over _stn_e. 결과는 _stn_d.
--- 반환: NULL = 수렴(음수 사이클 없음). 아니면 V 번째 반복에서도 줄어든 점.
+-- Negative-cycle detection: Bellman-Ford over _stn_e with every point starting at 0 (virtual source). The result goes to _stn_d.
+-- Returns NULL = converged (no negative cycle); otherwise a point that still shrank on the V-th iteration.
 CREATE FUNCTION stn_negcycle() RETURNS text
 LANGUAGE plpgsql SET search_path = public, ag_catalog AS $$
 DECLARE nv int; n int; x text;
@@ -60,7 +60,7 @@ BEGIN
   RETURN x;
 END $$;
 
--- stn_negcycle 이 돌려준 점 x 에서 선행자를 V 번 거슬러 사이클에 들어간 뒤, 한 바퀴의 time_edge.ord 를 모은다.
+-- From the point x returned by stn_negcycle, walk predecessors V times to land on the cycle, then collect the time_edge.ord values of one lap.
 CREATE FUNCTION stn_cycle(x text) RETURNS int[]
 LANGUAGE plpgsql SET search_path = public, ag_catalog AS $$
 DECLARE nv int; y text; o int; out int[] := '{}';
@@ -81,8 +81,8 @@ BEGIN
   RETURN out;
 END $$;
 
--- 순서 순환: min ≥ 0 간선이 원래 방향으로 도는 강연결요소마다 그 안의 간선 ord 목록.
--- ponytail: 닫힘은 O(V²) 쌍이다. 시점이 수만 개면 PL/pgSQL Tarjan 으로 바꾼다.
+-- Order cycles: for every strongly connected component where min ≥ 0 edges run in their original direction, the list of edge ords inside it.
+-- ponytail: the closure is O(V²) pairs. With tens of thousands of points, switch to a PL/pgSQL Tarjan.
 CREATE FUNCTION order_sccs(w text, with_waived bool) RETURNS SETOF int[]
 LANGUAGE sql SET search_path = public, ag_catalog AS $$
   WITH RECURSIVE pe AS (
@@ -95,7 +95,7 @@ LANGUAGE sql SET search_path = public, ag_catalog AS $$
    GROUP BY s1.c
 $$;
 
--- 간선 묶음 하나로 time-cycle 진단 한 건. 그 중 하나라도 억제됐으면 waived.
+-- One time-cycle diagnostic per edge bundle. waived if any of its edges is suppressed.
 CREATE FUNCTION time_cycle_diag(w text, ords int[]) RETURNS void
 LANGUAGE sql SET search_path = public, ag_catalog AS $$
   INSERT INTO diagnostic(run_id, work_id, rule_id, severity, target_kind, src_id, message, data, waived)
@@ -110,16 +110,16 @@ LANGUAGE sql SET search_path = public, ag_catalog AS $$
     FROM time_edge WHERE work_id = w AND ord = ANY (ords)
 $$;
 
--- 모든 점에서의 최단 거리를 _stn_e 로 point_dist 에 채운다(변한 행만 다시 완화하는 집합 단위 Bellman-Ford,
--- 모든 출발점을 한꺼번에). 반복 횟수는 최단 경로의 최대 간선 수. 음수 사이클이면 false 이고 행을 남기지 않는다.
--- ponytail: 행 수가 O(V²) 다(사슬 500 시점 ≈ 12.5만 행). 수천 시점을 넘으면 필요한 쌍만 계산한다.
--- enable_hashjoin off: 계획기가 NOT EXISTS 를 표 전체 해시 반조인으로 잡아 반복마다 전부 읽는다. 색인 조회가 맞다.
+-- Fill point_dist from the shortest distances from all points over _stn_e (set-at-a-time Bellman-Ford that relaxes only changed rows,
+-- all sources at once). The iteration count is the max edge count of a shortest path. On a negative cycle returns false and leaves no rows.
+-- ponytail: the row count is O(V²) (a 500-point chain ≈ 125k rows). Past a few thousand points, compute only the needed pairs.
+-- enable_hashjoin off: the planner turns NOT EXISTS into a whole-table hash anti-join and reads everything each iteration. An index lookup is right.
 CREATE FUNCTION stn_apsp(w text) RETURNS bool
 LANGUAGE plpgsql SET search_path = public, ag_catalog SET enable_hashjoin = off AS $$
 DECLARE nv int; cnt int;
 BEGIN
   DELETE FROM point_dist WHERE work_id = w;
-  -- 계산은 정수 번호로 한다(긴 텍스트 ID 를 비교·색인하면 몇 배 느리다).
+  -- Compute on integer numbers (comparing and indexing long text IDs is several times slower).
   IF to_regclass('pg_temp._apsp') IS NULL THEN
     CREATE TEMP TABLE _apsp_n(n int PRIMARY KEY, id text UNIQUE);
     CREATE TEMP TABLE _apsp_e(u int, v int, wt int8);
@@ -133,10 +133,10 @@ BEGIN
   INSERT INTO _apsp_e SELECT a.n, b.n, e.wt FROM _stn_e e JOIN _apsp_n a ON a.id = e.u JOIN _apsp_n b ON b.id = e.v;
   INSERT INTO _apsp SELECT n, n, 0, 0 FROM _apsp_n;
   SELECT count(*) INTO nv FROM _apsp_n;
-  -- 쌍마다 개선될 때마다 행을 덧붙인다(it = 반복 번호). 다음 반복은 방금 붙은 행(델타)만 완화한다.
-  -- 수정·삭제가 없어서 죽은 튜플이 쌓이지 않는다. 끝나면 쌍마다 최솟값을 옮긴다.
+  -- Append a row each time a pair improves (it = iteration number). The next iteration relaxes only the rows just added (the delta).
+  -- No updates or deletes, so no dead tuples pile up. At the end, move each pair's minimum.
   FOR i IN 1..nv + 1 LOOP
-    -- EXECUTE: 표가 자라므로 반복마다 다시 계획한다.
+    -- EXECUTE: the table grows, so re-plan every iteration.
     EXECUTE 'WITH c AS (
       SELECT x.src, e.v AS dst, min(x.d + e.wt) AS d
         FROM _apsp x JOIN _apsp_e e ON e.u = x.dst WHERE x.it = $1 - 1 GROUP BY 1, 2)
@@ -155,11 +155,11 @@ BEGIN
 END $$;
 
 -- solve_time:
--- (1) 순환 검출. 순서 순환은 먼저 억제되지 않은 간선만으로 강연결요소를 구해 미억제 진단을 낸다. 그다음 억제 간선까지
---     넣어 구한 요소에서 이미 보고한 간선을 뺀 나머지를 억제된 진단으로 낸다(억제 하나가 같은 요소의 진짜 순환을 덮지 않게).
---     그 밖의 음수 사이클은 Bellman-Ford 로 한 건씩(최대 20건), 찾은 간선을 빼고 다시.
--- (2) 풀이 간선 = 억제되지 않았고 (1) 의 미억제 순환(억제 간선이 하나도 없는 순환)에 속하지 않은 간선. 이것으로 point_dist 와 earliest/latest 를 채운다.
---     그래서 한 곳의 모순이 무관한 시점의 경계를 지우지 않는다. 그래도 음수 사이클이 남으면(20건 초과) 전부 NULL.
+-- (1) Cycle detection. For order cycles, first find strongly connected components from unsuppressed edges only and emit unsuppressed diagnostics. Then, from components
+--     built with suppressed edges added, remove the edges already reported and emit the rest as suppressed diagnostics (so one suppression cannot hide a real cycle in the same component).
+--     Other negative cycles: one at a time with Bellman-Ford (up to 20), removing the edges found and retrying.
+-- (2) Solving edges = edges that are not suppressed and do not belong to an unsuppressed cycle from (1) (a cycle with no suppressed edge). These fill point_dist and earliest/latest.
+--     So a contradiction in one place does not erase the bounds of unrelated points. If a negative cycle still remains (over 20), everything is NULL.
 CREATE FUNCTION solve_time(w text) RETURNS void
 LANGUAGE plpgsql SET search_path = public, ag_catalog AS $$
 DECLARE seen int[] := '{}'; skip int[] := '{}'; cyc int[]; rest int[]; x text; origin text;
@@ -167,8 +167,8 @@ BEGIN
   UPDATE point SET earliest = NULL, latest = NULL WHERE work_id = w;
   DELETE FROM diagnostic WHERE work_id = w AND run_id = 'derive' AND rule_id = 'time-cycle';
 
-  -- seen: 이미 보고한 간선(검출에서 뺀다). skip: 풀이에서 뺄 간선 = 억제 간선이 없는 순환의 간선.
-  -- 억제 간선이 낀 순환은 그 억제 간선만 빠지면 끊어지므로 나머지 간선은 풀이에 남는다(R1).
+  -- seen: edges already reported (excluded from detection). skip: edges to drop from solving = edges of cycles that have no suppressed edge.
+  -- A cycle containing a suppressed edge breaks once that edge is removed, so the remaining edges stay in the solve (R1).
   FOR cyc IN SELECT order_sccs(w, false) LOOP
     PERFORM time_cycle_diag(w, cyc);
     seen := seen || cyc;
@@ -204,10 +204,10 @@ BEGIN
   UPDATE point p SET earliest = -d.d FROM point_dist d WHERE p.work_id = w AND d.dst = origin AND d.src = p.id;
 END $$;
 
--- precedes(work, a, b): a ≤ b 가 모든 해에서 성립하면 'yes', b ≤ a 가 그러면 'no', 나머지 'maybe'.
--- 풀이 간선 집합의 거리로 판정한다: d(b, a) ≤ 0 이면 t_a − t_b ≤ 0 이 보장된다(yes), d(a, b) ≤ 0 이면 no.
--- STN 에서 이 판정은 완전하다(min ≥ 0 경로도, latest(a) ≤ earliest(b) 도 여기 포함된다). 풀어 둔 경계 비교를 먼저 한다.
--- 읽기만 한다(STABLE): derive 가 point_dist 를 미리 채운다. 거리가 없으면(모순으로 풀지 못함) 'maybe'.
+-- precedes(work, a, b): 'yes' if a ≤ b holds in every solution, 'no' if b ≤ a does, otherwise 'maybe'.
+-- Decided from the distances of the solving edge set: d(b, a) ≤ 0 guarantees t_a − t_b ≤ 0 (yes); d(a, b) ≤ 0 gives no.
+-- In an STN this verdict is complete (min ≥ 0 paths and latest(a) ≤ earliest(b) are included). The solved-bounds comparison goes first.
+-- Read-only (STABLE): derive pre-fills point_dist. With no distance (unsolvable due to a contradiction) the answer is 'maybe'.
 CREATE FUNCTION precedes(w text, a text, b text) RETURNS text
 LANGUAGE sql STABLE STRICT SET search_path = public, ag_catalog AS $$
   SELECT CASE
@@ -221,7 +221,7 @@ LANGUAGE sql STABLE STRICT SET search_path = public, ag_catalog AS $$
     ELSE 'maybe' END
 $$;
 
--- 시점 ID 만으로 부르는 꼴(checks.md 의 규칙 예시). 작품은 a 의 행에서 찾는다.
+-- Form called with point IDs only (the rule example in checks.md). The work is found from a's row.
 CREATE FUNCTION precedes(a text, b text) RETURNS text
 LANGUAGE sql STABLE STRICT SET search_path = public, ag_catalog AS $$
   SELECT precedes((SELECT work_id FROM point WHERE id = a), a, b)

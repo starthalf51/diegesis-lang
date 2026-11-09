@@ -375,7 +375,7 @@ dies a when at 1000-03
 	}
 }
 
-// lasts: 장면·사건의 start→end 간선에 min/max 를 준다. 그 문장의 간선이라 time-cycle 억제가 붙는다.
+// lasts: gives min/max to the start→end edge of a scene/event. It is that statement's edge, so a time-cycle suppression attaches.
 func TestLastsEdges(t *testing.T) {
 	w, diags := build(t, `module t.s
 import t.cast

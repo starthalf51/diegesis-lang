@@ -14,10 +14,10 @@ type Entity struct {
 }
 
 type Fact struct {
-	ID    string `json:"id"` // 지은이가 쓴 ID
+	ID    string `json:"id"` // ID the author wrote
 	Text  string `json:"text"`
 	True  bool   `json:"true"`
-	Canon string `json:"canon,omitempty"` // 정규 명제(별칭·부정을 푼 꼴). 비교에만 쓴다. 비면 ID
+	Canon string `json:"canon,omitempty"` // canonical proposition (aliases and negation resolved). Used only for comparison. If empty, ID
 }
 
 type Act struct {
@@ -26,7 +26,7 @@ type Act struct {
 	Targets []string `json:"targets"`
 	Fact    string   `json:"fact"`
 	Quote   string   `json:"quote"`
-	Action  string   `json:"action,omitempty"` // does 의 동작, 다루는 문서 이름
+	Action  string   `json:"action,omitempty"` // the action of does, the name of the document handled
 }
 
 type Beat struct {
@@ -62,7 +62,7 @@ type Scene struct {
 var verbs = map[string]bool{
 	"enter": true, "exit": true, "tells": true, "says": true, "hails": true, "lies": true,
 	"whispers": true, "sees": true, "reads": true, "does": true, "aside": true,
-	// 컴파일러 IR 의 나머지 동사(render_scene 이 그대로 넘긴다)
+	// remaining verbs of the compiler IR (render_scene passes them through as is)
 	"asks": true, "orders": true, "shows": true, "decrees": true, "sends": true, "writes": true, "thinks": true, "enacts": true,
 }
 
@@ -78,7 +78,7 @@ func LoadScene(path string) (Scene, error) {
 	return s, nil
 }
 
-// ParseScene 은 Scene JSON(파일 또는 PG render_scene)을 엄격하게 읽고 검사한다: 모르는 키, 뒤에 붙은 데이터는 오류다.
+// ParseScene strictly reads and validates Scene JSON (a file or PG render_scene): unknown keys and trailing data are errors.
 func ParseScene(b []byte) (Scene, error) {
 	var s Scene
 	dec := json.NewDecoder(bytes.NewReader(b))
@@ -110,7 +110,7 @@ func (s Scene) FactByID(id string) (Fact, bool) {
 	return Fact{}, false
 }
 
-// Canon 은 사실 ID 의 정규 명제(비교 키). 카탈로그에 없거나 canon 이 없으면 ID 그대로.
+// Canon is the canonical proposition of a fact ID (the comparison key). If it is not in the catalog or there is no canon, the ID as is.
 func (s Scene) Canon(id string) string {
 	if f, ok := s.FactByID(id); ok && f.Canon != "" {
 		return f.Canon

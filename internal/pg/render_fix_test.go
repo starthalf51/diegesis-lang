@@ -9,8 +9,8 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
-// withhold 의 until 이 비트(장면#비트)면 그 장면을 접두어로 찾는다. LIKE 는 장면 ID 의 '_' 를 와일드카드로 읽어
-// a_1 이 aX1#b 를 잡는다: aX1(앞) 에서 풀린 사실이 a_1(뒤) 까지 숨겨진 것으로 남으면 안 된다.
+// If withhold's until is a beat (scene#beat), the scene is found by prefix. LIKE reads the '_' of a scene ID as a wildcard,
+// so a_1 would catch aX1#b: a fact resolved in aX1 (earlier) must not stay hidden through a_1 (later).
 func TestRenderWithheldUntilBeatIsPrefix(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene aX1
@@ -36,7 +36,7 @@ scene a_1
 	if len(s.Withheld) != 0 {
 		t.Errorf("withheld = %v, want none (released in aX1)", s.Withheld)
 	}
-	// 사실은 지은이의 ID(np)로 싣고 정규 명제(not p)는 canon 에만 둔다.
+	// The fact is carried by the author's ID (np) and the canonical proposition (not p) is placed only in canon.
 	if !slices.ContainsFunc(s.Facts, func(f render.Fact) bool { return f.ID == "np" && f.Canon == "not p" }) {
 		t.Errorf("facts = %+v, want authored np with canon \"not p\"", s.Facts)
 	}

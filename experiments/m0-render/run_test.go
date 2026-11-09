@@ -82,10 +82,10 @@ func TestWriteResultsMarksUnknown(t *testing.T) {
 	}
 	b, _ := os.ReadFile(p)
 	s := string(b)
-	if !strings.Contains(s, "| key | 손실 | 환각 | 누출 | 추출오류 | 비용($) | 판정(1-5) |") ||
+	if !strings.Contains(s, "| key | missed | hallucinated | leaked | extract error | cost($) | verdict(1-5) |") ||
 		!strings.Contains(s, "| b.a.en | ? | ? | ? | render stopped: refusal | 0.0000 |  |") ||
 		!strings.Contains(s, "| z.a.en | 1 | 0 | 0 |  | 0.1500 |  |") ||
-		!strings.Contains(s, "총비용: $0.1500") || strings.Index(s, "b.a.en") > strings.Index(s, "z.a.en") {
+		!strings.Contains(s, "Total cost: $0.1500") || strings.Index(s, "b.a.en") > strings.Index(s, "z.a.en") {
 		t.Errorf("table:\n%s", s)
 	}
 }

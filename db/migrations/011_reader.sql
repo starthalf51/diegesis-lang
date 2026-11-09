@@ -1,23 +1,23 @@
--- 011: 독자 모델(플랜 2 Task 7, Review Focus 2). 독자가 언제 무엇을 어떤 값으로 믿는지는 전부 여기서 정한다.
---   공개: 보여 준(shown) 장면의 단언(assertive: tells says whispers hails lies shows decrees sends)·지각(sees, reads 는
---     그 문서에 담긴 명제)·방백(aside)·생각(thinks)의 내용이 그 장면의 discourse_ord 에 독자에게 공개된다.
---     asks·orders·writes·does 는 공개하지 않는다. 보이지 않는 사건(event)·기록(account)의 행위도 공개하지 않는다.
---   독자는 들은 대로 믿는다: value = 단언된 값(거짓말도 그대로 믿는다). 명제는 (기저 사실, 값)으로 정규화한다
---     (`fact np = not p` 를 들으면 (p, false)). 나중에 반대 값이 공개되면 그 위치에서 갱신된다.
---     한 장면 안에서는 마지막 공개가 이긴다(장면 단위 — 위치는 장면 하나가 한 칸이다).
---   `withhold P until X`: withhold 가 든 장면의 위치부터 X 의 서술 위치(X 가 든 보이는 장면) 전까지 P 의 공개를 막는다.
---     막힌 공개는 사라지지 않고 X 의 위치로 미뤄진다(그 장면의 맨 앞). X 가 보이는 장면에 없으면 끝내 공개되지 않는다.
---   `reveal P [at T]`: 그 위치(T 가 든 보이는 장면, 없으면 reveal 이 든 장면)에 P 를 공개한다. withhold 가 막지 않는다.
--- ponytail: 위치 = 장면 단위 discourse_ord. 장면 안 순서는 마지막 공개를 고를 때만 쓴다. 문장 단위 위치가 필요하면 sub 를 내보낸다.
+-- 011: reader model (Plan 2 Task 7, Review Focus 2). Everything about when the reader believes what, and at what value, is decided here.
+--   Disclosure: contents of shown scenes' assertions (assertive: tells says whispers hails lies shows decrees sends), perceptions (sees; reads =
+--     the propositions the document holds), asides (aside) and thoughts (thinks) are disclosed to the reader at that scene's discourse_ord.
+--     asks, orders, writes and does disclose nothing. Acts in unseen events and accounts disclose nothing either.
+--   The reader believes what was heard: value = the asserted value (a lie is believed as is). A proposition is normalized to (base fact, value)
+--     (hearing `fact np = not p` gives (p, false)). If the opposite value is disclosed later, it is updated at that position.
+--     Within one scene the last disclosure wins (scene granularity — a position is one scene slot).
+--   `withhold P until X`: blocks disclosure of P from the position of the scene containing the withhold until X's narration position (the visible scene containing X).
+--     A blocked disclosure does not vanish; it is deferred to X's position (the very start of that scene). If X is not in a visible scene, it is never disclosed.
+--   `reveal P [at T]`: discloses P at that position (the visible scene containing T, else the scene containing the reveal). withhold does not block it.
+-- ponytail: position = scene-level discourse_ord. Order within a scene is used only to pick the last disclosure. If sentence-level positions are needed, export sub.
 SET LOCAL search_path = public, ag_catalog;
 
--- 명제 p ≡ (base = val): 별칭은 따라가고 부정은 값을 뒤집는다. 행이 없는 `w/not x` 도 부정이다.
+-- Proposition p ≡ (base = val): follow aliases, negation flips the value. A `w/not x` with no row is also a negation.
 CREATE FUNCTION prop_norm(w text, p text, OUT base text, OUT val bool)
 LANGUAGE plpgsql STABLE SET search_path = public, ag_catalog AS $$
 DECLARE d jsonb;
 BEGIN
   base := p; val := true;
-  FOR i IN 1..32 LOOP -- 별칭 순환 방지
+  FOR i IN 1..32 LOOP -- guard against alias cycles
     SELECT x.def INTO d FROM fact x WHERE x.work_id = w AND x.id = base;
     IF NOT FOUND AND base LIKE w || '/not %' THEN
       base := substr(base, length(w) + 6); val := NOT val;
@@ -31,22 +31,22 @@ BEGIN
   END LOOP;
 END $$;
 
--- 시점이 든 보이는 장면의 서술 위치(장면 시작·끝·비트·행위). 보이는 장면 밖이면 NULL.
+-- Narration position of the visible scene containing the point (scene start/end, beat, act). NULL outside visible scenes.
 CREATE FUNCTION point_ord(w text, pt text) RETURNS int
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   SELECT s.discourse_ord FROM scene s
    WHERE s.work_id = w AND s.shown AND (pt IN (s.start_pt, s.end_pt) OR starts_with(pt, s.id || '#'))
    ORDER BY s.discourse_ord LIMIT 1 $$;
 
--- 상태 술어: 시점마다 참거짓이 정해지는 기저 사실(holds(역할, x) = 역할 보유, alive(x) = 출생·사망 시점).
+-- State predicates: base facts whose truth is fixed per point (holds(role, x) = holds the role, alive(x) = birth/death points).
 CREATE FUNCTION fact_is_state(w text, b text) RETURNS bool
 LANGUAGE sql STABLE SET search_path = public, ag_catalog
   AS $$ SELECT coalesce((SELECT def->>'pred' IN ('holds', 'alive') FROM fact WHERE work_id = w AND id = b), false) $$;
 
--- 기저 사실 b 가 시점 at 에 참인가: true / false / NULL(정해지지 않음).
---   holds(r, x): x 의 r 보유 구간(role_span, 반열림 [from, until)) 하나가 at 을 확실히 덮으면 참, 모든 구간이 확실히
---     비켜 가면(구간이 없어도) 거짓. alive(x): x.born ≤ at < x.died 가 확실하면 참, at < born 이나 died ≤ at 이 확실하면 거짓.
---   그 밖의 사실은 시점과 무관하게 선언된 진리값(true/false). derived·unknown 은 NULL.
+-- Whether base fact b is true at point at: true / false / NULL (undetermined).
+--   holds(r, x): true if one of x's holding intervals for r (role_span, half-open [from, until)) certainly covers at; false if every interval
+--     certainly misses (even with no intervals). alive(x): true if x.born ≤ at < x.died is certain; false if at < born or died ≤ at is certain.
+--   Any other fact has its declared truth value (true/false) regardless of point. derived and unknown are NULL.
 CREATE FUNCTION truth_at(w text, b text, at text) RETURNS bool
 LANGUAGE plpgsql STABLE SET search_path = public, ag_catalog AS $$
 DECLARE d jsonb; t text; x text; born text; died text;
@@ -83,7 +83,7 @@ BEGIN
   RETURN CASE t WHEN 'true' THEN true WHEN 'false' THEN false END;
 END $$;
 
--- 독자 공개 하나하나: (기저 사실, 값, 서술 위치, 장면 안 순번, 경로, 행위). sub 는 같은 위치에서 마지막을 고르는 데만 쓴다.
+-- Each reader disclosure: (base fact, value, narration position, index within scene, path, act). sub is used only to pick the last one at the same position.
 CREATE FUNCTION reader_events(w text) RETURNS TABLE (fact_id text, value bool, ord int, sub int, via text, act_id text)
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   WITH told AS (
@@ -116,8 +116,8 @@ LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
     CROSS JOIN LATERAL prop_norm(w, r.prop_id) z
    WHERE r.work_id = w AND r.prop_id IS NOT NULL AND coalesce(point_ord(w, r.at_pt), sr.discourse_ord) IS NOT NULL $$;
 
--- 독자 믿음의 변화점: from_ord 부터 독자는 fact_id = value 라고 믿는다(처음 공개, 그리고 값이 바뀔 때마다 한 행).
--- f 가 주어지면 그 명제의 기저 사실만(fact_id 는 기저 사실, value 도 기저 사실의 값이다). NULL 이면 모든 사실.
+-- Change points of reader belief: from from_ord the reader believes fact_id = value (the first disclosure, then one row each time the value changes).
+-- If f is given, only that proposition's base fact (fact_id is the base fact, value is also the base fact's value). NULL means all facts.
 CREATE FUNCTION reader_knows(w text, f text DEFAULT NULL) RETURNS TABLE (fact_id text, from_ord int, value bool)
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   WITH e AS (SELECT * FROM reader_events(w) x WHERE f IS NULL OR x.fact_id = (SELECT base FROM prop_norm(w, f))),
@@ -126,15 +126,15 @@ LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   ch AS (SELECT l.*, lag(l.value) OVER (PARTITION BY l.fact_id ORDER BY l.ord) prev FROM last l)
   SELECT ch.fact_id, ch.ord, ch.value FROM ch WHERE ch.prev IS DISTINCT FROM ch.value ORDER BY 1, 2 $$;
 
--- 서술 위치 o 에서(그 장면의 공개까지 포함) 독자가 믿는 (사실, 값).
+-- The (fact, value) the reader believes at narration position o (including that scene's disclosures).
 CREATE FUNCTION reader_state(w text, o int) RETURNS TABLE (fact_id text, value bool)
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   SELECT DISTINCT ON (k.fact_id) k.fact_id, k.value FROM reader_knows(w) k WHERE k.from_ord <= o
    ORDER BY k.fact_id, k.from_ord DESC $$;
 
--- 인물 e 가 시점 at 에 기저 사실 fb 를 fv 로 아는가: 'yes' / 'opp'(반대로 믿는다) / 'maybe'(순서가 정해지지 않은 출처뿐) / 'no'.
---   출처 = e(또는 e 가 든 그룹)의 believes 행(의심이 거둔 행은 until_pt 부터 빠진다), e 자신이 단언(거짓말 제외)·방백·생각한 내용.
---   출처 시점은 at 보다 확실히 앞(같은 시점은 선언된 믿음만). 배경 지식(시점 없음)은 처음부터.
+-- Whether character e knows base fact fb as fv at point at: 'yes' / 'opp' (believes the opposite) / 'maybe' (only sources with undetermined order) / 'no'.
+--   Sources = believes rows of e (or a group e belongs to) (rows withdrawn by doubt drop out from until_pt), and what e itself asserted (not lies), asided or thought.
+--   The source point is definitely before at (the same point only for declared beliefs). Background knowledge (no point) counts from the start.
 CREATE FUNCTION char_knows(w text, ent text, fb text, fv bool, at text) RETURNS text
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   WITH src AS (
@@ -151,6 +151,6 @@ LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
     SELECT v, (pt IS NULL OR ((pt <> at OR declared) AND precedes(w, pt, at) = 'yes'))
               AND (upt IS NULL OR (precedes(w, at, upt) = 'yes' AND precedes(w, upt, at) <> 'yes')) AS sure
       FROM src WHERE (pt IS NULL OR ((pt <> at OR declared) AND precedes(w, pt, at) <> 'no'))
-                 AND (upt IS NULL OR precedes(w, upt, at) <> 'yes')) -- 확실히 거둬진 믿음은 maybe 도 아니다
+                 AND (upt IS NULL OR precedes(w, upt, at) <> 'yes')) -- a definitely withdrawn belief is not even maybe
   SELECT CASE WHEN bool_or(sure AND v = fv) THEN 'yes' WHEN bool_or(sure AND v <> fv) THEN 'opp'
               WHEN bool_or(v = fv) THEN 'maybe' ELSE 'no' END FROM held $$;

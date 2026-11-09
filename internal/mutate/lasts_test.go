@@ -7,7 +7,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/mutate"
 )
 
-// lasts 간선(장면 start→end)은 shift-duration 대상이고, swap-order 대상이 아니다(뒤집어도 같은 간선이다).
+// A lasts edge (scene start→end) is a shift-duration target and not a swap-order target (flipped, it is the same edge).
 func TestLastsMutants(t *testing.T) {
 	w := build(t, map[string]string{"t.dieg": "module t.s\nwork t \"T\"\nscene 1\n  lasts 0d..1d\n"})
 	ms := mutate.Generate(w, 1, 0)

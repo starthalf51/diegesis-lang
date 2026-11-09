@@ -86,11 +86,11 @@ func targets(ms []mutate.Mutation, op string) []string {
 func TestGenerateTargets(t *testing.T) {
 	ms := mutate.Generate(build(t, map[string]string{"t.dieg": fixture}), 1, 0)
 	for op, want := range map[string][]string{
-		// a tells b: p → b 가 2 에서 p 를 쓴다. b tells a: r → a 는 r 을 안 쓴다. c(oracle 그룹) tells → a 가 q 를 안 쓴다
+		// a tells b: p → b uses p in 2. b tells a: r → a does not use r. c (oracle group) tells → a does not use q
 		"drop-tells": {"1#a2"},
-		// b 는 1 에서 p 를 듣고 2 에서 쓴다. a·c 는 들은 것을 다른 데서 쓰지 않는다
+		// b hears p in 1 and uses it in 2. a and c do not use what they heard elsewhere
 		"drop-enter": {"b@1"},
-		// 쓰는 행위: a tells p, b tells r(배경 지식이라 제외), b tells d p. c(면제)는 제외
+		// Using acts: a tells p, b tells r (excluded as background knowledge), b tells d p. c (exempt) is excluded
 		"move-before":    {"1#a2", "2#a1"},
 		"drop-setup":     {"s"},
 		"drop-payoff":    {"s"},
@@ -105,7 +105,7 @@ func TestGenerateTargets(t *testing.T) {
 		if len(m.Expect) == 0 {
 			t.Errorf("%s %s: no expected rule", m.Op, m.Target)
 		}
-		// "뒤에 쓰는가" 는 하네스가 PG 로 판정할 쌍으로 넘긴다
+		// "Is it used later" is passed to the harness as pairs to judge with PG
 		if (m.Op == "drop-tells" || m.Op == "drop-enter" || m.Op == "flip-perceived") && len(m.Pairs) == 0 {
 			t.Errorf("%s %s: no (heard, used) pairs", m.Op, m.Target)
 		}
@@ -150,7 +150,7 @@ func TestApplyCopies(t *testing.T) {
 			t.Errorf("Rename left the old work prefix inside %q", f.ID)
 		}
 	}
-	// move-before: 출처(Before) 1초 앞으로. 원래 장면 사슬의 간선은 떼고 원점 간선만 남긴다.
+	// move-before: 1 second before the source (Before). Drop the edges of the original scene chain and keep only the origin edge.
 	mv := mutate.Apply(w, mutate.Mutation{Op: "move-before", Target: "t/t.s/2#a1", Before: []string{"t/t.s/1#a2"}})
 	var into, outof []string
 	for _, e := range mv.TimeEdges {
@@ -166,11 +166,11 @@ func TestApplyCopies(t *testing.T) {
 	}
 }
 
-// 맥베스에서 drop-tells 한 건(1.2 로스가 덩컨에게 코더의 반역을 알림) → 그 자리에 있던 앵거스가
-// 1.3 에서 같은 말을 할 때 출처가 없다 → info-flow.
+// One drop-tells in Macbeth (1.2 Ross tells Duncan of Cawdor's treason) → Angus, who was there,
+// has no source when he says the same thing in 1.3 → info-flow.
 func TestMacbethDropTellsDetected(t *testing.T) {
 	if os.Getenv("SL_PG_DSN") == "" {
-		t.Fatal("SL_PG_DSN 이 필요하다")
+		t.Fatal("SL_PG_DSN is required")
 	}
 	w := corpus(t, "../../corpus/macbeth")
 	var m *mutate.Mutation
@@ -187,7 +187,7 @@ func TestMacbethDropTellsDetected(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(pool.Close) // 아래 정리보다 나중에 돈다(LIFO)
+	t.Cleanup(pool.Close) // runs after the cleanup below (LIFO)
 	id := fmt.Sprintf("macbeth~t%d", rand.Int63())
 	t.Cleanup(func() {
 		pool.Exec(ctx, `DELETE FROM work WHERE id=$1`, id)
@@ -229,11 +229,11 @@ func corpus(t *testing.T, dir string) *ir.Work {
 	return build(t, files)
 }
 
-// Task 11: 페넬로페의 포옹(23.19, because beggar_is_odysseus)을 19권(19.34 앞)으로 옮기면 그녀는 아직 모른다 —
-// 19.30 아테나가 눈길을 돌렸고 그녀가 믿게 되는 것은 23.18 침대의 비밀이다. because-unbelieved 로 잡혀야 한다.
+// Task 11: if Penelope's embrace (23.19, because beggar_is_odysseus) is moved to book 19 (before 19.34) she does not know yet —
+// in 19.30 Athena turned the gaze away, and what she comes to believe is the secret of the bed at 23.18. It must be caught by because-unbelieved.
 func TestOdysseyEmbraceInto19Detected(t *testing.T) {
 	if os.Getenv("SL_PG_DSN") == "" {
-		t.Fatal("SL_PG_DSN 이 필요하다")
+		t.Fatal("SL_PG_DSN is required")
 	}
 	w := corpus(t, "../../corpus/odyssey")
 	var embrace, in19 string
@@ -294,8 +294,8 @@ scene 1
   a tells b: p
 `
 
-// Task 2: 시간 연산자. shift-duration = `by a..b` 구간 하나를 +50년, swap-order = 같은 사람의 born→died 간선이나
-// `before` 간선 하나를 뒤집는다(before → after). 대상 = "from to"(간선의 두 끝점).
+// Task 2: time operators. shift-duration = +50 years on one `by a..b` interval, swap-order = flips the born→died edge of the same person or one
+// `before` edge (before → after). Target = "from to" (the edge's two endpoints).
 func TestGenerateTimeOps(t *testing.T) {
 	w := build(t, map[string]string{"t.dieg": timeFixture})
 	ms := mutate.Generate(w, 1, 0)
@@ -322,12 +322,12 @@ func TestGenerateTimeOps(t *testing.T) {
 			if e := edge(mutate.Apply(w, m), "a.born", "a.died"); e == nil || *e.Min != 120*year || *e.Max != 120*year {
 				t.Errorf("shift-duration: edge %+v, want 70y + 50y", e)
 			}
-			// 지점: 두 끝점과 그 사람(a)의 행위
+			// Site: the two endpoints and the acts of that person (a)
 			if !slices.Contains(m.Site, "t/t.s/a.died") || !slices.Contains(m.Site, "t/t.s/1#a1") {
 				t.Errorf("shift-duration site = %v, want a.died and a's act 1#a1", m.Site)
 			}
 		case m.Op == "swap-order" && m.Target == "t/t.s/e.end t/t.s/1.start":
-			// `e before 1` → `e after 1`: e.end→1.start 를 1.end→e.start 로(장면 경계는 반대쪽 끝으로 바꾼다)
+			// `e before 1` → `e after 1`: e.end→1.start becomes 1.end→e.start (a scene boundary switches to the opposite end)
 			if c := mutate.Apply(w, m); edge(c, "1.end", "e.start") == nil || edge(c, "e.end", "1.start") != nil {
 				t.Error("swap-order: the before edge was not turned into after")
 			}
@@ -345,7 +345,7 @@ func TestGenerateTimeOps(t *testing.T) {
 	}
 }
 
-// 지점: drop-tells 1#a2(a tells b: p) = 그 행위, 그 장면, p 를 쓰는 행위(2#a1 b tells d: p, 1#a2 자신).
+// Site: drop-tells 1#a2 (a tells b: p) = that act, that scene, the acts that use p (2#a1 b tells d: p, and 1#a2 itself).
 func TestGenerateSites(t *testing.T) {
 	for _, m := range mutate.Generate(build(t, map[string]string{"t.dieg": fixture}), 1, 0) {
 		if len(m.Site) == 0 {

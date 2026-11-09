@@ -1,4 +1,4 @@
-# apache/age PG18 1.8.0 (Docker Hub) + pgvector v0.8.7 (github.com/pgvector/pgvector tags) 소스 빌드
+# apache/age PG18 1.8.0 (Docker Hub) + pgvector v0.8.7 (github.com/pgvector/pgvector tags) built from source
 FROM apache/age:release_PG18_1.8.0
 ARG PGVECTOR_TAG=v0.8.7
 RUN apt-get update \

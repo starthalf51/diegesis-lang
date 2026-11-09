@@ -1,9 +1,9 @@
-// corpus-ab 는 render-check 코퍼스 장면(corpus/*/expect.yaml 의 render_scene) × 백엔드 전부를 단일(RenderVerified2, 현 기본)
-// 렌더러로 렌더·검증하고 쌍마다 JSON·산문을 남긴다. 하드 호출 예산이 있다.
+// corpus-ab renders and verifies every render-check corpus scene (render_scene in corpus/*/expect.yaml) × backend with the single (RenderVerified2, the current default)
+// renderer and leaves JSON and prose per pair. There is a hard call budget.
 //
 //	go run ./tools/corpus-ab -budget 100 -out examples/corpus-ab/p1
 //
-// 저장소 루트에서 돌린다. 렌더는 haiku/medium, 재추출은 sonnet/low (dieg render --verify 기본값과 같다).
+// Run from the repository root. Render is haiku/medium, re-extraction is sonnet/low (same as the dieg render --verify defaults).
 package main
 
 import (
@@ -123,7 +123,7 @@ func main() {
 		effReport(*out, countLines(filepath.Join(*out, "calls.jsonl")))
 		return
 	}
-	if *spike == "sc-tier1" { // "tier1" 은 기존 실호출 스파이크 이름이라 겹치지 않게 sc- 를 붙인다
+	if *spike == "sc-tier1" { // "tier1" is the name of an existing real-call spike, so prefix sc- to avoid a collision
 		tier1(*out)
 		return
 	}

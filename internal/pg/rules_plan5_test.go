@@ -8,7 +8,7 @@ const goneCast = `place room "R"
 character minjae "M"
 `
 
-// 떠난 인물(status = gone)이 이후 장면에서 말하면 경고한다.
+// Warn if a character who left (status = gone) speaks in a later scene.
 func TestStaysGoneWarns(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, goneCast+`scene 2 at room
@@ -25,7 +25,7 @@ scene 6 at room
 	}
 }
 
-// present 로 되돌린 뒤의 행위는 경고하지 않는다.
+// An act after returning to present does not warn.
 func TestStaysGoneReturn(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, goneCast+`scene 2 at room
@@ -46,7 +46,7 @@ scene 6 at room
 	}
 }
 
-// 떠난 인물의 enter 도 경고한다.
+// The enter of a character who left warns too.
 func TestStaysGoneEnter(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, goneCast+`scene 2 at room

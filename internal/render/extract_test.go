@@ -52,7 +52,7 @@ func TestExtractPromptScopesNewEventsAndIgnoresWorldKnowledge(t *testing.T) {
 	}
 }
 
-// 지각(보고 듣고 알아봄)은 sees 액트이고, 암시로 전한 사실도 그 액트의 fact 다(live 판정: 닭 울음·정체 고백 누락).
+// Perception (seeing, hearing, recognizing) is a sees act, and a fact conveyed by implication is that act's fact too (live verdict: the rooster's crow and the identity confession were missed).
 func TestExtractPromptCoversPerceptionAndImplication(t *testing.T) {
 	sys, _ := BuildExtractPrompt(Scene{}, "en", "")
 	for _, want := range []string{`record it as verb "sees"`, "can convey a fact without stating it"} {
@@ -62,7 +62,7 @@ func TestExtractPromptCoversPerceptionAndImplication(t *testing.T) {
 	}
 }
 
-// 남이 한 말을 듣는 것은 말한 사람의 액트다: 듣는 쪽에 sees 를 덧붙이지 않는다(live 판정: 맥베스가 들은 말마다 sees 가 붙어 Jaccard 하락).
+// Hearing what someone else said is the speaker's act: do not add sees to the hearer (live verdict: sees was attached to every line Macbeth heard and Jaccard dropped).
 func TestExtractPromptHearingSpeechIsNotPerception(t *testing.T) {
 	sys, _ := BuildExtractPrompt(Scene{}, "en", "")
 	if !strings.Contains(sys, "Hearing what another character says is part of that speaker's act") {
@@ -70,7 +70,7 @@ func TestExtractPromptHearingSpeechIsNotPerception(t *testing.T) {
 	}
 }
 
-// 한 액트가 사실 여럿을 전하면 사실마다 한 번씩 적는다(live 판정: 같은 대사를 백엔드마다 다른 사실 하나로 골라 갈라졌다).
+// When one act conveys several facts, write once per fact (live verdict: the same line was split by each backend picking a different one of the facts).
 func TestExtractPromptOneEntryPerFact(t *testing.T) {
 	sys, _ := BuildExtractPrompt(Scene{}, "en", "")
 	if !strings.Contains(sys, "list that act once per fact") {

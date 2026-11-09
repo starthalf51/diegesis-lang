@@ -1,6 +1,6 @@
-// scenereq 는 이미 적재한 작품(`dieg load <dir>`)의 장면별 렌더 요청(render_scene JSON, dieg render 가 렌더러에 넘기는 입력)을
-// out-dir/<scene>.json 으로 쓰고 sha256 을 찍는다. 수정 전후 요청을 비교해 다시 렌더할 장면을 고르는 데만 쓴다.
-// 사용: go run ./examples/idea-to-novel/tools/scenereq <work> <out-dir> <scene...>
+// scenereq writes each scene's render request (render_scene JSON, the input dieg render hands to the renderer) of an already loaded work (`dieg load <dir>`)
+// to out-dir/<scene>.json and prints the sha256. It is used only to compare requests before and after a revision and pick the scenes to re-render.
+// Usage: go run ./examples/idea-to-novel/tools/scenereq <work> <out-dir> <scene...>
 package main
 
 import (

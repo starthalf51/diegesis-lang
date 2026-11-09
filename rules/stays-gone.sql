@@ -4,13 +4,13 @@
 -- target: act
 -- summary: 이야기에서 떠났다(status gone)고 선언된 인물이 다시 행동하거나 등장한다
 --
--- 규약: 인물이 이야기에서 떠나면 `attr <X>.status = gone`, 돌아오면 `attr <X>.status = present`.
--- 대상: 행위자 X 의 행위(target act), 그리고 X 의 무대 출석(enter; presence 행에는 id 가 없어
---   target = presence, id = <장면>/<X>, 소스 위치는 enter 의 src_id).
--- 시점에 유효한 값: object-location 과 같다 — account 밖의 X.status 단언 중 대상보다 반드시 앞서고(precedes = yes),
---   그 뒤에 또 다른 X.status 단언이 끼지 않은 것. 유효한 값이 여럿이면 하나라도 gone 이 아니면 조용하다
---   (순서가 정해지지 않았으면 되돌아온 것일 수 있다).
--- 위반: 유효한 값이 있고 모두 gone 이다.
+-- Convention: when a character leaves the story `attr <X>.status = gone`, when they return `attr <X>.status = present`.
+-- Target: acts of actor X (target act), and X's stage appearance (enter; presence rows have no id, so
+--   target = presence, id = <scene>/<X>, source position is the enter's src_id).
+-- Value valid at the point: same as object-location — among X.status assertions outside an account, those necessarily before the target (precedes = yes),
+--   with no other X.status assertion in between. If several values are valid it is quiet unless every one is gone
+--   (if the order is undetermined they may have come back).
+-- Violation: there are valid values and all are gone.
 WITH origin AS (SELECT id FROM point WHERE work_id = $1 AND kind = 'origin' ORDER BY id LIMIT 1),
 st AS (
   SELECT x.entity_id, x.value, x.src_id, coalesce(x.at_pt, (SELECT id FROM origin)) AS pt

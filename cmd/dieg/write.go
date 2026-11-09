@@ -156,7 +156,7 @@ func (k *counter) Complete(ctx context.Context, system, user string) (render.Res
 	return k.c.Complete(ctx, system, user)
 }
 
-// cmdWrite runs `dieg write <idea.txt | "아이템 문장"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--render-effort low|medium|high] [--force]`.
+// cmdWrite runs `dieg write <idea.txt | "item sentence"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--render-effort low|medium|high] [--force]`.
 // Exit 1 when the code is not clean after the rounds (nothing rendered), 3 when a rendered scene failed verification.
 // --scenes N renders only the first N shown scenes (to fit a call budget).
 func cmdWrite(args []string) int {

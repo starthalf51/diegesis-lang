@@ -11,8 +11,8 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
-// patternFixtures: 패턴마다 매치 1건(want = "대상/span_from-span_to") + 비매치 1건(같은 상황에서 조건 하나를 뺀 것).
-// 실제 경로(syntax → sema → Load)로 적재한다. 공통 선언은 lint_test 의 cast(o = knows oracle, p 참, np = not p).
+// patternFixtures: per pattern one match (want = "target/span_from-span_to") + one non-match (the same situation with one condition removed).
+// Loaded through the real path (syntax → sema → Load). The common declaration is lint_test's cast (o = knows oracle, p true, np = not p).
 var patternFixtures = map[string]struct {
 	match string
 	want  []string
@@ -35,7 +35,7 @@ scene 2
   payoff gun
 `,
 	},
-	// 상태 술어: 예언 시점에 b 는 살아 있고(참이 아님) 2 의 끝에는 죽어 있다.
+	// State predicate: at the time of the prophecy b is alive (not true) and dead at the end of 2.
 	"prophecy-fulfilled": {
 		match: `fact b_dead = not alive(b)
 scene 1
@@ -136,7 +136,7 @@ scene 2
   c tells b: not q
 `,
 	},
-	// 거짓말 → b 가 믿고 c 에게 전한다 → c 가 그 믿음으로 행동한다. 비매치: 같은 사슬인데 출처가 거짓말이 아니다.
+	// A lie → b believes and tells c → c acts on that belief. Non-match: the same chain but the source is not a lie.
 	"deception-chain": {
 		match: `fact q "Q" false
 scene 1
@@ -195,7 +195,7 @@ scene 2
 	},
 }
 
-// matches 는 한 패턴의 매치를 "대상(작품 ID 뺀 것)/span_from-span_to" 로 모은다(NULL 구간은 "-").
+// matches collects one pattern's matches as "target (without work ID)/span_from-span_to" (a NULL span is "-").
 func matches(ms []pg.Match, pattern, work string) []string {
 	var out []string
 	for _, m := range ms {
@@ -251,7 +251,7 @@ func TestPattern_deception_chain(t *testing.T)    { checkPattern(t, "deception-c
 func TestPattern_counter_deception(t *testing.T)  { checkPattern(t, "counter-deception") }
 func TestPattern_recognition(t *testing.T)        { checkPattern(t, "recognition") }
 
-// 모든 패턴 파일에 픽스처가 있고, 헤더가 형식대로다.
+// Every pattern file has a fixture, and the header is in the right format.
 func TestPatternLibrary(t *testing.T) {
 	ps, err := pg.PatternDefs()
 	if err != nil {
@@ -267,8 +267,8 @@ func TestPatternLibrary(t *testing.T) {
 	}
 }
 
-// 코더형 예언: 예언 시점에 이미 참이지만(역할 보유) 청자는 모른다(미정) → 예언자가 아닌 사람이 참일 때 다시 단언한다.
-// 그 사람이 예언에서 들은 것을 되풀이하면(출처가 예언자) 확인이 아니다.
+// Coder-type prophecy: already true at the time of the prophecy (role holding) but the listener does not know (undetermined) → a non-prophet asserts it again when it is true.
+// If that person repeats what they heard from the prophecy (the source is the prophet), it is not confirmation.
 func TestPatternProphecyConfirmed(t *testing.T) {
 	ms, w := runPatterns(t, `role chief "Chief"
   held a from start
@@ -297,8 +297,8 @@ scene 1
 	}
 }
 
-// 작가 선언: 매치가 없으면 lint 경로의 warn pattern-missing(억제 가능), 매치가 있으면 진단 없음.
-// `at <scene>` 은 그 장면에 걸친 매치만 센다.
+// Author declaration: with no match, lint-path warn pattern-missing (suppressible); with a match, no diagnostic.
+// `at <scene>` counts only matches touching that scene.
 func TestPatternMissing(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `pattern red-herring
@@ -322,7 +322,7 @@ scene 3
 	}
 }
 
-// 의심으로 확실히 거둬진 믿음은 앎이 아니다(maybe 도 아니다): 들었다가 의심한 인물은 다음 장면에서 아이러니의 대상이다.
+// A belief definitely withdrawn by doubt is not knowledge (not even maybe): a character who heard and then doubted is the object of irony in the next scene.
 func TestIronyAfterDoubt(t *testing.T) {
 	ms, w := runPatterns(t, `scene 1
   enter a, b
@@ -342,7 +342,7 @@ scene 3
 	}
 }
 
-// 수정 1회차: lint 의 부분 실행(선언된 패턴만)이 전체 결과(pattern_result 뷰)를 덮지 않는다.
+// Fix round 1: lint's partial run (declared patterns only) does not overwrite the full result (the pattern_result view).
 func TestPatternResultSurvivesLint(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `fact q "Q" false
@@ -370,7 +370,7 @@ scene 2
 	}
 }
 
-// 수정 1회차: 기록이 없을 뿐 그 사실에 닿지 않은 인물은 아이러니에 세지 않는다(c 는 귓속말을 듣지 못했다).
+// Fix round 1: a character who merely has no record but did not touch the fact is not counted in the irony (c did not hear the whisper).
 func TestIronyOnlyEngagedCharacters(t *testing.T) {
 	ms, w := runPatterns(t, `scene 1
   enter a, b
@@ -399,7 +399,7 @@ scene 2
 	}
 }
 
-// 수정 1회차: 확인은 예언을 들은 사람에게 해야 한다. 예언과 무관한 사람들 사이에서 참을 밝히는 것은 실현이 아니다.
+// Fix round 1: confirmation must be made to someone who heard the prophecy. Revealing the truth among people unrelated to the prophecy is not realization.
 func TestProphecyConfirmationNeedsTheHearer(t *testing.T) {
 	ms, w := runPatterns(t, `role chief "Chief"
   held a from start
@@ -417,8 +417,8 @@ scene 1
 	}
 }
 
-// enacts(공연·재연): 무대 위 모두가 청중이지만 단언이 아니라 믿음을 만들지 않는다.
-// 장면 2 의 재연을 본 b 는 장면 3 에서도 p 를 모른다 → 두 장면 모두 아이러니(engaged = enacts 의 청중).
+// enacts (performance/re-enactment): everyone on stage is audience but it is not an assertion and makes no belief.
+// b who watched the re-enactment in scene 2 still does not know p in scene 3 → irony in both scenes (engaged = the audience of enacts).
 func TestEnactsIsNotBelief(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1

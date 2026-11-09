@@ -1,23 +1,24 @@
 services:
   pg:
     build: ./postgres
-    image: story-lang-pg:age1.8.0-pgvector0.8.7
+    image: ghcr.io/starthalf51/diegesis-pg:age1.8.0-pgvector0.8.7
+    pull_policy: missing
     environment:
       POSTGRES_USER: sl
       POSTGRES_PASSWORD: sl
       POSTGRES_DB: sl
-    ports: ["127.0.0.1:55432:5432"] # 반영은 pg 컨테이너를 다시 만들 때(데이터는 볼륨)
+    ports: ["127.0.0.1:55432:5432"] # takes effect when the pg container is recreated (data is in a volume)
     volumes: ["sl_pgdata:/var/lib/postgresql"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sl -d sl"]
       interval: 3s
       retries: 20
 
-  # 비밀번호는 deploy/.env(.env.example 참고)에서 읽는다. 없어도 pg 는 뜬다; ro-init·grafana 는 비어 있으면 안내하고 멈춘다.
-  # sl_ro(015_readonly_role.sql 이 NOLOGIN 으로 만든다)에 로그인 비밀번호를 건다. 비밀번호는 환경변수 SL_RO_PASSWORD.
-  # 역할이 먼저 있어야 하므로 `dieg db migrate` 를 한 번 돌린 뒤에 쓴다. 이미 도는 pg 는 다시 만들지 않는다.
+  # Passwords are read from deploy/.env (see .env.example). pg starts even without it; ro-init and grafana print a notice and stop if they are empty.
+  # Sets the login password on sl_ro (created NOLOGIN by 015_readonly_role.sql). The password is the environment variable SL_RO_PASSWORD.
+  # The role must exist first, so use this after running `dieg db migrate` once. An already running pg is not recreated.
   ro-init:
-    image: story-lang-pg:age1.8.0-pgvector0.8.7
+    image: ghcr.io/starthalf51/diegesis-pg:age1.8.0-pgvector0.8.7
     depends_on:
       pg: {condition: service_healthy}
     restart: "no"

@@ -8,7 +8,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
-// matches: 패턴과 대상이 정확히 같고, SpanFrom 을 적었으면 구간 시작도 같다.
+// matches: pattern and target match exactly, and if SpanFrom is given the span start matches too.
 func (w WantPattern) matches(work string) func(pg.Match) bool {
 	return func(m pg.Match) bool {
 		return m.Pattern == w.Pattern && short(work, m.TargetID) == w.Target &&
@@ -33,17 +33,17 @@ func spanOf(m pg.Match) string {
 	return s(m.SpanFrom) + ".." + s(m.SpanTo)
 }
 
-// patternTables 는 보고서의 기대 패턴 표와 검출된 패턴 전체(선언 여부 포함).
+// patternTables is the report's expected-pattern table and all detected patterns (including whether declared).
 func patternTables(b *strings.Builder, e *Expect, in Input, r Result) {
-	fmt.Fprintf(b, "## 기대 패턴\n\n")
+	fmt.Fprintf(b, "## Expected patterns\n\n")
 	if len(e.Patterns) == 0 {
-		fmt.Fprintf(b, "(없음)\n\n")
+		fmt.Fprintf(b, "(none)\n\n")
 	} else {
-		fmt.Fprintf(b, "| 패턴 | 대상 | span_from | 결과 | 근거 |\n|---|---|---|---|---|\n")
+		fmt.Fprintf(b, "| pattern | target | span_from | result | basis |\n|---|---|---|---|---|\n")
 		for _, w := range e.Patterns {
-			st := "있음"
+			st := "present"
 			if slices.ContainsFunc(r.MissingPatterns, func(x WantPattern) bool { return x.Pattern == w.Pattern && x.Target == w.Target }) {
-				st = "**없음**"
+				st = "**absent**"
 			}
 			from := "-"
 			if w.SpanFrom != nil {
@@ -53,12 +53,12 @@ func patternTables(b *strings.Builder, e *Expect, in Input, r Result) {
 		}
 		fmt.Fprintf(b, "\n")
 	}
-	fmt.Fprintf(b, "## 검출된 패턴\n\n")
+	fmt.Fprintf(b, "## Detected patterns\n\n")
 	if len(in.Patterns) == 0 {
-		fmt.Fprintf(b, "(없음)\n\n")
+		fmt.Fprintf(b, "(none)\n\n")
 		return
 	}
-	fmt.Fprintf(b, "| 패턴 | 대상 | 구간 | 선언 | 기대 |\n|---|---|---|---|---|\n")
+	fmt.Fprintf(b, "| pattern | target | span | declared | expected |\n|---|---|---|---|---|\n")
 	for _, m := range in.Patterns {
 		exp := slices.ContainsFunc(e.Patterns, func(w WantPattern) bool { return w.matches(e.Work)(m) })
 		fmt.Fprintf(b, "| %s | `%s` | %s | %v | %v |\n", m.Pattern, short(e.Work, m.TargetID), spanOf(m), m.Declared, exp)

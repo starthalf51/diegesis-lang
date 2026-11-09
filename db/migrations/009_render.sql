@@ -1,17 +1,17 @@
--- 009: 렌더 요청(Task 12, ADR-010·012). render_scene(작품, 장면) 은 internal/render.Scene 과 같은 모양의 JSON 을 낸다.
---   ID 는 작품 접두어를 뗀 짧은 꼴(lint_short)이다. 사실 ID·문장은 지은이가 쓴 것이고, 정규 명제(lint_canon)는
---   다를 때만 canon 에 싣는다(비교 전용: 별칭끼리 갈라지지 않게 Go diff 가 canon 으로 맞춘다). 내부 비교도 정규 명제로 한다.
---   입·퇴장은 presence 의 바깥 경계로 만든다: from_pt 바로 뒤에 들어오고 to_pt 바로 앞에서 나간다.
---   경계가 행위면 그 행위 앞뒤, 비트 시점이면 그 비트의 첫 행위 앞, 장면 끝이면 마지막 행위 뒤다. 같은 틈에서는 퇴장이 먼저다.
---   장면 시작부터 있는 인물, 출석 기록이 없는 인물(기록(account) 블록)은 on_stage 다.
---   pov_beliefs = 시점 인물이 장면 시작에 확정적으로 아는(lint_known = 2, 의심의 until_pt 반영) 이 장면의 사실.
---   reader_knows = 앞선(서술 순서) 보이는 장면의 행위·reveal 로 독자가 이미 받은 이 장면의 사실.
---   withheld = 이 장면의 서술 위치에서 아직 공개되지 않은 withhold 명제(이 장면의 행위가 전하는 것은 뺀다).
---   previously = 앞선 보이는 장면 셋의 제목과 사실 문장을 이어 붙인 것(LLM 없음).
--- ponytail: 짧은 ID 는 모듈이 달라도 끝 이름이 같으면 겹친다. 겹치는 작품이 생기면 모듈 접두어를 남긴다.
+-- 009: render request (Task 12, ADR-010·012). render_scene(work, scene) emits JSON shaped like internal/render.Scene.
+--   IDs are the short form with the work prefix stripped (lint_short). Fact IDs and sentences are what the author wrote; the canonical proposition (lint_canon) is
+--   put in canon only when it differs (comparison only: so aliases do not split, the Go diff aligns on canon). Internal comparison uses canonical propositions too.
+--   Entries and exits are built from presence's outer bounds: enter just after from_pt, leave just before to_pt.
+--   If the bound is an act, around that act; if a beat point, before that beat's first act; if scene end, after the last act. In the same gap, exits come first.
+--   Characters present from the scene start, and characters with no presence record (account blocks), are on_stage.
+--   pov_beliefs = facts of this scene that the POV character definitely knows at scene start (lint_known = 2, with doubt's until_pt applied).
+--   reader_knows = facts of this scene the reader already received from acts/reveals of earlier visible scenes (in narration order).
+--   withheld = withhold propositions not yet revealed at this scene's narration position (excluding what this scene's acts convey).
+--   previously = the titles and fact sentences of the previous three visible scenes joined together (no LLM).
+-- ponytail: short IDs collide if modules differ but the tail name is the same. If such a work appears, keep the module prefix.
 SET LOCAL search_path = public, ag_catalog;
 
--- 이름: 그 언어 → 언어 없음 → 엔터티 이름 → 짧은 ID.
+-- Name: that language → no language → entity name → short ID.
 CREATE FUNCTION render_name(w text, x text, l text) RETURNS text
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   SELECT coalesce(
@@ -20,16 +20,16 @@ LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
     (SELECT e.name FROM entity e WHERE e.work_id = w AND e.id = x),
     lint_short(x)) $$;
 
--- 사실 문장(영어). 별칭은 따라가고, 부정은 "It is not true that …", 술어는 holds/alive 만 문장으로 푼다.
+-- Fact sentence (English). Follows aliases; negation is "It is not true that …"; only the holds/alive predicates are spelled out as sentences.
 CREATE FUNCTION render_fact_text(w text, f text) RETURNS text
 LANGUAGE plpgsql STABLE SET search_path = public, ag_catalog AS $$
 DECLARE d jsonb; t text;
 BEGIN
-  FOR i IN 1..32 LOOP -- 별칭 순환 방지
+  FOR i IN 1..32 LOOP -- guard against alias cycles
     SELECT x.def, x.text INTO d, t FROM fact x WHERE x.work_id = w AND x.id = f;
-    IF NOT FOUND AND f LIKE w || '/not %' THEN -- lint_neg 가 만든, 행이 없는 부정
+    IF NOT FOUND AND f LIKE w || '/not %' THEN -- a negation with no row, made by lint_neg
       RETURN 'It is not true that ' || render_fact_text(w, substr(f, length(w) + 6));
-    ELSIF d ? 'alias' AND nullif(t, '') IS NULL THEN -- 별칭에 지은이 문장이 있으면 그것을 쓴다(아래 ELSE)
+    ELSIF d ? 'alias' AND nullif(t, '') IS NULL THEN -- if the alias has an author sentence, use it (ELSE below)
       f := d->>'alias';
     ELSIF d ? 'not' THEN
       RETURN 'It is not true that ' || render_fact_text(w, d->>'not');
@@ -47,7 +47,7 @@ BEGIN
   RETURN lint_short(f);
 END $$;
 
--- 작품 안에서 참인가: 별칭은 따라가고 부정은 뒤집는다. truth = false 만 거짓(derived·unknown 은 참으로 둔다).
+-- True within the work: follow aliases, flip negation. Only truth = false is false (derived and unknown count as true).
 CREATE FUNCTION render_fact_true(w text, f text) RETURNS bool
 LANGUAGE plpgsql STABLE SET search_path = public, ag_catalog AS $$
 DECLARE d jsonb; t text; neg bool := false;
@@ -71,7 +71,7 @@ CREATE FUNCTION render_scene(w text, s text) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SET search_path = public, ag_catalog AS $$
 DECLARE
   sc scene; n int; pov_v text; pov text; acts jsonb; beats jsonb; cast_ids text[]; facts text[]; held text[];
-  facts_c text[]; held_c text[]; -- 정규 명제(비교용)
+  facts_c text[]; held_c text[]; -- canonical propositions (for comparison)
 BEGIN
   SELECT count(*) INTO n FROM scene x WHERE x.work_id = w AND (x.id = s OR lint_short(x.id) = s);
   IF n <> 1 THEN
@@ -79,7 +79,7 @@ BEGIN
   END IF;
   SELECT * INTO sc FROM scene x WHERE x.work_id = w AND (x.id = s OR lint_short(x.id) = s);
 
-  -- 행위(k = 장면 안 순번)와 입·퇴장을 한 줄로 세운다: (틈 g, sub) — 퇴장 0, 입장 1, 행위 2.
+  -- Line up acts (k = index within the scene) and entries/exits in one sequence: (gap g, sub) — exit 0, entry 1, act 2.
   CREATE TEMP TABLE IF NOT EXISTS render_row (g int, sub int, beat text, act jsonb, ents text[], fact text) ON COMMIT DROP;
   DELETE FROM render_row;
   CREATE TEMP TABLE IF NOT EXISTS render_act ON COMMIT DROP AS SELECT a.*, 0::bigint AS k FROM act a LIMIT 0;
@@ -117,7 +117,7 @@ BEGIN
             FROM presence p WHERE p.work_id = w AND p.scene_id = sc.id) e
    GROUP BY e.g, e.sub, e.verb;
 
-  -- 시점 인물: 지시어 pov 의 첫 값(짧은 이름).
+  -- POV character: the first value of the pov directive (short name).
   SELECT d."values"[1] INTO pov_v FROM directive d WHERE d.work_id = w AND d.scene_id = sc.id AND d.key = 'pov' LIMIT 1;
   SELECT e.id INTO pov FROM entity e WHERE e.work_id = w AND lint_short(e.id) = pov_v ORDER BY e.id LIMIT 1;
 
@@ -140,7 +140,7 @@ BEGIN
                       WHERE r.work_id = w AND lint_canon(w, r.prop_id) = h.c AND sr.discourse_ord < sc.discourse_ord);
   SELECT coalesce(array_agg(lint_canon(w, f)), '{}') INTO held_c FROM unnest(held) f;
 
-  -- 비트: 같은 비트 ID 가 이어지는 구간(섬)마다 하나.
+  -- Beat: one per run (island) where the same beat ID continues.
   SELECT jsonb_agg(jsonb_build_object('id', coalesce(substring(b.beat from '#(.*)$'), ''), 'acts', b.acts) ORDER BY b.first) INTO beats FROM (
     SELECT i.beat, min(i.pos) first, jsonb_agg(i.act ORDER BY i.pos) acts FROM (
       SELECT r.beat, r.pos, r.act || jsonb_build_object('fact', coalesce(lint_short(r.fact), '')) act,

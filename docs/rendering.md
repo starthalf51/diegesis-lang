@@ -1,51 +1,51 @@
-> 공개용 스냅샷(2026-11-09). 설계 기준은 프로젝트 설계 노트.
+> Public snapshot (2026-11-09). The design notes are the reference and are not published.
 
-# 렌더러
+# Renderer
 
-> IR과 렌더 지시어를 받아 산문을 만든다. 렌더러의 일은 **새 사실을 만들지 않고, 독자에게 아직 숨겨야 할 것을 흘리지 않으면서** 문장을 쓰는 것이다. 이 두 가지는 기계로 검증할 수 있다. 문장 품질은 사람이 판정한다(자동 평가는 목표가 아니다). → [compiler](compiler.md)
+> Takes the IR and render directives and produces prose. The renderer's job is to write sentences **without inventing new facts and without leaking what must still be hidden from the reader**. Both can be verified by machine. Sentence quality is judged by a person (automatic evaluation is not a goal). → [compiler](compiler.md)
 
-## 흐름
+## Flow
 
-1. `render_scene(work, scene)`(PG)가 장면의 **렌더 요청**을 JSON 으로 만든다 → [storage](storage.md). 요청은 장면 ID·장소·직전 요약(`previously`)·인물·출석·사실·비트별 행위·렌더 지시어(`pov` `pace` `tension` `focus` `omit`)·시점 인물의 믿음·독자가 아는 것·이 장면에서 흘리면 안 되는 것(`withheld`)을 담는다.
-2. **세계 상태 요약**(`internal/pg/digest.go`)이 그 장면 시점의 세계 상태(누가 어디서 무엇을 믿는지 등)를 한국어로 요약해 렌더 프롬프트에 넣는다. 기본으로 켜져 있고 `--no-digest` 로 끈다. 기존 표와 함수를 읽기만 하는 SELECT 다.
-3. 문체 백엔드(`styles/<id>.json`)가 언어·목표 어투·퍼블릭 도메인 문체 샘플을 준다.
-4. LLM 이 산문을 쓴다.
-5. `--verify` 이면 검수(아래)를 거친다.
+1. `render_scene(work, scene)` (PG) builds the scene's **render request** as JSON → [storage](storage.md). The request holds the scene ID, place, the summary of what came before (`previously`), characters, attendance, facts, acts per beat, render directives (`pov` `pace` `tension` `focus` `omit`), the viewpoint character's beliefs, what the reader knows, and what must not be leaked in this scene (`withheld`).
+2. The **world-state digest** (`internal/pg/digest.go`) summarizes the world state at that scene's point in time (who believes what, where, etc.) in Korean and puts it in the render prompt. It is on by default and turned off with `--no-digest`. It is a SELECT that only reads existing tables and functions.
+3. A style backend (`styles/<id>.json`) supplies the language, the target register and public-domain style samples.
+4. An LLM writes the prose.
+5. With `--verify`, it goes through verification (below).
 
-한때 있던 층별(layered) 렌더러는 제거되었다. 지금은 위의 한 경로뿐이다.
+The layered renderer that once existed has been removed. Now there is only the single path above.
 
-## 검수 (`dieg render --verify`)
+## Verification (`dieg render --verify`)
 
-기본 검수기는 **체크리스트 카드**(`--verifier card`)다.
+The default verifier is the **checklist card** (`--verifier card`).
 
-- 요청에서 기대 사실 목록을 만들고, 한 번의 LLM 호출로 산문이 각 항목을 담았는지(예/아니오), 주체·동사가 맞는지, 숨길 사실이 드러났는지를 JSON 으로 받는다.
-- 결정적 축(어투 비율, 분량)은 LLM 없이 센다.
-- 통과 기준: 누출 0, 누락 + 종류 틀림 ≤ 1. "없음"으로 나온 항목만 한 번 더 확인하는 2단계가 있다(구제만 할 수 있는 구조다).
-- IR 에 없는 사건을 지어냈는지(G2)는 두 방식 모두 신뢰할 수 없어서 관문에서 내리고 **경고로만** 보고한다.
-- 실패하면 피드백(빠진 사실, 틀린 주체, 누출)을 프롬프트 끝에 붙여 다시 렌더한다. 최대 `1 + --retries` 회. 상한까지 가도 통과하지 못하면 산문은 쓰되 종료 코드 3 으로 끝난다.
+- It builds a list of expected facts from the request, and in one LLM call receives JSON saying whether the prose covers each item (yes/no), whether subject and verb are right, and whether a fact to be hidden was revealed.
+- The deterministic axes (register ratio, length) are counted without an LLM.
+- Pass criteria: 0 leaks, and omissions + wrong kinds ≤ 1. There is a second stage that re-checks only the items reported as "absent" (the structure can only rescue).
+- Whether it invented an event that is not in the IR (G2) cannot be trusted with either method, so it was taken off the gate and is reported **as a warning only**.
+- On failure, feedback (missing facts, wrong subjects, leaks) is appended to the end of the prompt and it renders again, at most `1 + --retries` times. If it still does not pass at the limit, the prose is written anyway but the exit code is 3.
 
-`--verifier open` 은 이전 방식이다. 별도의 LLM 호출로 산문에서 IR 을 다시 뽑아 원래 장면과 diff 한다(빠진 발화 = 플롯 손실, 새 사실 = 환각, `withheld` 명제가 나타남 = 누출).
+`--verifier open` is the earlier method. A separate LLM call re-extracts the IR from the prose and diffs it against the original scene (a missing speech act = plot loss, a new fact = hallucination, a `withheld` proposition appearing = leak).
 
-## 고쳐 쓰기 (`dieg revise`)
+## Revising (`dieg revise`)
 
-작가가 코드(IR)를 고치면, 렌더 요청이 바뀐 장면과 새 장면만 다시 렌더한다.
+When the author edits the code (IR), only scenes whose render request changed and new scenes are re-rendered.
 
-- 바뀐 장면은 **문장 단위로 패치**한다. 옛 산문 + 새 장면 + 사실 차이를 주고 "옛 문장 → 새 문장" 편집 목록(JSON)만 받아 결정적으로 적용한다. 적용이 안 되거나 카드 검수를 못 넘으면 한 번 더, 그래도 안 되면 전체 렌더로 대체한다. 패치는 카드 검수기가 켜져 있을 때만 쓴다.
-- 낡음은 장면별 `.hash` 파일에 적힌 렌더 요청 해시와 세계 상태 요약 해시를 현재 값과 비교해서 판단한다. 요청은 같지만 상태 요약이 바뀐 장면은 `state_stale` 로 보고한다. `dieg stamp` 는 예전(요청 해시만 있는) 해시 파일에 상태 해시를 채운다. 이 둘은 모델 호출이 없다.
-- 지워진 장면의 산문은 지워진다.
+- A changed scene is **patched sentence by sentence**. Given the old prose + the new scene + the fact differences, it receives only an edit list (JSON) of "old sentence → new sentence" and applies it deterministically. If it cannot be applied or does not get past the card verification, it tries once more, and if that still fails it falls back to a full render. Patching is used only when the card verifier is on.
+- Staleness is decided by comparing the render-request hash and the world-state digest hash recorded in the scene's `.hash` file with the current values. A scene whose request is the same but whose state digest changed is reported as `state_stale`. `dieg stamp` fills in the state hash in older hash files (which had only the request hash). Neither of these makes a model call.
+- The prose of a deleted scene is deleted.
 
-## 쓰기 파이프라인
+## Writing pipeline
 
-`dieg write` 는 아이디어에서 시작해 AI 가 Diegesis 코드를 쓰고 → `dieg check` / 린트로 검증하고 → 오류를 되먹임해 고치고(`--rounds`) → 렌더하는 파이프라인이다. `dieg continue` 는 다음 화를, `dieg revise` 는 수정 요청을 처리한다. 모델은 단계별로 따로 고른다(`--code-model` `--render-model` `--extract-model`).
+`dieg write` starts from an idea, has an AI write Diegesis code → verifies it with `dieg check` / lint → feeds errors back to fix it (`--rounds`) → renders. `dieg continue` handles the next episode, and `dieg revise` handles a change request. The model is chosen separately per stage (`--code-model` `--render-model` `--extract-model`).
 
-## 문체 백엔드 관문
+## Style-backend gate
 
-- 백엔드는 `styles/<id>.json` 이다: `id`, `lang`, `tone`(`haera` | `hapsho` | `gojeon` | 없음), 그리고 문체 샘플(`author`, `work`, `source`, `text`, `died_year`, `published_year`).
-- 로더가 샘플의 저작권 만료를 검사한다. 저자 사망 후 70년(한국)이 지났고 발표 후 95년(미국)이 지난 것만 통과한다. 둘 중 엄격한 쪽을 따른다. 검사를 통과하지 못하는 파일이 하나라도 있으면 로드가 오류다.
-- 현역 작가 이름을 프롬프트에 넣어 문체를 지시하는 것도 금지한다. 샘플 텍스트만 문체의 근거가 된다.
-- 한국어 번역본은 문체 샘플로 쓰지 않는다. 한국어 출력은 IR 에서 **생성**한 것이지 번역이 아니므로, 한국어 문체 샘플은 한국 작가 원문에서만 가져온다.
-- 한국어 어투 규칙은 따옴표 밖의 서술문에만 적용된다. 대사(`quote`)는 원어 그대로 주어지고 뜻을 바꾸지 않고 옮긴다. 어투 판정(`ClassifyTone`)은 결정적이다.
+- A backend is `styles/<id>.json`: `id`, `lang`, `tone` (`haera` | `hapsho` | `gojeon` | none), and style samples (`author`, `work`, `source`, `text`, `died_year`, `published_year`). The Korean register ids name the narration styles: `haera` is plain-form, `hapsho` is polite-formal, `gojeon` is classical; the backend ids (e.g. `ko-haera`) keep these names.
+- The loader checks the copyright expiry of each sample. Only samples whose author died more than 70 years ago (Korea) and which were published more than 95 years ago (US) pass. The stricter of the two applies. If even one file fails the check, loading is an error.
+- Naming a living author in the prompt to direct the style is also forbidden. Only the sample text is the basis of the style.
+- Korean translations are not used as style samples. Korean output is **generated** from the IR, not translated, so Korean style samples are taken only from the original texts of Korean authors.
+- The Korean register rules apply only to narration outside quotation marks. Dialogue (`quote`) is given in the original language and carried over without changing its meaning. The register judgment (`ClassifyTone`) is deterministic.
 
-## 비용
+## Cost
 
-LLM 호출은 `claude` CLI 를 통해 한다(`internal/render/claudecli.go`). 호출 수와 토큰은 `dieg write` / `dieg revise` 가 끝에 한 줄로 보고한다.
+LLM calls go through the `claude` CLI (`internal/render/claudecli.go`). `dieg write` / `dieg revise` report the call count and tokens in one line at the end.

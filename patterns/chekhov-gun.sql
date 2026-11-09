@@ -1,10 +1,10 @@
 -- pattern: chekhov-gun
 -- layer: foreshadow
--- summary: 약속 복선(setup promise)이 회수(payoff)된다 — 체호프의 총
+-- summary: a promise setup is paid off (payoff) — Chekhov's gun
 --
--- 매치: kind = promise 인 setup 마다 그 setup 을 가리키는 payoff 가 하나라도 있으면 한 행. 대상 = setup.
--- span = setup 의 서술 위치 ~ 가장 이른 payoff 의 서술 위치(보이지 않는 장면·최상위면 NULL).
--- 회수가 복선보다 앞서는지는 payoff-without-setup 규칙이 본다(여기서는 둘 다 있는지만).
+-- Match: for each setup with kind = promise, one row if at least one payoff points at that setup. Target = the setup.
+-- span = the setup's narration position ~ the earliest payoff's narration position (NULL for an unseen scene or top level).
+-- Whether the payoff comes before the setup is the payoff-without-setup rule's job (here only that both exist).
 SELECT 'setup' AS target_kind, s.id AS target_id,
        (SELECT x.discourse_ord FROM scene x WHERE x.id = s.scene_id AND x.shown) AS span_from,
        min(sp.discourse_ord) AS span_to,

@@ -7,23 +7,23 @@ import (
 	"sort"
 )
 
-// DefaultK 는 렌더 하나를 다시 뽑는 횟수(R1). 홀수여야 다수가 정해진다.
+// DefaultK is the number of times one render is re-extracted (R1). It must be odd so a majority is defined.
 const DefaultK = 3
 
-// badExtract 는 재추출 답이 쓸 수 없을 때(멈춤·파싱 실패)의 오류다. 기록에 ExtractError 로 남는다.
-// Completer 오류와 달리 다시 부를 까닭이 호출 쪽에 있지 않다.
+// badExtract is the error when a re-extraction answer is unusable (stopped, parse failure). It is left in the record as ExtractError.
+// Unlike a Completer error, the reason to call again is not on the caller's side.
 type badExtract string
 
 func (e badExtract) Error() string { return string(e) }
 
-// IsBadExtract 는 err 가 재추출 답의 문제(기록에 남길 것)인지 본다.
+// IsBadExtract checks whether err is a problem with the re-extraction answer (to be recorded).
 func IsBadExtract(err error) bool {
 	var b badExtract
 	return errors.As(err, &b)
 }
 
-// ExtractK 는 같은 재추출 프롬프트로 k 번 따로 뽑고 Vote 로 합친다. 원본 k 개도 돌려준다(기록에 남겨 다시 판정한다).
-// 하나라도 멈추거나 깨지면 badExtract 다(일부로 다수결을 하지 않는다).
+// ExtractK extracts k times separately with the same re-extraction prompt and merges them with Vote. It also returns the original k (recorded so the verdict can be redone).
+// If even one stops or breaks it is badExtract (no majority is taken over the partial ones).
 func ExtractK(ctx context.Context, c Completer, s Scene, lang, prose string, k int) (Extracted, []Extracted, error) {
 	sys, user := BuildExtractPrompt(s, lang, prose)
 	var xs []Extracted
@@ -44,11 +44,11 @@ func ExtractK(ctx context.Context, c Completer, s Scene, lang, prose string, k i
 	return Vote(s, xs), xs, nil
 }
 
-// Vote 는 재추출 여럿의 다수결이다. 결정적이라 캐시에서 다시 판정할 때 그대로 다시 센다.
-//   - 액트: 키(actor|동사류|정규 사실)마다, 과반의 재추출이 그 이상 뽑은 개수만 채택한다(멀티셋 중앙값).
-//   - facts_stated: 과반이 말한 사실(정규 명제로 셈)만 채택한다.
-//   - 숨긴 사실은 한 번이라도 나오면(액트든 facts_stated 든) facts_stated 에 넣는다 — 누출 판정은 fail-closed.
-//   - new_events: 자유 문장이라 맞대지 못한다. IR 에 지은이가 쓴 사실 없는 행위를 다시 말한 것은 먼저 뺀다. 남은 것 중 과반이 그 이상 낸 개수만큼, 그만큼 낸 첫 재추출의 문장을 쓴다.
+// Vote is the majority vote over several re-extractions. It is deterministic, so it is simply recounted when re-judging from cache.
+//   - acts: for each key (actor|verb class|canonical fact), adopt only the count that a majority of re-extractions extracted at least (multiset median).
+//   - facts_stated: adopt only facts a majority stated (counted as canonical propositions).
+//   - a hidden fact that appears even once (as an act or in facts_stated) goes into facts_stated — the leak verdict is fail-closed.
+//   - new_events: free sentences, so they cannot be matched. First drop those that re-tell an author act with no fact in the IR. Of the rest, use the count that a majority emitted at least, with the sentence of the first re-extraction that emitted that many.
 func Vote(s Scene, xs []Extracted) Extracted {
 	out := Extracted{Acts: []ExtractedAct{}, FactsStated: []string{}, NewEvents: []NewEvent{}}
 	if len(xs) == 0 {
@@ -63,7 +63,7 @@ func Vote(s Scene, xs []Extracted) Extracted {
 	examples := map[string][]ExtractedAct{}
 	actCounts := make([]map[string]int, len(xs))
 	factRuns := map[string]int{}
-	factID := map[string]string{} // 정규 명제 → 처음 본 ID
+	factID := map[string]string{} // canonical proposition → the ID first seen
 	var factOrder []string
 	leaked := map[string]bool{}
 	for i, x := range xs {
@@ -130,7 +130,7 @@ func Vote(s Scene, xs []Extracted) Extracted {
 	return out
 }
 
-// majority 는 과반(need 개)의 재추출이 다다른 가장 큰 개수: 재추출별 개수를 큰 순서로 놓은 need 번째 값.
+// majority is the largest count that a majority (need) of re-extractions reached: the need-th value of the per-re-extraction counts in descending order.
 func majority(k, need int, count func(int) int) int {
 	cs := make([]int, k)
 	for i := range cs {

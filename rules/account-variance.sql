@@ -4,11 +4,11 @@
 -- target: act
 -- summary: 같은 사건의 기록(account)끼리 담긴 사실이 다르다
 --
--- 대상: 기록이 둘 이상인 사건. 기록 A 에 담긴 명제 = A 안 행위의 내용(prop_id ∪ with, 동사 무관), lint_canon 으로 정규화.
--- 보고: A 의 명제 P 마다 같은 사건의 다른 기록 B 에 P 가 없으면 보고한다. B 에 ¬P 가 있으면(lint_opposite) contradicted,
---   아니면 absent. 같은 (A, P, 종류)는 한 건으로 모으고 해당 기록을 모두 적는다(data.others) — 기록이 넷이면
---   한 기록에만 있는 명제가 세 번 나오지 않도록(Task 10, 복음서). 대상은 A 에서 P 를 처음 담은 행위다.
---   보고서다(info). 위반이 아니다.
+-- Target: events with two or more accounts. The propositions in account A = the contents of acts inside A (prop_id ∪ with, any verb), normalized with lint_canon.
+-- Report: for each proposition P of A, report it if another account B of the same event lacks P. If B has ¬P (lint_opposite) it is contradicted,
+--   otherwise absent. The same (A, P, kind) is merged into one finding listing all the accounts concerned (data.others) — so that with four accounts
+--   a proposition present in only one account does not appear three times (Task 10, Gospels). The target is the act that first holds P in A.
+--   This is a report (info). It is not a violation.
 WITH
 acc AS (
   SELECT a.id, a.event_id FROM account a

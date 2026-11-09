@@ -4,12 +4,12 @@
 -- target: act
 -- summary: 사물이 있다고 선언된 곳과 다른 장소의 장면에서 그 사물을 다룬다
 --
--- 규약: 사물의 위치는 `attr <thing>.at = <place>`, 장면의 장소는 scene.place_id.
--- 대상: 행위의 목적어(does 의 동작 대상 포함) X 가 thing·artifact 이고 장면에 장소가 있는 행위.
--- 시점에 유효한 값: account 밖의 X.at 단언 중 행위보다 반드시 앞서고(precedes = yes; 배경은 origin),
---   그 뒤에 또 다른 X.at 단언이 행위 전에 끼지 않은 것(attribute-conflict 와 같은 "바로 앞" 규칙).
--- 유효한 값이 여럿(순서가 정해지지 않은 단언)이면 모두 후보다: 장면 장소와 같은 것이 하나라도 있으면 조용하다.
--- 위반: 유효한 값이 있고 그중 장면 장소와 같은 것이 하나도 없다. 유효한 값이 없으면 내지 않는다.
+-- Convention: an object's location is `attr <thing>.at = <place>`, a scene's place is scene.place_id.
+-- Target: acts whose object (including the target of does) X is a thing or artifact and whose scene has a place.
+-- Value valid at the point: among X.at assertions outside an account, those necessarily before the act (precedes = yes; background uses origin),
+--   with no other X.at assertion coming between them and the act (the same "immediately before" rule as attribute-conflict).
+-- If several values are valid (assertions with undetermined order) all are candidates: it is quiet if at least one equals the scene's place.
+-- Violation: there are valid values and none of them equals the scene's place. Not emitted when there is no valid value.
 WITH origin AS (SELECT id FROM point WHERE work_id = $1 AND kind = 'origin' ORDER BY id LIMIT 1),
 loc AS (
   SELECT x.entity_id, x.value, lint_canon($1, x.value) AS v, x.src_id,

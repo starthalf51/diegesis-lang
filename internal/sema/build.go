@@ -114,8 +114,8 @@ func Build(files []*syntax.File) (*ir.Work, []syntax.Diag) {
 	return w, b.diags
 }
 
-// lifeOrder: 태어나기 전에 죽을 수 없다 — born 과 dies 가 둘 다 있는 사람마다 @x.born → @x.died (min 0) 순서 간선.
-// 시간 풀이(PG)가 죽음이 출생보다 앞서는 제약을 time-cycle 로 잡게 한다. 위치는 dies 문장이다.
+// lifeOrder: one cannot die before being born — for each person with both born and dies, an order edge @x.born → @x.died (min 0).
+// Lets the time solver (PG) catch a death-before-birth constraint as a time-cycle. The position is the dies statement.
 func lifeOrder(w *ir.Work) {
 	src := map[string]int{}
 	for _, p := range w.Points {

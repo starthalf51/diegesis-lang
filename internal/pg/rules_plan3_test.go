@@ -12,7 +12,7 @@ thing bell "B"
   attr bell.at = tower
 `
 
-// 사물 위치(X.at)와 장면 장소가 다르면 경고. 같은 장소면 조용하다.
+// Warn if the object's location (X.at) differs from the scene's place. Quiet if the same place.
 func TestObjectLocationWarns(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, bellCast+`scene 1 at staffroom
@@ -28,7 +28,7 @@ scene 2 at tower
 	}
 }
 
-// 장면 안에서 attr 로 옮긴 뒤의 행위는 경고하지 않는다.
+// An act after moving it by attr inside the scene does not warn.
 func TestObjectLocationMovedThing(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, bellCast+`scene 1 at staffroom
@@ -41,7 +41,7 @@ func TestObjectLocationMovedThing(t *testing.T) {
 	}
 }
 
-// 거짓으로 선언된 사실의 reveal 은 경고. 참 사실은 조용하다.
+// A reveal of a fact declared false warns. A true fact is quiet.
 func TestRevealFalseWarns(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `place room "R"
@@ -67,7 +67,7 @@ func msgs(ds []pg.Diagnostic, rule string) []string {
 	return out
 }
 
-// 메시지 문자열과 경계: does 는 동작 이름, 일반 동사는 동사, 인물 목적어·위치 없는 사물·나중에 정해진 위치는 조용하다.
+// Message strings and boundaries: does is the action name, an ordinary verb is the verb; a character object, an object with no location, and a location decided later are quiet.
 func TestPlan3RuleMessagesAndEdges(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, bellCast+`thing cup "C"
@@ -91,7 +91,7 @@ scene 1 at staffroom
 	}
 }
 
-// X.at 가 행위보다 나중에 정해지면 그 행위에는 유효하지 않다.
+// If X.at is decided later than the act, it is not valid for that act.
 func TestObjectLocationLaterAt(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `place tower "T"

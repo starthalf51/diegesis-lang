@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// readerRows 는 reader_knows(작품, 사실) 를 "from_ord=value" 로 모은다.
+// readerRows collects reader_knows(work, fact) as "from_ord=value".
 func readerRows(t *testing.T, pool *pgxpool.Pool, work, fact string) []string {
 	t.Helper()
 	rows, err := pool.Query(context.Background(),
@@ -50,7 +50,7 @@ func readerState(t *testing.T, pool *pgxpool.Pool, work string, ord int) []strin
 	return out
 }
 
-// Review Focus 2: withhold 동안 독자는 모르고, until 의 서술 위치부터 안다(막힌 공개는 그 위치로 미뤄진다).
+// Review Focus 2: the reader does not know during withhold, and knows from until's narration position (a blocked disclosure is deferred to that position).
 func TestReaderWithhold(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -73,7 +73,7 @@ scene 3
 	}
 }
 
-// Review Focus 2: 방백은 독자만 받는다. 독자는 그 장면의 위치에서 알고, 무대 위 인물에게는 믿음이 생기지 않는다.
+// Review Focus 2: an aside is received only by the reader. The reader knows at that scene's position, and the characters on stage form no belief.
 func TestReaderAsideOnly(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -92,9 +92,9 @@ func TestReaderAsideOnly(t *testing.T) {
 	}
 }
 
-// 독자는 들은 대로 믿고(거짓말도), 나중에 반대 값이 공개되면 그 위치에서 갱신된다.
-// 보이지 않는 사건(event)의 행위는 공개하지 않고, `reveal P` 는 그 장면 위치에서 공개한다.
-// 같은 장면 안에서는 마지막 행위가 이긴다(장면 단위).
+// The reader believes what was heard (lies too), and if the opposite value is disclosed later it is updated at that position.
+// Acts in unseen events (event) are not disclosed, and `reveal P` discloses at that scene's position.
+// Within the same scene the last act wins (scene granularity).
 func TestReaderBelievesAsToldAndUpdates(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `fact q "Q" false
@@ -124,10 +124,10 @@ scene 3
 	}
 }
 
-// 수정 1회차: 독자는 이미 거짓인 줄 아는 기만을 믿지 않는다.
-//   맥베스형: 방백으로 p 를 안 뒤의 거짓말 np 는 독자 믿음을 바꾸지 않는다.
-//   오셀로형: 거짓말한 사람이 생각으로 ¬q 를 먼저 알렸으면, 거짓말도, 그 거짓말에만 속은 사람의 말도 믿지 않는다.
-//   대조: 앞선 공개가 없으면 독자는 들은 대로 믿는다.
+// Fix round 1: the reader does not believe a deception it already knows is false.
+//   Macbeth type: a lie np after learning p by aside does not change the reader's belief.
+//   Othello type: if the liar first told ¬q by thought, neither the lie nor the words of someone deceived only by that lie are believed.
+//   Control: without an earlier disclosure the reader believes what was heard.
 func TestReaderSeesThroughLies(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -162,7 +162,7 @@ scene 3
 	if got, want := readerRows(t, pool, id, "q"), []string{"2=true"}; !slices.Equal(got, want) {
 		t.Errorf("no earlier disclosure: reader_knows(q) = %v, want %v", got, want)
 	}
-	// 위조 문서(쓴 사람이 거짓인 줄 알고 쓴 문서 — 007 의 추론된 기만)를 읽는 것도 기만 공개다
+	// Reading a forged document (a document written knowing it was false — 007's inferred deception) is also a deceptive disclosure
 	id = compileLoad(t, pool, `fact q "Q" false
 artifact forged "F"
   contains q

@@ -1,19 +1,19 @@
--- 008: 오디세이 전 엔진 수정(Task 11).
---   a. lint_canon 이 부정 안의 별칭도 푼다: `not q`(q = p) ≡ `not p`, `not r`(r = not p) ≡ p. 별칭의 별칭도 푼다.
---      (Task 10 성경: `not peter_disciple` 과 `not peter_with_jesus` 가 다른 명제로 보였다.)
---   b. derive 진단의 대상: time-cycle 은 순환 간선을 만든 `when`/`born`/`dies` 문장의 waiver 대상(time_edge.target_*)을
---      가진다. role-overlap·role-ambiguous 의 억제는 규칙·대상 종류·대상 ID 가 모두 같은 waiver 만.
---   c. 그래프 BELIEVES 간선에 until(believes.until_pt, 006 의 의심으로 거둔 시점).
+-- 008: Odyssey-wide engine fixes (Task 11).
+--   a. lint_canon also resolves aliases inside a negation: `not q` (q = p) ≡ `not p`, `not r` (r = not p) ≡ p. Aliases of aliases too.
+--      (Task 10 Bible: `not peter_disciple` and `not peter_with_jesus` looked like different propositions.)
+--   b. Target of derive diagnostics: time-cycle carries the waiver target (time_edge.target_*) of the `when`/`born`/`dies` statement that made the cycle edge.
+--      Suppression of role-overlap and role-ambiguous only by a waiver whose rule, target kind and target ID all match.
+--   c. Add until (believes.until_pt, the point withdrawn by 006's doubt) to the graph BELIEVES edge.
 SET LOCAL search_path = public, ag_catalog;
 
--- ── a. 정규 명제 ──
--- 정규형: 별칭은 끝까지 따라가고, `not X` 는 lint_neg(정규 X). 그 밖(이름·술어)은 그대로.
--- ponytail: 술어 인자(holds(r, alias))는 풀지 않는다. 인자에 별칭을 쓰는 작품이 생기면 인자도 정규화한다.
+-- ── a. Canonical proposition ──
+-- Canonical form: follow aliases to the end, `not X` is lint_neg(canonical X). Anything else (names, predicates) stays.
+-- ponytail: predicate arguments (holds(r, alias)) are not resolved. If a work uses aliases in arguments, canonicalize the arguments too.
 CREATE OR REPLACE FUNCTION lint_canon(w text, p text) RETURNS text
 LANGUAGE plpgsql STABLE SET search_path = public, ag_catalog AS $$
 DECLARE d jsonb;
 BEGIN
-  FOR i IN 1..32 LOOP -- 별칭 순환 방지
+  FOR i IN 1..32 LOOP -- guard against alias cycles
     SELECT def INTO d FROM fact WHERE work_id = w AND id = p;
     IF d ? 'alias' THEN
       p := d->>'alias';
@@ -26,8 +26,8 @@ BEGIN
   RETURN p;
 END $$;
 
--- 정규 명제 c 의 부정(정규형). c 가 `not X` 면 X. 아니면 `not c` 사실(정의가 정확히 not c 인 것), 없으면 그 ID 꼴 문자열
--- (사실 행은 없지만 같은 명제끼리는 같은 문자열이 된다).
+-- Negation of canonical proposition c (canonical form). If c is `not X`, X. Otherwise the `not c` fact (the one defined exactly as not c), or if none, a string shaped like its ID
+-- (no fact row exists, but the same proposition yields the same string).
 CREATE FUNCTION lint_neg(w text, c text) RETURNS text
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   SELECT coalesce(
@@ -35,16 +35,16 @@ LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
     (SELECT min(id) FROM fact WHERE work_id = w AND def->>'not' = c),
     w || '/not ' || c) $$;
 
--- 두 정규 명제가 서로 부정인가. lint_neg 는 사실 행이 없는 부정에서 대합(involution)이 아니라서 양쪽을 본다.
+-- Whether two canonical propositions negate each other. lint_neg is not an involution on negations with no fact row, so look at both sides.
 CREATE OR REPLACE FUNCTION lint_opposite(w text, a text, b text) RETURNS bool
 LANGUAGE sql STABLE SET search_path = public, ag_catalog
   AS $$ SELECT lint_neg(w, a) = b OR lint_neg(w, b) = a $$;
 
--- ── b. derive 진단의 대상 ──
+-- ── b. Target of derive diagnostics ──
 ALTER TABLE time_edge ADD COLUMN target_kind text, ADD COLUMN target_id text;
 
--- 대상 = 억제된 간선이 있으면 그 문장(가장 앞선 것), 없으면 대상이 있는 간선 중 src 가 가장 앞선 문장.
--- waived 는 그대로 간선 단위다: 억제가 붙은 그 문장의 간선이 순환에 있어야 한다(다른 문장의 억제는 덮지 않는다).
+-- Target = the statement of a suppressed edge if any (the earliest), otherwise the earliest-src statement among edges that have a target.
+-- waived stays per edge: the edge of the statement carrying the suppression must be in the cycle (another statement's suppression does not cover it).
 CREATE OR REPLACE FUNCTION time_cycle_diag(w text, ords int[]) RETURNS void
 LANGUAGE sql SET search_path = public, ag_catalog AS $$
   INSERT INTO diagnostic(run_id, work_id, rule_id, severity, target_kind, target_id, src_id, message, data, waived)
@@ -65,7 +65,7 @@ LANGUAGE sql SET search_path = public, ag_catalog AS $$
    GROUP BY t.target_kind, t.target_id
 $$;
 
--- 003 의 resolve_roles 와 같다. 억제 조건만 규칙·대상 종류·대상 ID 가 모두 같은 waiver 로 좁혔다.
+-- Same as 003's resolve_roles. Only the suppression condition is narrowed to a waiver whose rule, target kind and target ID all match.
 CREATE OR REPLACE FUNCTION resolve_roles(w text) RETURNS void
 LANGUAGE plpgsql SET search_path = public, ag_catalog AS $$
 DECLARE a record; h record; o record; hs text[];
@@ -121,8 +121,8 @@ BEGIN
   END LOOP;
 END $$;
 
--- ── c. 그래프 ──
--- 004 의 project_graph 와 같다. BELIEVES 에 until 을 더했다. 설명 질의는 until 이 없거나 질의 시점 뒤인 믿음만 살아 있다고 본다.
+-- ── c. Graph ──
+-- Same as 004's project_graph. Adds until to BELIEVES. The explain query treats only beliefs with no until, or an until after the query point, as alive.
 CREATE OR REPLACE FUNCTION project_graph(w text) RETURNS void
 LANGUAGE plpgsql SET search_path = public, ag_catalog AS $$
 DECLARE g text := graph_name(w);

@@ -35,7 +35,7 @@ func VerbClass(v string) string {
 
 func actKey(actor, verb, fact string) string { return actor + "|" + VerbClass(verb) + "|" + fact }
 
-// Diff compares original scene to re-extracted IR by actor|class|canon(fact) keys only: 별칭끼리는 같은 사실이다.
+// Diff compares original scene to re-extracted IR by actor|class|canon(fact) keys only: aliases are the same fact.
 func Diff(s Scene, e Extracted) Report {
 	got := map[string]int{}
 	hall, leak := set{}, set{}
@@ -83,7 +83,7 @@ func Diff(s Scene, e Extracted) Report {
 		}
 	}
 	sort.Strings(miss)
-	// R4: 원본보다 많이 뽑힌 사실 액트(원본에 없는 것 포함)는 초과분만큼 환각이다. 모르는 사실은 위에서 이미 셌다.
+	// R4: facts acts extracted in excess of the original (including those not in the original) are hallucinations by the excess count. Unknown facts were already counted above.
 	halluc := hall.sorted()
 	for _, a := range e.Acts {
 		if _, ok := s.FactByID(a.Fact); !ok || VerbClass(a.Verb) == "presence" {

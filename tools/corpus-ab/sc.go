@@ -1,7 +1,7 @@
 package main
 
-// 일회용 스파이크: 다축 채점표 검증기(설계 노트 rendering.md "다축 채점표"). 프로덕션 프롬프트는 건드리지 않는다.
-//   -spike sc-gen|sc-run|sc-old|sc-report  (-out examples/corpus-ab/scorecard, -budget N, -pairs 변형이름,...)
+// One-off spike: verifier for the multi-axis scorecard (design note rendering.md "multi-axis scorecard"). Does not touch production prompts.
+//   -spike sc-gen|sc-run|sc-old|sc-report  (-out examples/corpus-ab/scorecard, -budget N, -pairs variant-name,...)
 
 import (
 	"context"
@@ -25,9 +25,9 @@ type itemAns struct {
 type cand struct {
 	Ev        render.NewEvent
 	Quote     string
-	Confirmed bool // 2단이 "extra" 로 확인(또는 2단이 깨져 미확인 → 보수적으로 true)
+	Confirmed bool // stage 2 confirmed it as "extra" (or stage 2 broke so unconfirmed → conservatively true)
 	Verdict   string
-	Covered   bool `json:",omitempty"` // 보고 시점에 coveredByIR 로 다시 거른 결과
+	Covered   bool `json:",omitempty"` // the result of filtering again with coveredByIR at report time
 }
 
 type scRun struct {
@@ -149,7 +149,7 @@ func fence(text string) string {
 	return strings.TrimSpace(body)
 }
 
-// parseRaw: 엄격하지 않은 JSON, 단 요구한 id 가 전부 있어야 한다.
+// parseRaw: non-strict JSON, but every requested id must be present.
 func parseRaw(text string, wantItems []string, tier2 bool, wantCands int) (rawOut, error) {
 	var o rawOut
 	if err := json.Unmarshal([]byte(fence(text)), &o); err != nil {
@@ -178,13 +178,13 @@ func yes(s string) bool { return strings.EqualFold(strings.TrimSpace(s), "yes") 
 
 type scEnv struct {
 	ctx    context.Context
-	c      render.Completer // 카운터+미터를 감싼 완성기
+	c      render.Completer // completer wrapped with counter+meter
 	m      *render.Meter
-	out    string // 호출별 JSON 저장 디렉터리
+	out    string // directory where per-call JSON is saved
 	budget int
 }
 
-// ask 는 한 번 부르고 파싱, 깨졌으면 한 번만 다시 부른다. 호출마다 파일로 남긴다.
+// ask calls once and parses; if broken it calls again just once. Each call is saved as a file.
 func (e *scEnv) ask(tag, sys, user string, wantItems []string, tier2 bool, wantCands int, r *scRun) (rawOut, error) {
 	var last error
 	for try := 0; try < 2; try++ {
@@ -222,7 +222,7 @@ func ids(items []vItem) []string {
 	return o
 }
 
-// scoreRun 은 결정적 축과 합계. 관문 실패는 점수와 별도.
+// scoreRun is the deterministic axes and the total. Gate failure is separate from the score.
 func scoreRun(r *scRun, v vSet, b render.Backend, prose string, target int) {
 	n, p, a := float64(len(v.Expect)), 0.0, 0.0
 	for _, it := range v.Expect {
@@ -249,7 +249,7 @@ func scoreRun(r *scRun, v vSet, b render.Backend, prose string, target int) {
 	}
 }
 
-// runScorecard: 렌더 1개를 새 검증기로 채점한다(1단 1회 + 필요하면 2단 1회).
+// runScorecard: scores one render with the new verifier (stage 1 once + stage 2 once if needed).
 func runScorecard(e *scEnv, tag string, s render.Scene, b render.Backend, prose string, v vSet, target int) scRun {
 	r := scRun{Items: map[string]itemAns{}, Leak: map[string]bool{}, LeakQuote: map[string]string{}}
 	sys, user := scPrompt1(s, b.Lang, prose, v)
@@ -266,13 +266,13 @@ func runScorecard(e *scEnv, tag string, s render.Scene, b render.Backend, prose 
 	for _, w := range o.Withheld {
 		r.Leak[w.ID], r.LeakQuote[w.ID] = yes(w.Revealed), w.Quote
 	}
-	for _, x := range o.Other { // G2 후보: IR 의 지은이 행위로 설명되면 제외(Diff/authored 규칙 그대로)
+	for _, x := range o.Other { // G2 candidates: excluded if explained by an author act in the IR (the Diff/authored rule as is)
 		ev := render.NewEvent{Actor: x.Actor, Verb: x.Verb, Targets: x.Targets, Action: x.Action, Text: x.Text}
 		if rep := render.Diff(s, render.Extracted{Acts: []render.ExtractedAct{}, FactsStated: []string{}, NewEvents: []render.NewEvent{ev}}); len(rep.Hallucinated) > 0 && !coveredByIR(s, ev) {
 			r.Cands = append(r.Cands, cand{Ev: ev, Quote: x.Quote})
 		}
 	}
-	// 2단: 없음/주체 불일치로 나온 항목 + G2 후보만, 하나라도 있으면 1회.
+	// Stage 2: items that came out as absent/subject mismatch + G2 candidates only, once if there is any.
 	var re []string
 	for _, it := range v.Expect {
 		if x := r.Items[it.ID]; !x.Present || !x.AsStated {
@@ -296,7 +296,7 @@ func runScorecard(e *scEnv, tag string, s render.Scene, b render.Backend, prose 
 		}
 		o2, err := e.ask(tag+"_t2", scSys2(), u.String(), re, true, len(r.Cands), &r)
 		for i := range r.Cands {
-			r.Cands[i].Confirmed, r.Cands[i].Verdict = true, "unchecked" // 2단이 깨지면 보수적으로 유지
+			r.Cands[i].Confirmed, r.Cands[i].Verdict = true, "unchecked" // if stage 2 breaks, keep conservatively
 		}
 		if err != nil {
 			r.Err = "t2: " + err.Error()
@@ -344,9 +344,9 @@ func resolveID(s render.Scene, x string) string {
 	return ""
 }
 
-// coveredByIR: 사실 없는 지은이 행위(orders·asks·whispers·sees 등)를 다시 말한 사건은 지어낸 것이 아니다.
-// render 의 authored() 는 does·presence 만 봐 주므로 그 밖의 동사류를 같은 주체·같은 동사류·겹치는 대상으로 맞댄다.
-// 사실이 달린 행위는 체크리스트가 맡으므로 여기서 보지 않는다(재서술은 2단의 "covered" 가 거른다).
+// coveredByIR: an event that re-tells an author act with no fact (orders, asks, whispers, sees, etc.) is not invented.
+// render's authored() only looks at does and presence, so match the other verb classes by the same subject, same verb class and overlapping objects.
+// An act with a fact is covered by the checklist, so it is not looked at here (a re-statement is filtered by stage 2's "covered").
 func coveredByIR(s render.Scene, ev render.NewEvent) bool {
 	actor := resolveID(s, ev.Actor)
 	if actor == "" {

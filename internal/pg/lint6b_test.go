@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// `macbeth sees cawdor_traitor`(콜론 없음)도 지각 믿음을 만든다.
+// `macbeth sees cawdor_traitor` (no colon) also makes a perception belief.
 func TestSeesWithoutColonBelieves(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `scene 1
@@ -22,7 +22,7 @@ func TestSeesWithoutColonBelieves(t *testing.T) {
 	}
 }
 
-// 배경 지식(최상위·선언 블록의 believes)은 처음부터 안다. 그룹의 믿음은 구성원이 물려받는다.
+// Background knowledge (believes in top-level/declaration blocks) is known from the start. A group's beliefs are inherited by its members.
 func TestBackgroundKnowledge(t *testing.T) {
 	pool := open(t)
 	for name, body := range map[string]string{
@@ -52,7 +52,7 @@ scene 1
 			t.Errorf("%s: info-flow = %v, want none", name, got)
 		}
 	}
-	// 대조: 같은 상황에서 배경 지식이 없으면 warn
+	// Control: the same situation without background knowledge is a warn
 	id := compileLoad(t, pool, `group g "G"
   members a
 scene 1
@@ -64,7 +64,7 @@ scene 1
 	}
 }
 
-// 무대 밖 sends 의 받는 사람은 전령이 말해 주기 전에는 모른다.
+// The recipient of an offstage sends does not know until the messenger tells them.
 func TestOffstageSendsRecipientUnaware(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, `event ev "E"

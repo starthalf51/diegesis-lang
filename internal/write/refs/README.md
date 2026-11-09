@@ -1,50 +1,52 @@
-# Diegesis
-
-A programming language for novels: you write characters, facts, scenes and speech acts (`tells`, `lies`, `sees` ...) in `.dieg.md` files, and a Go compiler loads them into PostgreSQL, where SQL checks time, who-knows-what and deception, and an AI renders and revises the prose against that checked state.
-
-**Status: experimental preview.** The grammar and IR may change in any 0.x release.
-
-## Why Diegesis
-
-The claim is narrow: when you change something in the middle of a story, Diegesis propagates the change more completely than asking an AI to edit the text directly. It is not shown to be cheaper.
-
-Measured in [`examples/value/retcon3`](examples/value/retcon3/README.md) (English summary at the top, details in Korean; v0.7.0, 6 retcons of a 12-episode story, one run per arm, one verifier; B = `dieg revise`, A = direct AI edit):
-
-- Confirmed residual contradictions plus new ones: B 3 vs A 6 (5 vs 8 counting boundary items).
-- Unrelated text changed: B 47 vs A 2,247 characters. Caveat: 1,069 of A's 2,247 unrelated characters come from a keyword-dictionary gap in R3 e04; excluding it gives about 1,178 vs 47, so the conclusion holds.
-- Priced weighted cost: B about 0.93x of A. This depends on A editing nothing in R6; treating R4 like R6 gives 1.12x.
-- Calls: B makes 6.7x as many.
-- The pre-registered rule is met, but a cost advantage is NOT established. 12 episodes favour A, and A's cost varies a lot (A's R2 cost was 3.7x the previous run).
-- Limitations: n=1 run per arm, one verifier, 12 episodes. R6 A may be under-counted (judge possibly missed e08:41); this favours A.
-- Cost alone is not a reason to use Diegesis: the cost-curve analysis in [`examples/value/cost-curve`](examples/value/cost-curve) found direct writing's per-episode cost flat.
-
-See a concrete case in [`examples/showcase`](examples/showcase/README.md).
-
-## Install
-
-```sh
-git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang
-docker compose -f deploy/compose.yaml up -d pg && export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
-go install github.com/starthalf51/diegesis-lang/cmd/dieg@latest
-dieg db migrate && dieg test corpus/macbeth
-```
-
-Step-by-step: [docs/quickstart.md](docs/quickstart.md) (English). Reference docs: [docs/README.md](docs/README.md) (Korean). Needs Go 1.27.3, Docker, and (for `dieg write`) a logged-in `claude` CLI subscription.
-
-**Output language:** `dieg write` / `continue` / `revise` produce Korean prose by default (backend `ko-haera`; the coding prompt requires Korean), whatever language the idea is in. Design notes and ADRs referenced in the docs are not published.
-
-License: Apache-2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)).
-
----
-
-*아래는 한국어 상세 문서.*
-
 # Diegesis (한국어)
+
+> English: [README.md](README.md)
+
 
 소설을 위한 프로그래밍 언어. 인물·사실·장면·발화(`tells`, `lies`, `sees` …)를 `.dieg.md` 파일에 적으면
 Go 컴파일러 `dieg` 가 이야기 IR 로 바꿔 PostgreSQL(Apache AGE + pgvector)에 적재한다.
 판정(시간 모순, 누가 무엇을 아는가, 기만, 서사 패턴, 지표)은 전부 PG 안의 SQL 이 한다.
 문법의 단일 기준은 `spec/grammar.ebnf`, 예제 코퍼스는 `corpus/`(macbeth chibi bible odyssey hamlet othello holmes).
+
+## 빠른 시작
+
+도커만 있으면 된다(Go 는 선택. 미리 빌드한 바이너리·이미지는 첫 공개 판 이후부터 쓸 수 있고, 그 전에는 스크립트가 소스로 빌드한다).
+
+```sh
+git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang && ./scripts/quickstart.sh
+```
+
+Windows(PowerShell): `powershell -ExecutionPolicy Bypass -File scripts\quickstart.ps1`
+
+스크립트는 도커로 PG 를 띄우고, `dieg` 를 구하고(PATH → `go build` → Release 내려받기+sha256 검사), 마이그레이션한 뒤 `dieg demo` 를 돌린다. 모델 호출 없음. 자세히: [scripts/README.md](scripts/README.md).
+
+Claude 구독 없이 `dieg demo`: 내장된 작은 이야기(등대)를 적재하고 SQL 이 찾은 것을 찍는다. 모델 호출 없음.
+
+```text
+== Consistency warnings ==
+1.3.dieg.md:13:19: warn stays-gone: dobi enters after leaving (status gone at 1.3.dieg.md:12)
+1.3.dieg.md:14:1: warn stays-gone: dobi says after leaving (status gone at 1.3.dieg.md:12)
+cast.dieg.md:35:1: warn relative-time-fact: fact storm_coming names a relative time: 폭풍이 열흘 뒤에 온다
+
+== Who knows what (scene 1.3) ==
+- 도비: 「등대 문은 잠겨 있다」 — believes it is true
+- 미나: 「폭풍이 열흘 뒤에 온다」 — believes it is true
+- 하루: 「폭풍이 열흘 뒤에 온다」 — believes it is true
+- 하루: 「등대 문은 잠겨 있다」 — believes it is true
+
+== World state for scene 1.3 == (excerpt)
+### 장소와 시간
+- 이 장면의 장소: 항구(harbor)
+
+### 코드에 적힌 속성
+- 도비: 이미 이야기에서 떠났다(status)
+- 놋쇠 열쇠(key): at = 등대
+- 이 장면의 장소(항구)에 없는 물건: 놋쇠 열쇠(등대). 장면에서 직접 옮기는 행위가 없으면 그 자리에 둔다.
+```
+
+월드 상태 블록은 렌더러가 받는 한국어 프롬프트 원문이다.
+
+아래는 수동 설정이다.
 
 ## 준비물
 
@@ -56,6 +58,7 @@ Go 컴파일러 `dieg` 가 이야기 IR 로 바꿔 PostgreSQL(Apache AGE + pgvec
 
 ```sh
 cd deploy
+docker compose pull pg || true     # 미리 빌드한 이미지(첫 공개 판 이후). 없으면 로컬 빌드
 docker compose up -d pg            # 127.0.0.1:55432, 사용자/암호/DB = sl/sl/sl, 데이터는 볼륨 sl_pgdata
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go run ./cmd/dieg db migrate       # db/migrations/*.sql 을 이름순으로 한 번씩 적용
@@ -71,6 +74,7 @@ dieg check corpus/macbeth          # 구문·의미 검사(오류가 있으면 e
 dieg test corpus/macbeth           # 컴파일·적재·린트·질의·패턴·변이 → expect.yaml 대로인지. 보고서 out/accept/macbeth.md
 dieg patterns hamlet               # 서사 패턴 라이브러리(patterns/*.sql)를 작품 하나에
 dieg stats macbeth                 # 지표(metric_*): 출석, 정보 비대칭, 긴장도, 아나크로니 …
+dieg demo                          # 내장 데모 이야기: 경고·누가 무엇을 아는가·세계 상태(PG 필요, 모델 호출 없음)
 dieg render-check corpus/macbeth   # 장면을 산문으로 렌더하고 다시 추출해 IR 과 비교(캐시 사용)
 ```
 
@@ -148,7 +152,7 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 
 이력(이전 측정, 현재 주장 아님): retcon2(재설정 3건, n=3)는 모순 4 대 0, 무관한 글자 945 대 33자, 비용 1.02배였고 판정은 "약함"이었다. 상태만 바뀐 장면의 패치가 사실상 빈 패치였던 문제가 뒤에 드러나 이 수치는 낙관적이다. [`examples/value/retcon2`](examples/value/retcon2/README.md)
 
-문서에서 가리키는 설계 노트와 ADR 은 공개하지 않는다. `docs/` 와 retcon README 는 한국어다.
+문서에서 가리키는 설계 노트와 ADR 은 공개하지 않는다. `docs/` 는 영어이고, retcon README 는 한국어다.
 
 ## 측정 결과
 
@@ -214,6 +218,7 @@ go vet ./...
 | v0.6.0 | 플랜 6: 기본 채점기 card(`--verifier open` 으로 예전 방식), 지어낸 사건은 경고만, 기본 `--render-effort low`, 계층형 렌더러(`--renderer`·`--beat-retries`) 삭제, 연재 run3 |
 | v0.7.0 | 플랜 7: 렌더 프롬프트에 세계 상태 요약(`--no-digest`), 상태 해시 낡음·`dieg stamp`, `revise` 문장 패치(`patched=N`), 경고 3개, `revise` 는 새 진단만 막음, `--skip`·`DIEG_CALL_CAP`, 수정 재측정(retcon2) |
 | v0.8.0 | 플랜 8: 공개 준비(Apache-2.0, 위생 점검 `tools/pubcheck`, `docs/`), 영어 README·`docs/quickstart.md`·`examples/showcase`, 재설정 재측정(retcon3) |
+| v0.9.0 | 플랜 9: 첫 사용 경험(`dieg demo`, `scripts/quickstart.sh`·`.ps1`, 컴포즈 ghcr 이미지, 릴리스 워크플로, `docs/releasing.md`), `attribute-conflict` 가 `X.at` 이동도 허용 |
 
 ## 라이선스
 

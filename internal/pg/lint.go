@@ -15,12 +15,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Rule 은 rules/*.sql 파일 하나. 헤더 주석 `-- key: value` 에서 읽는다.
+// Rule is one rules/*.sql file. Read from the header comment `-- key: value`.
 type Rule struct {
 	ID, Severity, Layer, Summary, Path, SQL string
 }
 
-// Diagnostic 은 diagnostic 행 하나에 소스 위치와 억제 사유를 붙인 것.
+// Diagnostic is a diagnostic row with the source position and suppression reason attached.
 type Diagnostic struct {
 	RunID      string          `json:"run_id"`
 	Rule       string          `json:"rule"`
@@ -46,7 +46,7 @@ func (d Diagnostic) String() string {
 
 var headerLine = regexp.MustCompile(`^--\s*([a-z]+):(.*)$`)
 
-// Rules 는 dir 아래(하위 폴더 포함) *.sql 을 읽는다. 규칙 ID 는 파일 이름과 같아야 한다.
+// Rules reads *.sql under dir (subfolders included). The rule ID must equal the file name.
 func Rules(dir fs.FS) ([]Rule, error) {
 	var out []Rule
 	err := fs.WalkDir(dir, ".", func(p string, d fs.DirEntry, err error) error {
@@ -58,7 +58,7 @@ func Rules(dir fs.FS) ([]Rule, error) {
 			return err
 		}
 		r := Rule{Path: p, SQL: string(b), Layer: "lint"}
-		// 헤더 = 맨 위에 이어지는 `-- key: value` 줄. 처음으로 그 꼴이 아닌 줄에서 끝난다.
+		// Header = the consecutive `-- key: value` lines at the very top. It ends at the first line not of that form.
 		sc := bufio.NewScanner(strings.NewReader(r.SQL))
 		for sc.Scan() {
 			m := headerLine.FindStringSubmatch(sc.Text())
@@ -90,8 +90,8 @@ func Rules(dir fs.FS) ([]Rule, error) {
 	return out, err
 }
 
-// targetSrc 는 진단 대상의 원문 위치. 규칙이 src_id 를 직접 주지 않았을 때 쓴다.
-// 장면 안 문장(when belief presence …) 의 억제 대상은 그 장면이다(sema).
+// targetSrc is the source position of a diagnostic target. Used when the rule did not give src_id directly.
+// The suppression target of a statement inside a scene (when belief presence …) is that scene (sema).
 const targetSrc = `
 UPDATE diagnostic d SET src_id = t.src_id FROM (
   SELECT 'act' k, id, src_id FROM act WHERE work_id = $1
@@ -108,7 +108,7 @@ UPDATE diagnostic d SET src_id = t.src_id FROM (
     unnest('{scene,event,when,belief,presence,reveal,withhold,directive}'::text[]) k WHERE work_id = $1
 ) t WHERE d.work_id = $1 AND d.run_id = $2 AND d.src_id IS NULL AND t.k = d.target_kind AND t.id = d.target_id`
 
-// 억제: 규칙과 대상(kind, id)이 정확히 같은 waiver 만(Review Focus 1). derive 진단에도 적용한다.
+// Suppression: only waivers whose rule and target (kind, id) match exactly (Review Focus 1). Also applied to derive diagnostics.
 const applyWaivers = `
 UPDATE diagnostic d SET waived = true
  WHERE d.work_id = $1 AND d.run_id IN ($2, 'derive') AND NOT d.waived AND EXISTS (
@@ -127,9 +127,9 @@ SELECT d.run_id, d.rule_id, d.severity, coalesce(d.target_kind, ''), coalesce(d.
  WHERE d.work_id = $1 AND d.run_id IN ($2, 'derive')
  ORDER BY s.file, s.line, s.col, d.rule_id, d.target_id`
 
-// Lint 는 작품 하나에 lint 층 규칙을 전부 돌려 diagnostic 에 새 run_id 로 넣고(이전 lint 결과는 지운다),
-// 대상의 src 를 붙이고, 정확히 일치하는 waiver 로 억제를 표시한 뒤, derive 진단과 함께 돌려준다.
-// 판정은 규칙 SQL 이 한다. 여기서는 열을 옮겨 담을 뿐이다(ADR-010).
+// Lint runs every lint-layer rule on a work and inserts the results into diagnostic under a new run_id (previous lint results are deleted),
+// attaches the targets' src, marks suppression with exactly matching waivers, then returns them together with the derive diagnostics.
+// The verdict is made by the rule SQL. This only copies the columns (ADR-010).
 func Lint(ctx context.Context, db *pgxpool.Pool, work string, rulesDir fs.FS) ([]Diagnostic, error) {
 	rules, err := Rules(rulesDir)
 	if err != nil {
@@ -154,7 +154,7 @@ func Lint(ctx context.Context, db *pgxpool.Pool, work string, rulesDir fs.FS) ([
 	if _, err := tx.Exec(ctx, `DELETE FROM diagnostic WHERE work_id = $1 AND run_id <> 'derive'`, work); err != nil {
 		return nil, err
 	}
-	// 선언된 패턴만 먼저 돌린다: 규칙 pattern-missing 이 pattern_match 를 읽는다
+	// run only the declared patterns first: the pattern-missing rule reads pattern_match
 	only, err := declaredPatterns(ctx, tx, work)
 	if err != nil {
 		return nil, err
@@ -164,7 +164,7 @@ func Lint(ctx context.Context, db *pgxpool.Pool, work string, rulesDir fs.FS) ([
 	}
 	for _, r := range rules {
 		if r.Layer != "lint" {
-			continue // derive 층(time-cycle 등)은 적재 때 이미 diagnostic 에 있다
+			continue // derive-layer rules (time-cycle etc.) are already in diagnostic from load time
 		}
 		rows, err := runRule(ctx, tx, r, work)
 		if err != nil {

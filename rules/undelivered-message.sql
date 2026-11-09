@@ -4,11 +4,11 @@
 -- target: act
 -- summary: `sends m to t with P` 의 전갈이 t 에게 전해지지 않았다
 --
--- 대상: sends 행위의 받는 사람 t(to 목록)와 내용 명제 P(prop_id ∪ with) 한 쌍씩.
---   (무대 밖 sends 의 청중은 전령뿐이다. t 는 전달로만 안다.)
--- 전달: 전령(objects 의 누구든)이 단언 발화(sends 제외, lies 포함 — 거짓이어도 전해지긴 했다)로 P 를 말하고
---   t 가 그 청중에 있는 다른 행위. 별칭은 lint_canon 으로 맞춘다.
--- 판정: precedes(sends, 전달) = yes 인 전달이 있으면 정상, maybe 뿐이면 info, 없으면 warn.
+-- Target: one pair each of a sends act's recipient t (the to list) and content proposition P (prop_id ∪ with).
+--   (The audience of an offstage sends is only the messenger. t knows only through delivery.)
+-- Delivery: another act in which the messenger (anyone in objects) tells P by an assertive utterance (excluding sends, including lies — it was delivered even if false) and
+--   t is in that audience. Aliases are aligned with lint_canon.
+-- Verdict: fine if there is a delivery with precedes(sends, delivery) = yes, info if only maybe, warn if none.
 WITH
 msg AS (
   SELECT s.id AS act_id, s.pt, s.objects AS messengers, t.id AS recipient, x.prop_id, lint_canon($1, x.prop_id) AS c

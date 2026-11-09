@@ -15,13 +15,13 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
-// corpusIR 는 corpus/<work> 를 컴파일하고 작품 ID 를 고유한 것으로 바꾼다(dieg 가 적재한 실제 작품과 겹치지 않게).
+// corpusIR compiles corpus/<work> and changes the work ID to a unique one (so it does not collide with a real work loaded by dieg).
 func corpusIR(t *testing.T, work string) (*ir.Work, string) {
 	t.Helper()
 	return corpusIRMod(t, work, nil)
 }
 
-// corpusIRMod 는 corpusIR 에 소스 변형(mod, 음성 대조용)을 끼운다.
+// corpusIRMod applies a source variant (mod, for negative controls) to corpusIR.
 func corpusIRMod(t *testing.T, work string, mod func(src []byte) []byte) (*ir.Work, string) {
 	t.Helper()
 	var files []*syntax.File
@@ -61,10 +61,10 @@ func corpusIRMod(t *testing.T, work string, mod func(src []byte) []byte) (*ir.Wo
 		t.Fatal(err)
 	}
 	id := fmt.Sprintf("t_%s_%d", work, rand.Int63())
-	for _, p := range []string{`"`, `(`, `,`, ` `} { // 명제 ID 안의 인자(holds(w/x,w/y), not w/x)까지
+	for _, p := range []string{`"`, `(`, `,`, ` `} { // down to the arguments inside a proposition ID (holds(w/x,w/y), not w/x)
 		b = bytes.ReplaceAll(b, []byte(p+work+`/`), []byte(p+id+`/`))
 	}
-	for _, k := range []string{"id", "work_id", "owner_id"} { // 지시어 값 같은 짧은 이름 "macbeth" 는 그대로 둔다
+	for _, k := range []string{"id", "work_id", "owner_id"} { // short names such as directive values like "macbeth" are left alone
 		b = bytes.ReplaceAll(b, []byte(`"`+k+`":"`+work+`"`), []byte(`"`+k+`":"`+id+`"`))
 	}
 	var out ir.Work

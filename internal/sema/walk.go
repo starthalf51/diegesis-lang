@@ -147,11 +147,11 @@ func objectKinds(verb string) []string {
 	switch verb {
 	case "reads", "writes":
 		return []string{"artifact"}
-	case "sees": // 사실 객체는 act 에서 내용으로 빠진다. 남는 것은 엔티티여야 한다
+	case "sees": // a fact object drops out of act as content. What remains must be an entity
 		return []string{"character", "group", "place", "thing", "faction", "thread"}
 	case "does":
 		return nil
-	case "shows": // 보여 주는 것은 사람 또는 사물·기록. 사물은 청중이 아니다(presence.go)
+	case "shows": // what is shown is a person or an object/account. An object is not an audience (presence.go)
 		return []string{"character", "group", "thing", "artifact"}
 	}
 	return []string{"character", "group"}
@@ -167,7 +167,7 @@ func (w *walker) act(a *syntax.Act) string {
 	} else {
 		actor = b.want(m, a.Actor, "actor", "character", "group")
 	}
-	// `X sees p`: 사실(또는 별칭) 객체는 본 내용이다(with 로 옮겨 derive 가 지각 믿음을 만든다)
+	// `X sees p`: a fact (or alias) object is the content seen (moved to with so derive makes the perception belief)
 	objs, seen := a.Objects, []string{}
 	if a.Verb == "sees" {
 		objs = nil

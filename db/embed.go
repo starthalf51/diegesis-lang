@@ -1,4 +1,4 @@
-// Package db 는 마이그레이션 SQL을 바이너리에 내장한다. dieg 와 테스트가 같은 파일을 쓴다.
+// Package db embeds the migration SQL in the binary. dieg and the tests use the same files.
 package db
 
 import "embed"

@@ -43,7 +43,7 @@ func (b *builder) when(m *module, w *syntax.When, start, end string) {
 	case "before":
 		x, _ := b.tref(m, w.Ref)
 		b.edge(m, end, x, min, max, w.Pos)
-	case "lasts": // 장면·사건의 길이
+	case "lasts": // the length of a scene/event
 		b.edge(m, start, end, min, max, w.Pos)
 	case "during":
 		xs, xe := b.tref(m, w.Ref)

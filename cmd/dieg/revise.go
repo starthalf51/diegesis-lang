@@ -12,7 +12,7 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/write"
 )
 
-// cmdRevise runs `dieg revise <story-dir> "요청" [--rounds N] [--scenes N] [--no-render] [--backend id] [--styles dir]
+// cmdRevise runs `dieg revise <story-dir> "request" [--rounds N] [--scenes N] [--no-render] [--backend id] [--styles dir]
 // [--skip s1,s2 (benchmark only: never render these scenes)] [--code-model M] [--render-model M] [--extract-model M] [--code-effort e]` on a dir made by `dieg write -o <story-dir>`.
 // The AI edits story/ to satisfy the request (checker + PG lint loop on a copy; story/ changes only when clean), then only
 // the scenes whose render request changed or that are new are re-rendered (--scenes N caps that; changed scenes are patched

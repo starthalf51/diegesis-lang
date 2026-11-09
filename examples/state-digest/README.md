@@ -1,99 +1,99 @@
-# PG 상태 요약(state digest) 스파이크
+# PG state digest spike
 
-버릴 코드로 한 싼 검증이다(`tools/statespike/`, 브랜치 `spike-state`, 시작 main `7c67ea0`). 판정자는 나 하나다(블라인드·교차 판정 없음). 아래 "해소" 표시는 한 사람이 산문을 읽고 내린 값이다.
+A cheap check done with throwaway code (`tools/statespike/`, branch `spike-state`, started from main `7c67ea0`). I am the only judge (no blind or cross judging). The "resolved" marks below are values given by one person reading the prose.
 
-## 가설
+## Hypothesis
 
-run3 B(`examples/serial/run3/b/`)의 오류 대부분은 장면 사이 산문 표류였다(렌더러가 소품·장소·앎을 장면마다 새로 지어냄). PG 에서 뽑은 "그 시점의 세계 상태 요약"을 렌더 사용자 프롬프트에 붙이면 표류가 사라진다.
+Most of the errors in run3 B (`examples/serial/run3/b/`) were drift of prose between scenes (the renderer invented props, places, and knowledge anew in each scene). Attaching a "summary of the world state at that point", drawn from PG, to the render user prompt makes the drift go away.
 
-사전 고정 기준:
-- 지지: 팔 D 가 5개 중 4개 이상 해소, 팔 0(대조)은 2개 이하 해소, 팔 D 에서 새 표류·카드 실패 없음.
-- 범위표에서 대부분이 "IR 에 없음"이면 "디지스트만으로는 부족 — IR 확장(소품·장소 코딩) 필요"라고 판정한다. 둘 다 보고한다.
+Pre-registered criteria:
+- Support: arm D resolves at least 4 of 5, arm 0 (control) resolves at most 2, and arm D has no new drift or card failure.
+- If the coverage table says most items are "not in the IR", the verdict is "the digest alone is not enough — the IR must be extended (coding props and places)". Both are reported.
 
-## 범위표 (coverage, 호출 0)
+## Coverage table (coverage, 0 calls)
 
-`yeoul` 작품은 PG 에 이미 올라 있었다(35장면, 마지막 B 코드와 같다). 다시 올리지 않았다. 확인: 5개 장면의 현재 렌더 요청 해시가 run3 때 `.hash` 와 전부 같다(`dieg render` 의 `RenderHash`). 즉 아래 재렌더는 run3 와 같은 장면 명세로 돌았다.
+The `yeoul` work was already loaded in PG (35 scenes, the same as the last B code). It was not re-uploaded. Check: the current render request hashes of the 5 scenes are all equal to the `.hash` from run3 (`dieg render`'s `RenderHash`). So the re-renders below ran on the same scene specs as run3.
 
-| 표류 | 필요한 정보가 B 의 IR/PG 에 있나 | 분류 | 근거 |
+| Drift | Is the needed information in B's IR/PG | Class | Basis |
 |---|---|---|---|
-| B3 s2 상자 위치(시렁) | 있다 | **PG 에 있음** | s2 코드 `setup box_hint hint: "외할머니 장롱 위에 놓인 녹슨 양철 상자"`. 렌더 요청(`render_scene`)에는 이 복선 문구가 안 들어가서 렌더러가 몰랐다. `tin_box.at = malsun_house` 도 있다(방 단위). |
-| B4 s20/s21 먼지 | 없다 | **IR 에 없음** | 어떤 `attr`·사실에도 먼지/깨끗함이 없다. 산문이 지어낸 서술 속성이다. 코드를 더 풍부하게 짜야 한다. |
-| B5 s21→s29 상자가 제자리 | 일부 | **일부** | `tin_box.at` 은 한 번뿐이고 옮기는 행위가 코드에 없다(그래서 요약이 "옮긴 기록 없음"이라 쓸 수 있다). 그러나 `does take_down_box` / `open_box` 는 물건 인자가 없는 자유 동작이라 상자와 연결되지 않는다. 상자를 다시 올려놨는지는 코드에 없다. |
-| B6 s29 내용물 모름 | 일부 | **일부** | s21 `seoyun sees ledger_page, ledger_entry` 가 PG 에 있고(독자·서윤의 앎 모두 파생됨) 그 사이 `open_box` 가 있다. 그러나 "장부 쪽이 상자 안에 있었다"는 관계는 코드에 없다(`contains` 없음). |
-| B7 s25 판자가 폐가로 | 대체로 있다 | **일부** | `fragments_hidden` 사실(열세 번째 계단 판자 밑)과 `stair_nail.at = lighthouse` 가 있다. 판자 자체는 엔티티가 아니다("판자를 뜯어 옮긴다"는 코드에 없다). |
-| B8 s24/s27 틀의 위치 | 있다 | **PG 에 있음** | `shard_fit_test`: "해솔과 수아는 **등실**에서 수아의 유리 조각을 깨진 렌즈 귀퉁이에 대어 본다". 틀이 "기둥 밑동"이라는 s24 산문이 코드와 어긋난 쪽이다. |
+| B3 s2 box location (shelf) | yes | **in PG** | s2 code `setup box_hint hint: "외할머니 장롱 위에 놓인 녹슨 양철 상자"` ("a rusty tin box on top of Grandmother's wardrobe"). This foreshadowing phrase is not in the render request (`render_scene`), so the renderer did not know it. `tin_box.at = malsun_house` is there too (room level). |
+| B4 s20/s21 dust | no | **not in the IR** | No `attr` or fact has dust or cleanliness. It is a descriptive attribute the prose invented. The code must be written richer. |
+| B5 s21→s29 box stays in place | partly | **partial** | `tin_box.at` appears only once and no act of moving it is in the code (so the digest can write "no record of moving"). But `does take_down_box` / `open_box` are free actions with no object argument, so they are not connected to the box. Whether the box was put back is not in the code. |
+| B6 s29 contents unknown | partly | **partial** | s21 `seoyun sees ledger_page, ledger_entry` is in PG (both the reader's and Seo-yun's knowledge are derived), and `open_box` is in between. But the relation "the ledger page was inside the box" is not in the code (no `contains`). |
+| B7 s25 plank in the abandoned house | mostly | **partial** | The `fragments_hidden` fact (under the thirteenth stair plank) and `stair_nail.at = lighthouse` exist. The plank itself is not an entity ("tear off the plank and move it" is not in the code). |
+| B8 s24/s27 frame location | yes | **in PG** | `shard_fit_test`: "Hae-sol and Su-a hold Su-a's glass shard against the broken lens corner **in the lantern room**". The s24 prose saying the frame is "at the base of the pillar" is the side that departs from the code. |
 
-요약: PG 에 있음 2(B3·B8), 일부 3(B5·B6·B7), IR 에 없음 1(B4). "대부분 IR 에 없음"은 아니므로 두 번째 판정 규칙은 발동하지 않는다. 다만 "일부" 셋을 "없음"으로 보면 4/6 이다. 그 경우도 아래 표에 함께 적는다. 서술 속성(먼지처럼)은 어느 경우든 IR 밖이다.
+Summary: in PG 2 (B3, B8), partial 3 (B5, B6, B7), not in the IR 1 (B4). "Most not in the IR" does not hold, so the second verdict rule does not fire. But if the three "partial" are counted as "none", it is 4/6. That case is also written in the table below. Descriptive attributes (like dust) are outside the IR either way.
 
-## 방법
+## Method
 
-- 요약 함수: `tools/statespike/digest.go`. 기존 표·함수만 읽는다(`pg.Connect`, 마이그레이션 없음). 한국어 절 "## 이 시점의 세계 상태 (어기지 말 것)" 을 렌더 **사용자 프롬프트 끝**에 붙인다(재시도 피드백 뒤). 프로덕션 프롬프트·`internal/` 는 안 건드렸다. 구성: (1) 장소와 시간(`point.earliest` 로 이야기 시작 후 경과, 앞 장면과의 간격) (2) `attribute` 의 사물 속성·떠난 인물, 옮긴 기록 유무, 이 장면 장소에 없는 물건 (3) 사물이 인자인 이전 행위와 같은 장소의 최근 동작 (4) 등장 인물별 `believes`(참/거짓, `truth_at` 와 어긋나면 "사실과 다른 믿음", 독자 비공개 사실은 제외) 최근 5개 (5) `reader_events` 로 독자에게 이미 서술된 사실 최근 8개 (6) 이 장면이 심고 거두는 복선, 앞서 심은 묘사 복선 원문 8개. 길이 상한 3,600자. 장면별 결과: `digest-s2.txt` 등.
-- 호출: 렌더 haiku(`claude-haiku-5-5`) effort low, 카드 채점 sonnet(`claude-sonnet-5-5`) effort low, 검증기 card, Retries 2, 백엔드 ko-haera, `FreeDialogue=true`(`write.DefaultOpts` 와 같다). 구독 `claude -p` 만 썼다.
-- 팔: D(요약 붙임) / 0(안 붙임). 장면과 실행마다 팔 순서를 번갈았다. 장면 s2·s21·s25·s27·s29, 팔당 2회씩 = 20셀.
-- 안전: 먼저 noclaude 셰임으로 빌드·테스트·가짜 완성기 드라이런(호출 0)을 했고, 요약 하나를 전체 프롬프트로 출력해 확인했다. 그 뒤 셰임을 빼고 실제 호출을 돌렸다. 호출 직전 예산 가드(상한 50), 모든 호출은 `calls.jsonl`. 산문은 `prose-<팔>-<장면>-r<회>.md`, 셀 요약은 `cells.json`, 진행 로그는 `run.log`.
-- 판정 규칙(결과를 보기 전에 고정): 코드가 기준이다. 해소 = 코드와 앞 장면 원본 산문에 모순되는 진술이 없음. B8 은 s27 이 코드대로(등실)이거나 장소를 말하지 않으면 해소(원본 s27 도 이미 그랬다: 표류의 원천은 s24 다). 먼지는 상자 자체에 먼지가 있다고 쓰면 표류. 장면 단위 "해소"는 실행 전부가 해소일 때(엄격)로 센다.
+- The digest function: `tools/statespike/digest.go`. It reads only existing tables and functions (`pg.Connect`, no migrations). It appends the Korean section "## 이 시점의 세계 상태 (어기지 말 것)" ("## World state at this point (do not violate)") at the **end of the render user prompt** (after the retry feedback). Production prompts and `internal/` were not touched. Contents: (1) place and time (elapsed since the story start via `point.earliest`, gap from the previous scene) (2) object attributes and departed characters from `attribute`, whether there is a record of moving, objects not at this scene's place (3) earlier acts with the object as an argument, and recent actions at the same place (4) per-character `believes` of the characters appearing (true/false, "belief contrary to fact" when it conflicts with `truth_at`, facts hidden from the reader excluded), the latest 5 (5) the latest 8 facts already narrated to the reader via `reader_events` (6) foreshadowing this scene plants and pays off, and the original text of 8 descriptive foreshadowings planted earlier. Length cap 3,600 characters. Per-scene results: `digest-s2.txt` etc.
+- Calls: render haiku (`claude-haiku-5-5`) effort low, card grading sonnet (`claude-sonnet-5-5`) effort low, verifier card, Retries 2, backend ko-haera, `FreeDialogue=true` (the same as `write.DefaultOpts`). Only the subscription `claude -p` was used.
+- Arms: D (digest attached) / 0 (not attached). The arm order alternated by scene and run. Scenes s2, s21, s25, s27, s29, 2 runs per arm = 20 cells.
+- Safety: first we did a build, tests, and a fake-completer dry run (0 calls) with the noclaude shim, and printed one digest as a full prompt to check it. Then we removed the shim and ran the real calls. A budget guard (cap 50) before each call; every call is in `calls.jsonl`. Prose is in `prose-<arm>-<scene>-r<run>.md`, the cell summary in `cells.json`, the progress log in `run.log`.
+- Judgment rule (fixed before seeing results): the code is the standard. Resolved = no statement contradicting the code and the original prose of earlier scenes. For B8, resolved if s27 follows the code (lantern room) or does not mention the place (the original s27 already did: the source of the drift is s24). For dust, writing that the box itself has dust counts as drift. A scene counts as "resolved" only when all runs are resolved (strict).
 
-## 장면별 표
+## Per-scene table
 
-원본 대조 대상 — s2: 코드 `box_hint`(장롱 위)와 원본 s2 "장롱 밑 시렁 위". s21: 원본 s20 "상자는 먼지 하나 없이 깨끗했다". s25: 코드 `fragments_hidden`(판자는 계단에 있음), 원본 s25 "열세 번째 계단에서 뜯어 온 판자"(폐가 안), 원본 s26 판자는 계단에 박혀 있음. s27: 원본 s24 "등대 기둥 밑동에 남은 렌즈 틀", 코드는 등실. s29: 원본 s29 "선반 밑", 원본 s21 "먼지가 내려앉은 상자", "그 안에 무엇이 들어 있는지는 아직 알 수 없었다"(s29), 코드는 `tin_box.at` 이동 없음·s21 `sees ledger_page`.
+Reference for comparison with the originals — s2: code `box_hint` (on the wardrobe) vs original s2 "on the shelf under the wardrobe". s21: original s20 "the box was clean, without a speck of dust". s25: code `fragments_hidden` (the plank is on the stairs), original s25 "the plank torn off the thirteenth stair" (inside the abandoned house), original s26 the plank is nailed into the stairs. s27: original s24 "the lens frame left at the base of the lighthouse pillar", the code says the lantern room. s29: original s29 "under the shelf", original s21 "a box with dust settled on it", "what was inside was not yet known" (s29), the code has no `tin_box.at` move, and s21 has `sees ledger_page`.
 
-| 장면 | 팔 | 회 | 해소 | 근거 | 카드 | Score |
+| Scene | Arm | Run | Resolved | Basis | Card | Score |
 |---|---|---|---|---|---|---|
-| s2 | D | 1 | 해소 | "장롱 위에 낡은 물건 하나가 얹혀 있었다. 녹슨 양철 상자였다." | 통과 | 1.000 |
-| s2 | D | 2 | 해소 | "장롱 위에 녹슨 양철 상자 하나가 놓여 있었다." | 통과 | 1.000 |
-| s2 | 0 | 1 | 표류 | "할머니 등 뒤 선반 구석 … 녹이 슨 양철 상자 하나" (장롱 위 아님) | 통과 | 1.000 |
-| s2 | 0 | 2 | 표류 | "방 한쪽 선반에 … 먼지가 두껍게 앉은 자리에 녹슨 양철 상자" | 통과 | 1.000 |
-| s21 | D | 1 | 해소(경계) | "장롱 위로 손을 뻗었다. 손끝에 먼지가 묻어 까슬했다. 녹슨 양철 상자는 생각보다 가벼웠다." 상자가 아니라 장롱 위 먼지로 읽어 해소로 셌다. | 통과 | 1.000 |
-| s21 | D | 2 | 해소 | 먼지 언급 없음. 요약에는 먼지 정보가 없었으므로 우연이다. | 통과 | 1.000 |
-| s21 | 0 | 1 | 해소(경계) | "손끝이 먼지 쌓인 나무 결을 훑었다" 장롱 위 나무 결이다. 상자 먼지 아님. | 통과 | 0.998 |
-| s21 | 0 | 2 | 표류 | "뚜껑 가장자리에 먼지가 가라앉아 있었고" (s20 은 깨끗) | 통과 | 0.998 |
-| s25 | D | 1 | 해소 | 판자는 대사 속에만("열세 번째 계단 판자 밑에 숨겼고 … 새 못을 박아서"). 폐가 안에 판자가 없다. | 통과 | 1.000 |
-| s25 | D | 2 | 해소 | 같음("그걸 열세 번째 계단 판자 밑에 숨겼소"). | 통과(카드 재질문 1) | 1.000 |
-| s25 | 0 | 1 | 해소 | 같음. 판자를 폐가로 옮기지 않았다. | 통과 | 1.000 |
-| s25 | 0 | 2 | 해소 | 같음. | 통과 | 1.000 |
-| s27 | D | 1 | 해소 | "등실에 있는 렌즈와 맞춰 봤어요"(코드와 같다) | 통과 | 0.998 |
-| s27 | D | 2 | 해소 | 맞춘 장소를 쓰지 않는다. | 통과 | 0.991 |
-| s27 | 0 | 1 | 해소 | "맞춰 보면 바로 알 수 있어요" 장소 없음. | 통과 | 1.000 |
-| s27 | 0 | 2 | 해소 | 장소 없음. | 통과 | 0.998 |
-| s29 | D | 1 | 해소 | "장롱 위 녹슨 양철 상자", 내용물을 모른다는 진술 없음. | 통과 | 1.000 |
-| s29 | D | 2 | 해소 | "장롱 위에 녹슨 양철 상자가 놓여 있었다". | 통과 | 0.997 |
-| s29 | 0 | 1 | 표류 | "방구석 선반 … 선반 위에는 녹슨 양철 상자" (장롱 위 아님) | 통과 | 1.000 |
-| s29 | 0 | 2 | 표류 | "선반 위에 녹슨 양철 상자" | 통과 | 1.000 |
+| s2 | D | 1 | resolved | "장롱 위에 낡은 물건 하나가 얹혀 있었다. 녹슨 양철 상자였다." ("An old object sat on top of the wardrobe. It was a rusty tin box.") | pass | 1.000 |
+| s2 | D | 2 | resolved | "장롱 위에 녹슨 양철 상자 하나가 놓여 있었다." ("A rusty tin box lay on top of the wardrobe.") | pass | 1.000 |
+| s2 | 0 | 1 | drift | "할머니 등 뒤 선반 구석 … 녹이 슨 양철 상자 하나" ("in the corner of the shelf behind Grandmother … a rusty tin box") (not on the wardrobe) | pass | 1.000 |
+| s2 | 0 | 2 | drift | "방 한쪽 선반에 … 먼지가 두껍게 앉은 자리에 녹슨 양철 상자" ("on a shelf on one side of the room … a rusty tin box in a spot thick with dust") | pass | 1.000 |
+| s21 | D | 1 | resolved (borderline) | "장롱 위로 손을 뻗었다. 손끝에 먼지가 묻어 까슬했다. 녹슨 양철 상자는 생각보다 가벼웠다." ("She reached up onto the wardrobe. Dust on her fingertips felt gritty. The rusty tin box was lighter than expected.") Read as dust on the wardrobe top, not on the box, so counted as resolved. | pass | 1.000 |
+| s21 | D | 2 | resolved | No mention of dust. The digest had no dust information, so it is chance. | pass | 1.000 |
+| s21 | 0 | 1 | resolved (borderline) | "손끝이 먼지 쌓인 나무 결을 훑었다" ("Her fingertip ran over the dusty wood grain") is the wood grain on top of the wardrobe. Not dust on the box. | pass | 0.998 |
+| s21 | 0 | 2 | drift | "뚜껑 가장자리에 먼지가 가라앉아 있었고" ("dust had settled on the edge of the lid") (s20 is clean) | pass | 0.998 |
+| s25 | D | 1 | resolved | The plank is only in dialogue ("열세 번째 계단 판자 밑에 숨겼고 … 새 못을 박아서", "hid it under the thirteenth stair plank … drove in new nails"). No plank in the abandoned house. | pass | 1.000 |
+| s25 | D | 2 | resolved | Same ("그걸 열세 번째 계단 판자 밑에 숨겼소", "I hid it under the thirteenth stair plank"). | pass (1 card re-ask) | 1.000 |
+| s25 | 0 | 1 | resolved | Same. The plank was not moved to the abandoned house. | pass | 1.000 |
+| s25 | 0 | 2 | resolved | Same. | pass | 1.000 |
+| s27 | D | 1 | resolved | "등실에 있는 렌즈와 맞춰 봤어요" ("I tried matching it against the lens in the lantern room") (same as the code) | pass | 0.998 |
+| s27 | D | 2 | resolved | Does not state where it was matched. | pass | 0.991 |
+| s27 | 0 | 1 | resolved | "맞춰 보면 바로 알 수 있어요" ("If you match it you'll know right away") no place. | pass | 1.000 |
+| s27 | 0 | 2 | resolved | No place. | pass | 0.998 |
+| s29 | D | 1 | resolved | "장롱 위 녹슨 양철 상자" ("the rusty tin box on the wardrobe"), no statement that the contents are unknown. | pass | 1.000 |
+| s29 | D | 2 | resolved | "장롱 위에 녹슨 양철 상자가 놓여 있었다". ("A rusty tin box lay on top of the wardrobe.") | pass | 0.997 |
+| s29 | 0 | 1 | drift | "방구석 선반 … 선반 위에는 녹슨 양철 상자" ("a shelf in the corner of the room … on the shelf, a rusty tin box") (not on the wardrobe) | pass | 1.000 |
+| s29 | 0 | 2 | drift | "선반 위에 녹슨 양철 상자" ("a rusty tin box on the shelf") | pass | 1.000 |
 
-새 표류(해소 여부와 별개):
-- D s27 r2: 서윤이 "투표 전에 마을 사람들 앞에서 그 밤 일을 밝힐 거예요."라고 해솔·영호 앞에서 말한다. 요약의 "독자에게 이미 서술된 사실"에 있던 서윤의 다짐이 s27 의 새 대사가 됐다. 코드는 이를 말하는 행위가 없다(앎이 다른 인물에게 번진 것). 카드 G2 가 경고로만 잡았다. **D 의 새 표류 1건(경미).**
-- D s21 r1·D s29 r1: 상자 위 먼지(s29 "상자 위에 쌓인 먼지"). B4 와 같은 미해결 서술 속성이고 새 오류 유형은 아니다.
-- 대조군도 새 표류가 있다: 0 s27 r1 은 폐가 마루에 "뜯겨 나간 판자 자리"를 만든다(B7 유형, 판자는 등대 계단에 있다). 0 s21 r2 는 상자 안에 코드에 없는 "녹이 슨 쇠붙이"를 둔다.
-- 카드 실패: 20셀 모두 통과(재렌더 0).
+New drift (separate from resolved or not):
+- D s27 r2: Seo-yun says in front of Hae-sol and Yeong-ho, "투표 전에 마을 사람들 앞에서 그 밤 일을 밝힐 거예요." ("Before the vote, I'll reveal what happened that night in front of the villagers."). Seo-yun's resolve, which was in the digest's "facts already narrated to the reader", became new dialogue in s27. The code has no act that says this (knowledge spread to another character). Card G2 caught it only as a warning. **1 new drift in D (minor).**
+- D s21 r1 and D s29 r1: dust on the box (s29 "상자 위에 쌓인 먼지", "dust piled on the box"). This is the same unresolved descriptive attribute as B4, not a new type of error.
+- The control also has new drift: 0 s27 r1 makes a "뜯겨 나간 판자 자리" ("spot where a plank was torn out") on the abandoned house floor (the B7 type; the plank is on the lighthouse stairs). 0 s21 r2 puts a "녹이 슨 쇠붙이" ("rusty piece of metal") inside the box that is not in the code.
+- Card failures: all 20 cells passed (0 re-renders).
 
-집계(실행 20셀):
+Aggregate (20 cells of real runs):
 
-| | s2 | s21 | s25 | s27 | s29 | 셀 해소 | 장면 해소(엄격) |
+| | s2 | s21 | s25 | s27 | s29 | Cells resolved | Scenes resolved (strict) |
 |---|---|---|---|---|---|---|---|
 | D | 2/2 | 2/2 | 2/2 | 2/2 | 2/2 | 10/10 | **5/5** |
 | 0 | 0/2 | 1/2 | 2/2 | 2/2 | 0/2 | 5/10 | **2/5** |
 
-## 판정
+## Verdict
 
-- 사전 기준: D 5/5 ≥ 4 충족, 0 은 2/5 ≤ 2 충족, 그러나 "D 에서 새 표류 없음"은 **엄격히는 불충족**(D s27 r2 한 건, 경미). → **가설은 기준 1·2 에서 지지, 기준 3 에서 한 건 걸림. 전체로는 "지지, 단 약함".**
-- 이 숫자를 그대로 읽으면 안 된다.
-  - 장면 5개 중 대조군이 실제로 표류한 것은 s2·s29 둘뿐이다. s25·s27 은 대조군도 멀쩡해서 D 의 효과를 못 가른다(s25 의 원래 오류는 재현되지 않은 한 번의 사고였을 수 있다. s27 은 코드대로 쓰는 쪽이 이미 정답이었고 표류의 원천은 s24 다 — 측정이 잘못 잡힌 쌍이다). s21 은 먼지가 IR 에 없어 D 의 해소가 우연이다.
-  - 가를 수 있었던 장면은 s2·s29 이고 거기서 D 는 4/4, 0 은 0/4 다. 둘 다 "장롱 위"(복선 원문·`tin_box.at`)를 요약이 알려준 경우다.
-- 범위표 규칙: "대부분 IR 에 없음"은 아니다(없음 1, 일부 3, 있음 2). 이 규칙으로 "IR 확장 필요" 판정은 발동하지 않는다. 그러나 먼지 같은 서술 속성, 소품 간 관계(상자 안의 장부 쪽), 판자 같은 비엔티티 소품의 이동은 코드에 없으므로 요약으로 못 고친다. **두 판정을 같이 쓰면: 위치·앎 계열은 요약만으로 고쳐진다(근거 s2·s29), 서술 속성·소품 관계는 IR 확장이 필요하다(근거 B4, B5/B6 일부).**
-- 요약 자체가 새 오류를 낳을 수 있다는 첫 신호(D s27 r2)가 있다. "독자에게 이미 서술된 사실"을 붙이면 렌더러가 그것을 대사로 다시 말할 수 있다.
+- Pre-registered criteria: D 5/5 ≥ 4 met, 0 at 2/5 ≤ 2 met, but "no new drift in D" is **strictly not met** (one case, D s27 r2, minor). → **The hypothesis is supported on criteria 1 and 2, with one snag on criterion 3. Overall: "supported, but weakly".**
+- These numbers should not be read at face value.
+  - Of the 5 scenes, the control actually drifted only in s2 and s29. In s25 and s27 the control was also fine, so they cannot separate D's effect (the original error in s25 may have been a one-off accident that did not reproduce. In s27, following the code was already the right answer and the source of the drift is s24 — a mismatched pair in the measurement). In s21 dust is not in the IR, so D's resolution is chance.
+  - The scenes that could separate are s2 and s29, where D is 4/4 and 0 is 0/4. Both are cases where the digest told the model "on the wardrobe" (the foreshadowing text and `tin_box.at`).
+- Coverage table rule: "most not in the IR" does not hold (none 1, partial 3, present 2). With this rule the "IR extension needed" verdict does not fire. However, descriptive attributes such as dust, relations between props (the ledger page inside the box), and the movement of non-entity props such as the plank are not in the code, so a digest cannot fix them. **Using both verdicts together: location and knowledge families are fixed by the digest alone (basis s2, s29); descriptive attributes and prop relations need an IR extension (basis B4, parts of B5/B6).**
+- There is a first sign that the digest itself can produce new errors (D s27 r2). Attaching "facts already narrated to the reader" lets the renderer say them again as dialogue.
 
-## 호출 수
+## Call count
 
-- 실제 호출 **41회**(렌더 20 + 카드 채점 21; 상한 50). 출력 토큰 합 80,380. 낭비 없음: 카드 채점의 JSON 재질문 1회(D s25 r2)는 파이프라인 내부 재시도다. 실패·중단 호출 0.
-- 실제 실행은 프로세스 두 번이다. 첫 번째(`-budget 50`)는 한 쌍을 시작할 여유 18 호출 규칙 때문에 2회차 s27 앞에서 33회로 멈췄다. 같은 명령에 `-reserve 8` 을 주어 남은 2회차 s27·s29 를 이어 돌렸다(이미 끝난 셀은 건너뛴다, 호출 누계는 `calls.jsonl` 에서 이어 센다). 두 프로세스 모두 백그라운드로 돌렸다(전경 최대 10분 제한 때문).
-- 호출 전 확인: 같은 이름의 플래그(`-real`)를 쓰는 다른 도구 없음, 실행 중인 dieg·serial·statespike 프로세스 없음.
-- 드라이런·테스트(`go vet ./...`, `go test -count=1 ./...`, 셰임)는 호출 0이고 모두 통과했다.
+- Actual calls **41** (render 20 + card grading 21; cap 50). Output tokens total 80,380. No waste: the one card-grading JSON re-ask (D s25 r2) is an internal pipeline retry. Failed or aborted calls: 0.
+- The actual run was two processes. The first (`-budget 50`) stopped at 33 calls before run 2 of s27, because of the rule requiring 18 calls of headroom to start a pair. The same command with `-reserve 8` continued the remaining run 2 of s27 and s29 (finished cells are skipped, and the call total continues from `calls.jsonl`). Both processes ran in the background (because of the 10-minute foreground limit).
+- Pre-call check: no other tool using a flag of the same name (`-real`), and no dieg, serial, or statespike processes running.
+- The dry run and tests (`go vet ./...`, `go test -count=1 ./...`, the shim) had 0 calls and all passed.
 
-## 한계
+## Limitations
 
-- n=2 회, 장면 5개, 판정자 1인(나). 해소 판정은 읽기로 한 것이고 경계 두 건(s21 D r1·0 r1)을 해소로 셌다. 먼지를 장롱 위가 아니라 상자로 읽으면 D 는 s21 이 1/2, 0 은 변하지 않는다(장면 해소 D 4/5 로 여전히 기준 충족).
-- 대조군의 s25·s27 이 멀쩡해서 표류의 기저율을 알 수 없다. 원래 run3 오류 일부는 확률적 사고였을 수 있다.
-- B8 은 s27 이 아니라 s24 의 표류다. s24 를 다시 렌더하지 않았다(지시가 "쌍의 뒤 장면"이었다). B6(내용물 모름)은 어느 팔에서도 재현되지 않아 검증하지 못했다.
-- 요약은 이 작품의 사실 문장이 길고 한국어라서 쓸 만하다. 영어 작품이나 파생 사실이 적은 작품에서의 효과는 모른다.
-- 요약은 기존 쿼리만으로 만들었고(마이그레이션 없음) 길이·항목 수·정렬(최근 순, 5/8/8개)은 내가 정했다. 다른 선택에서 결과가 다를 수 있다. 특히 "독자에게 서술된 사실" 절이 위 새 표류의 원인이다.
-- 카드 검증기는 이런 연속성 표류를 보지 못한다(20셀 모두 통과, Score ≥ 0.991). 해소 판정은 카드와 무관하다.
+- n=2 runs, 5 scenes, one judge (me). Resolved judgments were made by reading, and two borderline cases (s21 D r1 and 0 r1) were counted as resolved. If the dust is read as being on the box rather than on top of the wardrobe, D is 1/2 in s21 and 0 is unchanged (scenes resolved D 4/5, still meeting the criterion).
+- The control's s25 and s27 were fine, so the base rate of drift is unknown. Some of the original run3 errors may have been probabilistic accidents.
+- B8 is drift in s24, not s27. We did not re-render s24 (the instruction was "the later scene of the pair"). B6 (contents unknown) was not reproduced in either arm and so was not verified.
+- The digest is useful because this work's fact sentences are long and Korean. We do not know the effect for English works or works with few derived facts.
+- The digest was made from existing queries only (no migration), and the length, item count, and ordering (most recent first, 5/8/8) were my choices. Results could differ with other choices. In particular the "facts narrated to the reader" section caused the new drift above.
+- The card verifier does not see this kind of continuity drift (all 20 cells passed, Score ≥ 0.991). The resolved judgments are independent of the card.

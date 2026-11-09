@@ -1,12 +1,12 @@
--- 007: 글로 한 거짓말과 읽은 문서의 의심(Task 9, 적벽).
---   1. 읽은 문서도 증언이다: `X doubts P` 는 그 앞에 읽은(reads) 문서에서 얻은 P 도 거둔다(006 의 들은 믿음과 같게).
---      근거: 『삼국지연의』 47.14-16 조조는 황개의 서신을 읽고 곧 "personal injury trick" 이라며 의심한다.
---   2. 쓴 사람이 쓰는 시점에 ¬P 를 확정적으로 알면(lint_known = 2) 그 문서의 P 는 거짓말이다: deception 행.
---      letter-unknown-info·belief-contradiction 은 그런 (행위, 명제)를 내지 않는다(lies 가 info-flow 에서 빠지는 것과 같다).
---      근거: 45.115 주유가 꾸민 채모·장윤의 서신, 47.14 황개의 거짓 항복 서신.
+-- 007: lies told in writing and doubts about documents read (Task 9, Red Cliffs).
+--   1. A document read is also testimony: `X doubts P` also withdraws a P obtained from a document read (reads) before it (same as 006's heard beliefs).
+--      Basis: Romance of the Three Kingdoms 47.14-16, Cao Cao reads Huang Gai's letter and promptly suspects it as a "personal injury trick".
+--   2. If the writer definitely knows ¬P at the time of writing (lint_known = 2), P in that document is a lie: a deception row.
+--      letter-unknown-info and belief-contradiction do not emit such (act, proposition) pairs (the same way lies drops out of info-flow).
+--      Basis: 45.115 the forged letters of Cai Mao and Zhang Yun that Zhou Yu fabricated, 47.14 Huang Gai's false surrender letter.
 SET LOCAL search_path = public, ag_catalog;
 
--- e 가 시점 at 에 P 의 반대(¬P, 별칭 포함)를 확정적으로 아는가.
+-- Whether e definitely knows the opposite of P (¬P, aliases included) at point at.
 CREATE FUNCTION lint_knows_false(w text, e text, p text, at text) RETURNS bool
 LANGUAGE sql STABLE SET search_path = public, ag_catalog AS $$
   SELECT EXISTS (SELECT 1 FROM fact f WHERE f.work_id = w
@@ -38,7 +38,7 @@ BEGIN
   SELECT w, b.entity_id, b.prop_id, true, b.at_pt, (SELECT id FROM act WHERE id = b.because_pt), true, b.src_id
     FROM belief b WHERE b.work_id = w AND b.verb = 'believes' AND b.prop_id IS NOT NULL;
 
-  -- 의심: 들은 행(청중 행, 화자 아님, 선언 아님)과 읽은 행마다 그 뒤(precedes yes, 같은 시점 포함)의 가장 이른 의심.
+  -- Doubt: for each heard row (audience row, not the speaker, not declared) and read row, the earliest doubt after it (precedes yes, same point included).
   UPDATE believes bl SET until_pt = (
       SELECT b.at_pt FROM belief b JOIN point p ON p.id = b.at_pt
        WHERE b.work_id = w AND b.verb = 'doubts' AND b.entity_id = bl.entity_id AND b.at_pt IS NOT NULL

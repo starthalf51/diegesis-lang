@@ -47,7 +47,7 @@ func TestBenchDryRun(t *testing.T) {
 		t.Errorf("judge prompt not blind or wrong scene count")
 	}
 	q, _ := os.ReadFile(filepath.Join(out, "judge/quotes.md"))
-	if !strings.Contains(string(q), "(있음) 종이 울렸다.") || !strings.Contains(string(q), "(없음) 지어낸 인용") {
+	if !strings.Contains(string(q), "(present) 종이 울렸다.") || !strings.Contains(string(q), "(absent) 지어낸 인용") {
 		t.Errorf("quote check:\n%s", q)
 	}
 	a, _ := ReadCalls(filepath.Join(out, "a/calls.jsonl"))
