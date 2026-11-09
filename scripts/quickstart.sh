@@ -90,9 +90,9 @@ SL_PG_DSN=$DSN; export SL_PG_DSN
 # (7) next steps
 cat <<NEXT
 
-다음 단계
-  1. claude 로그인:   claude          (구독 로그인 후 /exit)
-  2. 소설 쓰기:       $DIEG write     (결과물은 한국어)
-  3. 새 셸에서 DSN 설정:
+Next steps
+  1. Log in to claude:   claude          (/exit after the subscription login)
+  2. Write a novel:      $DIEG write     (the output is in Korean)
+  3. Set the DSN in a new shell:
        export SL_PG_DSN='$DSN'
 NEXT

@@ -92,9 +92,9 @@ if ($LASTEXITCODE -ne 0) { Die 'dieg demo failed' }
 # (7) next steps
 @"
 
-다음 단계
-  1. claude 로그인:   claude          (구독 로그인 후 /exit)
-  2. 소설 쓰기:       $Dieg write     (결과물은 한국어)
-  3. 새 셸에서 DSN 설정:
+Next steps
+  1. Log in to claude:   claude          (/exit after the subscription login)
+  2. Write a novel:      $Dieg write     (the output is in Korean)
+  3. Set the DSN in a new shell:
        `$env:SL_PG_DSN = '$Dsn'
 "@
