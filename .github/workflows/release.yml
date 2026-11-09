@@ -54,5 +54,4 @@ jobs:
           files: |
             dieg_*
             checksums.txt
-          prerelease: ${{ startsWith(github.ref_name, 'v0.') }}
           body: "Experimental preview (0.x): grammar, IR and commands may change in any minor release. Verify a download with `sha256sum -c checksums.txt --ignore-missing` and `gh attestation verify <file> --repo starthalf51/diegesis-lang`. Building from source (`go install` or `./scripts/quickstart.sh` with Go) needs neither."

@@ -21,7 +21,7 @@ function Get-ReleaseAsset {
   if (-not $t) {
     try {
       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-      # newest release including pre-releases (0.x are pre-releases, which releases/latest skips)
+      # newest release, pre-releases included (releases/latest skips them)
       $t = @(Invoke-RestMethod -UseBasicParsing "https://api.github.com/repos/$Repo/releases?per_page=1")[0].tag_name
     } catch { $t = '' }
     if ($t -notmatch '^v') { Die "cannot find the latest release of $Repo" }
