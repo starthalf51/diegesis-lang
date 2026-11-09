@@ -1,45 +1,7 @@
-# Diegesis
-
-A programming language for novels: you write characters, facts, scenes and speech acts (`tells`, `lies`, `sees` ...) in `.dieg.md` files, and a Go compiler loads them into PostgreSQL, where SQL checks time, who-knows-what and deception, and an AI renders and revises the prose against that checked state.
-
-**Status: experimental preview.** The grammar and IR may change in any 0.x release.
-
-## Why Diegesis
-
-The claim is narrow: when you change something in the middle of a story, Diegesis propagates the change more completely than asking an AI to edit the text directly. It is not shown to be cheaper.
-
-Measured in [`examples/value/retcon3`](examples/value/retcon3/README.md) (English summary at the top, details in Korean; v0.7.0, 6 retcons of a 12-episode story, one run per arm, one verifier; B = `dieg revise`, A = direct AI edit):
-
-- Confirmed residual contradictions plus new ones: B 3 vs A 6 (5 vs 8 counting boundary items).
-- Unrelated text changed: B 47 vs A 2,247 characters. Caveat: 1,069 of A's 2,247 unrelated characters come from a keyword-dictionary gap in R3 e04; excluding it gives about 1,178 vs 47, so the conclusion holds.
-- Priced weighted cost: B about 0.93x of A. This depends on A editing nothing in R6; treating R4 like R6 gives 1.12x.
-- Calls: B makes 6.7x as many.
-- The pre-registered rule is met, but a cost advantage is NOT established. 12 episodes favour A, and A's cost varies a lot (A's R2 cost was 3.7x the previous run).
-- Limitations: n=1 run per arm, one verifier, 12 episodes. R6 A may be under-counted (judge possibly missed e08:41); this favours A.
-- Cost alone is not a reason to use Diegesis: the cost-curve analysis in [`examples/value/cost-curve`](examples/value/cost-curve) found direct writing's per-episode cost flat.
-
-See a concrete case in [`examples/showcase`](examples/showcase/README.md).
-
-## Install
-
-```sh
-git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang
-docker compose -f deploy/compose.yaml up -d pg && export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
-go install github.com/starthalf51/diegesis-lang/cmd/dieg@latest
-dieg db migrate && dieg test corpus/macbeth
-```
-
-Step-by-step: [docs/quickstart.md](docs/quickstart.md) (English). Reference docs: [docs/README.md](docs/README.md) (Korean). Needs Go 1.27.3, Docker, and (for `dieg write`) a logged-in `claude` CLI subscription.
-
-**Output language:** `dieg write` / `continue` / `revise` produce Korean prose by default (backend `ko-haera`; the coding prompt requires Korean), whatever language the idea is in. Design notes and ADRs referenced in the docs are not published.
-
-License: Apache-2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)).
-
----
-
-*아래는 한국어 상세 문서.*
-
 # Diegesis (한국어)
+
+> English: [README.md](README.md)
+
 
 소설을 위한 프로그래밍 언어. 인물·사실·장면·발화(`tells`, `lies`, `sees` …)를 `.dieg.md` 파일에 적으면
 Go 컴파일러 `dieg` 가 이야기 IR 로 바꿔 PostgreSQL(Apache AGE + pgvector)에 적재한다.

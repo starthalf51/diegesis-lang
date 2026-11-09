@@ -187,7 +187,7 @@ func TestNovelLabelsAndFiles(t *testing.T) {
 func TestRefsInSync(t *testing.T) {
 	for copy, orig := range map[string]string{
 		"refs/grammar.ebnf": "../../spec/grammar.ebnf",
-		"refs/README.md":    "../../README.md",
+		"refs/README.md":    "../../README.ko.md",
 		"refs/cast.dieg.md": "../../corpus/macbeth/cast.dieg.md",
 		"refs/1.3.dieg.md":  "../../corpus/macbeth/act1/1.3.dieg.md",
 	} {
