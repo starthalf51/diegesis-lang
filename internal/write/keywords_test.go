@@ -2,6 +2,7 @@ package write
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -22,7 +23,10 @@ func TestKeywordsGolden(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(want) != r.Keywords {
+	// Compare without CR: on Windows checkouts (core.autocrlf) rule files and the golden file get CRLF.
+	if lf(string(want)) != lf(r.Keywords) {
 		t.Fatalf("keywords block differs from %s; this changes the coding prompt", p)
 	}
 }
+
+func lf(s string) string { return strings.ReplaceAll(s, "\r\n", "\n") }
