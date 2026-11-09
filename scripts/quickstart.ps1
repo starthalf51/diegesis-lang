@@ -20,9 +20,9 @@ function Get-ReleaseAsset {
   $t = $script:Tag
   if (-not $t) {
     try {
-      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocol]::Tls12
-      $r = Invoke-WebRequest -UseBasicParsing "https://github.com/$Repo/releases/latest" -MaximumRedirection 5
-      $t = ($r.BaseResponse.ResponseUri.AbsoluteUri -replace '.*/tag/', '')
+      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+      # newest release including pre-releases (0.x are pre-releases, which releases/latest skips)
+      $t = @(Invoke-RestMethod -UseBasicParsing "https://api.github.com/repos/$Repo/releases?per_page=1")[0].tag_name
     } catch { $t = '' }
     if ($t -notmatch '^v') { Die "cannot find the latest release of $Repo" }
   }

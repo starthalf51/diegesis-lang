@@ -22,7 +22,8 @@ release_asset() {
   case $(uname -s) in Linux) os=linux; ext= ;; Darwin) os=darwin; ext= ;; MINGW*|MSYS*|CYGWIN*) os=windows; ext=.exe ;; *) die "unsupported OS: $(uname -s) - $HINT" ;; esac
   case $(uname -m) in x86_64|amd64) arch=amd64 ;; aarch64|arm64) arch=arm64 ;; *) die "unsupported CPU: $(uname -m) - $HINT" ;; esac
   if [ -z "$TAG" ]; then
-    TAG=$(curl -fsSL -o /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest" | sed 's|.*/tag/||') || TAG=
+    # newest release including pre-releases (0.x are pre-releases, which releases/latest skips)
+    TAG=$(curl -fsSL "https://api.github.com/repos/$REPO/releases?per_page=1" | grep -m1 '"tag_name"' | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/') || TAG=
     case $TAG in v*) ;; *) die "cannot find the latest release of $REPO - $HINT" ;; esac
   fi
   ASSET="dieg_${TAG#v}_${os}_${arch}${ext}"
