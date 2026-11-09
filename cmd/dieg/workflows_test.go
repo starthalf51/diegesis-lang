@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -12,6 +13,7 @@ import (
 // TestWorkflowsParse: 모든 워크플로가 YAML 로 파싱되고 필수 키·문자열을 가진다.
 func TestWorkflowsParse(t *testing.T) {
 	need := map[string][]string{
+		"release.yml": {"CGO_ENABLED=0", "dieg_${TAG#v}_${GOOS}_${GOARCH}", "checksums.txt", "softprops/action-gh-release@v2", "contents: write", "tags:", "goos: [linux, darwin, windows]", "goarch: [amd64, arm64]"},
 		"pg-image.yml": {"ghcr.io/starthalf51/diegesis-pg:age1.8.0-pgvector0.8.7", "diegesis-pg:latest", "packages: write", "linux/amd64,linux/arm64"},
 	}
 	files, _ := filepath.Glob("../../.github/workflows/*.yml")
@@ -37,5 +39,19 @@ func TestWorkflowsParse(t *testing.T) {
 				t.Errorf("%s: missing %q", f, s)
 			}
 		}
+	}
+}
+
+func TestVersionOverridable(t *testing.T) {
+	exe := filepath.Join(t.TempDir(), "dieg.exe")
+	if out, err := exec.Command("go", "build", "-ldflags", "-X main.version=9.9.9", "-o", exe, ".").CombinedOutput(); err != nil {
+		t.Fatalf("build: %v\n%s", err, out)
+	}
+	out, err := exec.Command(exe, "version").Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.TrimSpace(string(out)); got != "dieg 9.9.9" {
+		t.Fatalf("got %q", got)
 	}
 }
