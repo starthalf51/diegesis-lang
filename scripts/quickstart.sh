@@ -1,0 +1,93 @@
+#!/bin/sh
+# Diegesis quickstart: docker pg -> dieg -> migrate -> demo. No model calls.
+# Flags: --skip-docker (PG already reachable at the DSN), --print-release-url [tag] (no download)
+set -eu
+
+REPO=starthalf51/diegesis-lang
+DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
+SKIP_DOCKER=0; PRINT_URL=0; TAG=
+while [ $# -gt 0 ]; do
+  case $1 in
+    --skip-docker) SKIP_DOCKER=1 ;;
+    --print-release-url) PRINT_URL=1; if [ $# -gt 1 ]; then TAG=$2; shift; fi ;;
+    *) echo "unknown option: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+die() { echo "quickstart: $*" >&2; exit 1; }
+
+# release_asset: sets URL and ASSET for this OS/arch (finds the latest tag unless TAG given)
+release_asset() {
+  case $(uname -s) in Linux) os=linux; ext= ;; Darwin) os=darwin; ext= ;; MINGW*|MSYS*|CYGWIN*) os=windows; ext=.exe ;; *) die "unsupported OS: $(uname -s)" ;; esac
+  case $(uname -m) in x86_64|amd64) arch=amd64 ;; aarch64|arm64) arch=arm64 ;; *) die "unsupported CPU: $(uname -m)" ;; esac
+  if [ -z "$TAG" ]; then
+    TAG=$(curl -fsSL -o /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest" | sed 's|.*/tag/||') || TAG=
+    case $TAG in v*) ;; *) die "cannot find the latest release of $REPO" ;; esac
+  fi
+  ASSET="dieg_${TAG#v}_${os}_${arch}${ext}"
+  BASE="https://github.com/$REPO/releases/download/$TAG"
+  URL="$BASE/$ASSET"
+}
+
+if [ $PRINT_URL = 1 ]; then release_asset; echo "$ASSET"; echo "$URL"; exit 0; fi
+
+cd "$(dirname "$0")/.."
+
+# (1) docker + compose v2
+if [ $SKIP_DOCKER = 0 ]; then
+  command -v docker >/dev/null 2>&1 || die "docker not found - install Docker Desktop or Docker Engine first"
+  docker compose version >/dev/null 2>&1 || die "docker compose v2 not found - update Docker (the 'docker compose' plugin is required)"
+fi
+
+# (2) dieg: PATH -> go build -> release download
+if command -v dieg >/dev/null 2>&1; then DIEG=dieg
+elif command -v go >/dev/null 2>&1; then
+  mkdir -p bin; go build -o ./bin/dieg ./cmd/dieg || die "go build failed"; DIEG=./bin/dieg
+else
+  command -v curl >/dev/null 2>&1 || die "no dieg, no Go, no curl: install Go 1.27.3 or wait for a public Release, then run again"
+  release_asset 2>/dev/null || die "no dieg, no Go, and no Release found: install Go 1.27.3 or run again after the Release is public"
+  mkdir -p bin; DIEG=./bin/dieg
+  curl -fsSL -o "$DIEG" "$URL" && curl -fsSL -o bin/checksums.txt "$BASE/checksums.txt" || die "download failed: install Go 1.27.3 or run again after the Release is public"
+  want=$(grep " $ASSET\$" bin/checksums.txt | cut -d' ' -f1)
+  have=$( (sha256sum "$DIEG" 2>/dev/null || shasum -a 256 "$DIEG") | cut -d' ' -f1)
+  [ -n "$want" ] && [ "$want" = "$have" ] || { rm -f "$DIEG"; die "checksum mismatch for $ASSET"; }
+  chmod +x "$DIEG"
+fi
+echo "dieg: $DIEG"
+
+# (3)(4) pg container
+if [ $SKIP_DOCKER = 0 ]; then
+  C="docker compose -f deploy/compose.yaml"
+  cid=$($C ps -q pg 2>/dev/null || true)
+  if [ -n "$cid" ] && [ "$(docker inspect -f '{{.State.Running}}' "$cid" 2>/dev/null)" = true ]; then
+    echo "pg container already running, reusing it"
+  else
+    if command -v nc >/dev/null 2>&1 && nc -z 127.0.0.1 55432 >/dev/null 2>&1; then
+      die "port 55432 is in use by something other than this project's pg container - free it and run again"
+    fi
+    $C pull pg >/dev/null 2>&1 || echo "prebuilt image not available, building locally (first run takes a few minutes)"
+    $C up -d pg || die "docker compose up failed"
+  fi
+  cid=$($C ps -q pg)
+  i=0
+  until [ "$(docker inspect -f '{{.State.Health.Status}}' "$cid" 2>/dev/null)" = healthy ]; do
+    i=$((i + 2))
+    if [ $i -gt 120 ]; then $C logs --tail 20 pg >&2 || true; die "pg not healthy after 120s"; fi
+    sleep 2
+  done
+fi
+
+# (5)(6) migrate + demo
+SL_PG_DSN=$DSN; export SL_PG_DSN
+"$DIEG" db migrate
+"$DIEG" demo
+
+# (7) next steps
+cat <<NEXT
+
+다음 단계
+  1. claude 로그인:   claude          (구독 로그인 후 /exit)
+  2. 소설 쓰기:       $DIEG write     (결과물은 한국어)
+  3. 새 셸에서 DSN 설정:
+       export SL_PG_DSN='$DSN'
+NEXT
