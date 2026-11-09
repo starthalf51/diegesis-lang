@@ -117,7 +117,7 @@ R2 의 부수 변경(키워드 영향 밖 변경)은 pilot 이라 비교하지 �
 재현:
 
 ```
-export PATH=/c/Users/sg671/sdk/go/bin:$PATH
+export PATH=<go-install>/bin:$PATH
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go run ./tools/serial minedit -me-out examples/value/minedit -me-dump                      # IR 캐시(PG 적재, 모델 호출 없음)
 go run ./tools/serial minedit -me-out /tmp/me-dry -me-ir examples/value/minedit/ir -me-dry -me-budget 100   # 가짜 완성기 시험

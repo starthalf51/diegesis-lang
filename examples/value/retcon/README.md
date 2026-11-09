@@ -128,7 +128,7 @@ Diegesis(AI 가 코딩 → PG 가 검증 → 렌더러가 산문)로 쓰는 쪽(
 재현:
 
 ```
-export PATH=/c/Users/sg671/sdk/go/bin:$PATH
+export PATH=<go-install>/bin:$PATH
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go run ./tools/serial retcon -rc-out examples/value/retcon -rc-budget 120
 go run ./tools/serial retcon -rc-out examples/value/retcon -rc-recompute   # 파일에서 비용·부수 변경 재계산(호출 없음)

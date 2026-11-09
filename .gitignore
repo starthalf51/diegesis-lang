@@ -2,3 +2,5 @@ experiments/m0-render/out/
 .env
 *.exe
 /out/
+examples/**/*.raw.txt
+out/

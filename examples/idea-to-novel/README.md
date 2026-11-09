@@ -189,7 +189,7 @@ s1–s7 은 "말하면 안 되는 사실" 목록의 ID 만 `teacher_pushed` → 
 ## 다시 돌리기
 
 ```sh
-export PATH=/c/Users/sg671/sdk/go/bin:$PATH SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
+export PATH=<go-install>/bin:$PATH SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go build -o dieg ./cmd/dieg && export DIEG=$PWD/dieg
 cd examples/idea-to-novel
 prompts/b-build-prompt.sh && prompts/call.sh B code-r0 prompts/b1-code.txt b-diegesis/rounds/r0.raw.txt

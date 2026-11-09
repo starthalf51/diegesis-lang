@@ -158,7 +158,7 @@ A 는 같은 방법·같은 입력인데 모델 출력 차이로 값이 조금 �
 
 재현:
 
-    export PATH=/c/Users/sg671/sdk/go/bin:$PATH
+    export PATH=<go-install>/bin:$PATH
     export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
     go run ./tools/serial retcon -rc-out examples/value/retcon2 -rc-list examples/value/retcon2/retcons.json -rc-budget 240
 
