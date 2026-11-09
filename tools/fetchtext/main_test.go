@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestGutenbergStrip(t *testing.T) {
 	title, body := gutenberg("Title: Macbeth\nlicense\n*** START OF THE PROJECT GUTENBERG EBOOK MACBETH ***\nWhen shall we three meet again\n*** END OF THE PROJECT GUTENBERG EBOOK MACBETH ***\nfooter")
@@ -14,5 +17,23 @@ func TestWikitext(t *testing.T) {
 	want := "1\n김첨지는 동소문 안에서 인력거꾼\n"
 	if got != want {
 		t.Fatalf("got %q", got)
+	}
+}
+
+func TestSafe(t *testing.T) {
+	for in, want := range map[string]string{
+		"a/b: c":                 "a-b-c",
+		"":                       "text",
+		" ? ":                    "-",
+		"con":                    "_con",
+		"NUL":                    "_NUL",
+		"Com1":                   "_Com1",
+		"lpt9":                   "_lpt9",
+		"console":                "console",
+		strings.Repeat("가", 100): strings.Repeat("가", 80),
+	} {
+		if got := safe(in); got != want {
+			t.Errorf("safe(%q) = %q, want %q", in, got, want)
+		}
 	}
 }

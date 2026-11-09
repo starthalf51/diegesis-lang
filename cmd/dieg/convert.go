@@ -10,6 +10,10 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/write"
 )
 
+// renderOnly lists the commonFlag flags that matter only once scenes are rendered; convert would ignore them, so it rejects them.
+var renderOnly = map[string]bool{"--scenes": true, "--render-model": true, "--extract-model": true, "--render-effort": true,
+	"--no-digest": true, "--verifier": true, "--backend": true, "--styles": true}
+
 // cmdConvert runs `dieg convert <file> -o <dir> [--rounds N] [--code-model M] [--code-effort E] [--allow-warn] [--force]`:
 // a public-domain story text becomes Diegesis code through the write loop; nothing is rendered.
 func cmdConvert(args []string) int {
@@ -23,6 +27,9 @@ func cmdConvert(args []string) int {
 		switch a := args[i]; {
 		case code != 0:
 			return code
+		case ok && renderOnly[a]:
+			fmt.Fprintf(os.Stderr, "dieg: convert does not render: %s is not accepted\n", a)
+			return 2
 		case ok:
 			i = j
 		case a == "--force":

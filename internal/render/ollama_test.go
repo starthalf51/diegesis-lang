@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -38,5 +39,17 @@ func TestOllamaComplete(t *testing.T) {
 	}
 	if ValidModel("ollama:") == nil || ValidModel("ollama:gemma4:26b") != nil {
 		t.Fatal("ValidModel ollama prefix")
+	}
+}
+
+func TestOllamaPromptFilledContext(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"message":{"content":"cut"},"prompt_eval_count":32768,"eval_count":1}`))
+	}))
+	defer srv.Close()
+	t.Setenv("OLLAMA_HOST", srv.URL)
+	_, err := NewOllama("ollama:m").Complete(context.Background(), "s", "u")
+	if err == nil || !strings.Contains(err.Error(), "DIEG_OLLAMA_CTX") {
+		t.Fatalf("err %v", err)
 	}
 }

@@ -57,8 +57,8 @@ func DefaultOpts() Opts {
 		CodeModel: "claude-opus-5-5", RenderModel: "claude-haiku-5-5", ExtractModel: "claude-sonnet-5-5"}
 }
 
-// Result: Rounds used, whether the last code is clean, its diagnostics (the blocking ones and any info),
-// and Dir = <out>/story holding the last well-formed code.
+// Result: Rounds used, whether the best code is clean, its diagnostics (the blocking ones and any info),
+// and Dir = <out>/story holding the best round's code (fewest errors, then warns; the earlier round on ties).
 type Result struct {
 	Rounds int
 	Clean  bool
@@ -81,9 +81,9 @@ func bundleDiag(msg string) []Diag {
 
 // Loop asks c for code, checks it, and feeds diagnostics back until clean or o.Rounds is spent. Round r's
 // raw output is <out>/rounds/r<r>.raw.txt and its code <out>/rounds/r<r>/. A malformed bundle is one "bundle"
-// diagnostic and consumes its round; the next prompt shows the last well-formed bundle. The last well-formed
-// code is copied to <out>/story/ either way and <out>/diags.txt holds that code's diagnostics (a later malformed
-// round does not overwrite it; with no well-formed round it holds the last bundle diagnostic). Loop never renders.
+// diagnostic and consumes its round; the next prompt shows the last well-formed bundle. The best well-formed
+// round (fewest errors, then warns; the earlier round on ties) is copied to <out>/story/ either way and
+// <out>/diags.txt holds its diagnostics (a later worse or malformed round does not overwrite it;with no well-formed round it holds the last bundle diagnostic). Loop never renders.
 func Loop(ctx context.Context, c render.Completer, check Checker, idea string, refs Refs, o Opts) (Result, error) {
 	if o.Rounds <= 0 {
 		o.Rounds = DefaultOpts().Rounds

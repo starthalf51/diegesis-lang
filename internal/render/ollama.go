@@ -40,6 +40,7 @@ func NewOllama(model string) *Ollama {
 }
 
 // NewCompleter picks the backend by model name: "ollama:<name>" is local, anything else is `claude -p`.
+// effort applies only to claude models; it is ignored for Ollama models.
 func NewCompleter(model, effort string) Completer {
 	if strings.HasPrefix(model, OllamaPrefix) {
 		return NewOllama(model)
@@ -68,7 +69,10 @@ func (o *Ollama) Complete(ctx context.Context, system, user string) (Result, err
 		return Result{}, fmt.Errorf("ollama: %w", err)
 	}
 	defer resp.Body.Close()
-	b, _ := io.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return Result{}, fmt.Errorf("ollama: read response: %w", err)
+	}
 	if resp.StatusCode != http.StatusOK {
 		return Result{}, fmt.Errorf("ollama: %s: %s", resp.Status, trunc(b))
 	}
@@ -80,6 +84,9 @@ func (o *Ollama) Complete(ctx context.Context, system, user string) (Result, err
 	}
 	if err := json.Unmarshal(b, &r); err != nil {
 		return Result{}, fmt.Errorf("ollama: bad output: %v (output: %s)", err, trunc(b))
+	}
+	if r.In >= int64(o.Ctx) { // Ollama truncates an over-long prompt and still answers 200
+		return Result{}, fmt.Errorf("ollama: prompt filled the whole context (%d tokens, num_ctx %d); raise DIEG_OLLAMA_CTX or shorten the input", r.In, o.Ctx)
 	}
 	stop := "end_turn"
 	if r.DoneReason == "length" {

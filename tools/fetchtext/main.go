@@ -141,10 +141,19 @@ func wikitext(s string) string {
 	return strings.TrimSpace(wBlank.ReplaceAllString(s, "\n\n")) + "\n"
 }
 
+// winReserved matches a Windows device name (CON, NUL, COM1...) that cannot be a file name.
+var winReserved = regexp.MustCompile(`(?i)^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\.|$)`)
+
 func safe(s string) string {
 	s = regexp.MustCompile(`[\\/:*?"<>|\s]+`).ReplaceAllString(strings.TrimSpace(s), "-")
-	if len(s) > 80 {
-		s = s[:80]
+	if r := []rune(s); len(r) > 80 {
+		s = string(r[:80])
+	}
+	if s == "" {
+		return "text"
+	}
+	if winReserved.MatchString(s) {
+		s = "_" + s
 	}
 	return s
 }
