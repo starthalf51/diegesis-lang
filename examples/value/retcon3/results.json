@@ -1,0 +1,293 @@
+{
+  "budget": 320,
+  "calls_used": 267,
+  "results": [
+    {
+      "ID": "R4",
+      "Arm": "A",
+      "Cost": {
+        "calls": 6,
+        "errs": 0,
+        "weighted_in": 100273,
+        "output": 27573,
+        "priced": 238138
+      },
+      "Collateral": {
+        "Units": 11,
+        "UnitsChanged": 4,
+        "UnitsAffected": 7,
+        "AffectedChanged": 2,
+        "BaseChars": 43936,
+        "CharsChanged": 1027,
+        "CharsCollateral": 225,
+        "CollateralUnits": [
+          "e02:111",
+          "e05:114"
+        ],
+        "AffectedUnits": [
+          "e03",
+          "e04",
+          "e06",
+          "e08",
+          "e09",
+          "e10",
+          "e11"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/a.out.txt",
+      "Residual": 2,
+      "Introduced": 0,
+      "QuotesOK": "4/4"
+    },
+    {
+      "ID": "R4",
+      "Arm": "B",
+      "Cost": {
+        "calls": 39,
+        "errs": 0,
+        "weighted_in": 334131,
+        "output": 46346,
+        "priced": 311034.8
+      },
+      "Revise": {
+        "Stale": 17,
+        "Patched": 17,
+        "Full": 0,
+        "IRStale": 8,
+        "StateStale": 9,
+        "Added": 0,
+        "Skipped": [
+          "s32",
+          "s33",
+          "s34",
+          "s35"
+        ]
+      },
+      "Collateral": {
+        "Units": 31,
+        "UnitsChanged": 8,
+        "UnitsAffected": 10,
+        "AffectedChanged": 8,
+        "BaseChars": 39558,
+        "CharsChanged": 422,
+        "CharsCollateral": 0,
+        "CollateralUnits": null,
+        "AffectedUnits": [
+          "s6",
+          "s8",
+          "s9",
+          "s11",
+          "s12",
+          "s21",
+          "s24",
+          "s25",
+          "s26",
+          "s27"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/b.out.txt",
+      "Residual": 0,
+      "Introduced": 0,
+      "QuotesOK": "0/0"
+    },
+    {
+      "ID": "R5",
+      "Arm": "A",
+      "Cost": {
+        "calls": 4,
+        "errs": 0,
+        "weighted_in": 54172,
+        "output": 21590,
+        "priced": 162122
+      },
+      "Collateral": {
+        "Units": 11,
+        "UnitsChanged": 2,
+        "UnitsAffected": 11,
+        "AffectedChanged": 2,
+        "BaseChars": 43936,
+        "CharsChanged": 4069,
+        "CharsCollateral": 0,
+        "CollateralUnits": null,
+        "AffectedUnits": [
+          "e01",
+          "e02",
+          "e03",
+          "e04",
+          "e05",
+          "e06",
+          "e07",
+          "e08",
+          "e09",
+          "e10",
+          "e11"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/a.out.txt",
+      "Residual": 0,
+      "Introduced": 0,
+      "QuotesOK": "0/0"
+    },
+    {
+      "ID": "R5",
+      "Arm": "B",
+      "Cost": {
+        "calls": 58,
+        "errs": 0,
+        "weighted_in": 305509,
+        "output": 62434,
+        "priced": 234220.8
+      },
+      "Revise": {
+        "Stale": 25,
+        "Patched": 24,
+        "Full": 1,
+        "IRStale": 4,
+        "StateStale": 20,
+        "Added": 1,
+        "Skipped": [
+          "s32",
+          "s33",
+          "s34",
+          "s35"
+        ]
+      },
+      "Collateral": {
+        "Units": 31,
+        "UnitsChanged": 7,
+        "UnitsAffected": 21,
+        "AffectedChanged": 6,
+        "BaseChars": 39558,
+        "CharsChanged": 1784,
+        "CharsCollateral": 2,
+        "CollateralUnits": [
+          "s16:2"
+        ],
+        "AffectedUnits": [
+          "s1",
+          "s3",
+          "s5",
+          "s6",
+          "s8",
+          "s9",
+          "s10",
+          "s11",
+          "s12",
+          "s15",
+          "s17",
+          "s19",
+          "s20",
+          "s21",
+          "s22",
+          "s24",
+          "s25",
+          "s26",
+          "s27",
+          "s30",
+          "s31"
+        ],
+        "AddedUnits": [
+          "s11a:778"
+        ],
+        "AddedChars": 778
+      },
+      "JudgeRaw": "judge/b.out.txt",
+      "Residual": 1,
+      "Introduced": 0,
+      "QuotesOK": "2/2"
+    },
+    {
+      "ID": "R6",
+      "Arm": "A",
+      "Cost": {
+        "calls": 1,
+        "errs": 0,
+        "weighted_in": 4036,
+        "output": 246,
+        "priced": 5266
+      },
+      "Collateral": {
+        "Units": 11,
+        "UnitsChanged": 0,
+        "UnitsAffected": 6,
+        "AffectedChanged": 0,
+        "BaseChars": 43936,
+        "CharsChanged": 0,
+        "CharsCollateral": 0,
+        "CollateralUnits": null,
+        "AffectedUnits": [
+          "e01",
+          "e03",
+          "e05",
+          "e06",
+          "e08",
+          "e09"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/a.out.txt",
+      "Residual": 1,
+      "Introduced": 0,
+      "QuotesOK": "1/1"
+    },
+    {
+      "ID": "R6",
+      "Arm": "B",
+      "Cost": {
+        "calls": 33,
+        "errs": 0,
+        "weighted_in": 205477,
+        "output": 31848,
+        "priced": 174004.6
+      },
+      "Revise": {
+        "Stale": 14,
+        "Patched": 14,
+        "Full": 0,
+        "IRStale": 4,
+        "StateStale": 10,
+        "Added": 0,
+        "Skipped": [
+          "s32",
+          "s33",
+          "s34",
+          "s35"
+        ]
+      },
+      "Collateral": {
+        "Units": 31,
+        "UnitsChanged": 5,
+        "UnitsAffected": 5,
+        "AffectedChanged": 3,
+        "BaseChars": 39558,
+        "CharsChanged": 157,
+        "CharsCollateral": 37,
+        "CollateralUnits": [
+          "s16:2",
+          "s23:35"
+        ],
+        "AffectedUnits": [
+          "s1",
+          "s7",
+          "s9",
+          "s12",
+          "s22"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/b.out.txt",
+      "Residual": 1,
+      "Introduced": 0,
+      "QuotesOK": "2/2"
+    }
+  ],
+  "stopped": ""
+}

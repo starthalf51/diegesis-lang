@@ -242,9 +242,10 @@ func (s *rcState) arm_A(ctx context.Context, r retcon, dir string) (map[int]stri
 			eps = append(eps, i)
 		}
 	}
-	if len(eps) == 0 {
+	if len(eps) == 0 && !s.v2 {
 		return nil, fmt.Errorf("%s pick: no episode in %q", r.ID, picked)
 	}
+	// v2: a pick that names only ep 12 (excluded) means A edits nothing; its residuals get judged as they are
 	sort.Ints(eps)
 	redone := map[int]string{}
 	for _, i := range eps {
@@ -260,9 +261,11 @@ func (s *rcState) arm_A(ctx context.Context, r retcon, dir string) (map[int]stri
 		}
 		redone[i] = strings.TrimSpace(t)
 	}
-	// the summary refresh is part of the harness's revision cost (a later episode would read it)
-	if _, err := s.step(ctx, m, lab("sum"), SummaryPrompt(s.summ, r.Req, redone), judgeReserve); err != nil {
-		return nil, err
+	// the summary refresh is part of the harness revision cost (a later episode would read it)
+	if len(redone) > 0 {
+		if _, err := s.step(ctx, m, lab("sum"), SummaryPrompt(s.summ, r.Req, redone), judgeReserve); err != nil {
+			return nil, err
+		}
 	}
 	final := map[int]string{}
 	for e, t := range s.baseA {

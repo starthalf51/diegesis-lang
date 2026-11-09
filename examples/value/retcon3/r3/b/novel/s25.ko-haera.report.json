@@ -1,0 +1,17 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "백영호가 렌즈 파편을 숨긴 열세 번째 계단 판자를 가리키며 보여 주었다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 1
+  },
+  "patched": true
+}

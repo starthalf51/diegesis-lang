@@ -1,0 +1,17 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "해솔이 유리 조각을 손수건에 싸서 꾸러미와 함께 출장소로 가져간다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 0.9859154929577465,
+    "Length": 0,
+    "Score": 0.9984350547730829
+  },
+  "patched": true
+}

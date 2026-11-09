@@ -1,0 +1,14 @@
+cast.dieg.md:106:1: warn relative-time-fact: fact vote_scheduled names a relative time: 열이틀 뒤 섬 전체를 리조트 개발사에 팔지 정하는 주민 투표가 열린다
+ep02/s5.dieg.md:17:1: warn retell-known: seoyun tells malsun hospital_alibi again; already believed since s2#a6
+ep03/cast.dieg.md:18:1: warn relative-time-fact: fact demolition_schedule names a relative time: 투표가 가결되면 사흘 뒤 등대부터 철거가 시작된다
+ep04/s11.dieg.md:22:1: warn retell-known: taeo tells seoyun nail_odd again; already believed since s10#a6
+ep06/s17.dieg.md:21:1: warn retell-known: malsun tells seoyun lens_broken again; already believed since s8#a5
+ep08/s21.dieg.md:24:1: warn retell-known: malsun tells seoyun malsun_bandage again; already believed since s20#a3
+ep10/cast.dieg.md:11:1: warn fact-conflict: candidate conflict, check: lens_broke_in_fight and lens_smashed are both true text facts about lens in different files
+ep10/s27.dieg.md:20:1: warn retell-known: yeongho tells haesol yeongho_lied_before again; already believed since s25#a3
+ep10/s27.dieg.md:20:1: warn retell-known: yeongho tells seoyun yeongho_lied_before again; already believed since s25#a3
+ep10/s27.dieg.md:22:1: warn retell-known: yeongho tells haesol yeongho_refused again; already believed since s25#a5
+ep10/s27.dieg.md:22:1: warn retell-known: yeongho tells seoyun yeongho_refused again; already believed since s25#a5
+ep10/s27.dieg.md:25:1: warn retell-known: yeongho tells haesol light_out again; already believed since s25#a7
+ep10/s27.dieg.md:25:1: warn retell-known: yeongho tells seoyun light_out again; already believed since s25#a7
+ep11/s32.dieg.md:27:1: warn retell-known: malsun tells seoyun malsun_saw_dark again; already believed since s29#a4

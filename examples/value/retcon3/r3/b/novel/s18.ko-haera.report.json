@@ -1,0 +1,16 @@
+{
+  "missing": [
+    "haesol|read|gyeongtae_treated"
+  ],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "scores": {
+    "Coverage": 1,
+    "Kind": 0.8888888888888888,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 0.9753086419753086
+  },
+  "patched": true
+}

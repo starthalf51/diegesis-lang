@@ -1,0 +1,3 @@
+{"t":"2026-11-08T23:04:02Z","label":"r1-A-pick","input":2,"output":514,"cache_read":0,"cache_write":3217,"stop":"end_turn","err":"","ms":10523}
+{"t":"2026-11-08T23:04:12Z","label":"r1-A-ep-10","input":2,"output":6616,"cache_read":0,"cache_write":12989,"stop":"end_turn","err":"","ms":61938}
+{"t":"2026-11-08T23:05:14Z","label":"r1-A-sum","input":2,"output":3948,"cache_read":0,"cache_write":7269,"stop":"end_turn","err":"","ms":41739}

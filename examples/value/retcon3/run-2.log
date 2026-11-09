@@ -1,0 +1,70 @@
+== R4 소품의 소유자 (유리 조각의 주인) — 새
+s6: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+revise: rounds=3 clean=true changed=s10,s11,s12,s13,s17,s20,s21,s24,s25,s26,s27,s28,s29,s6,s7,s8,s9 added= removed= state_stale=s7,s10,s13,s17,s20,s21,s26,s28,s29 skipped=s32,s33,s34,s35 patched=17 failed=0[] calls=39 tokens in=78 out=46346 cache_read=44508 cache_write=263682 → examples\value\retcon3\r4\b
+s7: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s8: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s9: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s10: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s11: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s12: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s13: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s17: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s20: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s21: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s24: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s25: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s26: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s27: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s28: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s29: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+== R5 두 사건의 순서 (유리 조각 이야기와 등대 오르기) — 새
+s7: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+revise: rounds=1 clean=true changed=s10,s11,s12,s13,s14,s15,s16,s17,s18,s19,s20,s21,s22,s23,s24,s25,s26,s27,s28,s29,s31,s7,s8,s9 added=s11a removed=s6 state_stale=s7,s10,s13,s14,s15,s16,s17,s18,s19,s20,s21,s22,s23,s24,s25,s26,s27,s28,s29,s31 skipped=s32,s33,s34,s35 patched=24 failed=0[] calls=58 tokens in=116 out=62434 cache_read=83070 cache_write=237669 → examples\value\retcon3\r5\b
+s8: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s9: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s10: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s11: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s12: attempts=1 pass=true missing=[seoyun|assert|shard_matches] hallucinated=[] leaked=[] 
+s13: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s14: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s15: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s16: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s17: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s18: attempts=1 pass=true missing=[haesol|read|gyeongtae_treated] hallucinated=[] leaked=[] 
+s19: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s20: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s21: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s22: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s23: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s24: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s25: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s26: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s27: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s28: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s29: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s31: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s11a: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+== R6 조연의 정체 (류지환) — 새
+s1: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+revise: rounds=1 clean=true changed=s1,s10,s13,s15,s16,s2,s22,s23,s24,s25,s3,s7,s8,s9 added= removed= state_stale=s2,s3,s8,s9,s10,s13,s15,s16,s24,s25 skipped=s32,s33,s34,s35 patched=14 failed=0[] calls=33 tokens in=66 out=31848 cache_read=35297 cache_write=161505 → examples\value\retcon3\r6\b
+s2: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s3: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s7: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s8: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s9: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s10: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s13: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s15: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s16: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s22: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s23: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s24: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+s25: attempts=1 pass=true missing=[] hallucinated=[] leaked=[] 
+
+calls used 267/320 stop=""
+R4 A calls=6 w_in=100273 out=27573 priced=238138 | judge residual=2 introduced=0 quotes=4/4 | units 4/11 changed (affected 7), chars changed 1027 collateral 225
+R4 B calls=39 w_in=334131 out=46346 priced=311035 | judge residual=0 introduced=0 quotes=0/0 | units 8/31 changed (affected 10), chars changed 422 collateral 0
+R5 A calls=4 w_in=54172 out=21590 priced=162122 | judge residual=0 introduced=0 quotes=0/0 | units 2/11 changed (affected 11), chars changed 4069 collateral 0
+R5 B calls=58 w_in=305509 out=62434 priced=234221 | judge residual=1 introduced=0 quotes=2/2 | units 7/31 changed (affected 21), chars changed 1784 collateral 2
+R6 A calls=1 w_in=4036 out=246 priced=5266 | judge residual=1 introduced=0 quotes=1/1 | units 0/11 changed (affected 6), chars changed 0 collateral 0
+R6 B calls=33 w_in=205477 out=31848 priced=174005 | judge residual=1 introduced=0 quotes=2/2 | units 5/31 changed (affected 5), chars changed 157 collateral 37
