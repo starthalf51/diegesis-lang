@@ -1,8 +1,7 @@
 services:
   pg:
     build: ./postgres
-    image: ghcr.io/starthalf51/diegesis-pg:age1.8.0-pgvector0.8.7
-    pull_policy: missing
+    image: diegesis-pg:local
     environment:
       POSTGRES_USER: sl
       POSTGRES_PASSWORD: sl
@@ -18,7 +17,7 @@ services:
   # Sets the login password on sl_ro (created NOLOGIN by 015_readonly_role.sql). The password is the environment variable SL_RO_PASSWORD.
   # The role must exist first, so use this after running `dieg db migrate` once. An already running pg is not recreated.
   ro-init:
-    image: ghcr.io/starthalf51/diegesis-pg:age1.8.0-pgvector0.8.7
+    image: diegesis-pg:local
     depends_on:
       pg: {condition: service_healthy}
     restart: "no"

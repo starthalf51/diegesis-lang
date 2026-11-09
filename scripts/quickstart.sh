@@ -5,7 +5,7 @@ set -eu
 
 REPO=starthalf51/diegesis-lang
 DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
-SKIP_DOCKER=0; PRINT_URL=0; TAG=
+SKIP_DOCKER=0; PRINT_URL=0; TAG=${QUICKSTART_TAG:-}
 while [ $# -gt 0 ]; do
   case $1 in
     --skip-docker) SKIP_DOCKER=1 ;;
@@ -26,7 +26,8 @@ release_asset() {
     case $TAG in v*) ;; *) die "cannot find the latest release of $REPO - $HINT" ;; esac
   fi
   ASSET="dieg_${TAG#v}_${os}_${arch}${ext}"
-  BASE="https://github.com/$REPO/releases/download/$TAG"
+  BASE=${QUICKSTART_RELEASE_BASE:-"https://github.com/$REPO/releases/download/$TAG"}
+  [ -z "${QUICKSTART_RELEASE_BASE:-}" ] || echo "quickstart: QUICKSTART_RELEASE_BASE is set - checksums come from the same place, only the provenance check protects this download" >&2
   URL="$BASE/$ASSET"
 }
 
@@ -49,11 +50,16 @@ else
   release_asset
   mkdir -p bin; DIEG=./bin/dieg$ext
   curl -fsSL -o "$DIEG" "$URL" && curl -fsSL -o bin/checksums.txt "$BASE/checksums.txt" || { rm -f "$DIEG"; die "download failed - $HINT"; }
-  want=$(grep " $ASSET\$" bin/checksums.txt | cut -d' ' -f1)
+  want=$(grep "[ *]$ASSET\$" bin/checksums.txt | cut -d' ' -f1)
   if command -v sha256sum >/dev/null 2>&1; then have=$(sha256sum "$DIEG" | cut -d' ' -f1)
   elif command -v shasum >/dev/null 2>&1; then have=$(shasum -a 256 "$DIEG" | cut -d' ' -f1)
   else rm -f "$DIEG"; die "neither sha256sum nor shasum found, cannot verify the download - $HINT"; fi
   [ -n "$want" ] && [ "$want" = "$have" ] || { rm -f "$DIEG"; die "checksum mismatch for $ASSET"; }
+  # build provenance (GitHub attestation); needs a logged-in gh
+  if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+    gh attestation verify "$DIEG" --repo "$REPO" --signer-workflow "$REPO/.github/workflows/release.yml" >/dev/null 2>&1 || { rm -f "$DIEG"; die "build provenance check failed for $ASSET"; }
+    echo "provenance verified (gh attestation)"
+  else echo "provenance not verified (install and log in to gh to verify)"; fi
   chmod +x "$DIEG"
 fi
 echo "dieg: $DIEG"
@@ -68,7 +74,6 @@ if [ $SKIP_DOCKER = 0 ]; then
     if [ -z "${QUICKSTART_SKIP_PORT_CHECK:-}" ] && command -v nc >/dev/null 2>&1 && nc -z 127.0.0.1 55432 >/dev/null 2>&1; then
       die "port 55432 is in use by something other than this project's pg container - free it and run again"
     fi
-    $C pull pg >/dev/null 2>&1 || echo "prebuilt image not available, building locally (first run takes a few minutes)"
     $C up -d pg || die "docker compose up failed"
   fi
   cid=$($C ps -q pg)

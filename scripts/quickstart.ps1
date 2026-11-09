@@ -1,6 +1,6 @@
 ﻿# Diegesis quickstart: docker pg -> dieg -> migrate -> demo. No model calls. (Windows PowerShell 5.1+)
 # Flags: -SkipDocker (PG already reachable at the DSN), -PrintReleaseUrl [-Tag vX.Y.Z] (no download)
-param([switch]$SkipDocker, [switch]$PrintReleaseUrl, [string]$Tag = '')
+param([switch]$SkipDocker, [switch]$PrintReleaseUrl, [string]$Tag = $env:QUICKSTART_TAG)
 $ErrorActionPreference = 'Stop'
 
 $Repo = 'starthalf51/diegesis-lang'
@@ -27,7 +27,9 @@ function Get-ReleaseAsset {
     if ($t -notmatch '^v') { Die "cannot find the latest release of $Repo" }
   }
   $asset = "dieg_$($t.TrimStart('v'))_windows_${arch}.exe"
-  @{ Asset = $asset; Base = "https://github.com/$Repo/releases/download/$t"; Url = "https://github.com/$Repo/releases/download/$t/$asset" }
+  $base = if ($env:QUICKSTART_RELEASE_BASE) { $env:QUICKSTART_RELEASE_BASE } else { "https://github.com/$Repo/releases/download/$t" }
+  if ($env:QUICKSTART_RELEASE_BASE) { [Console]::Error.WriteLine("quickstart: QUICKSTART_RELEASE_BASE is set - checksums come from the same place, only the provenance check protects this download") }
+  @{ Asset = $asset; Base = $base; Url = "$base/$asset" }
 }
 
 if ($PrintReleaseUrl) { $a = Get-ReleaseAsset; $a.Asset; $a.Url; exit 0 }
@@ -54,10 +56,21 @@ elseif (Get-Command go -ErrorAction SilentlyContinue) {
     New-Item -ItemType Directory -Force $bin | Out-Null
     $Dieg = Join-Path $bin 'dieg.exe'
     Invoke-WebRequest -UseBasicParsing $a.Url -OutFile $Dieg
-    $sums = (Invoke-WebRequest -UseBasicParsing "$($a.Base)/checksums.txt").Content -split "`n"
+    # to a file: release assets are application/octet-stream, so .Content would be a byte array
+    Invoke-WebRequest -UseBasicParsing "$($a.Base)/checksums.txt" -OutFile (Join-Path $bin 'checksums.txt')
+    $sums = Get-Content (Join-Path $bin 'checksums.txt')
     $want = ($sums | Where-Object { $_ -match [regex]::Escape($a.Asset) + '\s*$' } | Select-Object -First 1) -split '\s+' | Select-Object -First 1
     if (-not $want -or $want -ne (Get-FileHash $Dieg -Algorithm SHA256).Hash.ToLower()) { Remove-Item $Dieg -Force; throw 'checksum mismatch' }
-  } catch { Die "no dieg and no Go, and the Release download failed ($_): install Go 1.27.3 or run again after the Release is public" }
+    # build provenance (GitHub attestation); needs a logged-in gh
+    $e = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+    $gh = $false
+    if (Get-Command gh -ErrorAction SilentlyContinue) { & gh auth status 2>&1 | Out-Null; $gh = $LASTEXITCODE -eq 0 }
+    if ($gh) { & gh attestation verify $Dieg --repo $Repo --signer-workflow "$Repo/.github/workflows/release.yml" 2>&1 | Out-Null; $ok = $LASTEXITCODE -eq 0 }
+    $ErrorActionPreference = $e
+    if (-not $gh) { Write-Host 'provenance not verified (install and log in to gh to verify)' }
+    elseif (-not $ok) { Remove-Item $Dieg -Force; throw 'build provenance check failed' }
+    else { Write-Host 'provenance verified (gh attestation)' }
+  } catch { Die "no dieg and no Go, and getting the Release binary failed ($_): install Go 1.27.3 to build from source" }
 }
 Write-Host "dieg: $Dieg"
 # (3)(4) pg container
@@ -70,7 +83,6 @@ if (-not $SkipDocker) {
   else {
     $inUse = (-not $env:QUICKSTART_SKIP_PORT_CHECK) -and $null -ne (Get-NetTCPConnection -LocalPort 55432 -State Listen -ErrorAction SilentlyContinue)
     if ($inUse) { Die "port 55432 is in use by something other than this project's pg container - free it and run again" }
-    if ((Dk -Quiet @c pull pg) -ne 0) { Write-Host 'prebuilt image not available, building locally (first run takes a few minutes)' }
     if ((Dk @c up -d pg) -ne 0) { Die 'docker compose up failed' }
   }
   $cid = DkOut @c ps -q pg

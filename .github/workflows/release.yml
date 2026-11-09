@@ -1,9 +1,10 @@
 name: release
 on:
   push:
-    tags: ['v*']
+    tags: ['v[0-9]*']
+# Read-only by default; only the release job can write, and every action is pinned to a commit SHA.
 permissions:
-  contents: write
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,10 +13,13 @@ jobs:
         goos: [linux, darwin, windows]
         goarch: [amd64, arm64]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
+          cache: false
       - name: build
         env:
           GOOS: ${{ matrix.goos }}
@@ -24,23 +28,31 @@ jobs:
         run: |
           ext=""; [ "$GOOS" = windows ] && ext=".exe"
           CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${TAG#v}" -o "dieg_${TAG#v}_${GOOS}_${GOARCH}${ext}" ./cmd/dieg
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dieg-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dieg_*
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: dieg-*
           merge-multiple: true
       - run: sha256sum dieg_* > checksums.txt
-      - uses: softprops/action-gh-release@v2
+      # Build provenance, checked with: gh attestation verify <file> --repo starthalf51/diegesis-lang
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dieg_*
+      - uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           files: |
             dieg_*
             checksums.txt
           prerelease: ${{ startsWith(github.ref_name, 'v0.') }}
-          body: "Experimental preview (0.x): grammar, IR and commands may change in any minor release."
+          body: "Experimental preview (0.x): grammar, IR and commands may change in any minor release. Verify a download with `sha256sum -c checksums.txt --ignore-missing` and `gh attestation verify <file> --repo starthalf51/diegesis-lang`. Building from source (`go install` or `./scripts/quickstart.sh` with Go) needs neither."

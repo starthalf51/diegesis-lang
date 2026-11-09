@@ -7,4 +7,4 @@
 
 Flags: `--skip-docker` / `-SkipDocker` (PG already reachable at the DSN), `--print-release-url [tag]` / `-PrintReleaseUrl [-Tag tag]` (show the Release asset URL, no download).
 
-Env hooks: `QUICKSTART_HEALTH_TIMEOUT` (seconds to wait for pg to become healthy, default 120), `QUICKSTART_SKIP_PORT_CHECK=1` (skip the port 55432 in-use check).
+Env hooks: `QUICKSTART_HEALTH_TIMEOUT` (seconds to wait for pg to become healthy, default 120), `QUICKSTART_SKIP_PORT_CHECK=1` (skip the port 55432 in-use check), `QUICKSTART_TAG` / `QUICKSTART_RELEASE_BASE` (release tag and download base for the binary path, for testing only: checksums then come from the same base, so only the provenance check protects the download).
