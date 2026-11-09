@@ -23,7 +23,7 @@ import (
 	"sort"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // System is the demo's fixed system prompt (examples/idea-to-novel/prompts/call.sh), used by A and the judge.

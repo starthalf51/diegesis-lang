@@ -3,7 +3,7 @@ package sema
 import (
 	"testing"
 
-	"diegesis/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
 )
 
 // `pattern <id> [at <scene>]`(최상위·장면 안)와 `fact … tag <name>`(R3)이 IR 행이 된다.

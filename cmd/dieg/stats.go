@@ -10,7 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 // statsMetrics are the SQL functions of migration 014 (all take the work id).

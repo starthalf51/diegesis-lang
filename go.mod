@@ -1,4 +1,4 @@
-module diegesis
+module github.com/starthalf51/diegesis-lang
 
 go 1.27.3
 

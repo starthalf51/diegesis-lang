@@ -1,0 +1,3 @@
+{"t":"2026-11-09T00:14:24Z","label":"r5-judge-A","input":2,"output":11120,"cache_read":0,"cache_write":47302,"stop":"end_turn","err":"","ms":86376}
+{"t":"2026-11-09T00:15:51Z","label":"r5-judge-B","input":2,"output":4244,"cache_read":0,"cache_write":43831,"stop":"end_turn","err":"","ms":36227}
+{"t":"2026-11-09T00:36:08Z","label":"r5-judge-B2","input":2,"output":3368,"cache_read":0,"cache_write":43831,"stop":"end_turn","err":"","ms":31880}

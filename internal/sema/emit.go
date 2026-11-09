@@ -3,8 +3,8 @@ package sema
 import (
 	"fmt"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 // top emits one top-level item and returns its waiver target.

@@ -9,8 +9,8 @@ import (
 	"os"
 	"testing"
 
-	"diegesis/db"
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/db"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 func migrations(t *testing.T) fs.FS {

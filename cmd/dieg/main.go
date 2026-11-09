@@ -9,13 +9,13 @@ import (
 	"io/fs"
 	"os"
 
-	"diegesis/db"
-	"diegesis/internal/ir"
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/db"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 // version 은 SemVer. 릴리스할 때 git 태그(v0.2.0)와 같이 올린다. 1.0 전까지 문법은 바뀔 수 있다.
-const version = "0.7.0"
+const version = "0.8.0"
 
 func main() {
 	args := os.Args[1:]

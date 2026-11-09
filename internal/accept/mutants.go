@@ -12,10 +12,10 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/mutate"
-	"diegesis/internal/pg"
-	"diegesis/rules"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/mutate"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/rules"
 )
 
 // RunMutants 는 변이마다 `<work>~m<i>` 로 적재하고 린트한 뒤 지운다. base 는 이미 적재·린트된 원본이고

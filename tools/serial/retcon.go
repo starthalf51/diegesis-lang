@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 type retcon struct {
@@ -242,9 +242,10 @@ func (s *rcState) arm_A(ctx context.Context, r retcon, dir string) (map[int]stri
 			eps = append(eps, i)
 		}
 	}
-	if len(eps) == 0 {
+	if len(eps) == 0 && !s.v2 {
 		return nil, fmt.Errorf("%s pick: no episode in %q", r.ID, picked)
 	}
+	// v2: a pick that names only ep 12 (excluded) means A edits nothing; its residuals get judged as they are
 	sort.Ints(eps)
 	redone := map[int]string{}
 	for _, i := range eps {
@@ -260,9 +261,11 @@ func (s *rcState) arm_A(ctx context.Context, r retcon, dir string) (map[int]stri
 		}
 		redone[i] = strings.TrimSpace(t)
 	}
-	// the summary refresh is part of the harness's revision cost (a later episode would read it)
-	if _, err := s.step(ctx, m, lab("sum"), SummaryPrompt(s.summ, r.Req, redone), judgeReserve); err != nil {
-		return nil, err
+	// the summary refresh is part of the harness revision cost (a later episode would read it)
+	if len(redone) > 0 {
+		if _, err := s.step(ctx, m, lab("sum"), SummaryPrompt(s.summ, r.Req, redone), judgeReserve); err != nil {
+			return nil, err
+		}
 	}
 	final := map[int]string{}
 	for e, t := range s.baseA {
@@ -303,6 +306,25 @@ func copyTree(src, dst string, skip func(rel string) bool) error {
 	})
 }
 
+// sceneLess orders s9 < s11 < s11a < s12 (number, then suffix); Atoi alone put s11a first.
+func sceneLess(x, y string) bool {
+	split := func(id string) (int, string) {
+		t := strings.TrimPrefix(id, "s")
+		i := 0
+		for i < len(t) && t[i] >= '0' && t[i] <= '9' {
+			i++
+		}
+		n, _ := strconv.Atoi(t[:i])
+		return n, t[i:]
+	}
+	a, as := split(x)
+	b, bs := split(y)
+	if a != b {
+		return a < b
+	}
+	return as < bs
+}
+
 // bUnits maps scene id -> prose, in story order, for episodes 1..maxEp of a B work dir (story/epNN/sK.dieg.md).
 func bUnits(work string, maxEp int) (ids []string, text map[string]string) {
 	text = map[string]string{}
@@ -312,11 +334,7 @@ func bUnits(work string, maxEp int) (ids []string, text map[string]string) {
 		for _, f := range fs {
 			sc = append(sc, strings.TrimSuffix(filepath.Base(f), ".dieg.md"))
 		}
-		sort.Slice(sc, func(i, j int) bool {
-			a, _ := strconv.Atoi(sc[i][1:])
-			b, _ := strconv.Atoi(sc[j][1:])
-			return a < b
-		})
+		sort.Slice(sc, func(i, j int) bool { return sceneLess(sc[i], sc[j]) })
 		for _, id := range sc {
 			t := strings.TrimSpace(rcRead(filepath.Join(work, "novel", id+".ko-haera.md")))
 			if t == "" { // coded but never rendered (s32): not part of the text
@@ -616,6 +634,7 @@ func runRetcon(ctx context.Context, args []string) error {
 	dry := fs.Bool("rc-dry", false, "fake every model call and the dieg subprocess; print the commands")
 	list := fs.String("rc-list", "", "plan-7 benchmark: retcon list JSON; B starts from the stamped full base, scenes >= -rc-skip-from are never rendered")
 	skipFrom := fs.Int("rc-skip-from", 32, "with -rc-list: scenes numbered >= this are excluded from both arms")
+	rejudge := fs.Bool("rc-rejudge-b", false, "with -rc-list -rc-only: judge B again on the (correctly ordered) existing rN/b, writing judge/b2.*; no other call")
 	bOnly := fs.Bool("rc-b-only", false, "with -rc-list: run arm B only (A comes from an earlier run)")
 	bRes := fs.Int("rc-b-reserve", 45, "with -rc-list: calls that must be free before a retcon starts, for B's worst case")
 	if err := fs.Parse(args); err != nil {
@@ -642,6 +661,9 @@ func runRetcon(ctx context.Context, args []string) error {
 	}
 	if *recompute {
 		return s.recompute()
+	}
+	if *rejudge {
+		return s.rejudgeB(ctx, *only)
 	}
 	gf, err := os.OpenFile(filepath.Join(s.out, "calls.jsonl"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
@@ -843,4 +865,37 @@ func (s *rcState) recompute() error {
 	}
 	b, _ := json.MarshalIndent(map[string]any{"results": out}, "", "  ")
 	return os.WriteFile(filepath.Join(s.out, "results2.json"), b, 0o644)
+}
+
+// rejudgeB re-judges B of the -rc-only retcons on the existing rN/b with correct scene order (judge/b2.*).
+func (s *rcState) rejudgeB(ctx context.Context, only string) error {
+	gf, err := os.OpenFile(filepath.Join(s.out, "calls.jsonl"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	defer gf.Close()
+	s.glog = gf
+	s.judge = render.NewClaudeCLIWith(sonnet, "")
+	if s.dry {
+		s.judge = rcFake{}
+	}
+	for _, x := range strings.Split(only, ",") {
+		x = strings.TrimSpace(x)
+		for _, r := range retcons {
+			if r.ID != "R"+x {
+				continue
+			}
+			if err := s.guard(1, 0); err != nil {
+				return err
+			}
+			dir := filepath.Join(s.out, strings.ToLower(r.ID))
+			ids, text := bUnits(filepath.Join(dir, "b"), s.maxEp)
+			res, err := s.doJudge(ctx, r, "B2", dir, joinUnits(ids, text, "장면"))
+			if err != nil {
+				return err
+			}
+			fmt.Printf("%s B2 judge residual=%d introduced=%d quotes=%s\n", r.ID, res.Residual, res.Introduced, res.QuotesOK)
+		}
+	}
+	return nil
 }

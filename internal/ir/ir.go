@@ -1,4 +1,4 @@
-// Package ir is the compiler output: one slice per PG table (vault
+// Package ir is the compiler output: one slice per PG table (design notes
 // storage.md), rows in source order. IDs are stable `work/module/local`
 // strings. src_id 0 means "synthetic" (no source line), loaded as NULL.
 package ir

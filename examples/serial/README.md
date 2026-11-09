@@ -109,7 +109,7 @@ A 의 화당 증가분은 1화 12k 에서 11화 26k 로 완만하게 늘었다(A
 재현:
 
 ```
-export PATH=/c/Users/sg671/sdk/go/bin:$PATH
+export PATH=<go-install>/bin:$PATH
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go run ./tools/serial -idea examples/serial/idea.txt -out examples/serial/run1 -budget 219
 ```
@@ -215,7 +215,7 @@ B ≤ A  ⇔  288,958·s + 1,472,767·h ≤ 329,814
 재현:
 
 ```
-export PATH=/c/Users/sg671/sdk/go/bin:$PATH
+export PATH=<go-install>/bin:$PATH
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go run ./tools/serial -idea examples/serial/idea.txt -out examples/serial/run2 -budget 211
 ```
@@ -321,7 +321,7 @@ B ≤ A  ⇔  237,431·s + 697,575·h ≤ 518,277
 재현:
 
 ```
-export PATH=/c/Users/sg671/sdk/go/bin:$PATH
+export PATH=<go-install>/bin:$PATH
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go run ./tools/serial -idea examples/serial/idea.txt -out examples/serial/run3 -budget 220
 ```

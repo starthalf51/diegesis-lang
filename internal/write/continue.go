@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"diegesis/internal/render"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 // ContinueLoop writes episode ep into storyDir (the accumulated story/ code): it asks c for new files under

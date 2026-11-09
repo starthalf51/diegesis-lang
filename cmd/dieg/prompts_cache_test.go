@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // TestCorpusPromptsUnchanged: a cached corpus render's RenderHash must still equal the hash of today's prompt.

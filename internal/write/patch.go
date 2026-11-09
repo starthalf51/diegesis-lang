@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // patchScene brings one stale scene's prose up to date by sentence-level patch (render.PatchVerified) from its old

@@ -1,0 +1,293 @@
+{
+  "budget": 320,
+  "calls_used": 120,
+  "results": [
+    {
+      "ID": "R1",
+      "Arm": "A",
+      "Cost": {
+        "calls": 3,
+        "errs": 0,
+        "weighted_in": 29350,
+        "output": 11078,
+        "priced": 84740
+      },
+      "Collateral": {
+        "Units": 11,
+        "UnitsChanged": 1,
+        "UnitsAffected": 6,
+        "AffectedChanged": 1,
+        "BaseChars": 43936,
+        "CharsChanged": 500,
+        "CharsCollateral": 0,
+        "CollateralUnits": null,
+        "AffectedUnits": [
+          "e03",
+          "e04",
+          "e08",
+          "e09",
+          "e10",
+          "e11"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/a.out.txt",
+      "Residual": 1,
+      "Introduced": 0,
+      "QuotesOK": "2/2"
+    },
+    {
+      "ID": "R1",
+      "Arm": "B",
+      "Cost": {
+        "calls": 13,
+        "errs": 0,
+        "weighted_in": 127673,
+        "output": 24918,
+        "priced": 148048.6
+      },
+      "Revise": {
+        "Stale": 6,
+        "Patched": 6,
+        "Full": 0,
+        "IRStale": 4,
+        "StateStale": 2,
+        "Added": 0,
+        "Skipped": [
+          "s32",
+          "s33",
+          "s34",
+          "s35"
+        ]
+      },
+      "Collateral": {
+        "Units": 31,
+        "UnitsChanged": 4,
+        "UnitsAffected": 14,
+        "AffectedChanged": 4,
+        "BaseChars": 39558,
+        "CharsChanged": 172,
+        "CharsCollateral": 0,
+        "CollateralUnits": null,
+        "AffectedUnits": [
+          "s6",
+          "s8",
+          "s9",
+          "s11",
+          "s12",
+          "s17",
+          "s21",
+          "s24",
+          "s25",
+          "s26",
+          "s27",
+          "s28",
+          "s30",
+          "s31"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/b.out.txt",
+      "Residual": 0,
+      "Introduced": 0,
+      "QuotesOK": "0/0"
+    },
+    {
+      "ID": "R2",
+      "Arm": "A",
+      "Cost": {
+        "calls": 11,
+        "errs": 0,
+        "weighted_in": 212205,
+        "output": 54895,
+        "priced": 486680
+      },
+      "Collateral": {
+        "Units": 11,
+        "UnitsChanged": 9,
+        "UnitsAffected": 6,
+        "AffectedChanged": 5,
+        "BaseChars": 43936,
+        "CharsChanged": 1911,
+        "CharsCollateral": 953,
+        "CollateralUnits": [
+          "e01:249",
+          "e02:396",
+          "e05:204",
+          "e07:104"
+        ],
+        "AffectedUnits": [
+          "e03",
+          "e04",
+          "e06",
+          "e08",
+          "e09",
+          "e10"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/a.out.txt",
+      "Residual": 0,
+      "Introduced": 0,
+      "QuotesOK": "0/0"
+    },
+    {
+      "ID": "R2",
+      "Arm": "B",
+      "Cost": {
+        "calls": 30,
+        "errs": 0,
+        "weighted_in": 216794,
+        "output": 27124,
+        "priced": 150143
+      },
+      "Revise": {
+        "Stale": 14,
+        "Patched": 14,
+        "Full": 0,
+        "IRStale": 6,
+        "StateStale": 8,
+        "Added": 0,
+        "Skipped": [
+          "s32",
+          "s33",
+          "s34",
+          "s35"
+        ]
+      },
+      "Collateral": {
+        "Units": 31,
+        "UnitsChanged": 7,
+        "UnitsAffected": 10,
+        "AffectedChanged": 7,
+        "BaseChars": 39558,
+        "CharsChanged": 150,
+        "CharsCollateral": 0,
+        "CollateralUnits": null,
+        "AffectedUnits": [
+          "s6",
+          "s8",
+          "s9",
+          "s11",
+          "s12",
+          "s21",
+          "s24",
+          "s25",
+          "s26",
+          "s27"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/b.out.txt",
+      "Residual": 1,
+      "Introduced": 0,
+      "QuotesOK": "2/2"
+    },
+    {
+      "ID": "R3",
+      "Arm": "A",
+      "Cost": {
+        "calls": 8,
+        "errs": 0,
+        "weighted_in": 147437,
+        "output": 43084,
+        "priced": 362857
+      },
+      "Collateral": {
+        "Units": 11,
+        "UnitsChanged": 6,
+        "UnitsAffected": 8,
+        "AffectedChanged": 5,
+        "BaseChars": 43936,
+        "CharsChanged": 3501,
+        "CharsCollateral": 1069,
+        "CollateralUnits": [
+          "e04:1069"
+        ],
+        "AffectedUnits": [
+          "e01",
+          "e02",
+          "e05",
+          "e06",
+          "e07",
+          "e08",
+          "e09",
+          "e10"
+        ],
+        "AddedUnits": null,
+        "AddedChars": 0
+      },
+      "JudgeRaw": "judge/a.out.txt",
+      "Residual": 3,
+      "Introduced": 1,
+      "QuotesOK": "8/8"
+    },
+    {
+      "ID": "R3",
+      "Arm": "B",
+      "Cost": {
+        "calls": 48,
+        "errs": 0,
+        "weighted_in": 316904,
+        "output": 52836,
+        "priced": 229789
+      },
+      "Revise": {
+        "Stale": 21,
+        "Patched": 20,
+        "Full": 1,
+        "IRStale": 1,
+        "StateStale": 19,
+        "Added": 1,
+        "Skipped": [
+          "s32",
+          "s33",
+          "s34",
+          "s35"
+        ]
+      },
+      "Collateral": {
+        "Units": 31,
+        "UnitsChanged": 4,
+        "UnitsAffected": 14,
+        "AffectedChanged": 2,
+        "BaseChars": 39558,
+        "CharsChanged": 50,
+        "CharsCollateral": 8,
+        "CollateralUnits": [
+          "s17:1",
+          "s24:7"
+        ],
+        "AffectedUnits": [
+          "s1",
+          "s2",
+          "s4",
+          "s5",
+          "s16",
+          "s18",
+          "s19",
+          "s20",
+          "s22",
+          "s23",
+          "s26",
+          "s27",
+          "s28",
+          "s30"
+        ],
+        "AddedUnits": [
+          "s11a:1059"
+        ],
+        "AddedChars": 1059
+      },
+      "JudgeRaw": "judge/b.out.txt",
+      "Residual": 1,
+      "Introduced": 1,
+      "QuotesOK": "4/4"
+    }
+  ],
+  "stopped": "R4: R4 A: R4 pick: no episode in \"[12]\""
+}

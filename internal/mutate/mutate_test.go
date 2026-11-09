@@ -11,11 +11,11 @@ import (
 	"strings"
 	"testing"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/mutate"
-	"diegesis/internal/pg"
-	"diegesis/internal/sema"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/mutate"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/sema"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 const fixture = `module t.s

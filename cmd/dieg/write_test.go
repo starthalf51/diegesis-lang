@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"diegesis/internal/render"
-	"diegesis/internal/write"
+	"github.com/starthalf51/diegesis-lang/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/write"
 	"os"
 	"path/filepath"
 	"strings"

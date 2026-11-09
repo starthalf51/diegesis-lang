@@ -12,7 +12,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 var h2Pairs = []string{"bible/mark_denial.en-doyle", "bible/mark_denial.ko-gojeon", "bible/mark_denial.ko-hapsho",

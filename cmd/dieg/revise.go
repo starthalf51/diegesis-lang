@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"diegesis/internal/render"
-	"diegesis/internal/write"
+	"github.com/starthalf51/diegesis-lang/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/write"
 )
 
 // cmdRevise runs `dieg revise <story-dir> "요청" [--rounds N] [--scenes N] [--no-render] [--backend id] [--styles dir]

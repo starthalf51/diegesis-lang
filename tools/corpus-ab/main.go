@@ -18,9 +18,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"diegesis/internal/accept"
-	"diegesis/internal/pg"
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/accept"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 const (

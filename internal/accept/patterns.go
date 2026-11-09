@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 // matches: 패턴과 대상이 정확히 같고, SpanFrom 을 적었으면 구간 시작도 같다.

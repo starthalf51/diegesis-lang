@@ -9,8 +9,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"diegesis/db"
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/db"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 // asRO 는 트랜잭션 안에서 SET LOCAL ROLE sl_ro 로 q 를 돌리고 되돌린다. 행 수와 오류를 돌려준다.

@@ -9,8 +9,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 var pgxReadOnly = pgx.TxOptions{AccessMode: pgx.ReadOnly}

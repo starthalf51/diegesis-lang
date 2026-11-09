@@ -1,0 +1,145 @@
+=== DELETE: ep03/s6.dieg.md ===
+=== FILE: ep03/s7.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s7"
+location: dock
+when: after s5 by 0h..5h
+pov: seoyun close
+render:
+  pace: medium
+  tension: 0.6
+mode: authored
+---
+
+```sl
+lasts 30m..60m
+enter jihwan, gyeongtae, taeo, gicheol, yeongho, seoyun
+jihwan shows vote_notice to seoyun, taeo, gicheol, yeongho
+jihwan says seoyun, taeo, gicheol, yeongho, gyeongtae: vote_scheduled
+jihwan says seoyun, taeo, gicheol, yeongho, gyeongtae: demolition_schedule
+jihwan says seoyun, taeo, gicheol, yeongho, gyeongtae: jihwan_stays
+taeo asks jihwan: clinic_close
+jihwan says taeo: clinic_close
+gicheol asks jihwan: minbak_included
+jihwan says gicheol: minbak_included
+gyeongtae says seoyun, taeo, gicheol, yeongho: lighthouse_useless
+yeongho thinks: light_out
+seoyun sees yeongho_pale
+exit all
+```
+=== FILE: ep03/s8.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s8"
+location: malsun_house
+when: after s7 by 1h..5h
+pov: seoyun close
+render:
+  pace: slow
+  tension: 0.7
+mode: authored
+---
+
+```sl
+lasts 30m..60m
+enter seoyun, malsun
+seoyun tells malsun: demolition_schedule
+malsun says seoyun: tide_song
+seoyun believes song_matches
+seoyun thinks: song_matches
+payoff yeoul.scenes/tide_night
+seoyun asks malsun
+malsun says seoyun: lens_broken
+malsun sees tin_box
+seoyun sees tin_box
+malsun says seoyun: box_off_limits
+seoyun believes box_question
+seoyun thinks: box_question
+exit seoyun, malsun
+```
+=== FILE: ep04/s9.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s9"
+location: lighthouse
+when: after s8 by 0d..1d
+pov: seoyun close
+render: {pace: slow, tension: 0.3}
+mode: authored
+---
+
+```sl
+lasts 10m..30m
+enter seoyun, taeo
+seoyun says taeo: climb_before
+taeo says seoyun: demolition_schedule
+seoyun does look_up_at_lighthouse
+seoyun thinks: tide_song
+seoyun believes seoyun_wonders
+seoyun thinks: seoyun_wonders
+seoyun says taeo: seoyun_wonders
+taeo does open_door
+seoyun does step_inside
+exit seoyun, taeo
+```
+=== FILE: ep04/s11.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s11"
+location: lighthouse
+when: after s10 by 0m..10m
+pov: seoyun close
+render: {pace: slow, tension: 0.6}
+mode: authored
+---
+
+```sl
+lasts 10m..30m
+enter seoyun, taeo
+seoyun sees lens_chipped
+seoyun says taeo: lens_chipped
+seoyun sees lens_grooves
+setup shard_clue hint: lens_grooves
+seoyun thinks: lens_broken
+taeo sees lens_grooves
+seoyun says taeo: lens_grooves
+seoyun believes nail_odd
+seoyun thinks: nail_odd
+seoyun thinks: seoyun_wonders
+seoyun does look_out_to_sea
+exit seoyun, taeo
+```
+=== FILE: ep04/s11a.dieg.md ===
+---
+module: yeoul.scenes
+import: [yeoul.cast]
+scene: "s11a"
+location: dock
+when: after s11 by 30m..3h
+pov: seoyun close
+render: {pace: slow, tension: 0.5}
+mode: authored
+---
+
+```sl
+lasts 20m..40m
+enter seoyun, sua
+sua says seoyun: sua_collects
+sua shows glass_shard to seoyun
+seoyun asks sua
+sua says seoyun: shard_found
+seoyun sees glass_shard, shard_curved
+sua says seoyun: shard_many
+seoyun thinks: lens_grooves
+seoyun believes shard_matches
+seoyun thinks: shard_matches
+payoff yeoul.scenes/shard_clue
+sua says seoyun: sua_keeps
+exit seoyun, sua
+```
+=== END ===

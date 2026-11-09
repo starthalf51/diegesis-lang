@@ -1,6 +1,6 @@
 package main
 
-// 일회용 스파이크: 다축 채점표 검증기(vault rendering.md "다축 채점표"). 프로덕션 프롬프트는 건드리지 않는다.
+// 일회용 스파이크: 다축 채점표 검증기(설계 노트 rendering.md "다축 채점표"). 프로덕션 프롬프트는 건드리지 않는다.
 //   -spike sc-gen|sc-run|sc-old|sc-report  (-out examples/corpus-ab/scorecard, -budget N, -pairs 변형이름,...)
 
 import (
@@ -13,7 +13,7 @@ import (
 	"sort"
 	"strings"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 type itemAns struct {

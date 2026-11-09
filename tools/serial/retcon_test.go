@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -111,5 +112,13 @@ func TestRetcon2BOnlyDry(t *testing.T) {
 	}
 	if strings.Contains(string(b), "-A-") {
 		t.Error("A ran")
+	}
+}
+
+func TestSceneLessSuffix(t *testing.T) {
+	sc := []string{"s12", "s11a", "s9", "s11", "s10"}
+	sort.Slice(sc, func(i, j int) bool { return sceneLess(sc[i], sc[j]) })
+	if strings.Join(sc, ",") != "s9,s10,s11,s11a,s12" {
+		t.Fatal(sc)
 	}
 }

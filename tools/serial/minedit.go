@@ -21,8 +21,8 @@ import (
 	"strconv"
 	"strings"
 
-	"diegesis/internal/pg"
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // ---- diff of two scene requests ----

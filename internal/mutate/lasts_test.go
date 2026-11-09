@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"diegesis/internal/mutate"
+	"github.com/starthalf51/diegesis-lang/internal/mutate"
 )
 
 // lasts 간선(장면 start→end)은 shift-duration 대상이고, swap-order 대상이 아니다(뒤집어도 같은 간선이다).

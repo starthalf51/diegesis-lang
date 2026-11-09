@@ -14,12 +14,12 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/mutate"
-	"diegesis/internal/pg"
-	"diegesis/internal/sema"
-	"diegesis/internal/syntax"
-	"diegesis/rules"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/mutate"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/sema"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/rules"
 )
 
 const fixture = `module t.s

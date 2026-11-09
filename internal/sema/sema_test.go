@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"diegesis/internal/ir"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 const goldenDir = "../../testdata/golden"

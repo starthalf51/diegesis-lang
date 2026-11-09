@@ -6,8 +6,8 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"diegesis/internal/pg"
-	"diegesis/internal/write"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/write"
 )
 
 func lineWith(s string, subs ...string) string {

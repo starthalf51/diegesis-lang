@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"diegesis/internal/ir"
+	"github.com/starthalf51/diegesis-lang/internal/ir"
 )
 
 func TestDiscourseNaturalOrder(t *testing.T) {

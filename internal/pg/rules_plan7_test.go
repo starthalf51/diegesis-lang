@@ -9,9 +9,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"diegesis/internal/pg"
-	"diegesis/internal/sema"
-	"diegesis/internal/syntax"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/sema"
+	"github.com/starthalf51/diegesis-lang/internal/syntax"
 )
 
 // 사실 텍스트에 상대 시간("N일 뒤", "in N days")이 박혀 있으면 경고한다. 절대 날짜는 조용하다.

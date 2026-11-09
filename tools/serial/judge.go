@@ -9,7 +9,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"diegesis/internal/render"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 )
 
 // judgeHead is Plan 3's checklist (tools/bench/judge.go) with the serial's episode headers.

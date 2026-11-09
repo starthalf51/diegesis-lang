@@ -1,0 +1,17 @@
+{
+  "missing": [],
+  "hallucinated": [],
+  "leaked": [],
+  "extract_error": "",
+  "warnings": [
+    "백영호가 바닥 판자를 뜯어 렌즈 파편을 숨긴 자리를 보여 준다."
+  ],
+  "scores": {
+    "Coverage": 1,
+    "Kind": 1,
+    "Tone": 1,
+    "Length": 0,
+    "Score": 1
+  },
+  "patched": true
+}

@@ -1,7 +1,7 @@
 package pg_test
 
 import (
-	"diegesis/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 	"slices"
 	"testing"
 )

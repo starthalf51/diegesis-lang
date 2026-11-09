@@ -149,7 +149,7 @@ lighthouse s1·s2·s7, will s1·s2·s4·s6, mine s1·s2·s4·s5 는 통과했다
 ## 다시 돌리기
 
 ```sh
-export PATH=/c/Users/sg671/sdk/go/bin:$PATH SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
+export PATH=<go-install>/bin:$PATH SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go test ./tools/bench                       # TestBenchDryRun: 가짜 Completer 로 한 아이템을 끝까지
 go run ./tools/bench a -idea examples/bench/ideas/lighthouse.txt -n 7 -out examples/bench/lighthouse
 go run ./tools/bench b -idea examples/bench/ideas/lighthouse.txt -rounds 3 -out examples/bench/lighthouse
