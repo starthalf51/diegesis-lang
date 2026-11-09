@@ -57,6 +57,9 @@ func main() {
 	if args[0] == "stamp" {
 		os.Exit(cmdStamp(args[1:]))
 	}
+	if args[0] == "demo" {
+		os.Exit(cmdDemo(args[1:], os.Stdout))
+	}
 	if args[0] == "lint" {
 		os.Exit(cmdLint(args[1:]))
 	}
