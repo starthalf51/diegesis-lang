@@ -12,7 +12,7 @@ Go 컴파일러 `dieg` 가 이야기 IR 로 바꿔 PostgreSQL(Apache AGE + pgvec
 
 ## 빠른 시작
 
-도커만 있으면 된다(Go 는 선택. 미리 빌드한 바이너리·이미지는 첫 공개 판 이후부터 쓸 수 있고, 그 전에는 스크립트가 소스로 빌드한다).
+도커만 있으면 된다(Go 는 선택. Go 가 있으면 스크립트가 `dieg` 를 소스로 빌드하고, 없으면 릴리스 바이너리를 받아 체크섬·빌드 출처(`gh attestation verify`, 로그인된 gh 필요)를 확인한다. PostgreSQL 은 공식 `apache/age` 이미지 위에 항상 로컬로 빌드한다. 보안 신고·검증법은 [SECURITY.md](SECURITY.md)).
 
 ```sh
 git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang && ./scripts/quickstart.sh
@@ -220,6 +220,7 @@ go vet ./...
 | v0.7.0 | 플랜 7: 렌더 프롬프트에 세계 상태 요약(`--no-digest`), 상태 해시 낡음·`dieg stamp`, `revise` 문장 패치(`patched=N`), 경고 3개, `revise` 는 새 진단만 막음, `--skip`·`DIEG_CALL_CAP`, 수정 재측정(retcon2) |
 | v0.8.0 | 플랜 8: 공개 준비(Apache-2.0, 위생 점검 `tools/pubcheck`, `docs/`), 영어 README·`docs/quickstart.md`·`examples/showcase`, 재설정 재측정(retcon3) |
 | v0.9.0 | 플랜 9: 첫 사용 경험(`dieg demo`, `scripts/quickstart.sh`·`.ps1`, 컴포즈 ghcr 이미지, 릴리스 워크플로, `docs/releasing.md`), `attribute-conflict` 가 `X.at` 이동도 허용 |
+| v0.9.1 | 플랜 10: 배포 보안 — PG 이미지 게시 중단(공식 `apache/age` digest 고정, 로컬 빌드만), 릴리스 액션 SHA 고정·최소 권한·빌드 출처 증명, 빠른 시작 스크립트가 체크섬·`gh attestation verify` 실패 시 바이너리 삭제, `SECURITY.md`·dependabot |
 
 ## 라이선스
 

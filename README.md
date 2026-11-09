@@ -152,6 +152,10 @@ go test -count=1 ./...   # needs SL_PG_DSN (PostgreSQL running)
 go vet ./...
 ```
 
+## Security
+
+Experimental preview, no warranty. The default install builds from source; PostgreSQL is built locally from the official `apache/age` image (no Diegesis image is published). Release binaries come with `checksums.txt` and GitHub build provenance (`gh attestation verify <file> --repo starthalf51/diegesis-lang`), and the quickstart scripts check both before running a download. Report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
+
 ## Versioning
 
 [SemVer](https://semver.org/). Before 1.0, grammar and IR may change in MINOR releases. Releases are git tags (`v0.9.0`); `dieg version` prints the version. Release history: [README.ko.md](README.ko.md#버전) (Korean).
