@@ -156,7 +156,7 @@ func (k *counter) Complete(ctx context.Context, system, user string) (render.Res
 	return k.c.Complete(ctx, system, user)
 }
 
-// cmdWrite runs `dieg write <idea.txt | "item sentence"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--render-effort low|medium|high] [--force]`.
+// cmdWrite runs `dieg write <idea.txt | "item sentence"> -o <dir> [--rounds N] [--backend id] [--no-render] [--allow-warn] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--render-effort low|medium|high] [--force]`.
 // Exit 1 when the code is not clean after the rounds (nothing rendered), 3 when a rendered scene failed verification.
 // --scenes N renders only the first N shown scenes (to fit a call budget).
 func cmdWrite(args []string) int {
@@ -204,6 +204,8 @@ func commonFlag(args []string, i int, o *write.Opts, styles *string, limit *int)
 		o.NoDigest = true
 	case a == "--no-render":
 		o.Render = false
+	case a == "--allow-warn":
+		o.AllowWarn = true
 	case a == "--skeleton" || a == "--skeleton=true" || a == "--skeleton=false":
 		o.Skeleton = a != "--skeleton=false"
 	case (a == "--rounds" || a == "--scenes") && i+1 < len(args):

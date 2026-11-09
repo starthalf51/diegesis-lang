@@ -49,6 +49,7 @@ type Opts struct {
 	Digest                               func(ctx context.Context, sceneID string) (text, state string, err error) // render path: per-scene PG world-state digest; text is appended to the render prompt, only the state-only part is hashed for staleness; nil = none
 	Skip                                 []string // Rerender: scene ids never rendered even if stale (CLI: revise --skip)
 	Verifier                             string   // "card" (default, render.ScoreCard checklist) or "open" (open re-extraction)
+	AllowWarn                            bool     // Loop: warn diagnostics do not block and are not fed back (errors still do)
 }
 
 func DefaultOpts() Opts {
@@ -91,8 +92,18 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 		return Result{}, fmt.Errorf("write: no output dir")
 	}
 	res := Result{Dir: filepath.Join(o.Out, "story")}
-	var last map[string]string // last well-formed bundle
-	var lastDiags []Diag       // its diagnostics
+	// blk: the diagnostics that keep a round from being clean; with AllowWarn only errors.
+	blk := func(ds []Diag) (out []Diag) {
+		for _, d := range blocking(ds) {
+			if d.Severity == "error" || !o.AllowWarn {
+				out = append(out, d)
+			}
+		}
+		return
+	}
+	var best map[string]string // best well-formed bundle: fewest errors, then fewest warns, the earlier round on a tie
+	var bestDiags []Diag       // its diagnostics
+	var bestE, bestW int
 	var bundle string
 	user := CodePrompt(idea, refs, o.Reserved, o.Skeleton)
 	for r := 1; r <= o.Rounds; r++ {
@@ -125,30 +136,36 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 			if res.Diags, err = check(ctx, rdir); err != nil {
 				return res, fmt.Errorf("round %d check: %w", r, err)
 			}
-			last, lastDiags = files, res.Diags
 			if bundle, err = PackFiles(rdir); err != nil {
 				return res, err
 			}
-			res.Clean = true
+			e, w := 0, 0
 			for _, d := range res.Diags {
-				res.Clean = res.Clean && !d.Blocking()
+				switch d.Severity {
+				case "error":
+					e++
+				case "warn":
+					w++
+				}
 			}
+			if best == nil || e < bestE || e == bestE && w < bestW {
+				best, bestDiags, bestE, bestW = files, res.Diags, e, w
+			}
+			res.Clean = len(blk(res.Diags)) == 0
 		}
 		if res.Clean {
 			break
 		}
-		user = FixPrompt(idea, refs, o.Reserved, o.Skeleton, bundle, blocking(res.Diags))
+		user = FixPrompt(idea, refs, o.Reserved, o.Skeleton, bundle, blk(res.Diags))
 	}
-	if last != nil {
-		if err := WriteFiles(res.Dir, last); err != nil {
+	if best != nil {
+		if err := WriteFiles(res.Dir, best); err != nil {
 			return res, err
 		}
-	}
-	if last == nil {
-		lastDiags = res.Diags
+		res.Diags, res.Clean = bestDiags, len(blk(bestDiags)) == 0
 	}
 	var sb strings.Builder
-	for _, d := range lastDiags {
+	for _, d := range res.Diags {
 		sb.WriteString(d.String() + "\n")
 	}
 	return res, os.WriteFile(filepath.Join(o.Out, "diags.txt"), []byte(sb.String()), 0o644)
