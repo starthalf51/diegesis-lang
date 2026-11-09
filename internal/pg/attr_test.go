@@ -145,3 +145,23 @@ scene 4
 		t.Errorf("attribute-conflict = %v, want %v", got, want)
 	}
 }
+
+// 사물의 X.at 이 장면을 건너 바뀌는 것은 옮김이지 충돌이 아니다(object-location 이 가장 최근 값을 쓴다). 일반 키는 여전히 충돌이다.
+func TestAttributeConflictAtIsMove(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, `place hall "H"
+place yard "Y"
+thing box "B"
+scene 1 at hall
+  attr box.at = hall
+  attr box.color = red
+scene 2 at yard
+  when after 1
+  attr box.at = yard
+  attr box.color = blue
+`)
+	want := []string{"t.s/2#attr2/warn"}
+	if got := of(lint(t, pool, id), "attribute-conflict", id); !slices.Equal(got, want) {
+		t.Errorf("attribute-conflict = %v, want %v", got, want)
+	}
+}

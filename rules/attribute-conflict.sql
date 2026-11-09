@@ -15,13 +15,14 @@
 --   hi 가 있고 hi < da − 1(경과가 너무 짧다), 또는 lo 가 있고 lo > da + 1(경과가 너무 길다) — 어느 쪽이든
 --   [lo, hi] 의 모든 t 에서 |da − t| > 1 이다. 그리고 경계와 무관하게 precedes(p, q) = yes 이고 da < 0(나이가 준다).
 -- status 키는 제외한다: gone ↔ present 는 값이 바뀌는 사건이며 stays-gone 이 시점별로 읽는다.
+-- at 키도 제외한다: 사물이 옮겨 다니는 것은 정상이며 object-location 이 행위 직전의 가장 최근 값을 쓴다.
 -- 한 대상에 맞서는 단언이 여럿이면 원문에서 가장 앞선 것 하나를 data.other 로 싣는다.
 WITH
 a AS (
   SELECT x.id, x.entity_id, x.key, x.kind, x.value, x.src_id,
          CASE x.kind WHEN 'id' THEN lint_canon($1, x.value) ELSE x.value END AS v,
          coalesce(x.at_pt, (SELECT id FROM point WHERE work_id = $1 AND kind = 'origin' ORDER BY id LIMIT 1)) AS pt
-    FROM attribute x WHERE x.work_id = $1 AND x.account_id IS NULL AND x.key <> 'status'),
+    FROM attribute x WHERE x.work_id = $1 AND x.account_id IS NULL AND x.key NOT IN ('status', 'at')),
 pair AS (
   SELECT q.*, p.id AS p_id, p.kind AS p_kind, p.value AS p_value, p.v AS p_v, p.src_id AS p_src, p.pt AS p_pt,
          q.key = 'age' AND q.kind = 'int' AND p.kind = 'int' AS age,

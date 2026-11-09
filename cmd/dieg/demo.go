@@ -69,7 +69,9 @@ func runDemo(scene string, out io.Writer) error {
 	fmt.Fprintf(out, "\n== Who knows what (scene %s) ==\n", scene)
 	// 이 장면 전에 얻은 믿음 중 독자에게 아직 숨긴 사실(withhold)은 뺀다.
 	rows, err := pool.Query(ctx, `
-	  SELECT render_name($1, b.entity_id, 'ko'), render_fact_text($1, z.base), z.val = b.value
+	  SELECT who, txt, yes FROM (
+	  SELECT DISTINCT ON (b.entity_id, z.base) render_name($1, b.entity_id, 'ko') AS who, render_fact_text($1, z.base) AS txt, z.val = b.value AS yes,
+	         point_ord($1, b.from_pt) AS o
 	    FROM scene s JOIN believes b ON b.work_id = s.work_id
 	    JOIN entity e ON e.work_id = b.work_id AND e.id = b.entity_id AND e.kind = 'character'
 	   CROSS JOIN LATERAL prop_norm($1, b.prop_id) z
@@ -77,7 +79,7 @@ func runDemo(scene string, out io.Writer) error {
 	     AND NOT EXISTS (SELECT 1 FROM withhold wh CROSS JOIN LATERAL prop_norm($1, wh.prop_id) w
 	                      WHERE wh.work_id = $1 AND w.base = z.base
 	                        AND NOT EXISTS (SELECT 1 FROM reader_state($1, s.discourse_ord - 1) r WHERE r.fact_id = z.base))
-	   GROUP BY 1, 2, 3 ORDER BY 1, 2`, work, scene)
+	   ORDER BY b.entity_id, z.base, point_ord($1, b.from_pt) DESC) y ORDER BY who, txt`, work, scene)
 	if err != nil {
 		return err
 	}

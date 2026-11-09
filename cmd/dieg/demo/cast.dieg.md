@@ -8,7 +8,7 @@ mode: authored
 Diegesis 데모용 짧은 이야기. 의도적으로 고칠 거리 둘이 들어 있다.
 
 ```sl
-work lighthouse "The Lighthouse Key"
+work demo-lighthouse "The Lighthouse Key"
   unit day
   name ko "등대의 열쇠"
   name en "The Lighthouse Key"

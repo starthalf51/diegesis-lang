@@ -17,10 +17,23 @@ func runDemoT(t *testing.T) string {
 
 func TestDemoOutput(t *testing.T) {
 	out := runDemoT(t)
-	for _, want := range []string{"== Consistency warnings ==", "== Who knows what (scene 1.3) ==", "== World state for scene 1.3 ==", "stays-gone", "relative-time-fact", "놋쇠 열쇠(key): at = 등대"} {
+	for _, want := range []string{"== Consistency warnings ==", "== Who knows what (scene 1.3) ==", "== World state for scene 1.3 ==", "놋쇠 열쇠(key): at = 등대"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("output lacks %q:\n%s", want, out)
 		}
+	}
+	warn := strings.SplitN(strings.SplitN(out, "== Consistency warnings ==\n", 2)[1], "\n== Who knows", 2)[0]
+	for _, rule := range []string{"stays-gone", "relative-time-fact"} {
+		ok := false
+		for _, l := range strings.Split(warn, "\n") {
+			ok = ok || strings.Contains(l, ": warn "+rule+":")
+		}
+		if !ok {
+			t.Errorf("no %s warning line in warnings section:\n%s", rule, warn)
+		}
+	}
+	if strings.Contains(warn, "waived") {
+		t.Errorf("demo shows a waived line:\n%s", warn)
 	}
 	if strings.Contains(out, "등불 밑에 숨겼다") {
 		t.Errorf("withheld fact leaked:\n%s", out)
