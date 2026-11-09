@@ -28,7 +28,7 @@ A concrete side-by-side case: [`examples/showcase`](examples/showcase/README.md)
 
 ## Quickstart
 
-Needs only Docker (Go optional; prebuilt binaries and the PG image become available after the first public release, until then the script builds from source).
+Needs only Docker (Go optional: the script builds `dieg` from source when Go is installed, otherwise downloads a release binary and checks it; PostgreSQL is always built locally from the official `apache/age` image).
 
 ```sh
 git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang && ./scripts/quickstart.sh
@@ -78,7 +78,6 @@ The commands are the same on Linux, macOS and Windows (set the environment varia
 
 ```sh
 git clone https://github.com/starthalf51/diegesis-lang && cd diegesis-lang
-docker compose -f deploy/compose.yaml pull pg || true   # prebuilt image (after the first public release); otherwise built locally
 docker compose -f deploy/compose.yaml up -d pg    # 127.0.0.1:55432, user/password/db = sl/sl/sl; no .env needed
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 ```

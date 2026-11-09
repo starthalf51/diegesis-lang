@@ -70,7 +70,6 @@ if (-not $SkipDocker) {
   else {
     $inUse = (-not $env:QUICKSTART_SKIP_PORT_CHECK) -and $null -ne (Get-NetTCPConnection -LocalPort 55432 -State Listen -ErrorAction SilentlyContinue)
     if ($inUse) { Die "port 55432 is in use by something other than this project's pg container - free it and run again" }
-    if ((Dk -Quiet @c pull pg) -ne 0) { Write-Host 'prebuilt image not available, building locally (first run takes a few minutes)' }
     if ((Dk @c up -d pg) -ne 0) { Die 'docker compose up failed' }
   }
   $cid = DkOut @c ps -q pg

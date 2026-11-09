@@ -60,7 +60,6 @@ cast.dieg.md:35:1: warn relative-time-fact: fact storm_coming names a relative t
 
 ```sh
 cd deploy
-docker compose pull pg || true     # 미리 빌드한 이미지(첫 공개 판 이후). 없으면 로컬 빌드
 docker compose up -d pg            # 127.0.0.1:55432, 사용자/암호/DB = sl/sl/sl, 데이터는 볼륨 sl_pgdata
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go run ./cmd/dieg db migrate       # db/migrations/*.sql 을 이름순으로 한 번씩 적용

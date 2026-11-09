@@ -68,7 +68,6 @@ if [ $SKIP_DOCKER = 0 ]; then
     if [ -z "${QUICKSTART_SKIP_PORT_CHECK:-}" ] && command -v nc >/dev/null 2>&1 && nc -z 127.0.0.1 55432 >/dev/null 2>&1; then
       die "port 55432 is in use by something other than this project's pg container - free it and run again"
     fi
-    $C pull pg >/dev/null 2>&1 || echo "prebuilt image not available, building locally (first run takes a few minutes)"
     $C up -d pg || die "docker compose up failed"
   fi
   cid=$($C ps -q pg)

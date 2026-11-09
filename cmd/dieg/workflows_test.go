@@ -14,7 +14,6 @@ import (
 func TestWorkflowsParse(t *testing.T) {
 	need := map[string][]string{
 		"release.yml": {"CGO_ENABLED=0", "dieg_${TAG#v}_${GOOS}_${GOARCH}", "checksums.txt", "softprops/action-gh-release@v2", "contents: write", "tags:", "goos: [linux, darwin, windows]", "goarch: [amd64, arm64]"},
-		"pg-image.yml": {"ghcr.io/starthalf51/diegesis-pg:age1.8.0-pgvector0.8.7", "diegesis-pg:latest", "packages: write", "branches: [main]", "cache-from: type=gha", "cache-to: type=gha,mode=max", "linux/amd64,linux/arm64"},
 	}
 	files, _ := filepath.Glob("../../.github/workflows/*.yml")
 	if len(files) != len(need) {
