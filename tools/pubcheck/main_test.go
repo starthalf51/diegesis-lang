@@ -14,6 +14,7 @@ func TestPubcheckRules(t *testing.T) {
 		"path2":     "/c/users/sg671/x",
 		"user":      "home sg671 here",
 		"vault":     "see Obsidian Vault notes",
+		"vaultword": "the Vault holds it",
 	}
 	for n, s := range hit {
 		if rule(s) == "" {
@@ -25,6 +26,7 @@ func TestPubcheckRules(t *testing.T) {
 		"github.com/starthalf51/diegesis-lang",
 		`token := "short"`,
 		"plain text",
+		"a vaulted ceiling",
 	}
 	for _, s := range miss {
 		if r := rule(s); r != "" {

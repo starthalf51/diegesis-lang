@@ -1,5 +1,5 @@
 (* Diegesis 0.2 문법 — 단일 기준. internal/syntax 파서는 이 문법을 그대로 받는다.
-   원본: vault projects/story-lang/language.md (v0) + 언어 추가 사항 + file-format.md 프론트매터.
+   원본: 설계 노트 language.md (v0) + 언어 추가 사항 + file-format.md 프론트매터.
 
    어휘
    - 한 줄에 한 문장. 블록은 들여쓰기 2칸(INDENT/DEDENT). 탭 들여쓰기와 2의 배수가 아닌 들여쓰기는 오류(rule indent).

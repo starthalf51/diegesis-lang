@@ -4,3 +4,12 @@ experiments/m0-render/out/
 /out/
 examples/**/*.raw.txt
 out/
+# assembled/regenerable prompts and merged novels (see examples READMEs, SHA256SUMS-uncommitted)
+examples/bench/*/judge/prompt.txt
+examples/idea-to-novel/novel-A.md
+examples/idea-to-novel/novel-B.md
+examples/idea-to-novel/prompts/b1-code.txt
+examples/idea-to-novel/prompts/b2-fix-r*.txt
+examples/idea-to-novel/prompts/b3-change.txt
+examples/idea-to-novel/prompts/b4-change-fix1.txt
+examples/idea-to-novel/prompts/judge[12].txt

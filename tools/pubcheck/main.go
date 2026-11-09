@@ -26,13 +26,14 @@ var rules = []pat{
 	{"secret:generic", regexp.MustCompile(`(?i)(api[_-]?key|secret|token)\s*[:=]\s*['"][^'"]{12,}`)},
 	{"path:personal", regexp.MustCompile(`(?i)(c:.users.sg671|/c/users/sg671|sg671)`)},
 	{"path:vault", regexp.MustCompile(`Obsidian Vault`)},
+	{"word:vault", regexp.MustCompile(`(?i)\bvault\b`)},
 }
 
 // allow lists intentional local-dev defaults.
 var allow = []string{"postgres://sl:sl@localhost"}
 
 // ponytail: pubcheck's own sources hold the patterns, so they are skipped by path.
-var skipFile = []string{"tools/pubcheck/"}
+var skipFile = []string{"tools/pubcheck/", "corpus/macbeth/texts/"} // Shakespeare says "vault"
 
 func rule(line string) string {
 	for _, a := range allow {

@@ -1,4 +1,4 @@
--- 003: 역할 보유 구간(resolve_roles) 과 지식 파생(derive_beliefs). 규칙은 vault compiler.md "지식 파생" 표.
+-- 003: 역할 보유 구간(resolve_roles) 과 지식 파생(derive_beliefs). 규칙은 설계 노트 compiler.md "지식 파생" 표.
 SET LOCAL search_path = public, ag_catalog;
 
 -- 행위가 전하는 명제: prop_id 와 with[] (예: `sends ross to macbeth with P`).

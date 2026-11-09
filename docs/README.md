@@ -9,4 +9,6 @@
 - [storage](storage.md) — PostgreSQL 스키마, 마이그레이션, 독자 모델, 지표, AGE 그래프
 - [rendering](rendering.md) — 렌더러, 검수 카드, 상태 요약, 문장 패치, 문체 백엔드
 
+Start with the [quickstart](quickstart.md).
+
 문법의 단일 기준은 [`spec/grammar.ebnf`](../spec/grammar.ebnf) 다. `<!-- check -->` 표시가 붙은 `sl` 예제는 `go test ./cmd/dieg` 의 `TestDocsExamplesCompile` 이 컴파일해서 확인한다.

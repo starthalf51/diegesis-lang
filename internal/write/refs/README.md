@@ -1,5 +1,42 @@
 # Diegesis
 
+A programming language for novels: you write characters, facts, scenes and speech acts (`tells`, `lies`, `sees` ...) in `.dieg.md` files, and a Go compiler loads them into PostgreSQL, where SQL checks time, who-knows-what and deception, and an AI renders and revises the prose against that checked state.
+
+**Status: experimental preview.** The grammar and IR may change in any 0.x release.
+
+## Why Diegesis
+
+The claim is narrow: when you change something in the middle of a story, Diegesis propagates the change more completely than asking an AI to edit the text directly. It is not shown to be cheaper.
+
+Measured in [`examples/value/retcon3`](examples/value/retcon3/README.md) (v0.7.0, 6 retcons of a 12-episode story, one run per arm, one verifier; B = `dieg revise`, A = direct AI edit):
+
+- Confirmed residual contradictions plus new ones: B 3 vs A 6 (5 vs 8 counting boundary items).
+- Unrelated text changed: B 47 vs A 2,247 characters.
+- Priced weighted cost: B about 0.93x of A. This depends on A editing nothing in R6; treating R4 like R6 gives 1.12x.
+- Calls: B makes 6.7x as many.
+- The pre-registered rule is met, but a cost advantage is NOT established. 12 episodes favour A, and A's cost varies a lot (A's R2 cost was 3.7x the previous run).
+- Cost alone is not a reason to use Diegesis: the cost-curve analysis in [`examples/value/cost-curve`](examples/value/cost-curve) found direct writing's per-episode cost flat.
+
+See a concrete case in [`examples/showcase`](examples/showcase/README.md).
+
+## Install
+
+```sh
+docker compose -f deploy/compose.yaml up -d pg && export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
+go install github.com/starthalf51/diegesis-lang/cmd/dieg@latest
+dieg db migrate && dieg test corpus/macbeth
+```
+
+Docs: [docs/README.md](docs/README.md), [docs/quickstart.md](docs/quickstart.md). Needs Go 1.27+, Docker, and (for `dieg write`) a logged-in `claude` CLI subscription.
+
+License: Apache-2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)).
+
+---
+
+*아래는 한국어 상세 문서.*
+
+# Diegesis (한국어)
+
 소설을 위한 프로그래밍 언어. 인물·사실·장면·발화(`tells`, `lies`, `sees` …)를 `.dieg.md` 파일에 적으면
 Go 컴파일러 `dieg` 가 이야기 IR 로 바꿔 PostgreSQL(Apache AGE + pgvector)에 적재한다.
 판정(시간 모순, 누가 무엇을 아는가, 기만, 서사 패턴, 지표)은 전부 PG 안의 SQL 이 한다.
@@ -168,6 +205,7 @@ go vet ./...
 | v0.5.0 | 플랜 5: 계층형 렌더러(`--renderer layered`, 옵트인; v0.6.0 에서 삭제), 기본 렌더 모델 haiku, 검증기가 저작된 사실 없는 행위·등장을 환각으로 세지 않음, stays-gone 규칙(`attr X.status = gone`), 연재 공정 재측정(run2) |
 | v0.6.0 | 플랜 6: 기본 채점기 card(`--verifier open` 으로 예전 방식), 지어낸 사건은 경고만, 기본 `--render-effort low`, 계층형 렌더러(`--renderer`·`--beat-retries`) 삭제, 연재 run3 |
 | v0.7.0 | 플랜 7: 렌더 프롬프트에 세계 상태 요약(`--no-digest`), 상태 해시 낡음·`dieg stamp`, `revise` 문장 패치(`patched=N`), 경고 3개, `revise` 는 새 진단만 막음, `--skip`·`DIEG_CALL_CAP`, 수정 재측정(retcon2) |
+| v0.8.0 | 플랜 8: 공개 준비(Apache-2.0, 위생 점검 `tools/pubcheck`, `docs/`), 영어 README·`docs/quickstart.md`·`examples/showcase`, 재설정 재측정(retcon3) |
 
 ## 라이선스
 
