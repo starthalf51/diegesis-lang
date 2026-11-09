@@ -26,6 +26,12 @@ func TestLicenseFiles(t *testing.T) {
 			n++
 		}
 	}
+	if strings.Contains(string(notice), "source line missing") {
+		t.Fatal("NOTICE has a source line missing")
+	}
+	if strings.Contains(string(notice), "source line missing") {
+		t.Fatal("NOTICE has a source line missing")
+	}
 	if n != len(texts) {
 		t.Fatalf("NOTICE has %d corpus lines, want %d", n, len(texts))
 	}

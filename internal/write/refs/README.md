@@ -171,4 +171,4 @@ go vet ./...
 
 ## 라이선스
 
-Apache License 2.0 ([LICENSE](LICENSE)). 코퍼스·문체 원문의 출처는 [NOTICE](NOTICE) 에 있다(모두 퍼블릭 도메인).
+Apache License 2.0 ([LICENSE](https://github.com/starthalf51/diegesis-lang/blob/main/LICENSE)). 코퍼스·문체 원문의 출처는 [NOTICE](https://github.com/starthalf51/diegesis-lang/blob/main/NOTICE) 에 있다(모두 퍼블릭 도메인).
