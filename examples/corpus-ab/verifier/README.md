@@ -1,51 +1,51 @@
-# 스파이크 — 검증기 재현성 (열린 추출 S1 vs 닫힌 체크리스트 S2)
+# Spike — verifier reproducibility (open extraction S1 vs closed checklist S2)
 
-일회용 실험. Phase 1 산문(`../p1`)을 새로 렌더하지 않고 그대로 재검증했다. 코드는 `tools/corpus-ab/verifier.go`(`-spike dump|s1|s2|report`). 프로덕션 프롬프트는 건드리지 않았다(S2 프롬프트는 verifier.go 안). 호출은 구독 `claude` CLI(sonnet/low)만 썼고 `counter` 예산 가드를 그대로 썼다.
+A throwaway experiment. We re-verified the Phase 1 prose (`../p1`) as is, without re-rendering. The code is `tools/corpus-ab/verifier.go` (`-spike dump|s1|s2|report`). Production prompts were not touched (the S2 prompt lives in verifier.go). Calls used only the subscription `claude` CLI (sonnet/low), with the `counter` budget guard as it is.
 
-## 왜 했나
-앞 스파이크(`../spike`)에서 **같은 산문**을 다시 추출하자 판정이 달라졌다(실제 환각 6건 중 1건만 재발견, 새 항목 2건). 렌더러를 고치기 전에 검증기 자체의 재현성을 재고, 닫힌 질문(체크리스트)이 대안이 되는지 본다.
+## Why we did it
+In the earlier spike (`../spike`), re-extracting the **same prose** changed the verdict (only 1 of 6 real hallucinations was rediscovered, with 2 new items). Before fixing the renderer, we measure the verifier's own reproducibility and see whether a closed question (a checklist) is an alternative.
 
-## 표본 (계획과 달라진 점 포함)
-계획은 장면별 1개(4개)였으나 **실제 비교는 3개**다: bible `ko-gojeon`, chibi `ko-hapsho`, macbeth `ko-haera`. odyssey `ko-haera` 는 정답 라벨만 만들고 호출은 못 했다 — 예산 사고(아래 "호출") 때문. 통과/실패는 섞였다(Phase 1: bible 실패, chibi 실패, macbeth 통과). 누락 사실이 있는 렌더를 골랐다.
-- **이 4개 장면은 withheld 사실이 0개**다. 누설(leak) 정답·측정은 비어 있다. 누설 검출 재현성은 이 실험으로 알 수 없다.
+## Sample (including deviations from the plan)
+The plan was 1 per scene (4), but **the actual comparison has 3**: bible `ko-gojeon`, chibi `ko-hapsho`, macbeth `ko-haera`. For odyssey `ko-haera` we made only the truth labels and could not make the calls — because of a budget accident (see "Calls" below). Pass/fail is mixed (Phase 1: bible failed, chibi failed, macbeth passed). We picked renders that have missing facts.
+- **These 4 scenes have 0 withheld facts.** The leak truth and measurement are empty. This experiment cannot tell us the reproducibility of leak detection.
 
-## 방법
-- 기대 항목 = `Diff` 가 쓰는 `(행위자|동사류|정규 사실)` 키(중복은 1개로 합침). `expected_*.json` 에 항목·평어 진술이 있다.
-- **정답(truth.json)**: 산문을 직접 읽고 항목마다 있음/없음 + 근거 인용 + 불확실 표시. 라벨러는 나 하나. 불확실 5건: bible E1·E5, chibi E3·E6, macbeth E14(+odyssey E6).
-- **S1**: 프로덕션 추출 프롬프트(`BuildExtractPrompt`)를 렌더당 6회 단독 호출. 단일 호출 항목 = `Diff` 의 missing 에 없으면 "있음". 투표 A = 호출 1–3, B = 4–6, `Vote`+`Diff`+`Passed`(환각 포함). 6회 다수 = `Vote` 6개(4표).
-- **S2**: 같은 산문 + 번호 붙인 기대 사실(평어) → 항목별 yes/no + 최단 인용 JSON. 렌더당 6회. 투표 = 3회 중 2회 이상 yes, 통과 = missing ≤ 1 이고 leak 0, 환각 무시. 6회 다수 = 4회 이상 yes.
-- 지표: (a) 항목 일치 = 항목별 max(p,1−p) 평균(p = 6회 중 "있음" 비율), (b) 두 투표의 통과/실패·missing·환각·leak 집합 일치, (c) 정답 대비 항목 정확도(6회 다수, K=3 투표 2개 합산).
+## Method
+- Expected items = the `(actor|verb class|canonical fact)` key that `Diff` uses (duplicates merged into one). `expected_*.json` has the items and plain-language statements.
+- **Truth (truth.json)**: I read the prose myself and, per item, recorded present/absent + a supporting quotation + an uncertainty mark. One labeller (me). 5 uncertain: bible E1, E5, chibi E3, E6, macbeth E14 (+odyssey E6).
+- **S1**: the production extraction prompt (`BuildExtractPrompt`) called alone 6 times per render. Single-call item = "present" if not in `Diff`'s missing. Vote A = calls 1–3, B = 4–6, `Vote`+`Diff`+`Passed` (including hallucinations). 6-call majority = `Vote` over 6 (4 votes).
+- **S2**: the same prose + numbered expected facts (plain language) → per-item yes/no + shortest quotation JSON. 6 calls per render. Vote = yes in at least 2 of 3 calls, pass = missing ≤ 1 and leak 0, hallucinations ignored. 6-call majority = at least 4 yes.
+- Metrics: (a) item agreement = mean over items of max(p, 1−p) (p = the share of "present" among 6 calls), (b) agreement of the two votes on pass/fail, missing, hallucination, and leak sets, (c) item accuracy against the truth (6-call majority, and the two K=3 votes combined).
 
-## 결과 (3개 렌더, 28개 항목) — 상세 표는 `report_3.txt`
-| | 항목 일치 (a) | 정확도 6다수 (c) | 정확도 K3 투표 (c) | 투표 간 통과/실패 일치 (b) | missing 집합 일치 | 환각 집합 일치 |
+## Results (3 renders, 28 items) — detailed tables in `report_3.txt`
+| | Item agreement (a) | Accuracy 6-majority (c) | Accuracy K3 votes (c) | Pass/fail agreement between votes (b) | Missing set agreement | Hallucination set agreement |
 |---|---|---|---|---|---|---|
-| S1 열린 | 94.0% | 78.6% | 82.1% | 2/3 | 1/3 | 2/3 |
-| S2 닫힌 | 94.0% (아래 주석) | 96.4% | 96.4% | 3/3 | 3/3 | 3/3 (환각 무시, 항상 빈 집합) |
+| S1 open | 94.0% | 78.6% | 82.1% | 2/3 | 1/3 | 2/3 |
+| S2 closed | 94.0% (see note below) | 96.4% | 96.4% | 3/3 | 3/3 | 3/3 (hallucinations ignored, always an empty set) |
 
-**S1 단독 핵심 결과: 같은 산문에 K=3 투표를 두 번 하면 통과/실패 판정이 3개 중 1개(33%)에서 뒤집힌다**(macbeth: A 통과 / B 실패, 글라미스 주장이 B 에서만 missing). missing 집합은 3개 중 2개가 달랐고(bible·chibi·macbeth 중 bible 만 같음), 환각 집합은 3개 중 1개(bible)가 달랐다. 항목 일치율 94% 가 높아 보이는 건 대부분 항목이 6/6 이라서고, 흔들리는 항목(macbeth E5 3/6, chibi E1 3/6, bible E3 4/6)이 판정을 바꾼다. 또 S1 은 **일관되게 틀린** 항목도 있다: macbeth E14 0/6·bible E1 0/6(정답은 있음, 불확실 표시). 그래서 재현성뿐 아니라 편향 문제도 있다.
+**Key S1-only result: voting K=3 twice on the same prose flips the pass/fail verdict on 1 of 3 (33%)** (macbeth: A passes / B fails, the Glamis claim missing only in B). The missing sets differed in 2 of 3 (only bible among bible, chibi, macbeth was the same), and the hallucination sets differed in 1 of 3 (bible). The 94% item agreement looks high mostly because most items are 6/6, and the wobbling items (macbeth E5 3/6, chibi E1 3/6, bible E3 4/6) change the verdict. S1 also has items that are **consistently wrong**: macbeth E14 0/6 and bible E1 0/6 (truth is present, marked uncertain). So there is a bias problem as well as reproducibility.
 
-S2 주석: bible 6번째 호출이 깨진 JSON(따옴표 이스케이프 오류)을 반환해 전부 "no" 로 처리됐다. 이 한 건이 S2 항목 일치를 94.0% 로 깎았다. 깨진 호출을 빼면 S2 는 **98.8%**. 사전 기준대로 깨진 호출을 포함하면 S1 과 같다(동률).
+S2 note: the 6th bible call returned broken JSON (a quote-escaping error), and everything was treated as "no". This one case dragged S2 item agreement down to 94.0%. Excluding the broken call, S2 is **98.8%**. Per the pre-registered criterion, including the broken call, it ties with S1.
 
-## 판정: 불확정
-사전 기준 3개 중:
-1. 항목 일치 S2 ≥ 90% 이고 S1 보다 높음 — 포함 시 94.0 vs 94.0 동률로 **미충족**(엄밀히), 깨진 호출 제외 시 98.8 > 94.0 충족.
-2. 정확도 S2 ≥ S1 — 96.4 ≥ 78.6/82.1 **충족**.
-3. 투표 간 통과/실패 일치 S2 ≥ S1 — 3/3 ≥ 2/3 **충족**.
+## Verdict: inconclusive
+Of the 3 pre-registered criteria:
+1. Item agreement S2 ≥ 90% and higher than S1 — including it, 94.0 vs 94.0 is a tie, **not met** (strictly); excluding the broken call, 98.8 > 94.0 met.
+2. Accuracy S2 ≥ S1 — 96.4 ≥ 78.6/82.1 **met**.
+3. Pass/fail agreement between votes S2 ≥ S1 — 3/3 ≥ 2/3 **met**.
 
-기준 1 이 동률이라 엄밀히는 "S2 승" 이 아니고, 기준이 흔들리는 이유는 S2 의 형식 오류 한 건이다(S2 는 JSON 이 깨질 수 있다 — 재시도나 파서 보강이 필요). 방향은 S2 쪽(정확도 +14~18%p, 판정 뒤집힘 0)이지만 n=3 이라 확정하지 않는다. S1 의 판정 뒤집힘(1/3)은 어느 쪽이든 확인된 결과다.
+Criterion 1 is a tie, so strictly it is not an "S2 win", and the reason the criterion wobbles is one format error in S2 (S2 can produce broken JSON — it needs a retry or parser hardening). The direction favors S2 (accuracy +14–18 pp, 0 verdict flips), but with n=3 we do not confirm it. S1's verdict flip (1/3) is a confirmed result either way.
 
-**S2 의 한계(필수)**: 닫힌 체크리스트는 **산문에 있는 사실만 확인**한다. 지어낸 사건·사실(환각)은 원리적으로 못 잡는다. 환각 검출은 여전히 열린 추출 패스가 필요하다. 이 표의 S2 환각 열은 "측정 안 함"이다. 또 S2 는 정답이 "있음" 인 항목에 거의 항상 yes 를 줘서(관대함) 실제로 빠진 사실을 놓칠 위험이 있는데, 이 표본에는 진짜 누락(정답=없음)이 chibi E6 한 건(불확실)뿐이라 **S2 의 누락 검출력은 검증되지 않았다**: 그 항목에서 S2 는 5/6 yes(틀림), S1 도 5/6(틀림).
+**S2's limitation (mandatory)**: a closed checklist **only confirms facts that are in the prose**. By principle it cannot catch invented events or facts (hallucinations). Hallucination detection still needs an open extraction pass. The S2 hallucination column in this table is "not measured". Also S2 almost always answers yes for items whose truth is "present" (leniency), so it risks missing facts that are actually missing; in this sample the only true omission (truth = absent) is chibi E6 (uncertain), so **S2's omission detection is unverified**: on that item S2 gave 5/6 yes (wrong), and S1 also 5/6 (wrong).
 
-## 호출
-**54회 기록**(한도 60 이내; 강제 종료 시점에 진행 중이던 호출이 있었다면 최대 56). `accident_calls.jsonl` 13 + `calls.jsonl` 41.
-- 사고 1: `dump` 모드를 main 에 연결하기 전에 실행해 기존 `runSpike` 가 낡은 H2 경로로 13회를 헛되이 썼다(결과 파일은 삭제). 이 때문에 예산이 모자라 odyssey 의 S1/S2 를 뺐다.
-- 사고 2: 백그라운드 작업이 겹쳐 bible S1 이 두 프로세스에서 중복 실행됐다(5회 낭비, 파일은 6개만 남음). 바로 종료.
-- 쓴 데이터: S1 18회(bible 6·chibi 6·macbeth 6, 기록상 23회 중 5회 중복 낭비) + S2 18회.
-- `go vet ./...`, `go test -count=1 ./...` 통과.
+## Calls
+**54 recorded** (within the cap of 60; up to 56 if a call was in flight at the forced stop). `accident_calls.jsonl` 13 + `calls.jsonl` 41.
+- Accident 1: we ran `dump` mode before wiring it into main, and the existing `runSpike` wasted 13 calls on the stale H2 path (result files deleted). That left too little budget, so we dropped odyssey's S1/S2.
+- Accident 2: overlapping background jobs ran bible S1 in two processes (5 calls wasted, only 6 files remain). Terminated immediately.
+- Data used: S1 18 calls (bible 6, chibi 6, macbeth 6; 5 of the 23 recorded were duplicates and wasted) + S2 18 calls.
+- `go vet ./...`, `go test -count=1 ./...` passed.
 
-## 한계
-- n=3 렌더(28 항목), 라벨러 1명(나) — 불확실 라벨 5건이 결과를 흔들 수 있다.
-- 추출기는 sonnet/low 하나만 시험했다. 다른 모델·effort 에서는 다를 수 있다.
-- 정답이 거의 전부 "있음" 이라 누락 검출 정확도는 사실상 측정하지 못했다. withheld 0 개라 누설도 못 쟀다. 환각은 라벨하지 않았다.
-- S2 항목 진술을 IR 에서 기계적으로 만들었다(평어 문구에 따라 결과가 달라질 수 있다).
-- 이 폴더: `s1_*`/`s2_*` = 호출별 JSON(원문 응답 포함), `truth.json` = 정답, `expected_*.json` = 항목표, `report_3.txt` = 표.
+## Limitations
+- n=3 renders (28 items), one labeller (me) — the 5 uncertain labels could shift the results.
+- We tested only one extractor, sonnet/low. Other models or efforts may differ.
+- The truth is almost all "present", so omission-detection accuracy was effectively not measured. With 0 withheld facts, leaks were not measured either. Hallucinations were not labelled.
+- The S2 item statements were made mechanically from the IR (results may vary with the plain-language phrasing).
+- This folder: `s1_*`/`s2_*` = per-call JSON (including raw responses), `truth.json` = truth, `expected_*.json` = item tables, `report_3.txt` = tables.

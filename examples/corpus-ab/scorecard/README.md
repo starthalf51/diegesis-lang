@@ -1,92 +1,92 @@
-# 스파이크 — 다축 채점표 검증기 (tier-1) 변형본 검증
+# Spike — multi-axis scorecard verifier (tier-1) tested on variants
 
-일회용 실험. 코드는 `tools/corpus-ab/sc*.go`(`-spike sc-gen|sc-run|sc-old|sc-report|sc-dry`). 프로덕션 프롬프트는 건드리지 않았다. 호출은 구독 `claude` CLI(sonnet/low)만 썼고 `counter` 예산 가드·`Meter` 호출 로그를 그대로 썼다. 실행은 한 번에 하나, 포그라운드, 작품 재적재 없음(이미 PG 에 있음).
+A throwaway experiment. The code is `tools/corpus-ab/sc*.go` (`-spike sc-gen|sc-run|sc-old|sc-report|sc-dry`). Production prompts were not touched. Calls used only the subscription `claude` CLI (sonnet/low), with the `counter` budget guard and the `Meter` call log as they are. Runs were one at a time, foreground, with no work reloading (already in PG).
 
-## 배경
-검증기 재현성 스파이크(`../verifier`)에서 열린 추출(S1) 판정이 같은 원고에서 1/3 뒤집혔다. 설계 노트 `rendering.md` 의 "다축 채점표(안)"이 그 대안이다: 호출 1회로 체크리스트(G1·S1·S2)와 열린 목록(G2)을 함께 받고, 어투·길이는 결정적으로 재고, 경계 사례만 2단으로 되묻는다. 이 안이 기준(축별 검출 ≥90%, 오경보 ≤5%, 뒤집힘 ≤5%, 렌더당 비용 ≤ 옛 3회, 점수 순서)을 맞추는지 정답이 기계적으로 정해진 변형본으로 잰다.
+## Background
+In the verifier reproducibility spike (`../verifier`), the open-extraction (S1) verdict flipped on 1/3 of the same manuscripts. The design note `rendering.md`'s "multi-axis scorecard (proposal)" is the alternative: one call returns both the checklist (G1, S1, S2) and an open list (G2), register and length are measured deterministically, and only borderline cases are re-asked in a second tier. We measure whether this proposal meets the criteria (per-axis detection ≥90%, false alarms ≤5%, flips ≤5%, cost per render ≤ the old 3 calls, score ordering) using variants whose correct answer is mechanically known.
 
-## 설계 (구현한 것)
-- **1단 (렌더당 1회)**: 장면 카탈로그 + 체크리스트(`Diff` 키 `(행위자|동사류|사실)` 를 평어로, 주체·동사류 포함) + 숨길 사실 + 산문. JSON 하나로 답한다.
-  - 항목마다 `fact_present`(내용이 산문에 있나, 누가 했든) 와 `as_stated`(그 주체가 그 동사류로 했나) 와 최단 인용. S1 = fact_present, S2 = fact_present 이면서 as_stated.
-  - 숨길 사실마다 `revealed` + 인용 (G1).
-  - `other`: 체크리스트에 없는 사건·사실 + 인용 (G2). 각 사건을 `render.Diff`(`authored()` 규칙)에 넣어 지은이 행위로 설명되면 뺀다. 거기에 **사실 없는 지은이 행위(orders·whispers·sees 등)와 주체·동사류·대상이 겹치면 뺀다**(`coveredByIR`, 이 스파이크에서 덧붙임 — `authored()` 는 does·presence 만 봐 준다). 프롬프트에 지은이 `does` 행위 어휘도 넣었다(앞 스파이크 H2 와 같은 처방).
-  - JSON 이 깨지거나 id 가 빠지면 1회 재요청.
-- **2단 (필요할 때만 1회)**: 1단에서 fact_present=no 또는 as_stated=no 인 항목, G2 후보를 한 호출로 되묻는다. 항목은 2단 답으로 덮어쓰고, 후보는 `extra`/`covered`/`trivial` 판정을 받아 `extra` 만 남긴다(2단이 깨지면 보수적으로 후보 유지). G1 은 2단에서 다시 묻지 않는다.
-- **결정적**: S3 = `ClassifyTone` 의 백엔드 목표 어투 비율, S4 = min(글자, 목표)/max(글자, 목표). 목표 글자 = 변형 전 기준 산문의 글자 수(실제 목표 설정이 없어서 정한 대리값).
-- **점수** = 0.6·S1 + 0.2·S2 + 0.1·S3 + 0.1·S4 (S1·S2 분모 = 기대 항목 수), 효율 = 점수 / (가중 토큰/1만), 가중 토큰 = 3·(in+cache)+15·out (sonnet, renderer-ab 와 같은 가정). 게이트(G1·G2)는 점수와 별도로 보고한다.
+## Design (what was implemented)
+- **Tier 1 (1 call per render)**: scene catalog + checklist (the `Diff` key `(actor|verb class|fact)` in plain language, including subject and verb class) + facts to hide + prose. It answers in one JSON.
+  - For each item: `fact_present` (is the content in the prose, whoever did it), `as_stated` (did that subject do it with that verb class), and the shortest quotation. S1 = fact_present, S2 = fact_present and as_stated.
+  - For each fact to hide: `revealed` + quotation (G1).
+  - `other`: events or facts not on the checklist + quotation (G2). Each event goes through `render.Diff` (the `authored()` rule) and is dropped if it is explained by an authored act. In addition, **it is dropped if subject, verb class and object overlap a fact-less authored act (orders, whispers, sees, etc.)** (`coveredByIR`, added in this spike — `authored()` only honors does and presence). The prompt also includes the authored `does` act vocabulary (the same prescription as the earlier spike H2).
+  - If the JSON is broken or an id is missing, one re-request.
+- **Tier 2 (once, only when needed)**: items with fact_present=no or as_stated=no in tier 1, plus G2 candidates, are re-asked in a single call. Items are overwritten with the tier-2 answer, and candidates get a verdict of `extra`/`covered`/`trivial`, keeping only `extra` (if tier 2 is broken, candidates are conservatively kept). G1 is not re-asked in tier 2.
+- **Deterministic**: S3 = the backend's target register ratio from `ClassifyTone`, S4 = min(chars, target)/max(chars, target). Target chars = the character count of the pre-variation base prose (a stand-in value, since there is no real target setting).
+- **Score** = 0.6·S1 + 0.2·S2 + 0.1·S3 + 0.1·S4 (S1 and S2 denominator = expected item count), efficiency = score / (weighted tokens/10k), weighted tokens = 3·(in+cache)+15·out (sonnet, the same assumption as renderer-ab). Gates (G1, G2) are reported separately from the score.
 
-## 변형 정답
-기준 산문(Phase 1 `../p1` 의 ko 렌더 + 연재 haejin s3)에서 문장을 정확히 하나씩 지우거나 끼워서 만들었고 정답은 `truth/<변형>.json`, 산문은 `variants/<변형>.md`. 편집은 `sc_variants.go` 에 있고 "정확히 1곳 일치"가 아니면 생성이 실패한다.
+## Variant ground truth
+Built from base prose (the ko renders of Phase 1 `../p1` + serial haejin s3) by deleting or inserting exactly one sentence at a time; the truth is in `truth/<variant>.json` and the prose in `variants/<variant>.md`. The edits are in `sc_variants.go`, and generation fails unless there is "exactly 1 match".
 
-| 기준 | 변형 | 편집 | 정답 |
+| Base | Variants | Edit | Truth |
 |---|---|---|---|
-| chibi hapsho | orig / D1 / D3 / H | D1: E5(주유 "조조 머리") 삭제. D3: E1(속뜻·사자 노릇)·E2(장간 부인)·E5 삭제. H: "군량 창고에 불이 났다" 문장 삽입 | D: 해당 항목 absent. H: 지어낸 사건 1 |
-| macbeth haera | orig / D1 / D3 / K | D1: E12(캐더 반역) 삭제. D3: E12, E7(번성한 신사), banquo_line(E4·E8) 삭제 = 3 사실, 4 항목. K: 로스→앵거스로 발화자 교체 | K: E10 은 있되 as_stated=false |
-| bible gojeon | K | "닭 소리를 듣더라"의 듣는 주체 베드로→여종 | E4 있되 as_stated=false |
-| haejin s3 haera | orig / H / L | **withheld 합성**: 이 장면엔 withheld 가 없어서 스파이크 안에서만 `minjae_leaves`(민재가 떠난다)를 withheld 로 표시하고, 그 문장을 지운 것을 기준(orig)으로 삼았다. H: "이웃집 노인이 돈 봉투를 쥐여 주었다" 삽입. L: 민재가 "오늘 오후 배로 육지에 나가고 안 돌아온다"고 말하는 문장 삽입 | L: W1 revealed. H: 지어낸 사건 1 |
+| chibi hapsho | orig / D1 / D3 / H | D1: delete E5 (Zhou Yu's "Cao Cao's head"). D3: delete E1 (hidden meaning, playing the envoy), E2 (Jiang Gan's denial), and E5. H: insert the sentence "군량 창고에 불이 났다" ("the grain storehouse caught fire") | D: that item absent. H: 1 invented event |
+| macbeth haera | orig / D1 / D3 / K | D1: delete E12 (Cawdor's treason). D3: delete E12, E7 (prosperous gentleman), banquo_line (E4, E8) = 3 facts, 4 items. K: swap the speaker from Ross to Angus | K: E10 present but as_stated=false |
+| bible gojeon | K | In "heard the cock crow" swap the one who hears, Peter→the maid | E4 present but as_stated=false |
+| haejin s3 haera | orig / H / L | **Synthetic withheld**: this scene has no withheld fact, so only inside the spike `minjae_leaves` (Min-jae leaves) was marked withheld, and the base (orig) is the prose with that sentence deleted. H: insert "이웃집 노인이 돈 봉투를 쥐여 주었다" ("the old man next door pressed a money envelope into her hand"). L: insert a sentence where Min-jae says he "is going to the mainland on this afternoon's boat and is not coming back" | L: W1 revealed. H: 1 invented event |
 
-- 기준 항목의 정답은 앞 스파이크 `../verifier/truth.json`(내가 라벨, 불확실 표시된 항목은 지표에서 뺌), haejin 은 읽고 전부 있음으로 라벨.
-- 변형 16개를 만들고 12개를 실행했다(24실행). `orig-odyssey`·`orig-bible`·`d1-bible`·`h-macbeth` 는 생성만 하고 예산 때문에 돌리지 않았다. 따라서 **기준은 4개**(chibi·macbeth·bible·haejin)로 계획의 5개 중 odyssey 가 빠졌고, 변형은 계획의 ~18 대신 12개다.
+- The truth for base items comes from the earlier spike's `../verifier/truth.json` (labelled by me; items marked uncertain are excluded from the metrics); haejin was read and labelled all present.
+- We built 16 variants and ran 12 (24 runs). `orig-odyssey`, `orig-bible`, `d1-bible`, and `h-macbeth` were only generated and not run, due to budget. So there are **4 bases** (chibi, macbeth, bible, haejin), odyssey from the plan's 5 is missing, and there are 12 variants instead of the plan's ~18.
 
-## 방법
-- 새 검증기: 변형마다 2회(`runs/<변형>_r1|r2.json`), 호출 원문은 `calls/`, 호출 로그 `calls.jsonl`(토큰 포함, 호출 직후 기록).
-- 옛 검증기: 변형 5개(D1 `d1-chibi`, D3 `d3-macbeth`, H `h-chibi`, K `k-macbeth`, L `l-haejin`)에 `ExtractK` K=3 → `Vote` → `Diff` → `Passed` (`old/`).
-- 사전 드라이런: 가짜 완성기(`-spike sc-dry`, 호출 0)로 생성·실행·깨진 JSON 재시도·2단·옛 검증기·보고서를 전부 통과시킨 뒤 실호출을 시작했다.
-- **중간에 한 번 고쳤다**: 첫 4호출(orig-chibi ×2)에서 G2 가 원본의 `steal`(지은이 행위 `does steal forged_letter`)을 "장간이 편지를 소매에 넣는다"로 적어 오경보가 났다. 옛 검증기도 같은 오경보다. 프롬프트에 지은이 행위 어휘를 넣고 다시 돌렸다(`v1-prompt/` 에 첫 결과 보존). 이 4호출은 낭비다. 이어서 orig/d1-chibi 에서 사실 없는 지은이 행위(`orders`·`whispers`)가 후보로 올라와 `coveredByIR` 를 붙였다. 이 매처는 4개 chibi 실행 이후에 추가했으므로 **chibi 4회의 G2 는 보고 시점에 같은 매처로 다시 거른 값**이다(그 4회의 2단 호출이 매처가 있었다면 불필요했을 수 있어 비용이 약간 과대).
-- 항목 일치(뒤집힘) = 같은 변형 두 실행에서 같은 항목의 답이 같은 비율. 게이트 일치 = G1·G2 결과가 같은 비율.
+## Method
+- New verifier: 2 runs per variant (`runs/<variant>_r1|r2.json`), raw call text in `calls/`, call log `calls.jsonl` (with tokens, recorded right after each call).
+- Old verifier: on 5 variants (D1 `d1-chibi`, D3 `d3-macbeth`, H `h-chibi`, K `k-macbeth`, L `l-haejin`), `ExtractK` K=3 → `Vote` → `Diff` → `Passed` (`old/`).
+- Dry run beforehand: with a fake completer (`-spike sc-dry`, 0 calls) we passed generation, execution, broken-JSON retry, tier 2, the old verifier, and the report end to end, then started the real calls.
+- **Fixed once midway**: in the first 4 calls (orig-chibi ×2), G2 raised a false alarm by writing the original's `steal` (authored act `does steal forged_letter`) as "Jiang Gan puts the letter in his sleeve". The old verifier has the same false alarm. We put the authored act vocabulary in the prompt and re-ran (the first result is kept in `v1-prompt/`). Those 4 calls are wasted. Then in orig/d1-chibi, fact-less authored acts (`orders`, `whispers`) surfaced as candidates, so we added `coveredByIR`. This matcher was added after the 4 chibi runs, so **the G2 of the 4 chibi runs is a value re-filtered with the same matcher at report time** (the tier-2 calls of those 4 runs might have been unnecessary had the matcher existed, so cost is slightly overstated).
+- Item agreement (flips) = the share of items whose answer is the same across the two runs of the same variant. Gate agreement = the share where the G1 and G2 results are the same.
 
-## 축별 표 (시행 = 변형 × 실행)
-| 축 | 검출(변형 항목) | 오경보 | 두 실행 일치 | 뒤집힘 |
+## Per-axis table (trial = variant × run)
+| Axis | Detection (variant items) | False alarms | Agreement across two runs | Flipped |
 |---|---|---|---|---|
-| S1 사실 커버리지 | 18/18 (100%) — D 변형의 지운 항목 | 0/168 (0%) | 95/95 | 0% |
-| S2 사실형 | 4/4 (100%) — K 2변형×2회 (삭제 항목 포함 18/18) | 5/168 (3%) — 사실이 있다고 본 항목 중 주체·동사 오답 | 90/95 | 5.3% |
-| G1 누출 | 2/2 (100%) — L 1변형×2회 | 0/4 | 3/3 | 0% |
-| G2 지어냄 | 2/4 (50%) — H: haejin 2/2, chibi 0/2 | 8/24 (33%) 원본·비H 변형 기준 | 10/12 (게이트) | 17% |
+| S1 fact coverage | 18/18 (100%) — deleted items of D variants | 0/168 (0%) | 95/95 | 0% |
+| S2 fact form | 4/4 (100%) — K 2 variants×2 runs (18/18 including deleted items) | 5/168 (3%) — wrong subject/verb among items seen as present | 90/95 | 5.3% |
+| G1 leak | 2/2 (100%) — L 1 variant×2 runs | 0/4 | 3/3 | 0% |
+| G2 invention | 2/4 (50%) — H: haejin 2/2, chibi 0/2 | 8/24 (33%) on originals and non-H variants | 10/12 (gate) | 17% |
 
-- 오경보·검출 모두 `Unsure` 라벨 항목 제외. 한 변형의 정답이 다른 항목들은 "변형되지 않은 항목"으로 오경보 분모에 들어갔다.
-- **G2 오경보 8건 분해**(`report.txt` 인용 참조): macbeth 계열 6건(orig ×2, d1 r2, d3 r2, k ×2)은 모두 체크리스트에 이미 있는 사실의 재서술("반역죄가 자백되고…" = E12, "무거운 심판 아래…" = E11 — 원작 IR 인용에 있음)을 2단이 `extra` 로 판정한 것 = 진짜 오경보. 2건(k-bible ×2: "베드로가 자리를 피하여 문간으로 나가니")은 **원본 산문에 실제로 있는 환각**이다(Phase 1 에서도 옛 검증기가 "Peter moves away from the fire to the gateway"로 잡았다) = 진짜 검출. 이 2건을 빼면 6/22 (27%).
-- **G2 미검출**: h-chibi 의 "군량 창고에 불" 은 2회 모두 `other` 목록에 안 올라왔다(모델이 배경 묘사로 취급, 목록은 지은이 행위 재서술만 채웠다). 호출 1회로 끝나 2단에서 되물을 후보도 없었다.
-- 항목 뒤집힘이 난 곳은 모두 macbeth 의 D1·D3 (S2 의 "누가" 판단 ±1~2 항목).
+- Both false alarms and detection exclude `Unsure`-labelled items. Items whose truth differs within a variant entered the false-alarm denominator as "unmodified items".
+- **Breakdown of the 8 G2 false alarms** (see the quotations in `report.txt`): 6 are macbeth-family (orig ×2, d1 r2, d3 r2, k ×2), all restatements of facts already on the checklist ("반역죄가 자백되고…" ("treason is confessed and…") = E12, "무거운 심판 아래…" ("under a heavy judgment…") = E11 — present in the original IR quotations) that tier 2 judged `extra` = true false alarms. 2 (k-bible ×2: "베드로가 자리를 피하여 문간으로 나가니" ("Peter avoided the seat and went out to the doorway")) are **hallucinations that really exist in the original prose** (the old verifier also caught it in Phase 1 as "Peter moves away from the fire to the gateway") = true detections. Without these 2 it is 6/22 (27%).
+- **G2 misses**: h-chibi's "군량 창고에 불" ("fire in the grain storehouse") did not appear in the `other` list in either run (the model treated it as background description, and the list was filled only with restatements of authored acts). The call ended after one, so there was no candidate to re-ask in tier 2.
+- All item flips occurred in macbeth D1 and D3 (±1–2 items in S2's "who" judgment).
 
-## 점수 순서
-| 기준 | run1 (원본 / D1 / D3) | run2 |
+## Score ordering
+| Base | run1 (orig / D1 / D3) | run2 |
 |---|---|---|
 | chibi | 1.000 / 0.861 / 0.581 | 1.000 / 0.861 / 0.581 |
 | macbeth | 1.000 / 0.938 / 0.730 | 1.000 / 0.896 / 0.758 |
-| bible | (원본·D1·D3 미실행) | |
+| bible | (orig, D1, D3 not run) | |
 
-- 원본 > D1 > D3 가 두 기준 두 실행 모두에서 성립(4/4). 같은 변형 두 실행의 점수 차이는 평균 0.006, 최대 0.043(macbeth d1).
-- 게이트: L → G1 실패 2/2. H → G2 실패 haejin 2/2, chibi 0/2.
-- 원본 점수가 1.000 이다: 모델이 기대 항목을 전부 "있음"으로 답했다(chibi E6 은 불확실 라벨이라 지표에서 뺐지만 점수에는 들어간다). 점수는 "있음" 쪽으로 후할 수 있다(한계).
+- orig > D1 > D3 holds on both bases in both runs (4/4). The score difference between two runs of the same variant averages 0.006, at most 0.043 (macbeth d1).
+- Gates: L → G1 fails 2/2. H → G2 fails haejin 2/2, chibi 0/2.
+- The original score is 1.000: the model answered all expected items as "present" (chibi E6 was excluded from the metrics as uncertain but counts toward the score). The score can be generous toward "present" (limitation).
 
-## 비용
-| | 렌더당 호출 | 렌더당 가중 토큰 | 표본 |
+## Cost
+| | Calls per render | Weighted tokens per render | Sample |
 |---|---|---|---|
-| 새 검증기 | **1.75** (1단 1.0 + 2단 0.75, 비재시도) | **33,855** | 24실행 |
-| 옛 검증기 K=3 | 3 | 66,184 | 5변형 (다른 변형이라 대략 비교) |
+| New verifier | **1.75** (tier 1: 1.0 + tier 2: 0.75, non-retry) | **33,855** | 24 runs |
+| Old verifier K=3 | 3 | 66,184 | 5 variants (different variants, so a rough comparison) |
 
-- 2단은 24실행 중 18회(75%) 발동했다. 설계 노트의 예상(평균 +0.3회)보다 훨씬 높다: D·K 변형은 정의상 항상 absent 항목이 있고, 원본도 G2 후보가 거의 항상 올라왔다.
-- 깨진 JSON 재시도는 24실행 중 0건(드라이런에서만 경로 확인).
-- 총 실호출 **61회**(상한 65). 그중 4회 낭비(첫 프롬프트로 돌린 orig-chibi, `v1-prompt/`).
+- Tier 2 fired in 18 of 24 runs (75%). That is much higher than the design note's expectation (+0.3 calls on average): D and K variants by definition always have absent items, and originals almost always raised G2 candidates too.
+- Broken-JSON retries: 0 of 24 runs (path confirmed only in the dry run).
+- Total real calls **61** (cap 65). 4 of them wasted (orig-chibi run with the first prompt, `v1-prompt/`).
 
-## 판정
-| 축 | 판정 | 근거 |
+## Verdict
+| Axis | Verdict | Basis |
 |---|---|---|
-| S1 커버리지 | **통과** | 검출 100%, 오경보 0%, 뒤집힘 0%, 점수 순서 성립, 비용 ≤ 옛 |
-| S2 사실형 | **불확정** | 검출 4/4 이나 서로 다른 변이는 2개(K 2건)뿐, 뒤집힘 5.3% 가 기준 5% 를 근소 초과, 오경보 3% 통과 |
-| G1 누출 | **불확정** | 2/2, 0/4, 3/3 이나 변형 1개·withheld 합성(작품에 실제 withheld 장면 없음) |
-| G2 지어냄 | **실패** | 검출 50%(<90), 오경보 27~33%(>5), 게이트 뒤집힘 17%(>5) |
-| S3·S4 | 해당 없음(결정적, 변형 대상 아님) | |
-| 비용 | 통과 | 1.75회 < 3회, 가중 토큰 절반 |
-| 점수 순서 | 통과 | |
-| **전체** | **불확정(부분 채택)** | S1 만 확정. G2 는 이 설계로는 실패 — 열린 목록이 "묘사"와 "새 사건"을 못 가르고(미검출), 체크리스트 재서술을 `extra` 로 낸다(오경보). G2 를 빼면 1호출 체크리스트(S1·S2·G1)는 쓸 만해 보이나 S2·G1 은 표본이 더 필요하다. |
+| S1 coverage | **Pass** | detection 100%, false alarms 0%, flips 0%, score ordering holds, cost ≤ old |
+| S2 fact form | **Inconclusive** | detection 4/4 but only 2 distinct mutations (K, 2), flips 5.3% marginally exceed the 5% criterion, false alarms 3% pass |
+| G1 leak | **Inconclusive** | 2/2, 0/4, 3/3 but 1 variant and a synthetic withheld (the work has no real withheld scene) |
+| G2 invention | **Fail** | detection 50% (<90), false alarms 27–33% (>5), gate flips 17% (>5) |
+| S3, S4 | Not applicable (deterministic, not a variant target) | |
+| Cost | Pass | 1.75 calls < 3, half the weighted tokens |
+| Score ordering | Pass | |
+| **Overall** | **Inconclusive (partial adoption)** | Only S1 is confirmed. G2 fails with this design — the open list cannot tell "description" from "new event" (misses) and emits checklist restatements as `extra` (false alarms). Without G2, the 1-call checklist (S1, S2, G1) looks usable, but S2 and G1 need more samples. |
 
-## 한계
-- 정답은 변형이 정한다. 기준 항목의 라벨은 앞 스파이크의 내 라벨이고(불확실 제외), haejin 기준은 읽고 전부 있음으로 붙였다. 라벨러 1인.
-- 변이 종류별 표본이 작다: S1 서로 다른 삭제 8건, S2(K) 2건, G1 1건, G2(H) 2건. 같은 변형 두 실행은 거의 같은 답을 내서(sonnet/low 가 결정적인 편) "2회 일치"가 독립 시행처럼 신뢰를 주지는 않는다. 검출률의 신뢰구간은 넓다.
-- S1·S2 는 후한 편향이 있다: 원본(chibi E6 불확실 포함)이 1.000 이다. 진짜로 빠진 항목이 있는 기준으로는 D 변형으로만 재었다.
-- G1 은 합성 withheld 하나, 직접 언급 문장(원문과 비슷한 표현)이라 쉬운 사례다. 암시형 누출은 안 쟀다.
-- G2 매처 `coveredByIR` 는 이 스파이크에서 덧붙였고 chibi 4실행은 사후 적용이다. 같은 주체·동사류·대상이면 지어낸 사건도 가려질 수 있다(사실 없는 지은이 행위에 한정해 완화했지만).
-- 옛 검증기 비교는 5변형·변형 종류가 달라서 정확도 비교가 아니다. 옛(정리): D1 검출 ✓, D3 4중 3 ✓, K ✓, L(누출) ✓, H ✗; 다만 5개 모두 `Passed=false`(chibi 의 `steal` 환각, K·L 의 불확실 항목 missing/extra-act 등 오경보) — 새 검증기는 같은 5변형 중 H-chibi 를 놓치고 나머지는 잡았으며 원본에서의 게이트 오경보는 G2(macbeth)에 몰렸다.
-- S4 의 목표 글자는 기준 산문 길이로 대신했다(변형은 길이만 변하므로 S4 는 변형 효과를 약하게 반영한다). S3 은 한국어 ko-* 백엔드만 다뤘다.
-- 가중 토큰 비율(3:15)은 가정, 구독 CLI 의 cache 토큰이 in 에 섞여 있다.
+## Limitations
+- The truth is set by the variants. Labels for base items are my labels from the earlier spike (uncertain ones excluded), and the haejin base was read and labelled all present. One labeller.
+- Samples per mutation type are small: 8 distinct S1 deletions, 2 S2 (K), 1 G1, 2 G2 (H). Two runs of the same variant give nearly the same answers (sonnet/low is fairly deterministic), so "2-run agreement" does not give confidence like independent trials. The detection-rate confidence intervals are wide.
+- S1 and S2 have a generous bias: the original (including uncertain chibi E6) scores 1.000. Against a base with truly missing items, we measured only with D variants.
+- G1 is one synthetic withheld fact, and a directly mentioned sentence (an expression similar to the source text), so it is an easy case. Implied leaks were not measured.
+- The G2 matcher `coveredByIR` was added in this spike, and the 4 chibi runs got it after the fact. An invented event with the same subject, verb class and object could also be masked (we eased this by limiting it to fact-less authored acts).
+- The old verifier comparison covers 5 variants of differing kinds, so it is not an accuracy comparison. Old (summary): D1 detection ✓, D3 3 of 4 ✓, K ✓, L (leak) ✓, H ✗; however all 5 have `Passed=false` (false alarms such as chibi's `steal` hallucination and missing/extra-act on uncertain items in K and L) — the new verifier missed H-chibi among the same 5 variants and caught the rest, and its gate false alarms on originals concentrated in G2 (macbeth).
+- S4's target chars were replaced by the base prose length (variants change only the length, so S4 weakly reflects the variant effect). S3 covers only Korean ko-* backends.
+- The weighted-token ratio (3:15) is an assumption, and the subscription CLI's cache tokens are mixed into in.

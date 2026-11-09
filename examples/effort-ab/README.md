@@ -1,28 +1,28 @@
-# 렌더 effort A/B (플랜 6 태스크 5)
+# Render effort A/B (Plan 6, Task 5)
 
-haiku(`claude-haiku-5-5`) 렌더를 effort `medium` 과 `low` 로 돌려 card 검증기 점수로 비교했다. 결과가 기본 `--render-effort` 를 정한다(반영은 태스크 7).
+We ran haiku (`claude-haiku-5-5`) renders at effort `medium` and `low` and compared them by card verifier score. The result decides the default `--render-effort` (applied in Task 7).
 
-- 하네스: `go run ./tools/corpus-ab -spike effort -budget 60 -out examples/effort-ab` (드라이런 `-spike effort-dry`, 표만 다시 `-spike effort-report`).
-- 장면마다 `render.RenderVerified2`(`K:1, Retries:2, Verifier:"card", Card:{}`) 1회. 채점·재채점은 sonnet/low. 백엔드는 모두 `ko-haera`.
-- 장면 순서대로 medium → low 를 끼워 돌렸다. 호출마다 예산 가드(60, 하드 캡)가 앞선다.
-- TargetChars 가 0 이라 S4(분량)는 빠졌고 Score 는 `(0.6·S1+0.2·S2+0.1·S3)/0.9` 다. S1 사실 있음, S2 사실형 맞음, S3 어투.
-- 가중 토큰은 `3·(입력+캐시)+15·출력`(tools/corpus-ab 가중치)을 렌더와 채점 호출에 합산했다.
-- 산문·장면별 JSON 은 `runs/`, 호출 기록은 `calls.jsonl`, 표는 `table.md`.
+- Harness: `go run ./tools/corpus-ab -spike effort -budget 60 -out examples/effort-ab` (dry run `-spike effort-dry`, regenerate only the table with `-spike effort-report`).
+- One `render.RenderVerified2` run per scene (`K:1, Retries:2, Verifier:"card", Card:{}`). Grading and re-grading use sonnet/low. All backends are `ko-haera`.
+- Per scene, medium then low were run back to back. A budget guard (60, hard cap) precedes every call.
+- TargetChars is 0, so S4 (length) is omitted and Score is `(0.6·S1+0.2·S2+0.1·S3)/0.9`. S1 = fact present, S2 = fact form correct, S3 = register.
+- Weighted tokens are `3·(input+cache)+15·output` (the tools/corpus-ab weights), summed over render and grading calls.
+- Prose and per-scene JSON are in `runs/`, the call log in `calls.jsonl`, the table in `table.md`.
 
-## 장면 (6)
+## Scenes (6)
 
-| 장면 | 출처 |
+| Scene | Source |
 |---|---|
-| bible/mark_denial | 코퍼스 render-check |
-| chibi/45.88 | 코퍼스 render-check |
-| macbeth/1.3 | 코퍼스 render-check |
-| odyssey/19.1 | 코퍼스 render-check |
-| haejin/s3 | 연재 haejin (행위 수 상위 2, FreeDialogue) |
-| haejin/s19 | 연재 haejin (같음) |
+| bible/mark_denial | corpus render-check |
+| chibi/45.88 | corpus render-check |
+| macbeth/1.3 | corpus render-check |
+| odyssey/19.1 | corpus render-check |
+| haejin/s3 | serial haejin (top 2 by act count, FreeDialogue) |
+| haejin/s19 | serial haejin (same) |
 
-## 장면·팔별 결과
+## Results by scene and arm
 
-| 장면 | effort | 통과 | 시도 | Score | S1 | S2 | S3 | 렌더 출력토큰/호출 | 렌더 호출 | 채점 호출 | 가중 토큰 |
+| Scene | effort | Pass | Attempts | Score | S1 | S2 | S3 | Render output tokens/call | Render calls | Grading calls | Weighted tokens |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | bible/mark_denial | medium | ✓ | 1 | 1.000 | 1.00 | 1.00 | 1.00 | 3043 | 1 | 2 | 86889 |
 | bible/mark_denial | low | ✓ | 1 | 1.000 | 1.00 | 1.00 | 1.00 | 3830 | 1 | 1 | 81618 |
@@ -37,35 +37,35 @@ haiku(`claude-haiku-5-5`) 렌더를 effort `medium` 과 `low` 로 돌려 card �
 | haejin/s19 | medium | ✓ | 1 | 1.000 | 1.00 | 1.00 | 1.00 | 3522 | 1 | 1 | 83238 |
 | haejin/s19 | low | ✓ | 1 | 1.000 | 1.00 | 1.00 | 1.00 | 3273 | 1 | 1 | 78900 |
 
-## 평균 (6장면 모두 두 팔이 끝남)
+## Averages (both arms finished all 6 scenes)
 
 | | medium | low |
 |---|---|---|
-| 평균 Score | 0.9947 | 0.9997 |
-| 통과 장면 | 6/6 | 6/6 |
-| 렌더 출력 토큰/호출(합산) | 5123.9 | 4643.2 |
-| 장면당 가중 토큰 | 135,915 | 104,997 |
+| Mean Score | 0.9947 | 0.9997 |
+| Scenes passed | 6/6 | 6/6 |
+| Render output tokens/call (summed) | 5123.9 | 4643.2 |
+| Weighted tokens per scene | 135,915 | 104,997 |
 
-## 판정
+## Verdict
 
-미리 정한 규칙: low 가 평균 Score 하락 ≤ 0.02, 통과 장면 수 감소 없음, 렌더 출력 토큰/호출 감소를 모두 만족하면 low.
+Pre-registered rule: choose low if it meets all of: mean Score drop ≤ 0.02, no decrease in passed scenes, and a decrease in render output tokens/call.
 
-- 평균 Score 하락(medium−low) = −0.0049 (low 가 오히려 약간 높음) → 만족
-- 통과 6 대 6 → 만족
-- 렌더 출력 토큰/호출 5123.9 → 4643.2 (−9.4%) → 만족
+- Mean Score drop (medium−low) = −0.0049 (low is actually slightly higher) → met
+- Passed 6 vs 6 → met
+- Render output tokens/call 5123.9 → 4643.2 (−9.4%) → met
 
-기본 effort: low
+Default effort: low
 
-## 실제 호출 수
+## Actual call count
 
-**30회**(예산 60). 오류 호출 0, 낭비 0. 예산 가드는 끊기지 않았다.
+**30 calls** (budget 60). 0 errored calls, 0 wasted. The budget guard never cut a run off.
 
-## 한계
+## Limitations
 
-- n=6 장면, 장면·팔당 1회 실행. 표준편차를 못 낸다.
-- 차이가 작다. Score 차이는 odyssey 의 medium 재시도 1회(S2 0.86)와 macbeth 의 어투 0.02 가 거의 전부다. 한 번 더 돌리면 뒤집힐 수 있다.
-- 장면별 렌더 출력 토큰/호출(medium → low)은 부호가 갈린다. low 가 더 많은 장면: bible 3043 → 3830, chibi 5599 → 6118, odyssey 5288 → 5412(medium 은 재시도 2회의 평균). low 가 더 적은 장면: macbeth 8646 → 5122, haejin/s19 3522 → 3273, haejin/s3 4480 → 4104. 3 대 3 이다.
-- macbeth 를 빼면 렌더 출력 토큰/호출은 medium 4536.8, low 4547.4 로 low 가 오히려 약간 많다(calls.jsonl 로 다시 계산). 토큰 기준은 macbeth 한 장면 덕에 통과했다. 판정은 미리 정한 규칙을 그대로 따른 것이고, 토큰 이득은 n=6 에서 견고하지 않다.
-- low 의 평균 Score 가 더 높은 것은 odyssey 에서 medium 만 재시도 1회가 필요했기 때문이다(품질 우위의 근거가 아니다).
-- 통과 기준이 ADR-028(카드 채점기: 누출 0·누락+종류 틀림 ≤ 1, G2 는 경고만)이라 점수 천장(1.0)에 많이 붙어 있어 변별력이 낮다.
-- card 채점기는 sonnet/low 한 번 판정이다. 채점 잡음은 따로 재지 않았다.
+- n=6 scenes, one run per scene and arm. No standard deviation can be computed.
+- The difference is small. The Score gap is almost entirely one medium retry in odyssey (S2 0.86) and a 0.02 register score in macbeth. Another run could flip it.
+- Per-scene render output tokens/call (medium → low) differ in sign. Scenes where low used more: bible 3043 → 3830, chibi 5599 → 6118, odyssey 5288 → 5412 (medium is the mean over 2 retries). Scenes where low used fewer: macbeth 8646 → 5122, haejin/s19 3522 → 3273, haejin/s3 4480 → 4104. Three against three.
+- Without macbeth, render output tokens/call are 4536.8 for medium and 4547.4 for low, so low is actually slightly higher (recomputed from calls.jsonl). The token criterion passed thanks to the single macbeth scene. The verdict follows the pre-registered rule as written, and the token gain is not robust at n=6.
+- Low's higher mean Score is because only medium needed one retry in odyssey (it is not evidence of a quality advantage).
+- The pass criterion is ADR-028 (card verifier: 0 leaks and missing+wrong-kind ≤ 1, G2 is a warning only), so many scores sit on the ceiling (1.0) and discrimination is low.
+- The card verifier is a single sonnet/low judgment. Grading noise was not measured separately.

@@ -1,50 +1,50 @@
-# 판정 항목 검증 (사람 대조)
+# Judge item verification (human cross-check)
 
-판정자(sonnet, 팔·재설정마다 1회)의 항목을 수정 뒤 원문에서 하나씩 확인했다. 인용이 원문에 그대로 있는지는 자동 대조(`rN/judge/{a,b}.quotes.md`, 전부 "있음")로 먼저 걸렀고, 아래는 **모순이 맞는지**를 본 것이다.
-규칙: 두 문장이 함께 참일 수 없을 때만 확정. 해석으로 설명되면 경계(세지 않음). `introduced` 는 수정 전 원문(run3)에 이미 있던 불일치인지 대조했다. 경계는 팔 구분 없이 같은 규칙으로 뺐다.
-"감사"는 판정자가 안 낸 것을 내가 키워드로 훑어 찾은 것이다(표의 기본 값에는 넣지 않고 따로 적는다). 훑은 방법은 문서 끝.
+I checked the items from the judge (sonnet, once per arm and reset) one by one against the post-revision source. Whether a quotation exists verbatim in the source was filtered first by the automatic cross-check (`rN/judge/{a,b}.quotes.md`, all "present"), and what follows looks at **whether it is really a contradiction**.
+Rule: confirmed only when the two sentences cannot both be true. If an interpretation explains it, borderline (not counted). For `introduced` I compared against whether the inconsistency was already in the pre-revision source (run3). Borderline items were dropped with the same rule for both arms.
+"Audit" is what I found by sweeping keywords for things the judge did not raise (not included in the table's base values, written separately). The sweep method is at the end of this document.
 
-## R1 — 렌즈를 깬 사람: 도경태 → 백영호
+## R1 — who broke the lens: Do Gyeong-tae → Baek Yeong-ho
 
-| 팔 | 항목 | 결과 | 근거 |
+| Arm | Item | Result | Basis |
 |---|---|---|---|
-| A | 11화 장부 기록 | **확정** (잔여) | 11화(수정 안 됨): "00:10경 도경태 이장 계단으로 올라옴, 문 유리 깨고 등실 진입, 점등 요구. 근무자가 저지함. **몸싸움 중 렌즈 하단 파손**, 파편 창밖으로 떨어짐." 재설정은 이장이 내려간 뒤 영호가 혼자 램프에 부딪혀 깼다는 것. A 는 10화·12화만 다시 썼다. 12화에서는 같은 장부 구절이 "근무자가 저지함. 이장 내려감. 영시 이십 분경 근무자 혼자 점등하려다 램프에 부딪힘."으로 바뀌어 **같은 장부를 11화와 12화가 다르게 읽는다.** |
-| B | s21 | 경계 (세지 않음) | "짐작이 맞다면 둘은 한 자리에서 다쳤고, 그 자리에 도경태가 있었다." 같은 문단에서 서윤은 영호가 혼자 램프에 부딪혀 깼다고 짐작한다. "한 자리"는 등실을 가리키고 도경태는 그 밤 먼저 등실에 있었다(s25·s27 "도경태가 내려간 뒤에 나는 혼자…"). 둘이 동시에 있었다고 단정하지 않으므로 함께 참일 수 있다. |
-| 감사 | B 전체 | 없음 | `경태` 와 `렌즈·깨뜨·깨져·깼·부딪·뿌리` 가 한 줄에 있는 곳(s21·s24·s25·s26·s27)을 모두 읽었다. 옛 설정("뿌리친 오른손이 렌즈를 깨뜨렸다", s27 / "렌즈를 깨다가 손을 벤 경태", s26)은 남지 않았다. |
-| 감사 | A 전체 | 추가 없음 | 9화 117행 "바람에 깨진 렌즈 조각이 손등에 박힐 수는 없었다"는 영호의 거짓 해명을 서윤이 반박하는 대목이라 모순 아님. |
+| A | Episode 11 ledger entry | **confirmed** (residual) | Episode 11 (not revised): "00:10경 도경태 이장 계단으로 올라옴, 문 유리 깨고 등실 진입, 점등 요구. 근무자가 저지함. **몸싸움 중 렌즈 하단 파손**, 파편 창밖으로 떨어짐." ("Around 00:10 village head Do Gyeong-tae comes up the stairs, breaks the door glass, enters the lantern room, demands lighting. The attendant stops him. **Lower part of the lens broken during the scuffle**, fragments fall out the window.") The reset says Yeong-ho bumped into the lamp alone after the village head went down. A rewrote only episodes 10 and 12. In episode 12 the same ledger phrase became "근무자가 저지함. 이장 내려감. 영시 이십 분경 근무자 혼자 점등하려다 램프에 부딪힘." ("The attendant stops him. The village head goes down. Around 00:20 the attendant, trying to light it alone, bumps into the lamp."), so **episodes 11 and 12 read the same ledger differently.** |
+| B | s21 | borderline (not counted) | "짐작이 맞다면 둘은 한 자리에서 다쳤고, 그 자리에 도경태가 있었다." ("If the guess is right, the two were hurt in one place, and Do Gyeong-tae was there.") In the same paragraph Seo-yun guesses that Yeong-ho bumped into the lamp and broke it alone. "One place" points to the lantern room, and Do Gyeong-tae was in the lantern room first that night (s25, s27: "도경태가 내려간 뒤에 나는 혼자…" — "After Do Gyeong-tae went down, I alone…"). It does not assert that the two were there at the same time, so both can be true. |
+| Audit | B overall | none | I read every place (s21, s24, s25, s26, s27) where `경태` and one of `렌즈·깨뜨·깨져·깼·부딪·뿌리` ("lens, smash, broken, broke, bump, shake off") are on the same line. The old setting ("뿌리친 오른손이 렌즈를 깨뜨렸다", "the hand he shook off smashed the lens", s27 / "렌즈를 깨다가 손을 벤 경태", "Gyeong-tae, who cut his hand breaking the lens", s26) does not remain. |
+| Audit | A overall | no addition | Episode 9 line 117, "바람에 깨진 렌즈 조각이 손등에 박힐 수는 없었다" ("a lens fragment broken by the wind could not have lodged in the back of a hand"), is Seo-yun rebutting Yeong-ho's false explanation, so not a contradiction. |
 
 introduced: A 0, B 0.
 
-## R2 — 유리 조각을 주운 곳: 등대 아래 바위틈 → 선착장 방파제 끝
+## R2 — where the glass shard was picked up: among the rocks below the lighthouse → the end of the pier breakwater
 
-| 팔 | 항목 | 결과 | 근거 |
+| Arm | Item | Result | Basis |
 |---|---|---|---|
-| A | 3화 | **확정** (잔여) | 3화(수정 안 됨): "등대 밑에. 벼랑 바로 밑이라서 엄마가 가지 말라 카는 데다. … 돌 틈에 박혀 있었다." 4화(수정됨)는 "방파제 끝에서 … 수아가 태풍 다음 날 …"로 바뀌었다. |
-| A | 9화 (수아 대사) | **확정** (잔여) | 9화(수정 안 됨): "동쪽 벼랑 밑예. 물 제일 많이 빠진 날. 돌 틈에 끼어 있었어예." — 방파제 끝이 아니다. |
-| A | 9화 (서윤 대사) | **확정** (잔여) | 9화: "동쪽 벼랑 밑에서 아이가 주웠어요. 오늘 낮에 등대 렌즈에 대 봤습니다." 같은 화의 다른 줄이라 따로 센다(합치면 A 는 2). |
-| B | introduced 6화 | **확정** (새 모순) | 6화: "그것이 저 **방파제 끝의 등대 불**을 가리키는 것인지" — 수정 전 s6 은 서윤이 "등대 쪽을 바라보았다"(9행)는 장면이었고 등대를 방파제 끝에 두지 않았다. 12화(s12, 수정됨): "섬 가운데 높이 솟은 등대의 흰 몸통". 재설정을 반영하다 등대를 방파제 끝으로 옮겨 놓았다. |
-| 감사 | A | +1 | 9화 83행 "바람에 렌즈 한쪽이 떨어져 나가서 **벼랑 밑까지** 갔다고요." 조각이 벼랑 밑에 떨어졌다는 옛 위치 전제. 판정자가 놓쳤다(A 는 4화만 다시 썼다). |
-| 감사 | B | 없음 | `바위틈·방파제·벼랑 아래·등대 아래` 를 전 장면에서 훑었다. 조각 위치를 말하는 곳(s6·s8·s9·s21·s24·s25·s27)은 모두 방파제 끝. s9 의 "등대 아래 계단참"은 대화 장소다. |
+| A | Episode 3 | **confirmed** (residual) | Episode 3 (not revised): "등대 밑에. 벼랑 바로 밑이라서 엄마가 가지 말라 카는 데다. … 돌 틈에 박혀 있었다." ("Under the lighthouse. It's right below the cliff, a place Mom says not to go. … It was wedged in the rocks.") Episode 4 (revised) became "방파제 끝에서 … 수아가 태풍 다음 날 …" ("at the end of the breakwater … Su-a, the day after the typhoon …"). |
+| A | Episode 9 (Su-a's line) | **confirmed** (residual) | Episode 9 (not revised): "동쪽 벼랑 밑예. 물 제일 많이 빠진 날. 돌 틈에 끼어 있었어예." ("Under the east cliff. The lowest-tide day. It was wedged between rocks.") — not the end of the breakwater. |
+| A | Episode 9 (Seo-yun's line) | **confirmed** (residual) | Episode 9: "동쪽 벼랑 밑에서 아이가 주웠어요. 오늘 낮에 등대 렌즈에 대 봤습니다." ("A child found it under the east cliff. I held it to the lighthouse lens today.") A different line in the same episode, so counted separately (merged, A would be 2). |
+| B | introduced episode 6 | **confirmed** (new contradiction) | Episode 6: "그것이 저 **방파제 끝의 등대 불**을 가리키는 것인지" ("whether it pointed to that **lighthouse light at the end of the breakwater**") — before the revision s6 was a scene where Seo-yun "looked toward the lighthouse" (line 9) and did not put the lighthouse at the end of the breakwater. Episode 12 (s12, revised): "섬 가운데 높이 솟은 등대의 흰 몸통" ("the white body of the lighthouse rising high in the middle of the island"). While applying the reset it moved the lighthouse to the end of the breakwater. |
+| Audit | A | +1 | Episode 9 line 83, "바람에 렌즈 한쪽이 떨어져 나가서 **벼랑 밑까지** 갔다고요." ("You said that one side of the lens came off in the wind and went **all the way under the cliff**.") A premise of the old location, that the shard fell below the cliff. The judge missed it (A rewrote only episode 4). |
+| Audit | B | none | I swept `바위틈·방파제·벼랑 아래·등대 아래` ("rock crevice, breakwater, below the cliff, below the lighthouse") across all scenes. Every place that gives the shard's location (s6, s8, s9, s21, s24, s25, s27) says the end of the breakwater. "등대 아래 계단참" ("the landing below the lighthouse") in s9 is a conversation location. |
 
-## R3 — 서윤이 도경태의 알리바이가 거짓임을 안 시점: 진료부 → 4화
+## R3 — when Seo-yun learned Do Gyeong-tae's alibi is false: the medical record → episode 4
 
-| 팔 | 항목 | 결과 | 근거 |
+| Arm | Item | Result | Basis |
 |---|---|---|---|
-| A | introduced 8화 | **확정** (새 모순, 사소) | 4화(수정): 등대에서 내려와 보니 "말순은 방에서 낮잠이 들어 있었다", 그때 아랫집 할머니가 알리바이가 거짓이라고 말한다. 8화(수정): "토요일 **저녁** 마늘 망 앞에서 들은 말". 낮잠 시각의 일을 저녁이라 한다(7화는 "토요일 저녁에 적은 글씨"라서 적은 때와 들은 때가 섞였을 뿐일 수도 있어 사소). 수정 전 원문에는 이 두 곳이 없었다. |
-| B | introduced s32↔s27 | 경계 (세지 않음) | 새 장면 s32(4화): "그 사람은 그날 밤 섬을 떠나지 않았어." s27: "몰래 배를 타고 섬에 들어와 있었소." 둘 다 "그 밤 도경태가 섬에 있었다"는 점에서 함께 참일 수 있다. 다만 s32 는 근거(입원 기록 없음 한 장) 이상으로 단정한다. |
-| 감사 | A | 없음 | 4~9화에서 `알리바이·병원·맹장·믿었·의심` 을 훑었다. 4화 이후 서윤이 알리바이를 믿는 문장은 없다(5화 "이제 그 말들을 전처럼 받아…", 6화 "이제는 거짓인 줄 아는 병원"). |
-| 감사 | B | 없음 | s9 이후 `병원·알리바이·맹장` 을 훑었다. s18 은 서윤이 이미 안다는 전제로 다시 쓰였다("기록이 전혀 없어요"). s16·s19·s20·s22 의 "병원에 있었다"는 도경태·하은·말순의 말이다. |
+| A | introduced episode 8 | **confirmed** (new contradiction, minor) | Episode 4 (revised): coming down from the lighthouse, "말순은 방에서 낮잠이 들어 있었다" ("Mal-sun had fallen asleep in the room for an afternoon nap"), and then the grandmother from the lower house says the alibi is false. Episode 8 (revised): "토요일 **저녁** 마늘 망 앞에서 들은 말" ("words heard in front of the garlic net on Saturday **evening**"). It calls something from nap time evening (episode 7 says "토요일 저녁에 적은 글씨" — "writing written on Saturday evening", so the time of writing and the time of hearing may just have been mixed; minor). The pre-revision source did not have these two places. |
+| B | introduced s32↔s27 | borderline (not counted) | New scene s32 (episode 4): "그 사람은 그날 밤 섬을 떠나지 않았어." ("That man did not leave the island that night.") s27: "몰래 배를 타고 섬에 들어와 있었소." ("I had secretly taken a boat and come onto the island.") Both can be true in that "Do Gyeong-tae was on the island that night". However s32 asserts more than its basis (a single page with no hospital record). |
+| Audit | A | none | I swept `알리바이·병원·맹장·믿었·의심` ("alibi, hospital, appendix, believed, suspected") in episodes 4–9. There is no sentence after episode 4 in which Seo-yun believes the alibi (episode 5 "이제 그 말들을 전처럼 받아…" — "now she no longer took those words as before…", episode 6 "이제는 거짓인 줄 아는 병원" — "the hospital she now knew was false"). |
+| Audit | B | none | I swept `병원·알리바이·맹장` after s9. s18 was rewritten on the premise that Seo-yun already knows ("기록이 전혀 없어요" — "there is no record at all"). The "was in the hospital" in s16, s19, s20, s22 are words of Do Gyeong-tae, Ha-eun, and Mal-sun. |
 
-## 합계
+## Totals
 
-| | 확정 잔여(판정자 항목) | 확정 새 모순 | 합 | 감사로 더 찾은 것 |
+| | Confirmed residual (judge items) | Confirmed new contradictions | Sum | More found by audit |
 |---|---:|---:|---:|---:|
 | A | R1 1 · R2 3 · R3 0 = **4** | 0 · 0 · 1 = **1** | **5** | R2 +1 |
 | B | R1 0 · R2 0 · R3 0 = **0** | 0 · 1 · 0 = **1** | **1** | 0 |
 
-경계(세지 않음): B 2 (R1 s21, R3 s32), A 0.
-감사까지 넣으면 A 잔여 5, 합 6. 판정자는 소설당 1회만 불렀으므로 놓친 항목이 B 쪽에도 있을 수 있다. 내가 훑은 키워드 범위가 A·B 에 같았다(위 표의 "감사" 줄).
+Borderline (not counted): B 2 (R1 s21, R3 s32), A 0.
+Including the audit, A's residual is 5 and the sum 6. The judge was called only once per novel, so B may also have missed items. The keyword scope I swept was the same for A and B (the "Audit" rows in the table above).
 
-### 감사로 훑은 방법
+### How the audit swept
 
-수정된 팔의 텍스트에서 재설정의 옛 설정을 가리키는 키워드(R1 `렌즈|깨뜨|깨져|깼|부딪|뿌리|몸싸움`, R2 `벼랑 밑|벼랑 바로|돌 틈|바위틈|방파제`, R3 `알리바이|병원|맹장|믿|의심`)를 grep 해 나온 줄을 문맥과 함께 읽었다. 판정자가 사용한 것이 아니라 사람이 한 것이고, 키워드에 안 걸리는 모순은 못 본다.
+In the revised arm's text, I grepped keywords that point to the reset's old setting (R1 `렌즈|깨뜨|깨져|깼|부딪|뿌리|몸싸움` — "lens, smash, broken, broke, bump, shake off, scuffle"; R2 `벼랑 밑|벼랑 바로|돌 틈|바위틈|방파제` — "under the cliff, right below the cliff, rock gap, rock crevice, breakwater"; R3 `알리바이|병원|맹장|믿|의심` — "alibi, hospital, appendix, believe, suspect") and read the resulting lines with context. It was done by a person, not used by the judge, and cannot see contradictions that miss the keywords.

@@ -1,4 +1,4 @@
-| 장면 | effort | 통과 | 시도 | Score | S1 | S2 | S3 | 렌더 출력토큰/호출 | 렌더 호출 | 채점 호출 | 가중 토큰 |
+| Scene | effort | Pass | Attempts | Score | S1 | S2 | S3 | Render output tokens/call | Render calls | Grading calls | Weighted tokens |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | bible/mark_denial | medium | ✓ | 1 | 1.000 | 1.00 | 1.00 | 1.00 | 3043 | 1 | 2 | 86889 |
 | bible/mark_denial | low | ✓ | 1 | 1.000 | 1.00 | 1.00 | 1.00 | 3830 | 1 | 1 | 81618 |
@@ -13,10 +13,10 @@
 | haejin/s3 | medium | ✓ | 1 | 1.000 | 1.00 | 1.00 | 1.00 | 4480 | 1 | 1 | 101706 |
 | haejin/s3 | low | ✓ | 1 | 1.000 | 1.00 | 1.00 | 1.00 | 4104 | 1 | 1 | 92244 |
 
-비교 장면 n=6 (두 팔 모두 끝난 장면만)
-- 평균 Score 하락(medium−low): -0.0049 (기준 ≤ 0.02)
-- 통과 장면: medium 6, low 6 (기준: low ≥ medium)
-- 렌더 출력 토큰/호출(합산): medium 5123.9, low 4643.2 (기준: low < medium)
+Compared scenes n=6 (only scenes where both arms finished)
+- Mean Score drop (medium−low): -0.0049 (criterion ≤ 0.02)
+- Scenes passed: medium 6, low 6 (criterion: low ≥ medium)
+- Render output tokens/call (summed): medium 5123.9, low 4643.2 (criterion: low < medium)
 
-기본 effort: low
-실제 호출 수: 30
+Default effort: low
+Actual call count: 30

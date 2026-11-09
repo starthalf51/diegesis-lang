@@ -10,7 +10,7 @@ A programming language for novels. You write characters, facts, scenes and speec
 
 The claim is narrow: when you change something in the middle of a story, Diegesis propagates the change more completely than asking an AI to edit the text directly. It is not shown to be cheaper.
 
-Measured in [`examples/value/retcon3`](examples/value/retcon3/README.md) (English summary at the top, details in Korean; v0.7.0, 6 retcons of a 12-episode story, one run per arm, one verifier; B = `dieg revise`, A = direct AI edit):
+Measured in [`examples/value/retcon3`](examples/value/retcon3/README.md) (v0.7.0, 6 retcons of a 12-episode story, one run per arm, one verifier; B = `dieg revise`, A = direct AI edit):
 
 | | A: direct AI edit | B: `dieg revise` |
 |---|---|---|

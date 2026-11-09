@@ -1,112 +1,112 @@
-# 연재 측정 — 12화 계획, 수정 2회 (Plan 4 Task 6)
+# Serial measurement — 12-episode plan, 2 revisions (Plan 4 Task 6)
 
-같은 연재 아이템을 A(모델이 직접 씀)와 B(Diegesis: AI 가 `.dieg.md` 를 쓰고 PG 가 검증하고 렌더러가 산문을 씀)로 나란히 썼다.
-하네스는 `tools/serial` 이다. 4화 뒤와 8화 뒤에 같은 수정 요청을 두 팔에 주고, 블라인드 판정 1회로 비교했다.
-호출 예산에 걸려 **두 팔 모두 11화에서 잘렸다**(12화 미포함). 아래 수치는 모두 1~11화 + 수정 2회 기준이다.
+We wrote the same serial item side by side with A (the model writes directly) and B (Diegesis: the AI writes `.dieg.md`, PG verifies, and the renderer writes the prose).
+The harness is `tools/serial`. After episode 4 and after episode 8 we gave both arms the same revision request, and compared by one blind judgment.
+Because of the call budget, **both arms were cut at episode 11** (episode 12 not included). All figures below are for episodes 1–11 + 2 revisions.
 
-## 결과
+## Results
 
-| 항목 | A (직접) | B (Diegesis) | B/A |
+| Item | A (direct) | B (Diegesis) | B/A |
 |---|---:|---:|---:|
-| 누적 연속성 오류 (검증 후 확정) | **4** | **3** | 0.75 |
-| └ 경계 포함 범위 | 4~6 | 3~4 | |
-| └ 1만 자당 (확정 / 경계 포함) | **0.89** / 1.34 | **1.24** / 1.66 | 1.39 |
-| 호출 수 | 33 | 168 | 5.1 |
-| 실토큰 입력 (입력 + 캐시 읽기 + 캐시 쓰기) | 329,448 | 767,087 | 2.3 |
-| 캐시 가중 입력 (입력 + 0.1×읽기 + 1.25×쓰기) | 411,794 | 777,491 | 1.89 |
-| └ opus (claude-opus-5-5) | 411,794 (33회) | 414,122 (16회) | 1.01 |
-| └ sonnet (claude-sonnet-5-5) | 0 | 363,369 (152회) | — |
-| 출력 토큰 | 185,283 | 239,441 | 1.29 |
+| Cumulative continuity errors (confirmed after verification) | **4** | **3** | 0.75 |
+| └ Range including borderline | 4~6 | 3~4 | |
+| └ Per 10,000 characters (confirmed / including borderline) | **0.89** / 1.34 | **1.24** / 1.66 | 1.39 |
+| Calls | 33 | 168 | 5.1 |
+| Actual input tokens (input + cache read + cache write) | 329,448 | 767,087 | 2.3 |
+| Cache-weighted input (input + 0.1×read + 1.25×write) | 411,794 | 777,491 | 1.89 |
+| └ opus (claude-opus-5-5) | 411,794 (33 calls) | 414,122 (16 calls) | 1.01 |
+| └ sonnet (claude-sonnet-5-5) | 0 | 363,369 (152 calls) | — |
+| Output tokens | 185,283 | 239,441 | 1.29 |
 | └ opus / sonnet | 185,283 / 0 | 86,702 / 152,739 | |
-| 본문 길이 (1~11화, 자) | 44,824 | 24,153 | 0.54 |
-| 수정 1 (조연 퇴장·교체): 호출 / 가중 / 잔여 불일치 | 3 / 32,418 / **1** | 39 / 115,813 / **3** | |
-| 수정 2 (비밀 진상 변경): 호출 / 가중 / 잔여 불일치 | 7 / 123,461 / **0** | 31 / 105,481 / **1** | |
-| 수정 1회당 평균: 호출 / 가중 / 잔여 | 5 / 77,940 / 0.5 | 35 / 110,647 / 2 | |
-| B 장면 검증 미통과로 실림 | — | **11 / 28** | |
+| Body length (episodes 1–11, characters) | 44,824 | 24,153 | 0.54 |
+| Revision 1 (supporting character leaves / replaced): calls / weighted / residual inconsistencies | 3 / 32,418 / **1** | 39 / 115,813 / **3** | |
+| Revision 2 (secret truth changed): calls / weighted / residual inconsistencies | 7 / 123,461 / **0** | 31 / 105,481 / **1** | |
+| Per revision average: calls / weighted / residual | 5 / 77,940 / 0.5 | 35 / 110,647 / 2 | |
+| B scenes shipped without passing verification | — | **11 / 28** | |
 
-- 공유 `plan` 1회(어느 팔에도 안 셈), 판정 1회(opus, 가중 96,768)는 표 밖이다.
-- 가격 가중(`-price`)은 주지 않았다. 표의 비용은 모델별 토큰이다.
-- 잔여 불일치는 판정자의 화별 표시를 사람이 검증한 값이다(판정자 원래 표시: A 1·1, B 3·1). 검증 기록은 [`run1/judge/verification.md`](run1/judge/verification.md).
-- B 의 장면 28개 중 11개가 검증(환각 0·누출 0·누락 ≤ 1)을 3회 시도 안에 통과하지 못한 채 실렸다(`b.log`, `b/novel/*.report.json`). 하네스는 exit 3 을 허용한다. 수정 1 잔여가 나온 장면 s15·s16·s17 중 s16·s17 이 미통과 장면이다(s15 는 통과).
+- The shared `plan` (once, not counted for either arm) and the judgment (once, opus, weighted 96,768) are outside the table.
+- No price weighting (`-price`) was given. The costs in the table are per-model tokens.
+- Residual inconsistencies are values where a person verified the judge's per-episode marks (the judge's original marks: A 1, 1; B 3, 1). The verification record is [`run1/judge/verification.md`](run1/judge/verification.md).
+- 11 of B's 28 scenes were shipped without passing verification (0 hallucinations, 0 leaks, missing ≤ 1) within 3 attempts (`b.log`, `b/novel/*.report.json`). The harness permits exit 3. Of the scenes s15, s16, and s17 where revision 1's residual appeared, s16 and s17 are scenes that did not pass (s15 passed).
 
-## 화별 누적 비용 (캐시 가중 입력, 단위 천)
+## Cumulative cost per episode (cache-weighted input, in thousands)
 
-| 단계 | A 누적 호출 | A 누적 | B 누적 호출 | B 누적 | B/A |
+| Stage | A cumulative calls | A cumulative | B cumulative calls | B cumulative | B/A |
 |---|---:|---:|---:|---:|---:|
-| 1화 | 3 | 16.1 | 7 | 32.8 | 2.04 |
-| 2화 | 5 | 38.4 | 14 | 69.3 | 1.80 |
-| 3화 | 7 | 60.5 | 20 | 124.3 | 2.05 |
-| 4화 | 9 | 84.2 | 33 | 173.8 | 2.06 |
-| 수정 1 | 12 | 116.6 | 72 | 289.6 | 2.48 |
-| 5화 | 14 | 141.7 | 79 | 327.6 | 2.31 |
-| 6화 | 16 | 164.1 | 89 | 398.3 | 2.43 |
-| 7화 | 18 | 186.1 | 103 | 482.1 | 2.59 |
-| 8화 | 20 | 210.3 | 110 | 525.6 | 2.50 |
-| 수정 2 | 27 | 333.7 | 141 | 631.1 | 1.89 |
-| 9화 | 29 | 359.3 | 148 | 674.9 | 1.88 |
-| 10화 | 31 | 386.1 | 157 | 723.4 | 1.87 |
-| 11화 | 33 | 411.8 | 168 | 777.5 | 1.89 |
+| Episode 1 | 3 | 16.1 | 7 | 32.8 | 2.04 |
+| Episode 2 | 5 | 38.4 | 14 | 69.3 | 1.80 |
+| Episode 3 | 7 | 60.5 | 20 | 124.3 | 2.05 |
+| Episode 4 | 9 | 84.2 | 33 | 173.8 | 2.06 |
+| Revision 1 | 12 | 116.6 | 72 | 289.6 | 2.48 |
+| Episode 5 | 14 | 141.7 | 79 | 327.6 | 2.31 |
+| Episode 6 | 16 | 164.1 | 89 | 398.3 | 2.43 |
+| Episode 7 | 18 | 186.1 | 103 | 482.1 | 2.59 |
+| Episode 8 | 20 | 210.3 | 110 | 525.6 | 2.50 |
+| Revision 2 | 27 | 333.7 | 141 | 631.1 | 1.89 |
+| Episode 9 | 29 | 359.3 | 148 | 674.9 | 1.88 |
+| Episode 10 | 31 | 386.1 | 157 | 723.4 | 1.87 |
+| Episode 11 | 33 | 411.8 | 168 | 777.5 | 1.89 |
 
 ```
-누적 가중(천)  0        200       400       600       800
-A  1화  |#
-A  6화  |########
-A 11화  |#####################
-B  1화  |##
-B  6화  |####################
-B 11화  |#######################################
+Cumulative weighted (k)  0        200       400       600       800
+A  ep 1   |#
+A  ep 6   |########
+A  ep 11  |#####################
+B  ep 1   |##
+B  ep 6   |####################
+B  ep 11  |#######################################
 ```
 
-A 의 화당 증가분은 1화 12k 에서 11화 26k 로 완만하게 늘었다(A 는 앞 화 전문이 아니라 누적 요약과 바로 앞 화만 받는다). B 의 화당 증가분은 33k~84k 로 들쭉날쭉하고, 줄어드는 추세가 없다. 이 길이(11화, A 4.5만 자)에서는 A 의 입력 증가가 B 를 따라잡지 못했다. 교차점이 있다면 훨씬 긴 연재에서다(이번 측정으로는 모른다).
+A's per-episode increment grew gently from 12k at episode 1 to 26k at episode 11 (A receives not the full text of earlier episodes but the cumulative summary and just the previous episode). B's per-episode increment is uneven at 33k–84k, with no downward trend. At this length (11 episodes, 45k characters for A), A's input growth did not catch up with B. If there is a crossover, it is in a much longer serial (this measurement does not tell).
 
-## 오류 인용
+## Error quotations
 
-1. **B 수정 1 잔여** — B 는 2화에서 민재를 내보냈다. "나는 급한 회사 일이 생겨서 오늘 오후 배로 육지에 나가. 다시 섬에는 돌아오지 않을 거야." 그런데 6~8화에서 민재가 조사를 계속한다. "서윤은 휴대전화를 꺼내 민재의 번호를 눌렀다." / "민재는 원무과 창구 앞에 섰다." 공유 화별 방향(수정 전에 고정, "6화: … 민재는 … 입원 기록이 없다는 것을 알아낸다")을 B 의 `continue --brief` 가 그대로 따랐다. 두 팔의 입력은 **같지 않았다**. A 의 프롬프트에는 하네스 규칙 "요약의 `확정된 수정` 은 개요보다 우선한다"가 있고, 수정 때마다 요약 맨 위 `확정된 수정` 에 요청이 기록된다(`tools/serial/direct.go` aHead, 요약 프롬프트). B 의 `--brief` 에는 그런 우선 규칙이 없다(`tools/serial/b.go` runBEpisode). A 는 이 규칙대로 채원으로 바꿨다. 한편 B 의 코드는 2화에 `fact minjae_leaves "… 섬에 돌아오지 않는다" true` 를 선언했지만, Diegesis 에는 떠난 인물이 계속 떠나 있는지 보는 검사가 없어 6~8화의 민재를 막지 못했다. 이 부분은 Diegesis 자체의 빈틈이다.
-2. **A1 (A, 확정)** — 교체 경위가 두 번 나온다. 2화 "민재는 오늘부터 육지에서 교육이 있다며 새벽 첫배로 나갔다고 했다. 대신 올라온 사람은 보건지소의 임채원이었다." ↔ 4화 "한서윤 씨죠. 보건지소에 새로 온 임채원이에요." / "오늘 첫배로 나갔어요. 어머님이 육지에서 쓰러지셨대요." A 가 수정 2 때 2화를 다시 쓰며 생긴 어긋남이다.
-3. **B3 (B, 확정)** — 9화 한 화 안에서 백영호의 고백이 바뀐다. "나는 도경태의 지시를 받고 등대 불을 두 시간 동안 일부러 껐다." ↔ "내가 잠든 사이 등대 불이 꺼진 일은 등대 근무 장부에 적혔다." B 의 코드는 앞 말을 거짓 사실(부끄러움을 감추려 지어낸 말)로 선언했지만, 독자는 코드를 보지 못하고 산문에는 거짓말이라는 신호가 없다. 원문 기준 규칙에 따라 확정으로 센다. 수정 2 의 9화 잔여도 같은 대목이다. 검증은 이 장면을 통과시켰다. 사실 단위 검증으로는 "거짓말이 거짓말로 읽히는가"를 잡지 못한다.
+1. **B revision 1 residual** — B removed Min-jae in episode 2. "나는 급한 회사 일이 생겨서 오늘 오후 배로 육지에 나가. 다시 섬에는 돌아오지 않을 거야." ("Something urgent came up at work, so I'm going to the mainland on this afternoon's boat. I won't be coming back to the island.") Yet in episodes 6–8 Min-jae keeps investigating. "서윤은 휴대전화를 꺼내 민재의 번호를 눌렀다." ("Seo-yun took out her phone and dialed Min-jae's number.") / "민재는 원무과 창구 앞에 섰다." ("Min-jae stood in front of the administration counter.") B's `continue --brief` followed the shared per-episode directions (fixed before the revision, "episode 6: … Min-jae … finds out there is no admission record") as they were. The two arms' inputs were **not the same**. A's prompt has the harness rule "the `confirmed revisions` in the summary take priority over the outline", and at every revision the request is recorded at the top of the summary under `confirmed revisions` (`tools/serial/direct.go` aHead, the summary prompt). B's `--brief` has no such priority rule (`tools/serial/b.go` runBEpisode). A swapped to Chae-won following this rule. Meanwhile B's code declared `fact minjae_leaves "… 섬에 돌아오지 않는다" true` ("… will not return to the island") in episode 2, but Diegesis has no check on whether a departed character stays departed, so it could not stop Min-jae in episodes 6–8. This part is a gap in Diegesis itself.
+2. **A1 (A, confirmed)** — the replacement story appears twice. Episode 2 "민재는 오늘부터 육지에서 교육이 있다며 새벽 첫배로 나갔다고 했다. 대신 올라온 사람은 보건지소의 임채원이었다." ("They said Min-jae had gone out on the first boat at dawn because of training on the mainland from today. The one who came up in his place was Im Chae-won of the health sub-center.") ↔ episode 4 "한서윤 씨죠. 보건지소에 새로 온 임채원이에요." ("You're Han Seo-yun, right? I'm Im Chae-won, newly arrived at the health sub-center.") / "오늘 첫배로 나갔어요. 어머님이 육지에서 쓰러지셨대요." ("He went out on the first boat today. They say his mother collapsed on the mainland.") This clash arose when A rewrote episode 2 at revision 2.
+3. **B3 (B, confirmed)** — within the single episode 9, Baek Yeong-ho's confession changes. "나는 도경태의 지시를 받고 등대 불을 두 시간 동안 일부러 껐다." ("On Do Gyeong-tae's orders I deliberately turned off the lighthouse light for two hours.") ↔ "내가 잠든 사이 등대 불이 꺼진 일은 등대 근무 장부에 적혔다." ("The matter of the lighthouse light going out while I slept was written in the lighthouse duty ledger.") B's code declared the former statement a false fact (something made up to hide shame), but the reader cannot see the code and the prose has no signal that it is a lie. By the source-text-based rule it is counted as confirmed. Revision 2's episode 9 residual is the same passage. Verification passed this scene. Fact-level verification cannot catch "does a lie read as a lie".
 
-판정자 오독 의심: A3 — 9화 "달력의 십일 칸 … 사흘이 남았다"를 10일로 읽었다. 사흘 남음(14 − 3 = 11)과 10화 "십이 칸", 11화 "십삼 칸" 으로 보면 11 이다. 하지만 8화가 같은 말 "십일"을 10일로 쓰므로 독자가 헷갈릴 수 있다. 경계로 둔다.
+Suspected judge misreading: A3 — the judge read episode 9's "달력의 십일 칸 … 사흘이 남았다" ("the eleventh box of the calendar … three days left") as 10 days. Counting three days left (14 − 3 = 11) and episode 10's "십이 칸" ("twelfth box") and episode 11's "십삼 칸" ("thirteenth box"), it is 11. But episode 8 uses the same phrase "십일" to mean 10 days, so a reader could be confused. Treated as borderline.
 
-## 한계
+## Limitations
 
-- **아이템 1개, 판정 1회.** 오류 차이(확정 4 대 3)는 표본 하나의 1건 차이다. 판정자를 바꾸거나 다시 돌리면 뒤집힐 수 있다.
-- **판정자가 놓친 B 결함(세지 않음).** B 4화는 수정 1 뒤 장면이 4개로 늘었고, 열세 번째 칸의 새 못을 세 번 처음 보는 것처럼 발견한다. 한쪽만 더 읽으면 비대칭이 되므로 셈에 넣지 않았다.
-- **11화에서 잘림.** 예산 219(아래 참고)에서 B 단계의 예비분(22회)을 확보하지 못해 12화 전에 멈췄다(`stopped_by`: 204 used + 22 reserved). A 는 12화까지 썼지만(호출 35) 표와 판정은 1~11화만이다. 12화의 회수(장부 쪽 발견, 투표)는 두 팔 모두 판정 밖이다.
-- **길이가 다르다.** 같은 길이 지시("화당 약 5000자")를 받았지만 B 의 산문은 A 의 54% 다. 오류를 1만 자로 나누면 B 가 더 많다(확정 1.24 대 0.89, 경계 포함 1.66 대 1.34). 글자당 비용은 B 가 A 의 약 3.5배다(가중 입력 32.2 대 9.2 / 자).
-- **모델 혼합.** A 는 opus(effort medium)만, B 는 코딩 opus(medium) + 렌더·추출 sonnet 이다. 모델별 토큰은 표에 따로 있다. 실제 가격 비교는 가격표가 필요하고, 구독 사용량은 토큰으로 잰다. 가격 가중은 하지 않았다.
-- **검증 실패 장면이 실렸다.** B 장면 11/28 이 검증 미통과로 실렸다. 통과만 싣는 정책이면 B 는 장면이 빠지거나 호출이 더 든다.
-- **문체는 판정 밖.** 체크리스트는 연속성만 본다. B 의 뼈대 모드 산문은 사실을 대사로 그대로 읊는 줄이 많고("등대 꼭대기 바닥에 쌓인 먼지 위에 얼마 되지 않은 발자국이 찍혀 있다." 가 대사로 나온다), 같은 정보("며칠 뒤면 … 아버지 기일")를 장면마다 되풀이한다.
-- **수정 대상은 각 팔이 골랐다.** 수정 요청 문장은 하네스에 고정되어 있고(`revisions.txt`), 어느 조연·어느 비밀을 바꿀지는 정하지 않는다. 두 팔 모두 민재를 내보냈다(A → 임채원, B → 윤태오). 비밀은 A 가 "부친은 해진호가 아니라 등대에서 떨어져 죽었다", B 가 "백영호가 취해 잠든 사이 불이 꺼졌다"로 바꿨다.
-- **실행 기록.** 첫 시도(시도 0)는 백그라운드 작업 시간 제한(2시간) 때문에 plan 호출 도중 바로 멈추고 지웠다. 기록된 호출은 0이었지만 응답 전 중단이라 최대 1회로 잡고, 본 실행의 예산을 220 대신 219 로 줬다. 본 실행(run1) 기록 호출: plan 1 + A 35 + B 168 + 판정 1 = **205**. 두 시도 합계 ≤ 206.
-- `b/rounds/revise-r1*` 는 수정 2 의 출력으로 덮였다(두 수정 모두 같은 라벨). 수정 1 의 코딩 원문은 남지 않았다(호출 기록 `b/calls.jsonl` 은 남아 있다).
+- **One item, one judgment.** The error difference (confirmed 4 vs 3) is a one-case difference in a single sample. It could flip with a different judge or another run.
+- **B defects the judge missed (not counted).** B's episode 4 grew to 4 scenes after revision 1, and discovers the new nail on the thirteenth stair as if for the first time three times. Reading only one side further would create asymmetry, so it was not included in the count.
+- **Cut at episode 11.** Within the budget of 219 (see below) we could not secure the reserve (22 calls) for B's stage, so we stopped before episode 12 (`stopped_by`: 204 used + 22 reserved). A wrote through episode 12 (35 calls), but the table and judgment are only episodes 1–11. Episode 12's payoffs (finding the ledger page, the vote) are outside the judgment for both arms.
+- **The lengths differ.** They received the same length instruction ("about 5000 characters per episode"), but B's prose is 54% of A's. Dividing errors by 10,000 characters, B has more (confirmed 1.24 vs 0.89, including borderline 1.66 vs 1.34). Per character, B's cost is about 3.5× A's (weighted input 32.2 vs 9.2 per character).
+- **Model mix.** A is opus (effort medium) only; B is coding opus (medium) + render and extraction sonnet. Per-model tokens are in the table separately. A real price comparison needs a price list, and subscription usage is measured in tokens. We did not apply price weighting.
+- **Verification-failed scenes were shipped.** 11/28 of B's scenes were shipped without passing verification. Under a policy of shipping only passes, B would drop scenes or need more calls.
+- **Style is outside the judgment.** The checklist looks only at continuity. B's skeleton-mode prose has many lines that recite facts straight into dialogue ("등대 꼭대기 바닥에 쌓인 먼지 위에 얼마 되지 않은 발자국이 찍혀 있다." — "There are few footprints on the dust piled on the floor at the top of the lighthouse." — comes out as dialogue), and repeats the same information ("며칠 뒤면 … 아버지 기일" — "in a few days … the anniversary of Father's death") in every scene.
+- **Each arm chose the revision target.** The revision request sentences are fixed in the harness (`revisions.txt`), and which supporting character and which secret to change is not specified. Both arms removed Min-jae (A → Im Chae-won, B → Yun Tae-o). For the secret, A changed it to "the father died by falling from the lighthouse, not by the Haejin-ho", and B to "the light went out while Baek Yeong-ho slept drunk".
+- **Run record.** The first attempt (attempt 0) stopped right in the middle of the plan call because of the background-job time limit (2 hours), and was deleted. The recorded calls were 0, but since it was aborted before a response we counted at most 1, and gave the main run a budget of 219 instead of 220. The main run (run1) recorded calls: plan 1 + A 35 + B 168 + judgment 1 = **205**. Both attempts total ≤ 206.
+- `b/rounds/revise-r1*` was overwritten by revision 2's output (both revisions used the same label). Revision 1's coding source text was not kept (the call record `b/calls.jsonl` remains).
 
-## 성공 기준 판정
+## Success criteria verdict
 
-| 기준 | 판정 | 근거 |
+| Criterion | Verdict | Basis |
 |---|---|---|
-| (a) B 누적 오류 < A | **원 수치로는 충족, 길이 보정 기준으로는 미충족** | 원 수치: 확정 B 3 < A 4 (경계 포함 3~4 대 4~6). 1만 자당: 확정 B 1.24 > A 0.89, 경계 포함 1.66 > 1.34. B 본문이 A 의 54% 라서 같은 분량이면 B 가 오류를 더 낸다. 아이템 1개·판정 1회다. |
-| (b) B 총비용(가중) ≤ A | **가중 입력 토큰 기준 미충족, 가격 기준은 가격표가 없어 미정** | 모델별 캐시 가중 입력: B 는 opus 414,122 만으로 A 의 411,794 와 같고, 그 위에 sonnet 363,369 가 더 든다. 출력은 B 의 opus 가 86,702 로 A 의 185,283 보다 적다. 가정(두 모델 모두 출력 단가 = 입력 단가 × 5, sonnet 단가 = opus × s)을 두면 A = 411,794 + 5×185,283 = 1,338,209, B = 847,632 + s × 1,127,064 이다. 따라서 s ≤ 약 0.44 이면 B ≤ A 다. 실제 단가는 가격표가 있어야 하고, 구독 사용량은 토큰으로 잰다. |
-| (c) 수정 잔여 불일치 B < A | **미충족** | 검증 후 B 4 (수정 1 3 + 수정 2 1) 대 A 1 (1 + 0). 수정 1회당 비용도 B 가 높다(평균 호출 35 대 5, 가중 110,647 대 77,940). |
+| (a) B cumulative errors < A | **Met by raw figures, not met by the length-corrected basis** | Raw figures: confirmed B 3 < A 4 (including borderline 3~4 vs 4~6). Per 10,000 characters: confirmed B 1.24 > A 0.89, including borderline 1.66 > 1.34. Because B's body is 54% of A's, at the same volume B would produce more errors. One item, one judgment. |
+| (b) B total cost (weighted) ≤ A | **Not met on weighted input tokens; undetermined on price because there is no price list** | Per-model cache-weighted input: B's opus alone is 414,122, equal to A's 411,794, and sonnet 363,369 is added on top. In output, B's opus is 86,702, less than A's 185,283. Under the assumption (output unit price = input unit price × 5 for both models, sonnet unit price = opus × s), A = 411,794 + 5×185,283 = 1,338,209 and B = 847,632 + s × 1,127,064. So B ≤ A if s ≤ about 0.44. Actual unit prices need a price list, and subscription usage is measured in tokens. |
+| (c) Revision residual inconsistencies B < A | **Not met** | After verification B 4 (revision 1: 3 + revision 2: 1) vs A 1 (1 + 0). The cost per revision is also higher for B (average calls 35 vs 5, weighted 110,647 vs 77,940). |
 
-참고(재채점 아님) — 민감도: 수정 1 의 B 잔여 3개는 모두 수정 전 화별 방향이 낡은 탓이다. A 에만 있던 우선 규칙(위 오류 인용 1)이 원인이다. 이 3개를 빼면 (c) 는 B 1 대 A 1 이다(B3 을 확정으로 센 값).
+For reference (not a re-score) — sensitivity: all 3 of B's residuals in revision 1 are due to the stale per-episode directions from before the revision. The cause is the priority rule that only A had (error quotation 1 above). Removing these 3, (c) is B 1 vs A 1 (counting B3 as confirmed).
 
-**결론:** 이 아이템·이 길이에서 Plan 4 의 가설(연재에서 B 가 오류·비용·수정 잔여 모두 낫다)은 서지 않았다. 오류는 원 수치만 B 가 적고, 길이로 보정하면 A 가 낫다. 가중 입력 토큰과 수정 잔여도 A 가 낫다. 가격 기준 비용은 sonnet/opus 단가 비에 달려 있어 미정이다.
+**Conclusion:** For this item and this length, Plan 4's hypothesis (that in a serial B is better on errors, cost, and revision residuals) did not hold. On errors, only the raw figures favor B, and A is better when corrected for length. A is also better on weighted input tokens and revision residuals. Cost on a price basis depends on the sonnet/opus unit price ratio and is undetermined.
 
-## 하네스 교훈
+## Harness lessons
 
-- 수정 뒤에는 두 팔 모두 화별 방향을 다시 만든다. 아니면 `continue` 에도 A 와 같은 우선 규칙("확정된 수정이 방향보다 우선")을 준다.
-- `dieg revise` 의 라운드 라벨을 수정마다 다르게 한다(지금은 둘 다 `revise-r1` 이라 덮인다).
-- Diegesis 에 떠난 인물이 계속 떠나 있는지 보는 검사(stays-gone)를 둔다. `minjae_leaves` 같은 선언이 있어도 지금은 아무것도 막지 않는다.
+- After a revision, rebuild the per-episode directions for both arms. Otherwise give `continue` the same priority rule as A ("confirmed revisions take priority over directions").
+- Make `dieg revise`'s round labels differ per revision (now both are `revise-r1`, so one overwrites the other).
+- Add a check in Diegesis for whether a departed character stays departed (stays-gone). Even with a declaration like `minjae_leaves`, nothing is blocked now.
 
-## 파일
+## Files
 
-- `idea.txt` — 아이템(인물 9, 비밀 2, 거짓말 1, 투표까지 열이틀, 복선 3, 12화 × 2장면)
-- `revisions.txt` — 고정 수정 요청 2개(하네스와 같은 문장)
-- `run1/` — 실행 산출. `summary.json`, `metrics.csv`, `plan/`, `a/`, `b/`, `b.log`, `judge/`
-- `run1/judge/verification.md` — 판정 검증
-- 500줄을 넘는 산출 3개도 실행 데이터로 커밋했다(`SHA256SUMS-uncommitted.txt` 는 없앴다).
+- `idea.txt` — the item (9 characters, 2 secrets, 1 lie, twelve days until the vote, 3 foreshadowings, 12 episodes × 2 scenes)
+- `revisions.txt` — the 2 fixed revision requests (the same sentences as the harness)
+- `run1/` — run outputs. `summary.json`, `metrics.csv`, `plan/`, `a/`, `b/`, `b.log`, `judge/`
+- `run1/judge/verification.md` — judgment verification
+- We also committed 3 outputs over 500 lines as run data (`SHA256SUMS-uncommitted.txt` was removed).
 
-재현:
+Reproduction:
 
 ```
 export PATH=<go-install>/bin:$PATH
@@ -116,103 +116,103 @@ go run ./tools/serial -idea examples/serial/idea.txt -out examples/serial/run1 -
 
 ---
 
-# run2 — Plan 5 Task 8 재측정
+# run2 — Plan 5 Task 8 re-measurement
 
-Plan 5 에서 run1 의 원인을 고친 뒤 같은 아이템(`idea.txt`), 같은 수정 요청(`revisions.txt`, 하네스 고정 문장)으로 다시 돌렸다. 산출은 `run2/` 이다.
+After fixing run1's causes in Plan 5, we ran again with the same item (`idea.txt`) and the same revision requests (`revisions.txt`, the harness's fixed sentences). The outputs are in `run2/`.
 
-**run1 → run2 사이에 바뀐 것 (여러 변화가 섞여 있다):**
-- B 렌더 모델: run1 은 sonnet 렌더, run2 는 **haiku 렌더**(`claude-haiku-5-5`)다. 추출은 둘 다 sonnet 이고, run2 는 effort low 다. 코딩은 opus/medium, 렌더러는 single, 뼈대 모드는 켰다.
-- 검증기: run1 은 **옛 검증기**다. run2 는 행위만 있고 사실이 없는 저작 사건을 환각으로 세지 않는다(ADR-019 보강).
-- 렌더 프롬프트의 목표·분량을 고쳤다. 코딩 프롬프트에는 stays-gone 규칙(떠난 인물은 다시 나오지 않음)을 넣었다.
-- 하네스: 수정 직전마다 화별 방향을 다시 만든다(replan, 어느 팔에도 안 셈). 두 팔에 같은 우선 규칙 블록("확정된 수정이 방향보다 우선")을 준다. 수정 라벨은 수정마다 다르다.
-- A 의 모델·effort 는 그대로다(opus/medium). 하지만 위 하네스 변화(수정 전 replan 으로 바뀐 화별 방향, 공유 우선 규칙 블록)는 A 의 프롬프트도 바꿨다. A 도 엄밀히는 같은 조건이 아니다.
+**What changed between run1 and run2 (several changes are mixed):**
+- B render model: run1 used a sonnet render, run2 uses a **haiku render** (`claude-haiku-5-5`). Extraction is sonnet in both, and in run2 effort low. Coding is opus/medium, the renderer is single, and skeleton mode is on.
+- Verifier: run1 is the **old verifier**. run2 does not count authored events that have only an act and no fact as hallucinations (ADR-019 amendment).
+- We fixed the target and length in the render prompt. We put a stays-gone rule into the coding prompt (a departed character does not reappear).
+- Harness: rebuild the per-episode directions right before each revision (replan, not counted for either arm). Give both arms the same priority rule block ("confirmed revisions take priority over directions"). Revision labels differ per revision.
+- A's model and effort are unchanged (opus/medium). But the harness changes above (the per-episode directions changed by the pre-revision replan, the shared priority rule block) changed A's prompt too. Strictly, A is not under the same conditions either.
 
-그래서 run1 → run2 의 차이는 위 변화들의 합이다. 어느 하나의 효과로 읽을 수 없다.
+So the run1 → run2 difference is the sum of the changes above. It cannot be read as the effect of any one.
 
-## 결과 (1~10화 + 수정 2회)
+## Results (episodes 1–10 + 2 revisions)
 
-예산 220 안에서(아래 실행 기록) B 의 11화 단계가 예비분을 확보하지 못해 **두 팔 모두 10화에서 잘렸다**(`stopped_by`: 191 used + 22 reserved of 211). run1 은 11화에서 잘렸다. 표의 run1 수치는 run1 README 의 1~11화 값이다. 같은 10화 시점의 run1 누적은 표 아래에 따로 적었다.
+Within the budget of 220 (see the run record below), B's episode 11 stage could not secure the reserve, so **both arms were cut at episode 10** (`stopped_by`: 191 used + 22 reserved of 211). run1 was cut at episode 11. The run1 figures in the table are the run1 README's episodes 1–11 values. The run1 cumulative at the same episode-10 point is written separately below the table.
 
-| 항목 | run1 A | run1 B | run2 A | run2 B | run2 B/A |
+| Item | run1 A | run1 B | run2 A | run2 B | run2 B/A |
 |---|---:|---:|---:|---:|---:|
-| 기준 화 | 1~11 | 1~11 | 1~10 | 1~10 | |
-| 누적 연속성 오류 (검증 후 확정) | 4 | 3 | **8** | **3** | 0.38 |
-| └ 경계 포함 범위 | 4~6 | 3~4 | 8~9 | 3~4 | |
-| └ 1만 자당 (확정 / 경계 포함) | 0.89 / 1.34 | 1.24 / 1.66 | **2.12** / 2.39 | **1.00** / 1.34 | 0.47 |
-| 호출 수 | 33 | 168 | 31 | 155 | 5.0 |
-| 캐시 가중 입력 (합) | 411,794 | 777,491 | 370,272 | 761,348 | 2.06 |
-| └ opus | 411,794 (33회) | 414,122 (16회) | 370,272 (31회) | 435,648 (17회) | 1.18 |
-| └ sonnet 렌더 | — | 187,227 (76회) | — | — | |
-| └ haiku 렌더 | — | — | — | 155,067 (69회) | |
-| └ sonnet 추출 | — | 176,142 (76회) | — | 170,633 (69회) | |
-| 출력 토큰 (합) | 185,283 | 239,441 | 155,130 | 363,297 | 2.34 |
-| └ opus / 렌더 / 추출 | 185,283 / — / — | 86,702 / 123,853 / 28,886 | 155,130 / — / — | 76,092 / 263,540 / 23,665 | |
-| 본문 길이 (자) | 44,824 | 24,153 | 37,712 | 29,896 | 0.79 |
-| 수정 1: 호출 / 가중 / 잔여 (확정) | 3 / 32,418 / 1 | 39 / 115,813 / 3 | 6 / 90,314 / **1** | 32 / 117,614 / **1** (1~3) | |
-| 수정 2: 호출 / 가중 / 잔여 (확정) | 7 / 123,461 / 0 | 31 / 105,481 / 1 | 4 / 57,006 / **0** | 35 / 116,661 / **0** (0~1) | |
-| 수정 1회당: 호출 / 가중 / 잔여 | 5 / 77,940 / 0.5 | 35 / 110,647 / 2 | 5 / 73,660 / 0.5 | 33.5 / 117,138 / 0.5 | |
-| B 장면 검증 통과로 실림 | — | 17 / 28 (61%) | — | 20 / 29 (69%) | |
+| Episodes covered | 1~11 | 1~11 | 1~10 | 1~10 | |
+| Cumulative continuity errors (confirmed after verification) | 4 | 3 | **8** | **3** | 0.38 |
+| └ Range including borderline | 4~6 | 3~4 | 8~9 | 3~4 | |
+| └ Per 10,000 characters (confirmed / including borderline) | 0.89 / 1.34 | 1.24 / 1.66 | **2.12** / 2.39 | **1.00** / 1.34 | 0.47 |
+| Calls | 33 | 168 | 31 | 155 | 5.0 |
+| Cache-weighted input (sum) | 411,794 | 777,491 | 370,272 | 761,348 | 2.06 |
+| └ opus | 411,794 (33 calls) | 414,122 (16 calls) | 370,272 (31 calls) | 435,648 (17 calls) | 1.18 |
+| └ sonnet render | — | 187,227 (76 calls) | — | — | |
+| └ haiku render | — | — | — | 155,067 (69 calls) | |
+| └ sonnet extraction | — | 176,142 (76 calls) | — | 170,633 (69 calls) | |
+| Output tokens (sum) | 185,283 | 239,441 | 155,130 | 363,297 | 2.34 |
+| └ opus / render / extraction | 185,283 / — / — | 86,702 / 123,853 / 28,886 | 155,130 / — / — | 76,092 / 263,540 / 23,665 | |
+| Body length (characters) | 44,824 | 24,153 | 37,712 | 29,896 | 0.79 |
+| Revision 1: calls / weighted / residual (confirmed) | 3 / 32,418 / 1 | 39 / 115,813 / 3 | 6 / 90,314 / **1** | 32 / 117,614 / **1** (1~3) | |
+| Revision 2: calls / weighted / residual (confirmed) | 7 / 123,461 / 0 | 31 / 105,481 / 1 | 4 / 57,006 / **0** | 35 / 116,661 / **0** (0~1) | |
+| Per revision: calls / weighted / residual | 5 / 77,940 / 0.5 | 35 / 110,647 / 2 | 5 / 73,660 / 0.5 | 33.5 / 117,138 / 0.5 | |
+| B scenes shipped having passed verification | — | 17 / 28 (61%) | — | 20 / 29 (69%) | |
 
-- 같은 10화 시점의 run1 누적은 다음과 같다(`run1/metrics.csv` ep10 행). A 는 호출 31, 가중 386,147, 출력 172,602 다. B 는 호출 157, 가중 723,427, 출력 222,252 다. 같은 시점에서 비교하면 run2 의 B 는 가중 입력이 5% 늘었고 출력은 63% 늘었다(haiku 렌더의 출력이 sonnet 의 약 2배). A 는 둘 다 조금 줄었다.
-- **모델별 값은 호출 라벨로 다시 셌다.** 하네스의 `summary.json` `ByModel` 은 `render-`·`extract-` 를 모두 sonnet 으로 묶는다(`tools/serial/main.go` `modelOf`, run1 기본값 기준). 그래서 run2 의 "sonnet 138회" 는 실제로는 haiku 렌더 69회와 sonnet 추출 69회다. 위 표는 `run2/b/calls.jsonl` 의 라벨(`render-*` → haiku, `extract-*` → sonnet, 나머지 → opus)로 나눈 값이다. 하네스는 실행 중 고치지 않았다.
-- 표 밖: 공유 `plan` 3회(처음 1 + 수정 전 replan 2, 가중 7,305, 어느 팔에도 안 셈). 판정 1회(opus, 가중 94,885, 출력 47,633). A 의 11화 작업(호출 2)은 컷 뒤라 뺐다.
-- 오류와 잔여는 판정자 표시를 사람이 검증한 값이다(판정자 원래 표시: 오류 A 9·B 4, 잔여 A 1·0, B 3·1). 검증 기록은 [`run2/judge/verification.md`](run2/judge/verification.md) 이고, run1 과 같은 대칭 규칙(원문만으로 모순이면 확정)을 썼다.
-- B 의 장면 29개 중 9개(s7·s7b·s9·s10·s13·s14·s16·s18·s19)가 3회 시도 안에 검증(환각 0·누출 0·누락 ≤ 1)을 통과하지 못하고 실렸다(`run2/b/novel/*.report.json`). 이 중 6개는 수정 때 새로 쓰거나 고친 장면이다.
+- The run1 cumulative at the same episode-10 point is as follows (`run1/metrics.csv` ep10 row). A has 31 calls, weighted 386,147, output 172,602. B has 157 calls, weighted 723,427, output 222,252. Compared at the same point, run2's B has 5% more weighted input and 63% more output (haiku render's output is about twice sonnet's). A decreased slightly in both.
+- **Per-model values were recounted from call labels.** The harness's `summary.json` `ByModel` groups `render-` and `extract-` all as sonnet (`tools/serial/main.go` `modelOf`, run1 defaults). So run2's "sonnet 138 calls" is actually 69 haiku renders and 69 sonnet extractions. The table above is divided by the labels in `run2/b/calls.jsonl` (`render-*` → haiku, `extract-*` → sonnet, the rest → opus). We did not fix the harness during the run.
+- Outside the table: the shared `plan` 3 times (1 at the start + 2 pre-revision replans, weighted 7,305, not counted for either arm). The judgment once (opus, weighted 94,885, output 47,633). A's episode 11 work (2 calls) was excluded since it is after the cut.
+- Errors and residuals are values where a person verified the judge's marks (the judge's original marks: errors A 9, B 4; residual A 1, 0; B 3, 1). The verification record is [`run2/judge/verification.md`](run2/judge/verification.md), and it used the same symmetric rule as run1 (confirmed if it is a contradiction from the source text alone).
+- 9 of B's 29 scenes (s7, s7b, s9, s10, s13, s14, s16, s18, s19) were shipped without passing verification (0 hallucinations, 0 leaks, missing ≤ 1) within 3 attempts (`run2/b/novel/*.report.json`). 6 of these are scenes newly written or fixed during revisions.
 
-## 가격 조건식 (플랜 4 와 같은 가정)
+## Price condition formula (the same assumptions as Plan 4)
 
-가정은 플랜 4 와 같다. 모든 모델에서 출력 단가 = 입력 단가 × 5 로 두고, 단가는 opus 기준 상대값(sonnet = s, haiku = h)으로 둔다. 입력은 캐시 가중값을 쓴다.
+The assumptions are the same as Plan 4. In all models, output unit price = input unit price × 5, and unit prices are relative to opus (sonnet = s, haiku = h). Input uses the cache-weighted value.
 
 ```
 A = 370,272 + 5 × 155,130                                  = 1,145,922
-B = (435,648 + 5 × 76,092)                    opus 몫        =   816,108
-  + s × (170,633 + 5 × 23,665)                sonnet 추출    = s × 288,958
-  + h × (155,067 + 5 × 263,540)               haiku 렌더     = h × 1,472,767
+B = (435,648 + 5 × 76,092)                    opus share     =   816,108
+  + s × (170,633 + 5 × 23,665)                sonnet extract = s × 288,958
+  + h × (155,067 + 5 × 263,540)               haiku render   = h × 1,472,767
 B ≤ A  ⇔  288,958·s + 1,472,767·h ≤ 329,814
 ```
 
-- B 의 opus 몫만 해도 A 의 71% 다. 나머지 29% 안에 추출과 렌더가 들어가야 B ≤ A 가 된다.
-- haiku 렌더의 출력이 많아서 h 의 계수가 크다. 추출이 공짜(s = 0)라고 해도 h ≤ 0.224 여야 한다. 예를 들어 s = 0.6 이면 h ≤ 0.106 이고, h = 0.2 이면 s ≤ 0.122 다.
-- run1 의 조건은 s ≤ 약 0.44 였다(렌더·추출 모두 sonnet).
-- 실제 단가는 가격표가 있어야 하고, 구독 사용량은 토큰으로 잰다. 가격 가중(`-price`)은 주지 않았다. `modelOf` 가 haiku 를 sonnet 으로 묶으므로, 지금 하네스의 `-price` 로는 이 계산을 정확히 할 수 없다.
+- B's opus share alone is 71% of A. Extraction and rendering have to fit in the remaining 29% for B ≤ A.
+- Because haiku render's output is large, h's coefficient is large. Even if extraction is free (s = 0), h ≤ 0.224 is required. For example, with s = 0.6, h ≤ 0.106; with h = 0.2, s ≤ 0.122.
+- run1's condition was s ≤ about 0.44 (render and extraction both sonnet).
+- Actual unit prices need a price list, and subscription usage is measured in tokens. Price weighting (`-price`) was not given. Because `modelOf` groups haiku with sonnet, the current harness's `-price` cannot do this calculation exactly.
 
-## 성공 기준 판정 (run2)
+## Success criteria verdict (run2)
 
-| 기준 | 판정 | 근거 |
+| Criterion | Verdict | Basis |
 |---|---|---|
-| (a) B 누적 오류 < A | **이 표본에서는 충족, 다만 n=1 잡음 범위 안** | 확정 B 3 < A 8, 경계 포함 3~4 < 8~9. 1만 자당 B 1.00 < A 2.12(경계 포함 1.34 < 2.39). run1 에서 뒤집힌 원인은 거의 모두 A 쪽이다. 모델이 바뀌지 않은 A 가 1만 자당 0.89 → 2.12 로 나빠졌고(확정 4 → 8), B 는 1.24 → 1.00 으로 조금 나아졌을 뿐이다. A 한 팔의 run 간 흔들림(+4)이 A–B 차이(5)와 거의 같다. 그러므로 이 결과로 B 가 연속성에서 더 낫다고 결론 내리지 않는다. |
-| (b) B 총비용(가중) ≤ A | **프로젝트가 가정한 가중치에서 미충족** | 캐시 가중 입력은 B 761,348 대 A 370,272(2.06배)다. B 의 opus 만으로도 435,648 로 A 보다 많다. 출력도 B 363,297 대 A 155,130 이다. Task 5 의 가중치(s = 0.6, h = 0.2, 출력 = 입력 × 5)를 넣으면 B = 816,108 + 173,375 + 294,553 = **1,284,036** 이고 A = 1,145,922 이다. B 가 A 의 약 1.12배다. 일반 조건은 `288,958·s + 1,472,767·h ≤ 329,814` 이다. s ≥ h 라면 B ≤ A 가 되려면 s 와 h 가 둘 다 opus 의 약 0.187 이하여야 한다. h ≥ 0.224 이면 s 와 상관없이 B > A 다. |
-| (c) 수정 잔여 불일치 B < A | **미충족 (동률)** | 확정은 B 1 (수정 1 1 + 수정 2 0) 대 A 1 (1 + 0) 이고, 경계를 넣으면 B 1~4 대 A 1 이다. run1 의 B 4 대 A 1 보다는 좁혀졌다(수정 1 의 낡은 방향 문제는 replan·같은 우선 규칙 뒤 사라졌다). 하지만 B < A 는 아니다. 수정 1회당 비용도 B 가 높다(호출 33.5 대 5, 가중 117,138 대 73,660). |
+| (a) B cumulative errors < A | **Met in this sample, but within n=1 noise** | Confirmed B 3 < A 8, including borderline 3~4 < 8~9. Per 10,000 characters B 1.00 < A 2.12 (including borderline 1.34 < 2.39). The cause of the flip from run1 is almost entirely on A's side. A, whose model did not change, got worse from 0.89 to 2.12 per 10,000 characters (confirmed 4 → 8), and B only improved slightly from 1.24 to 1.00. A single arm's run-to-run wobble (+4) is nearly the same as the A–B difference (5). So we do not conclude from this result that B is better at continuity. |
+| (b) B total cost (weighted) ≤ A | **Not met at the weights the project assumed** | Cache-weighted input is B 761,348 vs A 370,272 (2.06×). B's opus alone is 435,648, more than A. Output too is B 363,297 vs A 155,130. With Task 5's weights (s = 0.6, h = 0.2, output = input × 5), B = 816,108 + 173,375 + 294,553 = **1,284,036** and A = 1,145,922. B is about 1.12× A. The general condition is `288,958·s + 1,472,767·h ≤ 329,814`. If s ≥ h, for B ≤ A both s and h must be at most about 0.187 of opus. If h ≥ 0.224, B > A regardless of s. |
+| (c) Revision residual inconsistencies B < A | **Not met (tie)** | Confirmed is B 1 (revision 1: 1 + revision 2: 0) vs A 1 (1 + 0), and including borderline B 1~4 vs A 1. It narrowed from run1's B 4 vs A 1 (the stale-directions problem in revision 1 went away after the replan and the same priority rule). But it is not B < A. The cost per revision is also higher for B (calls 33.5 vs 5, weighted 117,138 vs 73,660). |
 
-**결론:** 이 표본에서 run2 의 B 는 연속성 오류 수가 A 보다 적다(원 수치·길이 보정 모두). 하지만 뒤집힌 원인은 A 의 흔들림이고, 그 크기가 A–B 차이와 비슷하다. 그래서 n=1 잡음 범위 안의 결과다. 수정 잔여는 A 와 같아졌다. 비용은 가중 토큰으로 A 의 약 2배이고, 프로젝트가 가정한 가중치로는 A 의 약 1.12배다. 지금의 Diegesis 가 직접 쓰기를 이긴다고 말할 근거는 없다.
+**Conclusion:** In this sample, run2's B has fewer continuity errors than A (both raw figures and length-corrected). But the cause of the flip is A's wobble, and its size is similar to the A–B difference. So it is a result within n=1 noise. Revision residuals became equal to A's. Cost is about 2× A in weighted tokens, and about 1.12× A at the weights the project assumed. There is no basis to say today's Diegesis beats direct writing.
 
-**다음 플랜 후보:** haiku 렌더 effort 를 low 로 낮추는 것을 검토한다. 먼저 작은 통과율 A/B 를 관문으로 둔다. haiku 출력이 회당 약 1,600 으로 줄면, 가정 가중치에서 B ≈ A 가 된다(B ≈ 1,130,896 대 A 1,145,922). 함께 `tools/serial` 의 `modelOf` 를 고쳐 haiku 렌더를 haiku 로 센다(지금은 sonnet 으로 묶여 `ByModel`·`-price` 가 틀린다).
+**Next plan candidate:** Consider lowering the haiku render effort to low. As a gate, first do a small pass-rate A/B. If haiku output falls to about 1,600 per call, B ≈ A at the assumed weights (B ≈ 1,130,896 vs A 1,145,922). At the same time, fix `modelOf` in `tools/serial` to count the haiku render as haiku (now it is grouped with sonnet, so `ByModel` and `-price` are wrong).
 
-## 관찰
+## Observations
 
-- **stays-gone 이 지켜졌다.** B 의 민재는 4화에 퇴장한 뒤 다시 나오지 않는다. 같은 요청에서 A 는 1화에서 퇴장시킨 민재를 4화에 다시 등장시켰다(A1, 수정 1 잔여).
-- **B 의 수정 1 후임이 둘로 갈렸다.** 4화에서는 서태일이, 5화부터는 윤유진이 소개 없이 그 역할을 맡는다(검증 B 수정1 4화). 퇴장 장면을 4화에 둔 것도 앞 화의 역할 교체 요청을 어떻게 읽느냐에 따라 미반영일 수 있다(경계 2건).
-- **B 의 오류 유형.** B1(남은 날수가 열이틀에서 줄지 않음)과 B2(같은 말을 "처음 들었다")는 화마다 같은 사실을 되풀이하는 뼈대 산문에서 나온다. 코드에 날짜 진행이 없으면 렌더러는 "열이틀"을 그대로 다시 쓴다. B3 은 코드가 선언한 인물이 산문에 소개 없이 나온 경우다. 사실 단위 검증으로는 "독자가 이 인물을 아는가"를 보지 못한다.
-- **haiku 렌더는 출력이 많다.** 렌더 출력 토큰은 69회 263,540(회당 3,819)이다. run1 sonnet 은 76회 123,853(회당 1,630)이었다. 반면 본문은 1화당 2,990자로 run1(2,196자)보다 36% 늘어난 데 그쳤다. 출력 토큰 상당 부분이 본문에 남지 않는다(사고·재시도 분량으로 추정되지만 확인하지 않았다).
-- **문체는 판정 밖이다.** run1 과 같이 B 산문은 정보를 대사로 그대로 읊고, 같은 문장을 장면마다 되풀이한다(예: "섬 전체를 리조트 개발사에 팔지 정하는 주민 투표가 열이틀 뒤에 열려" 가 1·2·4·6·8화에 나온다).
+- **stays-gone was kept.** B's Min-jae does not reappear after exiting in episode 4. In the same request, A brought back Min-jae, whom it had exited in episode 1, in episode 4 (A1, revision 1 residual).
+- **B's revision-1 successor split into two.** In episode 4 Seo Tae-il, and from episode 5 Yun Yu-jin, take that role without introduction (verification B revision 1, episode 4). Placing the exit scene in episode 4 may also be an unreflected revision depending on how one reads the earlier episode's role-replacement request (2 borderline cases).
+- **B's error types.** B1 (the remaining days do not drop from twelve) and B2 (hearing the same words "for the first time") come from skeleton prose that repeats the same fact in every episode. If the code has no progression of dates, the renderer rewrites "twelve days" as is. B3 is a case where a character the code declared appears in prose without introduction. Fact-level verification cannot see "does the reader know this character".
+- **The haiku render has large output.** Render output tokens are 263,540 over 69 calls (3,819 per call). run1 sonnet was 123,853 over 76 calls (1,630 per call). Yet the body grew only 36% to 2,990 characters per episode over run1 (2,196). A good part of the output tokens does not remain in the body (presumed thinking and retry volume, but not confirmed).
+- **Style is outside the judgment.** As in run1, B prose recites information straight into dialogue and repeats the same sentence in every scene (for example, "섬 전체를 리조트 개발사에 팔지 정하는 주민 투표가 열이틀 뒤에 열려" — "the residents' vote to decide whether to sell the whole island to the resort developer is held twelve days from now" — appears in episodes 1, 2, 4, 6, and 8).
 
-## 한계 (run2)
+## Limitations (run2)
 
-- 아이템 1개, 판정 1회다. A 의 확정 오류가 run1 4 → run2 8 로 두 배가 된 것을 보면, 이 판정 하나의 변동이 크다.
-- run1 은 11화, run2 는 10화에서 잘렸다. 표의 run1 열은 11화 기준이라 직접 대조에는 위의 10화 시점 값을 쓴다. 12화(투표, 복선 회수)는 이번에도 판정 밖이다.
-- 길이 지시는 같았지만 B 의 본문은 A 의 79% 다(run1 은 54%). 4화·8화가 수정 때 장면이 늘어 7,228자·6,423자로 길고, 나머지 화는 1,600~2,600자다.
-- 검증 실패 장면 9/29 가 실렸다(통과만 싣는 정책이면 B 는 장면이 빠지거나 호출이 더 든다).
-- run1 → run2 차이는 렌더 모델, 검증기, 프롬프트, stays-gone, 하네스가 함께 바뀐 결과다.
+- One item, one judgment. Seeing that A's confirmed errors doubled from run1's 4 to run2's 8, the variation of this one judgment is large.
+- run1 was cut at episode 11 and run2 at episode 10. The run1 column in the table is on an episode-11 basis, so for direct comparison use the episode-10 point values above. Episode 12 (the vote, foreshadowing payoff) is again outside the judgment.
+- The length instruction was the same, but B's body is 79% of A's (run1 was 54%). Episodes 4 and 8 are long, at 7,228 and 6,423 characters, because scenes grew during revisions, and the rest are 1,600–2,600 characters.
+- 9/29 verification-failed scenes were shipped (under a policy of shipping only passes, B would drop scenes or need more calls).
+- The run1 → run2 difference is the result of the render model, verifier, prompts, stays-gone, and harness changing together.
 
-## 실행 기록 (run2)
+## Run record (run2)
 
-- 하네스·프롬프트·렌더러·검증기·규칙은 실행 중 고치지 않았다. 브랜치 `plan5`, HEAD `0e8fcb8` 이다.
-- **시도 0 (버림):** 백그라운드 작업 시간 제한(약 2시간)을 피하려고 하네스를 분리된 프로세스로 띄웠다. 그런데 표준 출력·오류 리디렉션 파일이 만들어지지 않았다. 하네스는 dieg 의 stderr 를 자기 stderr 로도 흘리는데(`realDieg` 의 `io.MultiWriter`), 그 핸들이 깨져 있어 B 1화 직후 `cmd.Run` 이 오류를 냈다. 기록 호출은 plan 1 + A 3 + B 5 = **9** 이고, 진행 중이던 호출은 없었다. 하네스 버그가 아니라 실행 환경 문제다. 산출은 지웠다.
-- **본 실행 (run2):** `cmd.exe` 로 리디렉션을 걸어 다시 띄웠고, 예산은 220 − 9 = **211** 로 줬다. 17:28 에 시작해 19:01 에 끝났다(약 1시간 33분). 기록 호출은 plan 3 + A 33 + B 155 + 판정 1 = **192** 다. 두 시도 합계는 **201 ≤ 220** 이다.
-- 하네스의 표준 출력·오류는 `run2/serial.out`, `run2/serial.err` 에 있다.
-- 500줄을 넘는 산출 3개(`run2/a/prompts/rev1-sum.txt`, `run2/b/novel.md`, `run2/judge/prompt1.txt`)도 실행 데이터로 커밋했다. `dieg.exe` 는 `.gitignore`(`*.exe`) 대상이다.
+- The harness, prompts, renderer, verifier, and rules were not fixed during the run. Branch `plan5`, HEAD `0e8fcb8`.
+- **Attempt 0 (discarded):** To avoid the background-job time limit (about 2 hours), we launched the harness as a detached process. But the stdout and stderr redirect files were not created. The harness also streams dieg's stderr to its own stderr (`realDieg`'s `io.MultiWriter`), but that handle was broken, so right after B's episode 1 `cmd.Run` raised an error. The recorded calls are plan 1 + A 3 + B 5 = **9**, and there was no call in flight. It is an execution environment problem, not a harness bug. The outputs were deleted.
+- **Main run (run2):** We launched again with the redirect set up via `cmd.exe`, and gave a budget of 220 − 9 = **211**. It started at 17:28 and ended at 19:01 (about 1 hour 33 minutes). The recorded calls are plan 3 + A 33 + B 155 + judgment 1 = **192**. Both attempts total **201 ≤ 220**.
+- The harness's stdout and stderr are in `run2/serial.out` and `run2/serial.err`.
+- We also committed 3 outputs over 500 lines (`run2/a/prompts/rev1-sum.txt`, `run2/b/novel.md`, `run2/judge/prompt1.txt`) as run data. `dieg.exe` is covered by `.gitignore` (`*.exe`).
 
-재현:
+Reproduction:
 
 ```
 export PATH=<go-install>/bin:$PATH
@@ -222,103 +222,103 @@ go run ./tools/serial -idea examples/serial/idea.txt -out examples/serial/run2 -
 
 ---
 
-# run3 — Plan 6 Task 6 (카드 검증기 + 렌더 effort low)
+# run3 — Plan 6 Task 6 (card verifier + render effort low)
 
-run2 와 같은 아이템(`idea.txt`), 같은 수정 요청(`revisions.txt`), 같은 하네스 규칙(교차 실행, 예산 예약, 같은 화에서 자름, 수정 전 replan, 판정은 항상)으로 돌렸다. 가격 가정도 run2 와 같다(s = 0.6, h = 0.2, 출력 = 입력 × 5). 산출은 `run3/` 이다.
+We ran with the same item as run2 (`idea.txt`), the same revision requests (`revisions.txt`), and the same harness rules (alternating runs, budget reservation, cutting at the same episode, pre-revision replan, always judge). The price assumptions are also the same as run2 (s = 0.6, h = 0.2, output = input × 5). The outputs are in `run3/`.
 
-**run2 → run3 에서 바뀐 것:**
-- B 의 `dieg write/continue/revise` 는 **카드 검증기**(dieg 기본값, `--verifier card`)를 쓴다. run2 는 사실 단위 검증기였다.
-- B 에 `--render-effort low` 를 준다(`tools/serial/b.go` `withEffort`, 가짜 dieg 테스트 `TestBRenderEffortLow`). run2 의 haiku 렌더는 effort 기본값이었다.
-- 계층형 렌더러가 코드에서 삭제됐다(run2 의 B 도 쓰지 않았다).
-- 그 밖(아이템, 화 수 계획, 수정 일정 4화·8화 뒤, 예산 예약, 교차 실행, 같은 화 자르기, 판정자, 수정 전 replan)은 그대로다. A 의 모델·effort 도 그대로다(opus/medium).
-- 우연히 달라진 것: 이번에는 예산 안에서 **12화 전부**를 썼다(run2 는 10화에서 잘렸다). 두 팔 모두 12화다. 그래서 run2 와 직접 비교하는 값은 10화 시점 또는 같은 화 기준이라고 따로 적는다. 판정은 블라인드 매핑이 run2 와 반대다(X = A, Y = B).
+**What changed from run2 to run3:**
+- B's `dieg write/continue/revise` uses the **card verifier** (the dieg default, `--verifier card`). run2 had the fact-level verifier.
+- B is given `--render-effort low` (`tools/serial/b.go` `withEffort`, fake-dieg test `TestBRenderEffortLow`). run2's haiku render had the default effort.
+- The layered renderer was removed from the code (run2's B did not use it either).
+- Everything else (the item, the episode count plan, the revision schedule after episodes 4 and 8, budget reservation, alternating runs, cutting at the same episode, the judge, the pre-revision replan) is unchanged. A's model and effort are also unchanged (opus/medium).
+- Differing by chance: this time we wrote **all 12 episodes** within the budget (run2 was cut at episode 10). Both arms are at episode 12. So values compared directly with run2 are noted separately as being at the episode-10 point or on the same-episode basis. For the judgment, the blind mapping is the reverse of run2 (X = A, Y = B).
 
-**n = 1 이다.** 아이템 1개, 실행 1회, 판정 1회다. 아래 차이는 잡음 범위 안일 수 있다.
+**n = 1.** One item, one run, one judgment. The differences below may be within noise.
 
-## 결과 (1~12화 + 수정 2회)
+## Results (episodes 1–12 + 2 revisions)
 
-| 항목 | run2 A | run2 B | run3 A | run3 B | run3 B/A |
+| Item | run2 A | run2 B | run3 A | run3 B | run3 B/A |
 |---|---:|---:|---:|---:|---:|
-| 기준 화 | 1~10 | 1~10 | 1~12 | 1~12 | |
-| 누적 연속성 오류 (검증 후 확정) | 8 | 3 | **8** | **9** | 1.13 |
-| └ 경계 포함 | 8~9 | 3~4 | 8~9 | 9~11 | |
-| └ 1만 자당 (확정 / 경계 포함) | 2.12 / 2.39 | 1.00 / 1.34 | **1.71** / 1.92 | **2.32** / 2.84 | 1.36 |
-| 본문 길이 (자) | 37,712 | 29,896 | 46,858 | 38,733 | 0.83 |
-| 호출 수 | 31 | 155 | 41 | 101 | 2.46 |
-| 캐시 가중 입력 (합) | 370,272 | 761,348 | 563,611 | 792,320 | 1.41 |
-| └ opus | 370,272 (31회) | 435,648 (17회) | 563,611 (41회) | 562,959 (20회) | |
-| └ haiku 렌더 | — | 155,067 (69회) | — | 95,910 (37회) | |
-| └ sonnet 추출 | — | 170,633 (69회) | — | 133,451 (44회) | |
-| 출력 토큰 (합) | 155,130 | 363,297 | 228,143 | 265,747 | 1.16 |
-| └ opus / 렌더 / 추출 | 155,130 / — / — | 76,092 / 263,540 / 23,665 | 228,143 / — / — | 124,618 / 120,333 / 20,796 | |
-| 수정 1: 호출 / 가중 / 잔여 (확정) | 6 / 90,314 / 1 | 32 / 117,614 / 1 | 6 / 100,469 / **0** | 21 / 102,327 / **1** (1~2) | |
-| 수정 2: 호출 / 가중 / 잔여 (확정) | 4 / 57,006 / 0 | 35 / 116,661 / 0 | 10 / 189,457 / **1** | 10 / 64,053 / **1** | |
+| Episodes covered | 1~10 | 1~10 | 1~12 | 1~12 | |
+| Cumulative continuity errors (confirmed after verification) | 8 | 3 | **8** | **9** | 1.13 |
+| └ Including borderline | 8~9 | 3~4 | 8~9 | 9~11 | |
+| └ Per 10,000 characters (confirmed / including borderline) | 2.12 / 2.39 | 1.00 / 1.34 | **1.71** / 1.92 | **2.32** / 2.84 | 1.36 |
+| Body length (characters) | 37,712 | 29,896 | 46,858 | 38,733 | 0.83 |
+| Calls | 31 | 155 | 41 | 101 | 2.46 |
+| Cache-weighted input (sum) | 370,272 | 761,348 | 563,611 | 792,320 | 1.41 |
+| └ opus | 370,272 (31 calls) | 435,648 (17 calls) | 563,611 (41 calls) | 562,959 (20 calls) | |
+| └ haiku render | — | 155,067 (69 calls) | — | 95,910 (37 calls) | |
+| └ sonnet extraction | — | 170,633 (69 calls) | — | 133,451 (44 calls) | |
+| Output tokens (sum) | 155,130 | 363,297 | 228,143 | 265,747 | 1.16 |
+| └ opus / render / extraction | 155,130 / — / — | 76,092 / 263,540 / 23,665 | 228,143 / — / — | 124,618 / 120,333 / 20,796 | |
+| Revision 1: calls / weighted / residual (confirmed) | 6 / 90,314 / 1 | 32 / 117,614 / 1 | 6 / 100,469 / **0** | 21 / 102,327 / **1** (1~2) | |
+| Revision 2: calls / weighted / residual (confirmed) | 4 / 57,006 / 0 | 35 / 116,661 / 0 | 10 / 189,457 / **1** | 10 / 64,053 / **1** | |
 
-- 모델별 값은 `run3/b/calls.jsonl` 라벨로 셌다(`modelOf` 는 이번에 이미 `render-` → haiku 다). 합은 하네스 `summary.json` `B_total_including_cut_work` 의 모델별 값과 같다.
-- 표 밖: 공유 `plan` 3회(가중 9,491), 판정 1회. 두 팔 모두 컷이 12화라 컷 뒤 작업은 없다.
-- 오류와 잔여는 판정자 표시를 사람이 대조한 값이다(판정자 원래 표시: 오류 A 9·B 11, 잔여 A 0·1, B 2·1). 기록은 [`run3/judge/verification.md`](run3/judge/verification.md) 이고 run1·run2 와 같은 대칭 규칙을 썼다.
-- run2 와 같은 10화 시점의 run3 누적(`run3/metrics.csv` ep10 행): A 호출 37, 가중 517,503, 출력 206,941. B 호출 91, 가중 701,495, 출력 222,525. run2 의 10화 B 는 호출 155, 가중 761,348, 출력 363,297 이다. 같은 시점에서 B 는 호출 41% 감소, 가중 입력 8% 감소, 출력 39% 감소다. 다만 A 도 같은 시점에서 가중 입력이 40%, 출력이 33% 늘었다(A 의 화당 분량이 run2 보다 커졌다). A 가 같은 조건의 기준선이 아니라는 뜻이다.
+- Per-model values were counted from the `run3/b/calls.jsonl` labels (`modelOf` already maps `render-` → haiku this time). The sums equal the per-model values in the harness `summary.json` `B_total_including_cut_work`.
+- Outside the table: the shared `plan` 3 times (weighted 9,491), the judgment once. Both arms were cut at episode 12, so there is no after-cut work.
+- Errors and residuals are values where a person cross-checked the judge's marks (the judge's original marks: errors A 9, B 11; residual A 0, 1; B 2, 1). The record is [`run3/judge/verification.md`](run3/judge/verification.md), and the same symmetric rule as run1 and run2 was used.
+- The run3 cumulative at the same episode-10 point as run2 (`run3/metrics.csv` ep10 row): A calls 37, weighted 517,503, output 206,941. B calls 91, weighted 701,495, output 222,525. run2's episode-10 B is calls 155, weighted 761,348, output 363,297. At the same point, B is calls −41%, weighted input −8%, output −39%. However A at the same point also has weighted input +40% and output +33% (A's per-episode volume grew over run2). It means A is not a same-condition baseline.
 
-## 카드 검증기의 효과 (B 장면 단위)
+## Effect of the card verifier (B scene level)
 
-`run3/b/novel/*.report.json` 의 `scores` 필드(31개 장면)와 호출 라벨로 셌다. run2 의 report 에는 `scores` 가 없다.
+Counted from the `scores` field of `run3/b/novel/*.report.json` (31 scenes) and the call labels. run2's reports have no `scores`.
 
-| 항목 | run2 B | run3 B |
+| Item | run2 B | run3 B |
 |---|---:|---:|
-| 장면별 Score 평균 | (없음) | **0.9976** (최소 0.968, 1.0 인 장면 23/31) |
-| 장면 통과율 (환각 0·누출 0·누락 ≤ 1, 실린 최종본) | 20 / 29 (69%) | **31 / 31 (100%)** |
-| 렌더 시도 통과율 (`b.log` `pass=`) | 24 / 34 (71%) | **37 / 37 (100%)** |
-| 재렌더 수 (같은 장면의 `render-sN-a2` 이상 호출) | **35** | **0** |
-| 렌더 호출 합 | 69 | 37 (수정으로 다시 쓴 장면 6개 포함) |
+| Mean per-scene Score | (none) | **0.9976** (min 0.968, 23/31 scenes at 1.0) |
+| Scene pass rate (0 hallucinations, 0 leaks, missing ≤ 1, shipped final) | 20 / 29 (69%) | **31 / 31 (100%)** |
+| Render attempt pass rate (`pass=` in `b.log`) | 24 / 34 (71%) | **37 / 37 (100%)** |
+| Re-render count (calls of `render-sN-a2` or above for the same scene) | **35** | **0** |
+| Total render calls | 69 | 37 (including 6 scenes rewritten by revisions) |
 
-- **주의: 두 검증기는 같은 시험이 아니다.** 위 통과율과 재렌더 수의 run2 → run3 변화는 상당 부분 검증기 정의가 바뀐 결과이지, 산문이 나아진 증거가 아니다. 카드 검증기는 환각으로 장면을 떨어뜨릴 수 없다(`internal/render/card.go` 의 `Hallucinated` 는 항상 비어 있고 G2 는 경고만 한다). 그래서 run3 의 "환각 0·누출 0·누락 ≤ 1" 은 누락·사실 종류·누출만 본 값이고, run2 의 같은 문구는 환각도 본 값이다. 카드 검증기의 검증(변이 탐지, `examples/corpus-ab` scorecard)도 누락·사실 종류·누출만 다룬다. 통과율 100%, 재렌더 0 을 산문 품질이나 환각 감소로 읽으면 안 된다.
-- run2 의 재렌더 수는 `run2/b/calls.jsonl` 에서 라벨 `render-sN-aK` (K ≥ 2) 를 센 값이다. run3 의 렌더 호출 37회는 모두 `-a1` 이고, 장면 31개에 6개(수정 때 다시 쓴 s2~s5 등)가 더해진 것이다. 수정 재작성은 `a1` 부터 다시 시작하므로 이 정의에서 재렌더가 아니다run2 의 35 는 상한이 아니라 정확한 값이다. 수정 재작성은 `a1` 부터 다시 시작하므로, 35 중 18 은 수정(revise) 단계 안에서, 17 은 에피소드 단계 안에서 일어났다).
-- **카드 채점 호출은 렌더 37회에 44회다.** 2단 재질문 7회(s9, s12, s14, s18, s19, s23, s24)가 더해진 값이다(`run3/b/calls.jsonl` 의 `extract-sN-a1` 라벨 중 수정 재작성이 아닌 장면 중 두 번 나온 것). 수정으로 다시 쓴 s2~s7 은 장면마다 렌더와 채점이 두 번씩 있어 위 7회와 별개다.
-- 렌더 호출당 출력은 haiku effort low 에서 3,252 토큰(37회 120,333)이다. run2 는 3,819 토큰(69회 263,540)이다. 호출당 출력은 15% 줄어든 데 그쳤다. 렌더 출력 총량이 55% 준 것은 거의 호출 수가 줄어서다. run2 의 "다음 플랜 후보" 가 기대한 회당 약 1,600 에는 못 미쳤다.
-- **`scores.Length` 는 31장면 모두 0 이다.** 평균 Score 가 0.9976 으로 거의 만점인 것은 Coverage 1.0 · Kind 0.992 · Tone 0.994 가 거의 만점이기 때문이다. 이 Score 가 사람이 읽는 품질을 재는지는 확인하지 않았다. 통과율 100% 도 연속성 오류 감소로 이어지지 않았다(아래 판정 (a)).
-- 검증을 통과해도 장면 사이의 연속성 오류는 걸러지지 않았다. B 의 확정 오류 9건은 IR 3 / 산문 5 / 파이프라인 1 / 판정 0 이다. 산문 5건은 장면을 넘나드는 소품·장소·앎의 표류이고(예: 8화에서 연 상자를 11화에서 모르는 상자로 씀) 장면별 검사는 이를 보지 못한다. 파이프라인 1건(B11, 미회수 투표)은 이야기 실패가 아니라 파이프라인 절단이다(아래 "B 가 판정받은 분량").
+- **Note: the two verifiers are not the same test.** The run2 → run3 change in pass rate and re-render count is in large part the result of the verifier definition changing, not evidence that the prose got better. The card verifier cannot fail a scene for hallucination (`Hallucinated` in `internal/render/card.go` is always empty and G2 is only a warning). So run3's "0 hallucinations, 0 leaks, missing ≤ 1" is a value that looked only at omissions, fact kinds, and leaks, while run2's same phrase also looked at hallucinations. The card verifier's own validation (mutation detection, `examples/corpus-ab` scorecard) also covers only omissions, fact kinds, and leaks. A 100% pass rate and 0 re-renders must not be read as prose quality or a hallucination reduction.
+- run2's re-render count is the count of the label `render-sN-aK` (K ≥ 2) in `run2/b/calls.jsonl`. run3's 37 render calls are all `-a1`, and are the 31 scenes plus 6 (s2–s5 etc. rewritten at revisions). A revision rewrite restarts from `a1`, so it is not a re-render by this definition. run2's 35 is an exact value, not a cap. (Of the 35, 18 happened inside the revise stage and 17 inside the episode stage.)
+- **The card grading calls are 44 for the 37 renders.** It is the value with 7 stage-2 re-asks added (s9, s12, s14, s18, s19, s23, s24) (among the `extract-sN-a1` labels in `run3/b/calls.jsonl`, those that appear twice for scenes not rewritten by revisions). s2–s7, rewritten by revisions, have a render and a grading twice per scene, separate from the 7 above.
+- Output per render call at haiku effort low is 3,252 tokens (120,333 over 37 calls). run2 was 3,819 tokens (263,540 over 69 calls). Output per call fell only 15%. The 55% drop in total render output is almost entirely from the lower call count. It fell short of the about 1,600 per call that run2's "next plan candidate" expected.
+- **`scores.Length` is 0 for all 31 scenes.** The mean Score of 0.9976 is nearly perfect because Coverage 1.0, Kind 0.992, and Tone 0.994 are nearly perfect. We did not confirm whether this Score measures the quality a person reads. The 100% pass rate also did not lead to a reduction in continuity errors (verdict (a) below).
+- Even when verification passed, continuity errors between scenes were not filtered. B's 9 confirmed errors are IR 3 / prose 5 / pipeline 1 / judge 0. The 5 prose ones are drift of props, places, and knowledge across scenes (for example, using the box opened in episode 8 as an unknown box in episode 11), which per-scene checks cannot see. The 1 pipeline one (B11, the unpaid vote) is not a story failure but a pipeline cutoff (see "The portion of B that was judged" below).
 
-## 가격 조건식 (run2 와 같은 가정)
+## Price condition formula (the same assumptions as run2)
 
 ```
 A = 563,611 + 5 × 228,143                                   = 1,704,326
-B = (562,959 + 5 × 124,618)                    opus 몫        = 1,186,049
-  + s × (133,451 + 5 × 20,796)                 sonnet 추출    = s × 237,431
-  + h × (95,910 + 5 × 120,333)                 haiku 렌더     = h × 697,575
+B = (562,959 + 5 × 124,618)                    opus share     = 1,186,049
+  + s × (133,451 + 5 × 20,796)                 sonnet extract = s × 237,431
+  + h × (95,910 + 5 × 120,333)                 haiku render   = h × 697,575
 B ≤ A  ⇔  237,431·s + 697,575·h ≤ 518,277
 ```
 
-- s = 0.6, h = 0.2 에서 B = 1,186,049 + 142,459 + 139,515 = **1,468,023**, A 의 **0.86배**다. run2(10화, 같은 가정) 는 1.12배였다.
-- **B 는 s32~s35 를 렌더하지 않았다**(아래 "B 가 판정받은 분량"). run3 호출 평균(렌더 37회 18,853, 채점 44회 5,396; 가중 입력 + 출력 × 5)으로 4장면을 렌더·채점하면 0.2 × 18,853 × 4 + 0.6 × 5,396 × 4 × (44/37) ≈ **+30.5k(약 31k)** 다. B ≈ 1,498,500 이고 A 의 약 **0.88배**다. 판정(충족)은 그대로다. 추정이다.
-- 추출이 공짜(s = 0)면 h ≤ 0.74, s = h 라면 둘 다 0.55 이하여야 B ≤ A 다.
-- B 의 opus 몫만 A 의 70% 다. 비율이 내려간 이유의 상당 부분은 A 의 비용이 12화 분량으로 커진 것(1,145,922 → 1,704,326, +49%)이고, B 의 절대 비용은 1,284,036 → 1,468,023(+14%)에 그쳤다. 그러나 화 수가 다르므로 이 절대 비교는 대략적이다.
+- At s = 0.6, h = 0.2, B = 1,186,049 + 142,459 + 139,515 = **1,468,023**, **0.86×** A. run2 (episode 10, the same assumptions) was 1.12×.
+- **B did not render s32–s35** (see "The portion of B that was judged" below). Rendering and grading the 4 scenes with run3's call averages (render 37 calls 18,853, grading 44 calls 5,396; weighted input + output × 5) gives 0.2 × 18,853 × 4 + 0.6 × 5,396 × 4 × (44/37) ≈ **+30.5k (about 31k)**. B ≈ 1,498,500, about **0.88×** A. The verdict (met) is unchanged. It is an estimate.
+- If extraction is free (s = 0), h ≤ 0.74; if s = h, both must be 0.55 or lower for B ≤ A.
+- B's opus share alone is 70% of A. A substantial part of why the ratio went down is that A's cost grew to 12 episodes' worth (1,145,922 → 1,704,326, +49%), and B's absolute cost rose only from 1,284,036 to 1,468,023 (+14%). But since the episode counts differ, this absolute comparison is rough.
 
-## 성공 기준 판정 (run3)
+## Success criteria verdict (run3)
 
-| 기준 | 판정 | 근거 |
+| Criterion | Verdict | Basis |
 |---|---|---|
-| (a) B 누적 오류 < A | **미충족** (B11 포함 여부와 무관) | B11 포함: 확정 B 9 > A 8, 경계 포함 B 9~11 > A 8~9, 1만 자당 B 2.32 > A 1.71 (경계 포함 2.84 > 1.92). **B11 제외(이야기 오류 8 + 파이프라인 절단 1):** 확정 B 8 = A 8(동률, B < A 아님), 1만 자당 B 2.07 > A 1.71 (경계 포함 B 8~10 → 2.58 > 1.92). run2 에서는 B 3 < A 8 이었다. A 는 8 로 같고 B 가 3 → 9 로 늘었다. B 본문이 12화로 늘어(29,896 → 38,733자) 후반 화(9~11화)의 같은 장면 반복·되돌림 오류가 생겼다. n=1 이므로 run2 의 B < A 도 이번의 B > A 도 어느 쪽이든 단정하지 않는다. |
-| (b) B 총비용(가중) ≤ A | **가정 가중치에서 충족** (캐시 가중 입력 합으로는 미충족) | 가중 입력은 B 792,320 대 A 563,611(1.41배), 출력은 B 265,747 대 A 228,143(1.16배)이다. s = 0.6, h = 0.2, 출력 = 입력 × 5 로 B 1,468,023 ≤ A 1,704,326 (0.86배; s32~s35 렌더분 약 +31k 를 더하면 약 0.88배). 일반 조건은 `237,431·s + 697,575·h ≤ 518,277` 이다. 단가는 가정이며 실제 가격표가 아니다. |
-| (c) 수정 잔여 불일치 B < A | **미충족** | 확정 B 2 (수정 1 에서 1, 수정 2 에서 1) 대 A 1 (수정 2 에서 1). 경계를 넣으면 B 2~3 이다. 수정 1회당 호출도 B 가 많다(15.5 대 8). |
+| (a) B cumulative errors < A | **Not met** (regardless of whether B11 is included) | With B11: confirmed B 9 > A 8, including borderline B 9~11 > A 8~9, per 10,000 characters B 2.32 > A 1.71 (including borderline 2.84 > 1.92). **Without B11 (story errors 8 + pipeline cutoff 1):** confirmed B 8 = A 8 (a tie, not B < A), per 10,000 characters B 2.07 > A 1.71 (including borderline B 8~10 → 2.58 > 1.92). In run2 it was B 3 < A 8. A stayed at 8 and B rose from 3 to 9. B's body grew to 12 episodes (29,896 → 38,733 characters), and same-scene repetition/reversion errors arose in the late episodes (9–11). Because n=1, we assert neither run2's B < A nor this time's B > A. |
+| (b) B total cost (weighted) ≤ A | **Met at the assumed weights (not met by the cache-weighted input sum)** | Weighted input is B 792,320 vs A 563,611 (1.41×), output B 265,747 vs A 228,143 (1.16×). With s = 0.6, h = 0.2, output = input × 5, B 1,468,023 ≤ A 1,704,326 (0.86×; adding about +31k for the s32–s35 renders, about 0.88×). The general condition is `237,431·s + 697,575·h ≤ 518,277`. The unit prices are assumptions and not an actual price list. |
+| (c) Revision residual inconsistencies B < A | **Not met** | Confirmed B 2 (1 in revision 1, 1 in revision 2) vs A 1 (1 in revision 2). Including borderline, B is 2~3. Calls per revision are also higher for B (15.5 vs 8). |
 
-**결론:** 이 표본에서 카드 검증기 + effort low 는 B 의 재렌더를 35 → 0 으로 없애고 장면 검증 통과율을 69% → 100% 로 올렸으며, 호출 수와 출력 토큰을 크게 줄였다. 그러나 장면 사이 연속성 오류는 줄지 않았다(오히려 B 9 > A 8). 비용은 가정 가중치에서 A 의 0.86배(s32~s35 미렌더분을 더하면 약 0.88배)가 됐지만 A 의 분량이 함께 커졌고, 가중치는 가정이다. 지금의 Diegesis 가 직접 쓰기를 이긴다고 말할 근거는 여전히 없다.
+**Conclusion:** In this sample, the card verifier + effort low removed B's re-renders from 35 to 0 and raised the scene verification pass rate from 69% to 100%, and cut calls and output tokens substantially. But continuity errors between scenes did not drop (B 9 > A 8, if anything). Cost came to 0.86× A at the assumed weights (about 0.88× adding the unrendered s32–s35), but A's volume grew with it, and the weights are assumptions. There is still no basis to say today's Diegesis beats direct writing.
 
-## 한계 (run3)
+## Limitations (run3)
 
-- n=1: 아이템 1개, 실행 1회, 판정 1회다. run2 에서 A 의 확정 오류가 run1 4 → run2 8 로 두 배가 된 것처럼, 판정 한 번의 변동이 크다. 이번에 A 는 8 로 그대로였다.
-- run2 와 run3 의 화 수가 다르다(10 대 12). A 의 분량도 달랐다(37,712 → 46,858자). A 도 같은 조건이 아니다. 오류·비용의 run2 대비 변화는 카드 검증기·effort 만의 효과로 읽을 수 없다.
-- 판정자가 블라인드 매핑이 달라졌다(X = A, Y = B). 판정자 지적 중 일부는 내가 경계로 낮췄다(A 1, B 2). 확정 판단은 한 사람의 대조다.
-- **B 는 A 보다 적은 이야기로 판정받았다.** 판정이 본 B "12화"는 코드의 11화(s30·s31)다. 하네스가 `dieg continue` 에 준 `--scenes 2` 상한(`tools/serial/b.go`)이 렌더를 단계당 2장면으로 막아 밀린 장면(backlog)이 단계마다 쌓였고(`b.log` 마지막 `backlog=3`), 코드로 짠 s32~s35 는 렌더되지 않았다. 투표와 `payoff show_at_vote` 를 담은 s35 가 여기에 들어 있다. B11("12화에서 투표가 안 닫힘")은 그래서 이야기 실패가 아니라 파이프라인 절단이다. B 의 이야기 오류는 확정 8 + 파이프라인 1 이고, (a) 는 두 방식 모두 미충족이다. run2 도 같은 상한으로 s28·s29 가 렌더되지 않았다(backlog 2). `summary.json` 의 `b_missing_scenes: {}` 가 이를 가렸다(에피소드별 장면 수만 셈). 하네스에 `b_coded_unrendered_scenes` 를 더했고, `run3/summary.json` 에는 파일에서 계산한 값 `["s32","s33","s34","s35"]` 을 호출 없이 덧붙였다. `--scenes` 상한은 바꾸지 않았고 다시 돌리지 않았다.
-- `scores.Length` 가 전부 0 이라 Score 가 길이를 반영하는지 알 수 없다.
+- n=1: one item, one run, one judgment. As with A's confirmed errors doubling from run1's 4 to run2's 8, the variation of a single judgment is large. This time A stayed at 8.
+- run2 and run3 differ in episode count (10 vs 12). A's volume also differed (37,712 → 46,858 characters). A is not under the same conditions either. The changes in errors and cost relative to run2 cannot be read as the effect of the card verifier and effort alone.
+- The judge's blind mapping changed (X = A, Y = B). Some of the judge's findings I downgraded to borderline (A 1, B 2). The confirmation is one person's cross-check.
+- **B was judged on less story than A.** The B "episode 12" the judge saw is the code's episode 11 (s30, s31). The `--scenes 2` cap the harness gave `dieg continue` (`tools/serial/b.go`) blocked rendering to 2 scenes per stage, so backlog scenes accumulated at each stage (the last `backlog=3` in `b.log`), and s32–s35, which were coded, were not rendered. s35, which holds the vote and `payoff show_at_vote`, is among them. B11 ("the vote is not closed in episode 12") is therefore not a story failure but a pipeline cutoff. B's story errors are confirmed 8 + pipeline 1, and (a) is not met under either way of counting. run2 too had s28 and s29 not rendered with the same cap (backlog 2). `b_missing_scenes: {}` in `summary.json` masked this (it counts only scenes per episode). We added `b_coded_unrendered_scenes` to the harness, and appended to `run3/summary.json`, with no calls, the value computed from the files, `["s32","s33","s34","s35"]`. The `--scenes` cap was not changed and we did not re-run.
+- Because `scores.Length` is all 0, we cannot know whether Score reflects length.
 
-## 실행 기록 (run3)
+## Run record (run3)
 
-- 브랜치 `plan6`. 시작 HEAD `c6fd4b7`, 하네스 변경 커밋 한 건(`tools/serial/b.go` `withEffort`, 테스트 `TestBRenderEffortLow`)이 실행 전에 들어갔다.
-- noclaude 셰임으로 `go vet ./...`, `go test -count=1 ./...` 를 통과시켰다. `-dry` 로 B 의 모든 dieg 명령줄에 `--render-effort low` 가 붙는 것을 확인했다. 이 단계의 실제 호출은 0이다.
-- 본 실행은 프로세스 하나(`cmd.exe` 리디렉션, `-budget 220`)다. 기록 호출은 plan 3 + A 41 + B 101 + 판정 1 = **146 ≤ 220** 이고 버려진 시도는 없다. `stopped_by` 는 비어 있다.
-- 500줄을 넘는 산출 3개(`run3/a/prompts/rev2-sum.txt`, `run3/b/novel.md`, `run3/judge/prompt1.txt`)도 실행 데이터로 커밋했다.
+- Branch `plan6`. Starting HEAD `c6fd4b7`; one harness change commit (`tools/serial/b.go` `withEffort`, test `TestBRenderEffortLow`) went in before the run.
+- With the noclaude shim, `go vet ./...` and `go test -count=1 ./...` passed. With `-dry` we confirmed `--render-effort low` is attached to all of B's dieg command lines. The actual calls in this step are 0.
+- The main run was one process (`cmd.exe` redirect, `-budget 220`). Recorded calls are plan 3 + A 41 + B 101 + judgment 1 = **146 ≤ 220**, and there were no discarded attempts. `stopped_by` is empty.
+- We also committed 3 outputs over 500 lines (`run3/a/prompts/rev2-sum.txt`, `run3/b/novel.md`, `run3/judge/prompt1.txt`) as run data.
 
-재현:
+Reproduction:
 
 ```
 export PATH=<go-install>/bin:$PATH

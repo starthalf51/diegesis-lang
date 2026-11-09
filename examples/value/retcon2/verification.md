@@ -1,41 +1,41 @@
-# 판정 항목 확인 (단일 검증자)
+# Judge item check (single verifier)
 
-판정자(sonnet 1회/팔·재설정)가 낸 항목을 내가 원문(`rN/a/eps/`, 없으면 `examples/serial/run3/a/eps/`; `rN/b/novel/`)과 하나씩 대조했다.
-기준: **확정** = 서로 부딪히는 두 곳을 원문에서 짚을 수 있고 해석으로 설명되지 않음 / **경계** = 설명 가능(짐작·회상·인물의 거짓말·직책으로 신원이 정해짐)이라 세지 않음 / **기각** = 재설정과 무관한 옛 문제(원본 run3 에 이미 있음)이거나 모순이 아님.
-이어서 판정자가 놓쳤는지 보려고 키워드 감사(재설정의 옛 설정 표현을 최종 텍스트 1~11화·s1~s31 에서 grep)를 했다.
+I checked the items from the judge (sonnet, once per arm and reset) one by one against the source text (`rN/a/eps/`, or `examples/serial/run3/a/eps/` if absent; `rN/b/novel/`).
+Criteria: **confirmed** = the two clashing places can be pointed to in the source and no interpretation explains it / **borderline** = explainable (a guess, a recollection, a character's lie, identity fixed by job title), so not counted / **rejected** = an old problem unrelated to the reset (already in the original run3) or not a contradiction.
+Then, to see whether the judge missed anything, I did a keyword audit (grepping the reset's old-setting expressions in the final text, episodes 1–11 and s1–s31).
 
-| 재설정 | 팔 | 판정자 항목 | 내 분류 | 근거 |
+| Reset | Arm | Judge item | My classification | Basis |
 |---|---|---|---|---|
-| R1 | A | residual 1 (11화 장부 요약 "몸싸움 중 렌즈 하단 파손") | **확정 잔여 1** | 11화 장부 줄이 옛 설정 그대로("도경태 … 근무자가 저지함. 몸싸움 중 렌즈 하단 파손"); 10화는 영호가 혼자 깼다고 고침. A 의 선택 호출이 10화만 고르고 11화를 놓침 |
-| R1 | A | introduced 1 (4화 문 유리창 멀쩡 vs 11화 "깨진 문 유리 자리 판자") | 기각 | 원본 run3 11화에 같은 문장이 이미 있고 4화 "작은 유리창"도 원본에 있음. 재설정과 무관한 옛 연속성 문제 |
-| R1 | B | residual 0 | 감사: 잔여 0 | s1~s31 에서 렌즈·몸싸움 근처에 경태가 깼다는 표현 없음. s28 은 "경태가 그러더군. 렌즈를 깨뜨린 게 등대지기 나니"(경태의 주장; 새 설정과 합치) |
-| R1 | B | introduced 3 (s21·s24·s27 "장부에 적힌 대로 백영호가 깨뜨린") | **경계 3 (세지 않음)** | 같은 문제 하나: 옛 산문의 "도경태가 … 짐작되었다"가 "장부에 적힌 대로 백영호가 깨뜨린"으로 패치되었다. s21 장부 쪽은 근무자 이름이 번져 읽기 어렵다고 쓰고 렌즈 파손 기록은 보이지 않는다. 짐작 문장이고 근무자=영호는 직책으로 알 수 있어 모순으로 단정하지 못함 |
-| R2 | A | residual 2 (9화 수아 "동쪽 벼랑 밑예 … 돌 틈", 서윤 "동쪽 벼랑 밑에서 아이가 주웠어요") | **확정 잔여 2** | 3화·4화는 방파제 끝으로 고쳐졌고 9화는 안 고쳐졌다(A 의 선택 호출이 4화만 골라 3화·4화를 쓰고 9화를 놓침). 같은 9화의 "렌즈 한쪽이 … 벼랑 밑까지 갔다"도 같은 계열이라 세지 않았다 |
-| R2 | B | residual 1 (s11 "정수아가 바위틈에서 주운 유리 조각은 바로 이 귀퉁이에서") | **확정 잔여 1** | s6·s8·s9·s21·s24·s27 은 모두 방파제 끝이고 s11 만 옛 "바위틈". 패치가 s11 의 이 문장을 놓침 |
-| R2 | B | (감사) s24 장면 서두 "등대 아래 바위틈 … 수아가 손수건을 펼쳐 들고" | 경계 (세지 않음) | 장면의 장소 설정(조사 장소)이고 대사는 방파제 끝으로 고쳐짐. 판정자도 안 짚음 |
-| R3 | A | i1 7화 "그 밤에 경태 저거 섬에 있었다"(4화 할머니는 이튿날 아침 선착장만 말함) | 경계 | 회상에서의 확대. 할머니가 더 말했을 수 있음 |
-| R3 | A | i2 4화 마루 끝에서 낮에 들은 말 vs 7화 "토요일 저녁 … 부엌으로 끌고 가" | **확정 새 모순 1 (사소)** | 4화는 마루 끝, 7화는 부엌. 장소가 어긋남(7화가 4화를 고쳐 쓴 흔적) |
-| R3 | A | i3 7화 '확인 불필요' 위치 | 기각 | 원본 7화에 같은 문장이 이미 있음 |
-| R3 | A | residual 0 | 감사: 잔여 0 | 5~11화에서 서윤이 알리바이를 믿는 서술 없음(8화·9화는 떠보는 질문) |
-| R3 | B | residual 0, introduced 0 | 감사: 잔여 0 | s16·s19 는 경태·하은의 말, s20·s22 의 서윤 질문은 거짓을 아는 사람의 떠보기로 읽힘(경계, 세지 않음) |
+| R1 | A | residual 1 (episode 11 ledger summary "몸싸움 중 렌즈 하단 파손", "lower part of the lens broken during the scuffle") | **confirmed residual 1** | The episode 11 ledger line is the old setting as is ("도경태 … 근무자가 저지함. 몸싸움 중 렌즈 하단 파손", "Do Gyeong-tae … the attendant stops him. Lower part of the lens broken during the scuffle"); episode 10 was fixed to say Yeong-ho broke it alone. A's pick call chose only episode 10 and missed episode 11 |
+| R1 | A | introduced 1 (episode 4 door window intact vs episode 11 "board over the spot of the broken door glass") | rejected | The same sentence is already in the original run3 episode 11, and the "small window" in episode 4 is in the original too. An old continuity problem unrelated to the reset |
+| R1 | B | residual 0 | audit: residual 0 | In s1–s31, near the lens and scuffle, there is no expression that Gyeong-tae broke it. s28 is "경태가 그러더군. 렌즈를 깨뜨린 게 등대지기 나니" ("Gyeong-tae said so. That it was me, the lighthouse keeper, who broke the lens") (Gyeong-tae's claim; consistent with the new setting) |
+| R1 | B | introduced 3 (s21, s24, s27 "장부에 적힌 대로 백영호가 깨뜨린", "Baek Yeong-ho, who broke it as written in the ledger") | **borderline 3 (not counted)** | One problem: the old prose's "도경태가 … 짐작되었다" ("it was presumed that Do Gyeong-tae …") was patched to "장부에 적힌 대로 백영호가 깨뜨린". The s21 ledger page writes that the attendant's name is smeared and hard to read, and no record of the lens damage is visible. It is a guess sentence and attendant = Yeong-ho can be known from the job title, so it cannot be asserted as a contradiction |
+| R2 | A | residual 2 (episode 9 Su-a "동쪽 벼랑 밑예 … 돌 틈", "under the east cliff … a gap between rocks"; Seo-yun "동쪽 벼랑 밑에서 아이가 주웠어요", "A child found it under the east cliff") | **confirmed residual 2** | Episodes 3 and 4 were fixed to the end of the breakwater and episode 9 was not (A's pick call chose only episode 4, wrote episodes 3 and 4, and missed episode 9). The "렌즈 한쪽이 … 벼랑 밑까지 갔다" ("one side of the lens … went all the way under the cliff") in the same episode 9 is of the same family, so it was not counted |
+| R2 | B | residual 1 (s11 "정수아가 바위틈에서 주운 유리 조각은 바로 이 귀퉁이에서", "the glass shard Jeong Su-a picked up from the rock crevice came from exactly this corner") | **confirmed residual 1** | s6, s8, s9, s21, s24, s27 all say the end of the breakwater, and only s11 has the old "rock crevice". The patch missed this sentence in s11 |
+| R2 | B | (audit) s24 scene opening "등대 아래 바위틈 … 수아가 손수건을 펼쳐 들고" ("the rock crevice below the lighthouse … Su-a spreading out a handkerchief") | borderline (not counted) | It is the scene's place setting (the survey location), and the dialogue was fixed to the end of the breakwater. The judge did not point it out either |
+| R3 | A | i1 episode 7 "그 밤에 경태 저거 섬에 있었다" ("that Gyeong-tae was on the island that night") (the grandmother in episode 4 mentions only the pier the next morning) | borderline | An expansion in recollection. The grandmother may have said more |
+| R3 | A | i2 episode 4 words heard in the daytime at the end of the veranda vs episode 7 "토요일 저녁 … 부엌으로 끌고 가" ("Saturday evening … dragged her into the kitchen") | **confirmed new contradiction 1 (minor)** | Episode 4 is the end of the veranda, episode 7 the kitchen. The place clashes (a trace of episode 7 having been rewritten from episode 4) |
+| R3 | A | i3 episode 7 'no confirmation needed' location | rejected | The same sentence is already in the original episode 7 |
+| R3 | A | residual 0 | audit: residual 0 | In episodes 5–11 there is no narration in which Seo-yun believes the alibi (episodes 8 and 9 are probing questions) |
+| R3 | B | residual 0, introduced 0 | audit: residual 0 | s16 and s19 are Gyeong-tae's and Ha-eun's words, and Seo-yun's questions in s20 and s22 read as probing by someone who knows the lie (borderline, not counted) |
 
-## 확정 합계
+## Confirmed totals
 
-| | R1 | R2 | R3 | 합 |
+| | R1 | R2 | R3 | Total |
 |---|---|---|---|---|
-| A 잔여 / 새 모순 | 1 / 0 | 2 / 0 | 0 / 1 | **3 / 1** |
-| B 잔여 / 새 모순 | 0 / 0 | 1 / 0 | 0 / 0 | **1 / 0** |
-| 경계 A / B (세지 않음) | 1 / 3 | 0 / 1 | 1 / 2 | 2 / 6 |
+| A residual / new contradictions | 1 / 0 | 2 / 0 | 0 / 1 | **3 / 1** |
+| B residual / new contradictions | 0 / 0 | 1 / 0 | 0 / 0 | **1 / 0** |
+| Borderline A / B (not counted) | 1 / 3 | 0 / 1 | 1 / 2 | 2 / 6 |
 
-판정 인용 자동 대조(`rN/judge/*.quotes.md`)는 모든 인용이 원문에 글자 그대로 있었다(합 22/22; B R3 은 항목 0).
+In the automatic cross-check of judge quotations (`rN/judge/*.quotes.md`), every quotation was present verbatim in the source (22/22 in total; B R3 had 0 items).
 
-# 정정과 재실행 확인
+# Corrections and re-run check
 
-- **정정:** 첫 실행 B R1 의 s21 은 확정 새 모순으로 올린다(리뷰어 대조; 근무자 이름이 번져 읽을 수 없다는 문장과 "장부에 적힌 대로 백영호가"가 같은 장면에서 부딪힘). 첫 실행 합: B 2 대 A 4. s24·s27 은 같은 문제의 반복(자리별로 세면 B 4).
-- **재실행(`rerun/`) B 확인:**
+- **Correction:** B's R1 s21 in the first run is raised to a confirmed new contradiction (reviewer cross-check; the sentence saying the attendant's name is smeared and unreadable and "장부에 적힌 대로 백영호가" ("Baek Yeong-ho, as written in the ledger") clash in the same scene). First-run total: B 2 vs A 4. s24 and s27 are repetitions of the same problem (counted per location, B would be 4).
+- **Re-run (`rerun/`) B check:**
 
-| 재설정 | 판정자 | 내 확인 |
+| Reset | Judge | My check |
 |---|---|---|
-| R1 | residual 0 / introduced 0 | 감사(렌즈·몸싸움 근처 경태/장부 표현)에서 s25 영호 자백·s30 장부 파편만 나옴, 잔여 0. 첫 실행의 "장부에 적힌 대로" 문장 없음 |
-| R2 | 0 / 0 | 감사: 바위틈은 s24 장소 서두 두 군데뿐(첫 실행과 같은 경계, 세지 않음). 잔여 0 (s11 고쳐짐) |
-| R3 | residual 0 / introduced 1 (s11b "일층 계단 입구" vs "계단을 내려갔다", s9 과의 위치) | 경계. s11b 는 novel 순서상 s11 뒤라 판정자의 "이어지는 s9" 전제가 틀렸다. 감사: 4화 이후 서윤이 알리바이를 믿는 서술 없음(s11b 는 재설정 장면, s20·s22 는 떠보는 질문). 새 모순 0, 경계 1 |
+| R1 | residual 0 / introduced 0 | In the audit (Gyeong-tae/ledger expressions near the lens and scuffle), only the Yeong-ho confession in s25 and the ledger fragment in s30 turn up, residual 0. The first run's "as written in the ledger" sentence is absent |
+| R2 | 0 / 0 | Audit: "rock crevice" is only in the two scene-opening place lines of s24 (the same borderline as in the first run, not counted). Residual 0 (s11 fixed) |
+| R3 | residual 0 / introduced 1 (s11b "일층 계단 입구" ("first-floor stair entrance") vs "계단을 내려갔다" ("went down the stairs"), location relative to s9) | Borderline. s11b comes after s11 in novel order, so the judge's premise of "the following s9" is wrong. Audit: after episode 4 there is no narration in which Seo-yun believes the alibi (s11b is the reset's scene, and s20 and s22 are probing questions). New contradictions 0, borderline 1 |

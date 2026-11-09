@@ -1,121 +1,121 @@
-# 코퍼스 장면 A/B — 단일+haiku vs 계층형+haiku (검증기 수정 후, v0.5.0)
+# Corpus scene A/B — single+haiku vs layered+haiku (after the verifier fix, v0.5.0)
 
-질문: 검증기 잡음 수정(v0.5.0) 뒤, render-check 코퍼스 장면에서 현재 기본(단일 검증 렌더러, haiku/medium 렌더, sonnet/low 재추출, 재시도 2)이 통과하는가. 실패하면 계층형+haiku 가 고치는가.
+Question: after the verifier noise fix (v0.5.0), does the current default (single verified renderer, haiku/medium render, sonnet/low re-extraction, 2 retries) pass on the render-check corpus scenes? If it fails, does layered+haiku fix it?
 
-- 하네스는 `tools/corpus-ab` (`go run ./tools/corpus-ab -mode single|layered -budget N -out DIR [-pairs ...]`). renderer-ab 는 장면 4개가 코드에 박혀 있어 건드리지 않고 형제 도구로 만들었다. 호출 상한은 `counter` 로 강제한다.
-- "장면 16개" 는 **장면 4개 × 백엔드 4개**(ko-haera·ko-hapsho·ko-gojeon·en-doyle)다. expect.yaml 에 render_scene 이 있는 코퍼스는 bible·chibi·macbeth·odyssey 4개뿐이다. 아래에서 한 쌍(장면×백엔드)을 한 실행이라 부른다. 같은 장면의 백엔드끼리는 독립 표본이 아니다.
-- 통과 기준은 `render.Passed`: 환각 0, 누설 0, missing ≤ 1, 추출 오류 없음. (render-check 의 Jaccard·어투 조건은 안 쓴다.)
-- 산출물: `p1/`(단일 16쌍, JSON·산문·calls.jsonl), `p2/`(계층형), `p1.log`·`p2.log`. 프롬프트·검증기는 바꾸지 않았다.
+- The harness is `tools/corpus-ab` (`go run ./tools/corpus-ab -mode single|layered -budget N -out DIR [-pairs ...]`). renderer-ab has its 4 scenes hard-coded, so we left it alone and built a sibling tool. The call cap is enforced by `counter`.
+- "16 scenes" means **4 scenes × 4 backends** (ko-haera, ko-hapsho, ko-gojeon, en-doyle). Only 4 corpora have a render_scene in expect.yaml: bible, chibi, macbeth, odyssey. Below, one pair (scene × backend) is called one run. Backends of the same scene are not independent samples.
+- The pass criterion is `render.Passed`: 0 hallucinations, 0 leaks, missing ≤ 1, no extraction errors. (render-check's Jaccard and register conditions are not used.)
+- Artifacts: `p1/` (single, 16 pairs, JSON, prose, calls.jsonl), `p2/` (layered), `p1.log`, `p2.log`. Prompts and the verifier were not changed.
 
-## 호출 수
+## Call counts
 
-| 단계 | 상한 | 사용 |
+| Phase | Cap | Used |
 |---|---|---|
-| Phase 1 단일+haiku, 16쌍 | 100 | **84** |
-| Phase 2 계층형+haiku | 60 | **58** |
+| Phase 1 single+haiku, 16 pairs | 100 | **84** |
+| Phase 2 layered+haiku | 60 | **58** |
 
-호출 오류 0건. 모델 호출은 구독 `claude` CLI 로만 했다.
+0 call errors. Model calls were made only through the subscription `claude` CLI.
 
-## 장면
+## Scenes
 
-| 장면 | 행위 | 비트 |
+| Scene | Acts | Beats |
 |---|---|---|
 | bible/mark_denial | 10 | 4 |
 | chibi/45.88 | 24 | 10 |
 | macbeth/1.3 | 26 | 11 |
 | odyssey/19.1 | 29 | 10 |
 
-## Phase 1 — 단일+haiku
+## Phase 1 — single+haiku
 
-**통과 5/16 (31%)**. 실패 11건.
+**Passed 5/16 (31%)**. 11 failures.
 
-| 장면 (비트) | ko-haera | ko-hapsho | ko-gojeon | en-doyle | 장면 통과 |
+| Scene (beats) | ko-haera | ko-hapsho | ko-gojeon | en-doyle | Scene passes |
 |---|---|---|---|---|---|
-| bible/mark_denial (4) | ✓ (4호출) | ✗ | ✗ | ✗ | 1/4 |
+| bible/mark_denial (4) | ✓ (4 calls) | ✗ | ✗ | ✗ | 1/4 |
 | chibi/45.88 (10) | ✗ | ✗ | ✗ | ✗ | 0/4 |
 | macbeth/1.3 (11) | ✓ (2) | ✓ (4) | ✓ (2) | ✗ | 3/4 |
 | odyssey/19.1 (10) | ✗ | ✓ (6) | ✗ | ✗ | 1/4 |
 
-실패 사유(missing / 환각 / 누설):
+Failure reasons (missing / hallucinated / leaked):
 
-| 쌍 | 호출 | 글자 | missing | 환각 |
+| Pair | Calls | Chars | missing | hallucinated |
 |---|---|---|---|---|
 | bible en-doyle | 6 | 954 | 1 (`peter\|assert\|not peter_with_jesus`) | extra-act `peter\|assert\|not peter_knows_jesus` |
-| bible gojeon | 6 | 376 | 2 (perceive 누락, assert 누락) | "베드로가 불에서 문간으로 물러난다" + extra-act 2 (사실형 종류 어긋남) |
+| bible gojeon | 6 | 376 | 2 (perceive missing, assert missing) | "베드로가 불에서 문간으로 물러난다" ("Peter withdraws from the fire to the doorway") + 2 extra-acts (fact-form kind mismatch) |
 | bible hapsho | 6 | 455 | 0 | extra-act `peter\|assert\|not peter_knows_jesus` |
-| chibi en-doyle | 6 | 2952 | 3 (`jiang_gan\|read`, `wu_officers\|assert`, `zhou_yu\|assert`) | "장간이 서신을 로브에 숨긴다" |
-| chibi gojeon | 6 | 830 | 2 | "서신을 챙기고 나중에 도망간다" + extra-act `jiang_gan\|assert\|not jiang_gan_envoy` |
-| chibi haera | 6 | 922 | 2 | "장간이 편지를 몰래 소매 속에 감추었다" |
-| chibi hapsho | 6 | 962 | 1 (`jiang_gan\|read`) | "장간이 서신을 챙긴다" |
+| chibi en-doyle | 6 | 2952 | 3 (`jiang_gan\|read`, `wu_officers\|assert`, `zhou_yu\|assert`) | "장간이 서신을 로브에 숨긴다" ("Jiang Gan hides the letter in his robe") |
+| chibi gojeon | 6 | 830 | 2 | "서신을 챙기고 나중에 도망간다" ("takes the letter and flees later") + extra-act `jiang_gan\|assert\|not jiang_gan_envoy` |
+| chibi haera | 6 | 922 | 2 | "장간이 편지를 몰래 소매 속에 감추었다" ("Jiang Gan secretly tucked the letter into his sleeve") |
+| chibi hapsho | 6 | 962 | 1 (`jiang_gan\|read`) | "장간이 서신을 챙긴다" ("Jiang Gan takes the letter") |
 | macbeth en-doyle | 6 | 5884 | 3 (`holds(king,macbeth)` ×2, `holds(thane_of_glamis)`) | – |
 | odyssey en-doyle | 6 | 3301 | 2 | – |
-| odyssey gojeon | 6 | 1315 | 3 | "아테나가 페넬로페의 주의를 돌린다" |
+| odyssey gojeon | 6 | 1315 | 3 | "아테나가 페넬로페의 주의를 돌린다" ("Athena diverts Penelope's attention") |
 | odyssey haera | 6 | 1309 | 2 | – |
 
-누설은 16쌍 모두 0건이다. 통과한 macbeth 3쌍도 `holds(king,macbeth)` 1건이 빠졌다(허용 한도 1).
+Leaks are 0 for all 16 pairs. The 3 macbeth pairs that passed also lacked one `holds(king,macbeth)` (the allowed limit is 1).
 
-### 환각 분류 (IR 대조)
+### Hallucination classification (checked against the IR)
 
-환각 항목 12건을 코퍼스 IR(`corpus/*/…dieg.md`)과 하나씩 맞댔다.
+We matched the 12 hallucination items one by one against the corpus IR (`corpus/*/…dieg.md`).
 
-| 항목 | IR | 판정 |
+| Item | IR | Verdict |
 |---|---|---|
-| chibi en-doyle "로브에 숨긴다" | `jiang_gan does steal forged_letter` | **잡음(신규 유형)** |
-| chibi gojeon "서신을 챙기고 나중에 도망" | `does steal` + `does flee` | **잡음(신규 유형)** |
-| chibi haera "소매 속에 감추었다" | `does steal` | **잡음(신규 유형)** |
-| chibi hapsho "서신을 챙긴다" | `does steal` | **잡음(신규 유형)** |
-| odyssey gojeon "아테나가 주의를 돌린다" | `athena does divert penelope` (19.30) | **잡음(신규 유형)** |
-| bible en-doyle, hapsho extra-act `not peter_knows_jesus` | mark_denial 에 `lies … not peter_knows_jesus` 는 1회(마가 14:71). 산문이 첫 부인(`not peter_with_jesus`)을 "그를 모른다" 로 바꾸거나 한 번 더 말함 | 실제(사실 치환·중복) |
-| bible gojeon "물러난다" | 행위로 쓰인 적 없음("went out on the porch" 는 `sees` 의 인용문에만 있음) | 실제(꾸밈) |
-| bible gojeon extra-act ×2 | perceive→assert, assert→act 로 종류가 바뀜. missing 2건과 쌍 | 실제(사실형 종류) |
-| chibi gojeon extra-act `not jiang_gan_envoy` | IR 의 거짓말은 사실 `not_envoy` 하나 | 실제 또는 중복 진술(확정 못 함) |
+| chibi en-doyle "hides it in his robe" | `jiang_gan does steal forged_letter` | **noise (new type)** |
+| chibi gojeon "takes the letter and flees later" | `does steal` + `does flee` | **noise (new type)** |
+| chibi haera "tucked it into his sleeve" | `does steal` | **noise (new type)** |
+| chibi hapsho "takes the letter" | `does steal` | **noise (new type)** |
+| odyssey gojeon "Athena diverts attention" | `athena does divert penelope` (19.30) | **noise (new type)** |
+| bible en-doyle, hapsho extra-act `not peter_knows_jesus` | mark_denial has `lies … not peter_knows_jesus` only once (Mark 14:71). The prose turned the first denial (`not peter_with_jesus`) into "I don't know him" or said it once more | real (fact substitution / duplication) |
+| bible gojeon "withdraws" | never used as an act ("went out on the porch" appears only in a `sees` quotation) | real (embellishment) |
+| bible gojeon extra-act ×2 | kind changed perceive→assert, assert→act. Paired with the 2 missing | real (fact-form kind) |
+| chibi gojeon extra-act `not jiang_gan_envoy` | the IR's lie is a single fact `not_envoy` | real or duplicate statement (not confirmed) |
 
-- **잡음 5건, 실제 7건.** 잡음은 모두 사실 없는 `does` 를 산문이 다른 동사로 다시 말한 것이다. `authored()` 가 `new_event.Action` 과 IR 행위의 동사를 **문자열 완전 일치**로 비교해서(steal≠hide/pocket, flee≠도망, divert≠돌리다) v0.5.0 수정이 이 경우를 못 거른다. 수정 전 잡음(등퇴장·reach·hide)과 달리 **동의어 동사 불일치**라는 새 유형이다. 검증기는 고치지 않았다.
-- 잡음만 제거한 반사실: chibi hapsho 는 환각 0·missing 1 이라 통과한다. 나머지 4건(chibi 3, odyssey gojeon)은 missing 이 ≥2 라 계속 실패한다. 반사실 통과율 **6/16**. 실제 실패 **10/16**.
-- 실제 실패의 주된 형태는 **긴 장면의 사실 누락**(chibi·odyssey·macbeth en-doyle 의 missing 2~3). 짧은 bible 은 누락이 아니라 사실형 치환·종류 어긋남이다.
+- **5 noise, 7 real.** All the noise is the prose restating a fact-less `does` with a different verb. `authored()` compares `new_event.Action` and the IR act's verb by **exact string match** (steal≠hide/pocket, flee≠도망, divert≠돌리다), so the v0.5.0 fix cannot filter these. Unlike the earlier noise (entrances/exits, reach, hide), this is a new type: **synonym verb mismatch**. We did not fix the verifier.
+- Counterfactual with only the noise removed: chibi hapsho has 0 hallucinations and missing 1, so it passes. The other 4 (chibi 3, odyssey gojeon) have missing ≥2 and still fail. Counterfactual pass rate **6/16**. Real failures **10/16**.
+- The dominant form of real failure is **missing facts in long scenes** (missing 2–3 in chibi, odyssey, macbeth en-doyle). The short bible has fact-form substitution and kind mismatch, not omissions.
 
-### 비트 수별 통과율
+### Pass rate by beat count
 
-| 비트 | 실행 수 | 통과 | 비고 |
+| Beats | Runs | Passed | Note |
 |---|---|---|---|
-| 4 | 4 | 1 (25%) | bible 1장면 |
+| 4 | 4 | 1 (25%) | 1 scene, bible |
 | 10 | 8 | 1 (13%) | chibi, odyssey |
-| 11 | 4 | 3 (75%) | macbeth 1장면 |
+| 11 | 4 | 3 (75%) | 1 scene, macbeth |
 
-비트 수와 통과율은 단조가 아니다. 장면 3~4개가 가른 수치라 장면 고유 성질(예: macbeth 는 누락 1건이 한도 안)이 비트 수 효과보다 크다.
+Beat count and pass rate are not monotonic. The figures are split by 3–4 scenes, so scene-specific properties (e.g. macbeth's one miss falls within the limit) matter more than any beat-count effect.
 
-## Phase 2 — 계층형+haiku (`narrate.RenderLayered`, 비트 재시도 기본)
+## Phase 2 — layered+haiku (`narrate.RenderLayered`, beat retries default)
 
-예산 때문에 2쌍만 돌렸다(긴 장면 우선). chibi haera 와 odyssey haera 는 추정 28회가 남은 예산(27회)을 넘어 **돌리지 못했다**(chibi 는 1회 차이).
+Because of budget we ran only 2 pairs (long scenes first). chibi haera and odyssey haera **could not be run**, since the estimated 28 calls exceeded the remaining budget (27) (chibi by one call).
 
-| 쌍 | 단일 | 계층형 | 호출(단일→계층) | 비트별 시도 | 채택본 |
+| Pair | Single | Layered | Calls (single→layered) | Attempts per beat | Adopted |
 |---|---|---|---|---|---|
-| macbeth/1.3 en-doyle (11비트) | ✗ missing 3 | **✗** missing 2 (`holds(king)`, `holds(thane_of_glamis)`), 환각 0 | 6 → 33 (5.5×) | 1,1,1,2,1,1,1,1,1,3,1 (비트 10 실패) | unstitched |
-| bible/mark_denial ko-hapsho (4비트) | ✗ 환각 1 | **✗** missing 1, 환각 1(extra-act `not peter_knows_jesus`) | 6 → 25 (4.2×) | 3,3,3,1 (비트 1 실패) | stitched |
+| macbeth/1.3 en-doyle (11 beats) | ✗ missing 3 | **✗** missing 2 (`holds(king)`, `holds(thane_of_glamis)`), hallucinated 0 | 6 → 33 (5.5×) | 1,1,1,2,1,1,1,1,1,3,1 (beat 10 failed) | unstitched |
+| bible/mark_denial ko-hapsho (4 beats) | ✗ hallucinated 1 | **✗** missing 1, hallucinated 1 (extra-act `not peter_knows_jesus`) | 6 → 25 (4.2×) | 3,3,3,1 (beat 1 failed) | stitched |
 
-계층형은 macbeth 에서 missing 을 3→2 로 줄였지만 통과 한도(≤1)에 못 미쳤다. bible 에서는 환각이 그대로다.
+Layered reduced missing from 3 to 2 on macbeth but did not reach the pass limit (≤1). On bible the hallucination remains.
 
-## 호출·토큰
+## Calls and tokens
 
-| 단계 | 호출 | haiku(렌더) in/out | sonnet(재추출) in/out |
+| Phase | Calls | haiku (render) in/out | sonnet (re-extraction) in/out |
 |---|---|---|---|
-| Phase 1 (16쌍) | 84 (쌍당 평균 5.3) | 149,712 / 250,600 | 125,994 / 34,712 |
-| Phase 2 (2쌍) | 58 (쌍당 평균 29) | 46,511 / 60,342 | 71,392 / 8,035 |
+| Phase 1 (16 pairs) | 84 (5.3 per pair) | 149,712 / 250,600 | 125,994 / 34,712 |
+| Phase 2 (2 pairs) | 58 (29 per pair) | 46,511 / 60,342 | 71,392 / 8,035 |
 
-in 은 input+cache_read+cache_write. Phase 2 는 같은 두 쌍의 단일 호출(12)과 비교하면 약 4.8배다. 쌍별 토큰은 각 JSON 에 있다.
+in is input+cache_read+cache_write. Phase 2 is about 4.8× the single calls (12) for the same two pairs. Per-pair tokens are in each JSON.
 
-## 판정
+## Verdict
 
-사전 규칙: 긴 장면(≥8비트)의 Phase 1 실패 중 절반 이상을 계층형이 통과로 바꾸고 총 호출 ≤ 단일의 4배이면 "계층형 = 긴 장면 전용으로 유지", 아니면 "계층형 삭제 후보".
+Pre-registered rule: if layered turns at least half of Phase 1 failures on long scenes (≥8 beats) into passes and total calls ≤ 4× single, "keep layered for long scenes only"; otherwise "layered is a deletion candidate".
 
-- 긴 장면 Phase 1 실패는 8건(chibi 4, odyssey 3, macbeth 1). 절반이면 4건 전환이 필요하다.
-- 계층형으로 돌린 긴 장면은 1건이고 **0건 통과**, 호출은 5.5배(>4배).
-- **판정: 계층형 삭제 후보** (규칙 그대로). 단 근거는 약하다. 긴 장면 n=1 이라 "계층형이 효과 없다" 가 아니라 "효과를 보인 증거가 없고 비용은 4~5배" 까지만 말할 수 있다. 계층형이 통과로 바꾼 것은 0/2 이다.
-- 부수 결과: 현 기본(단일+haiku)의 통과율은 5/16 (잡음 제거 시 6/16). 실제 실패는 긴 장면의 사실 누락이 주이고, 검증기 쪽에는 동의어 동사 불일치 잡음이 새로 남아 있다.
+- Phase 1 had 8 failures on long scenes (chibi 4, odyssey 3, macbeth 1). Half would be 4 conversions.
+- One long scene was run layered: **0 passes**, calls 5.5× (>4×).
+- **Verdict: layered is a deletion candidate** (rule applied as written). The evidence is weak, though. With n=1 long scene we can only say "no evidence of an effect and the cost is 4–5×", not "layered has no effect". Layered turned 0/2 into passes.
+- Side result: the current default (single+haiku) passes 5/16 (6/16 with noise removed). Real failures are mainly missing facts in long scenes, and a new synonym-verb-mismatch noise remains on the verifier side.
 
-## 한계
+## Limitations
 
-- 표본 16쌍은 장면 4개의 백엔드 변형이라 독립이 아니다. 장면 단위로는 n=4.
-- Phase 2 는 2쌍(긴 장면 1). 예산 때문에 chibi·odyssey 는 계층형으로 못 돌렸다. 나머지 9건은 미측정이다.
-- 장면당 1회 실행이라 실행 간 분산을 모른다. macbeth en-doyle 도 한 번의 계층형 결과다.
-- 분류 중 `not jiang_gan_envoy` 는 IR 의 사실 정규화까지 확인하지 않아 확정하지 못했다.
+- The 16 pairs are backend variants of 4 scenes and not independent. At scene level, n=4.
+- Phase 2 covers 2 pairs (1 long scene). Because of budget, chibi and odyssey could not be run layered. The other 9 are unmeasured.
+- One run per scene, so run-to-run variance is unknown. The macbeth en-doyle result is also a single layered run.
+- In the classification, `not jiang_gan_envoy` was not confirmed because we did not check the IR's fact normalization.

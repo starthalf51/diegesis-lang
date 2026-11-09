@@ -1,6 +1,6 @@
-# Retcon benchmark re-run (plan 8): English summary
+# Retcon benchmark re-run (plan 8): summary
 
-Diegesis v0.7.0, 6 retcons (R1-R6) of a 12-episode story, one run per arm, one verifier. B = `dieg revise` (Diegesis), A = direct AI edit. The rest of this file is Korean.
+Diegesis v0.7.0, 6 retcons (R1-R6) of a 12-episode story, one run per arm, one verifier. B = `dieg revise` (Diegesis), A = direct AI edit.
 
 | | A (direct edit) | B (`dieg revise`) |
 |---|---|---|
@@ -15,116 +15,116 @@ Diegesis v0.7.0, 6 retcons (R1-R6) of a 12-episode story, one run per arm, one v
 
 ---
 
-# 재설정 벤치마크 재측정(plan 8) — v0.7.0, R1~R6, 두 팔 모두 새로
+# Reset benchmark re-measurement (plan 8) — v0.7.0, R1–R6, both arms fresh
 
-**요약:** v0.7.0 재설정 6건(각 팔 1회, 검증자 1명): 확정 잔여+새 모순 B 3 대 A 6, 무관한 글 변경 47자 대 2,247자(A 의 1,069자는 R3 e04 키워드 사전 누락에서 나왔다. 이를 빼면 약 1,178자 대 47자, 결론 그대로). 가격 가중 비용은 B ≈ A(0.93×). 단 이 값은 A 가 R6 에서 아무것도 고치지 않은 것에 기대며, R4 처리를 R6 과 같게 하면 1.12× 다(리뷰어 1.13×). 호출 수는 B 가 6.7배. 사전 규칙상 '수정 근거 있음'이지만 비용 우위는 입증되지 않았다. (12화 길이, R2 의 A 비용 분산 3.7배 유의.)
+**Summary:** 6 resets on v0.7.0 (one run per arm, one verifier): confirmed residual + new contradictions B 3 vs A 6, unrelated text changed 47 characters vs 2,247 (1,069 of A's characters came from a keyword-dictionary gap in R3 e04; without it, about 1,178 vs 47, the conclusion unchanged). Price-weighted cost is B ≈ A (0.93×). But this value leans on A having changed nothing in R6; if R4 is handled the same as R6, it is 1.12× (reviewer 1.13×). B makes 6.7× the calls. Under the pre-registered rule it is "revision evidence present", but a cost advantage is not established. (Note the 12-episode length and the 3.7× variation of A's cost in R2.)
 
-# 사전 기록 (정직한 출처: 재설정 6건·판정 규칙은 retcon2 커밋 cc8eb45 와 바이트 동일하다. 이 README 파일 자체는 첫 실호출 뒤에 만들어졌고, 곳마다 1건으로 세는 규칙은 이번 실행에서 새로 정했다)
+# Pre-registered record (honest provenance: the 6 resets and the verdict rule are byte-identical to retcon2 commit cc8eb45. This README file itself was created after the first real calls, and the rule of counting 1 per location was newly decided in this run)
 
-`examples/value/retcon2/README.md` 의 사전 기록을 그대로 옮긴다. 요청 문장은 `retcons.json`(retcon2 와 바이트 동일)에 있다.
-이번 차이: (1) **A 도 새로 돌린다**(재사용 없음). (2) B 는 v0.7.0 기본값: PG 상태 요약 + 상태 해시 낡음, 상태 낡은 장면은 옛·새 상태 줄 차이로 문장 패치, 카드 검증, 렌더 haiku low(`--render-effort low`), 기존 경고 기준선(새 진단에서만 막음), `--skip s32,s33,s34,s35`. (3) 실호출 상한 **320**. (4) 계산·판정은 retcon2 와 같은 코드(`tools/serial retcon`).
+This carries over the pre-registered record of `examples/value/retcon2/README.md` as is. The request sentences are in `retcons.json` (byte-identical to retcon2).
+Differences this time: (1) **A is also run fresh** (no reuse). (2) B uses the v0.7.0 defaults: PG state digest + state-hash staleness, sentence patches for state-stale scenes using the old/new state line difference, card verification, render haiku low (`--render-effort low`), the existing-warning baseline (block only on new diagnostics), `--skip s32,s33,s34,s35`. (3) Real-call cap **320**. (4) Computation and judgment use the same code as retcon2 (`tools/serial retcon`).
 
-## 재설정 6건 (요청 글자 그대로; 사전 키워드 = 영향 단위 정의)
+## 6 resets (requests verbatim; pre-set keywords = definition of affected units)
 
-| ID | 종류 | 요청 | 사전 키워드(영향 단위 정의) |
+| ID | Kind | Request | Pre-set keywords (definition of affected units) |
 |---|---|---|---|
-| R1 | 누가 일으켰나 | 그날 밤 등대 렌즈를 깨뜨린 사람은 도경태가 아니라 백영호이며(불을 다시 켜려다 혼자 램프에 부딪혀 깼다), 렌즈가 깨진 경위를 말하거나 짐작하는 모든 장면을 이에 맞게 고쳐라. | `렌즈\|파편\|유리 조각\|깨뜨` |
-| R2 | 소품의 위치 | 정수아가 두꺼운 유리 조각을 주운 곳은 등대 아래 바위틈이 아니라 선착장 방파제 끝이며, 그 장소가 나오는 모든 장면을 이에 맞게 고쳐라. | `조각\|바위틈\|벼랑 밑\|벼랑 바로` |
-| R3 | 비밀을 안 시점(앞당김) | 서윤은 도경태의 병원 알리바이가 거짓이라는 것을 진료부를 보기 훨씬 전인 4화(등대에 오른 날)에 이미 알게 되며(누구에게서 알았는지는 정해도 된다), 4화 이후 서윤이 그 알리바이를 여전히 믿는 것처럼 나오는 모든 부분을 이에 맞게 고쳐라. | `알리바이\|병원\|맹장\|진료부\|흉터` |
-| **R4** | **소품의 소유자** | 두꺼운 유리 조각의 주인은 정수아가 아니라 분교 교사 도하은이며, 하은이 오래전 바닷가에서 주워 간직해 온 것을 수아가 빌려 갖고 있다. 이 조각을 누가 주웠고 누가 갖고 있는지를 말하거나 짐작하는 모든 장면을 이에 맞게 고쳐라. | `조각\|보물` |
-| **R5** | **두 사건의 순서** | 서윤은 수아의 유리 조각 이야기를 듣거나 조각을 보기 전에 먼저 등대에 올라 계단 열세 번째 칸의 새 못을 본다. 즉 3화의 유리 조각 이야기와 4화의 등대 오르기의 순서가 바뀌어, 서윤은 등대 계단을 오른 뒤에야 수아의 유리 조각을 알게 된다. 두 사건의 선후에 기대는 모든 장면(서윤이 그때까지 아는 것, 말하는 것, 떠올리는 것)을 이에 맞게 고쳐라. | `조각\|계단\|열세\|새 못\|휜 못\|올랐\|올라` |
-| **R6** | **조연의 정체** | 류지환은 개발사 현장 책임자가 아니라 도경태의 조카(이장 누이의 아들)이며, 개발사와 이장 사이를 잇는 중개인으로 섬에 와 있다. 류지환의 신분·소속·이장과의 관계가 나오거나 짐작되는 모든 장면을 이에 맞게 고쳐라. | `류지환\|지환\|개발사` |
+| R1 | Who caused it | 그날 밤 등대 렌즈를 깨뜨린 사람은 도경태가 아니라 백영호이며(불을 다시 켜려다 혼자 램프에 부딪혀 깼다), 렌즈가 깨진 경위를 말하거나 짐작하는 모든 장면을 이에 맞게 고쳐라. ("The person who broke the lighthouse lens that night was not Do Gyeong-tae but Baek Yeong-ho (trying to relight it, he bumped into the lamp alone and broke it); fix every scene that says or guesses how the lens was broken.") | `렌즈\|파편\|유리 조각\|깨뜨` |
+| R2 | Prop location | 정수아가 두꺼운 유리 조각을 주운 곳은 등대 아래 바위틈이 아니라 선착장 방파제 끝이며, 그 장소가 나오는 모든 장면을 이에 맞게 고쳐라. ("The place where Jeong Su-a picked up the thick glass shard was not among the rocks below the lighthouse but at the end of the pier breakwater; fix every scene where that place appears.") | `조각\|바위틈\|벼랑 밑\|벼랑 바로` |
+| R3 | When a secret was learned (moved earlier) | 서윤은 도경태의 병원 알리바이가 거짓이라는 것을 진료부를 보기 훨씬 전인 4화(등대에 오른 날)에 이미 알게 되며(누구에게서 알았는지는 정해도 된다), 4화 이후 서윤이 그 알리바이를 여전히 믿는 것처럼 나오는 모든 부분을 이에 맞게 고쳐라. ("Seo-yun already learns in episode 4 (the day she climbed the lighthouse), long before seeing the medical record, that Do Gyeong-tae's hospital alibi is false (you may decide who told her); fix every part after episode 4 where Seo-yun appears to still believe that alibi.") | `알리바이\|병원\|맹장\|진료부\|흉터` |
+| **R4** | **Prop owner** | 두꺼운 유리 조각의 주인은 정수아가 아니라 분교 교사 도하은이며, 하은이 오래전 바닷가에서 주워 간직해 온 것을 수아가 빌려 갖고 있다. 이 조각을 누가 주웠고 누가 갖고 있는지를 말하거나 짐작하는 모든 장면을 이에 맞게 고쳐라. ("The owner of the thick glass shard is not Jeong Su-a but the branch-school teacher Do Ha-eun; Ha-eun found it long ago on the shore and kept it, and Su-a is borrowing it. Fix every scene that says or guesses who found or holds this shard.") | `조각\|보물` |
+| **R5** | **Order of two events** | 서윤은 수아의 유리 조각 이야기를 듣거나 조각을 보기 전에 먼저 등대에 올라 계단 열세 번째 칸의 새 못을 본다. 즉 3화의 유리 조각 이야기와 4화의 등대 오르기의 순서가 바뀌어, 서윤은 등대 계단을 오른 뒤에야 수아의 유리 조각을 알게 된다. 두 사건의 선후에 기대는 모든 장면(서윤이 그때까지 아는 것, 말하는 것, 떠올리는 것)을 이에 맞게 고쳐라. ("Before hearing Su-a's glass-shard story or seeing the shard, Seo-yun first climbs the lighthouse and sees the new nail on the thirteenth stair. That is, the order of episode 3's shard story and episode 4's lighthouse climb is swapped, and Seo-yun learns of Su-a's shard only after climbing the lighthouse stairs. Fix every scene that depends on the order of the two events (what Seo-yun knows, says, and recalls up to then).") | `조각\|계단\|열세\|새 못\|휜 못\|올랐\|올라` |
+| **R6** | **A supporting character's identity** | 류지환은 개발사 현장 책임자가 아니라 도경태의 조카(이장 누이의 아들)이며, 개발사와 이장 사이를 잇는 중개인으로 섬에 와 있다. 류지환의 신분·소속·이장과의 관계가 나오거나 짐작되는 모든 장면을 이에 맞게 고쳐라. ("Ryu Ji-hwan is not the developer's site manager but Do Gyeong-tae's nephew (the village head's sister's son), and is on the island as a broker between the developer and the village head. Fix every scene where Ji-hwan's status, affiliation, or relationship with the village head appears or is guessed.") | `류지환\|지환\|개발사` |
 
-모두 2~5화에 처음 나오거나 정해지는 사실이고 뒤 화가 기댄다(조각: 두 이야기 모두 3화에 등장 / 알리바이: 2화 / 등대 오르기: 4화 / 류지환: A 3·5·6·8·9화, B s1·s7·s22 에 나옴 — 출현 횟수는 이야기마다 다르다). 효과가 12화에만 있는 재설정은 고르지 않았다.
+All are facts that first appear or are set in episodes 2–5 and later episodes rely on them (the shard: both stories have it in episode 3 / the alibi: episode 2 / the lighthouse climb: episode 4 / Ryu Ji-hwan: in A episodes 3, 5, 6, 8, 9; in B s1, s7, s22 — the number of appearances differs per story). We did not pick resets whose effects are only in episode 12.
 
-## 판정 규칙 (미리 정함, 브리프 그대로)
+## Verdict rule (fixed beforehand, as in the brief)
 
-- **"수정 근거 있음"** = 아래 넷을 모두 충족:
-  1. 확인된 잔여 + 새 모순의 합 B < A,
-  2. 어느 재설정에서도 (잔여 + 새 모순) B ≥ A + 2 가 없음,
-  3. 부수 변경(글자) 합 B ≤ A,
-  4. 총 가중 비용 B ≤ 1.0 × A (가격 가중, 코드 라운드와 판정 제외 아님: 판정만 제외).
-- 일부만 충족하면 **"약함"**, 하나도 아니면 "근거 없음".
-- 표: 재설정별 잔여·새 모순·호출·가중 토큰·부수 변경·다시 렌더한 장면 수(IR 때문 / 상태 때문)·패치/전체 렌더 수.
+- **"Revision evidence present"** = all four of the following are met:
+  1. Sum of confirmed residual + new contradictions B < A,
+  2. In no reset is (residual + new contradictions) B ≥ A + 2,
+  3. Collateral change (characters) sum B ≤ A,
+  4. Total weighted cost B ≤ 1.0 × A (price weight; code rounds are not excluded, only the judgment is).
+- If only some are met, **"weak"**; if none, "no evidence".
+- Table: per reset, residuals, new contradictions, calls, weighted tokens, collateral change, number of re-rendered scenes (due to IR / due to state), number of patch/full renders.
 
-## 제외 범위 (판정 사전 기록)
+## Excluded scope (verdict recorded beforehand)
 
-- B 의 s32~s35 는 run3 에서 코드로만 있고 렌더된 적이 없다. **어느 팔에서도 s32 이후는 렌더하지 않고 판정하지 않는다.** B 는 `dieg revise --skip s32,s33,s34,s35` 로 렌더를 막는다(코드는 그대로 두어 PG 검증이 온전하게 한다; 앞 스파이크처럼 12화를 지우면 AI 가 빈칸을 메워 낭비가 생긴다). A 는 12화에 해당하는 구간이라 선택 단계에서 12화를 고르지 못하게 한다(1~11화만).
-- 판정 범위: A 는 1~11화, B 는 렌더된 s1~s31.
+- B's s32–s35 exist only as code in run3 and were never rendered. **In neither arm do we render or judge anything after s32.** B blocks the render with `dieg revise --skip s32,s33,s34,s35` (the code is left as is so PG verification stays intact; if we delete episode 12 as in the earlier spike, the AI fills the blanks and creates waste). For A, since that range corresponds to episode 12, the selection stage is prevented from choosing episode 12 (episodes 1–11 only).
+- Judgment scope: A is episodes 1–11, B is the rendered s1–s31.
 
-## 세는 방식 (양쪽 동일, 사전 기록)
+## Counting method (identical for both arms, recorded beforehand)
 
-같은 오류가 여러 곳에 나오면 **곳마다 1건**으로 센다(A 는 화 안 위치, B 는 장면). 양쪽 팔에 같은 방식이다. 확정 = 판정자 항목을 내가 원문과 대조해 확정한 것, 경계는 세지 않는다(retcon2 와 같음).
+If the same error appears in several places, it is counted as **1 per location** (for A the position within an episode, for B the scene). The same method is used for both arms. Confirmed = judge items that I confirmed against the source text; borderline items are not counted (same as retcon2).
 
-## 방법 요약
+## Method summary
 
-retcon2 와 같다: 재료 `examples/serial/run3`, 재설정마다 두 팔 모두 원본에서 새로 시작, 판정 sonnet 1회/팔·재설정, 부수 변경·비용 공식 동일(판정 호출은 비용 제외, 호출 수에는 포함). 호출 가드는 호출 직전마다, 모든 호출은 `calls.jsonl` 에 기록, 재설정마다 A→B 번갈아, 예산이 한 재설정을 통째로 못 덮으면 깨끗이 멈추고 범위를 적는다. retcon2 첫 실행·재실행 값을 결과 표에 나란히 둔다.
+The same as retcon2: material `examples/serial/run3`, in each reset both arms start fresh from the original, judgment sonnet once per arm and reset, collateral change and cost formulas identical (judgment calls are excluded from cost and included in call counts). The call guard runs right before each call, every call is recorded in `calls.jsonl`, A→B alternate per reset, and if the budget cannot cover a whole reset we stop cleanly and write down the scope. The retcon2 first-run and re-run values are placed side by side in the results table.
 
 
-# 실행 기록
+# Run record
 
-- 드라이런: `noclaude` 껍데기 아래 `go vet`·`go test -count=1 ./...` 통과, 가짜 완성기 전체 실행(`-rc-dry`, 6건, 호출 0). 실제 명령은 retcon2 와 같다: `dieg stamp <base/b>` 한 번, `dieg revise <rN/b> "<요청>" --skip s32,s33,s34,s35 --render-effort low` (N=1..6).
-- 실행: 껍데기를 뺀 프로세스로 `go run ./tools/serial retcon -rc-out examples/value/retcon3 -rc-list examples/value/retcon3/retcons.json -rc-budget 320 -rc-b-reserve 60`. `dieg stamp`: 31/35 장면에 도장(IR 불일치 0). 로그 `run-1.log`.
-- **R4 에서 멈춤(도구 문제)**: A 선택 호출이 "[12]"(제외된 12화)만 골라 `no episode` 오류로 프로세스가 끝났다(`results-r1-3.json`, `run-1.log`; 호출 1 소모, 낭비). 최소 수정(`tools/serial/retcon.go` arm_A): `-rc-list` 모드에서 선택이 비면 오류 대신 "A 는 아무것도 고치지 않음"으로 진행(요약 갱신 호출도 생략). 그 뒤 `-rc-only 4,5,6` 으로 프로세스를 한 번 더 돌렸다(`run-2.log`; 앞 프로세스는 이미 끝난 뒤, 동시 실행 없음). R4 선택은 다시 불렀고(새 호출) 이번엔 정상 선택했다. R6 에서는 A 선택이 또 12화만 골라 A 가 아무것도 고치지 않았다(호출 1).
-- 호출 **267 / 320** (A 33, B 221, 판정 12, 낭비 1; 재판정 2회를 더하면 269). 6건 모두 완료. 표의 호출·비용에는 재판정 2회를 넣지 않았다(판정 호출은 비용 제외).
-- `calls.jsonl`(269행: 주 실행 267 + 재판정 2), B 의 호출은 `rN/b/calls.jsonl`, A 는 `rN/a/calls.jsonl`.
+- Dry run: under the `noclaude` shim `go vet` and `go test -count=1 ./...` passed, and the full fake-completer run (`-rc-dry`, 6 resets, 0 calls). The actual commands are the same as retcon2: `dieg stamp <base/b>` once, `dieg revise <rN/b> "<request>" --skip s32,s33,s34,s35 --render-effort low` (N=1..6).
+- Run: as a process without the shim, `go run ./tools/serial retcon -rc-out examples/value/retcon3 -rc-list examples/value/retcon3/retcons.json -rc-budget 320 -rc-b-reserve 60`. `dieg stamp`: stamped 31/35 scenes (IR mismatch 0). Log `run-1.log`.
+- **Stopped at R4 (tool problem)**: A's pick call chose only "[12]" (the excluded episode 12), the `no episode` error ended the process (`results-r1-3.json`, `run-1.log`; 1 call consumed, wasted). Minimal fix (`tools/serial/retcon.go` arm_A): in `-rc-list` mode, if the pick is empty, proceed as "A changes nothing" instead of erroring (the summary update call is also skipped). Then we ran the process once more with `-rc-only 4,5,6` (`run-2.log`; the earlier process had already ended, no concurrent runs). The R4 pick was called again (a new call) and this time chose normally. In R6, A's pick again chose only episode 12, so A changed nothing (1 call).
+- Calls **267 / 320** (A 33, B 221, judgment 12, waste 1; 269 if the 2 re-judgments are added). All 6 completed. The table's calls and costs do not include the 2 re-judgments (judgment calls are excluded from cost).
+- `calls.jsonl` (269 rows: main run 267 + re-judgments 2), B's calls in `rN/b/calls.jsonl`, A's in `rN/a/calls.jsonl`.
 
-# 결과 (6건 전부)
+# Results (all 6)
 
-확정 = 판정자 항목을 원문과 대조(단일 검증자). 확정 근거는 아래 "확인". 세는 방식은 위 사전 기록(곳마다 1건, 양팔 동일).
+Confirmed = judge items checked against the source text (single verifier). The basis for confirmation is in "Check" below. The counting method is the pre-registered record above (1 per location, identical for both arms).
 
-| | R1 | R2 | R3 | R4 | R5 | R6 | 합 |
+| | R1 | R2 | R3 | R4 | R5 | R6 | Total |
 |---|---|---|---|---|---|---|---|
-| **확정 잔여+새 모순 A / B** | 1 / 0 | 0 / 1 | 2 / 1 | 2 / 0 | 0 / 0 | 1 / 1 | **6 / 3** |
-| (잔여 / 새 모순) | A 1/0, B 0/0 | A 0/0, B 1/0 | A 1/1, B 0/1 | A 2/0, B 0/0 | 0/0, 0/0 | A 1/0, B 1/0 | |
-| 호출 A / B (판정 제외) | 3 / 13 | 11 / 30 | 8 / 48 | 6 / 39 | 4 / 58 | 1 / 33 | **33 / 221** |
-| 가격 가중 A / B | 84,740 / 148,049 | 486,680 / 150,143 | 362,857 / 229,789 | 238,138 / 311,035 | 162,122 / 234,221 | 5,266 / 174,005 | **1,339,803 / 1,247,242** |
+| **Confirmed residual + new contradictions A / B** | 1 / 0 | 0 / 1 | 2 / 1 | 2 / 0 | 0 / 0 | 1 / 1 | **6 / 3** |
+| (residual / new contradictions) | A 1/0, B 0/0 | A 0/0, B 1/0 | A 1/1, B 0/1 | A 2/0, B 0/0 | 0/0, 0/0 | A 1/0, B 1/0 | |
+| Calls A / B (judgment excluded) | 3 / 13 | 11 / 30 | 8 / 48 | 6 / 39 | 4 / 58 | 1 / 33 | **33 / 221** |
+| Price weight A / B | 84,740 / 148,049 | 486,680 / 150,143 | 362,857 / 229,789 | 238,138 / 311,035 | 162,122 / 234,221 | 5,266 / 174,005 | **1,339,803 / 1,247,242** |
 | B ÷ A | 1.75× | 0.31× | 0.63× | 1.31× | 1.44× | 33× | **0.93×** |
-| 부수 변경 글자 A / B | 0 / 0 | 953 / 0 | 1,069 / 8 | 225 / 0 | 0 / 2 | 0 / 37 | **2,247 / 47** |
-| B 패치 / 전체 렌더 | 6 / 0 | 14 / 0 | 20 / 1 (s11a) | 17 / 0 | 24 / 1 (s11a) | 14 / 0 | **95 / 2** |
-| B 다시 렌더 장면: IR 때문 / 상태 때문 | 4 / 2 | 6 / 8 | 1 / 19 (+새 1) | 8 / 9 | 4 / 20 (+새 1) | 4 / 10 | **27 / 68** |
-| B 코드 라운드 | 1 | 1 | 1 | 3 | 1 | 1 | |
+| Collateral change chars A / B | 0 / 0 | 953 / 0 | 1,069 / 8 | 225 / 0 | 0 / 2 | 0 / 37 | **2,247 / 47** |
+| B patch / full render | 6 / 0 | 14 / 0 | 20 / 1 (s11a) | 17 / 0 | 24 / 1 (s11a) | 14 / 0 | **95 / 2** |
+| B scenes re-rendered: due to IR / due to state | 4 / 2 | 6 / 8 | 1 / 19 (+1 new) | 8 / 9 | 4 / 20 (+1 new) | 4 / 10 | **27 / 68** |
+| B code rounds | 1 | 1 | 1 | 3 | 1 | 1 | |
 
-(R5 의 B 는 s6 을 지우고 s11a 를 새로 넣었다. 상태 낡음 수는 요약 줄 `state_stale=` 의 개수, IR = changed − state.)
+(In R5, B deleted s6 and inserted s11a anew. The number of state-stale scenes is the count of `state_stale=` in the summary line; IR = changed − state.)
 
-## retcon2 와 나란히 (R1~R3)
+## Alongside retcon2 (R1–R3)
 
-| | A 호출/가격/잔여+새/부수 | B 호출/가격/잔여+새/부수 |
+| | A calls/price/residual+new/collateral | B calls/price/residual+new/collateral |
 |---|---|---|
-| retcon2 첫 실행 | 15 / 580,484 / 3+1 / 945 | 208 / 1,402,436 / 1+0 (정정 뒤 2) / 506 |
-| retcon2 재실행(B만) | (첫 실행 A 재사용) | 93 / 591,883 / 0+0 / 33 |
-| **retcon3 (R1~R3)** | 22 / 934,277 / 2+1 / 2,022 | 91 / 527,981 / 1+1 / 8 |
+| retcon2 first run | 15 / 580,484 / 3+1 / 945 | 208 / 1,402,436 / 1+0 (2 after correction) / 506 |
+| retcon2 re-run (B only) | (first-run A reused) | 93 / 591,883 / 0+0 / 33 |
+| **retcon3 (R1–R3)** | 22 / 934,277 / 2+1 / 2,022 | 91 / 527,981 / 1+1 / 8 |
 
-R1~R3 만 합치면 A 22 호출·934,277·부수 2,022, B 91 호출·527,981·부수 8 (B ÷ A 0.57×). 이번 A 는 R2 에서 화 9개를 고쳐(retcon2 A 는 2화) 비용이 크게 달랐다: A 의 분산이 크다.
+Summing R1–R3 only: A 22 calls, 934,277, collateral 2,022; B 91 calls, 527,981, collateral 8 (B ÷ A 0.57×). This time A rewrote 9 episodes in R2 (retcon2's A rewrote 2), so the cost differed greatly: A's variance is large.
 
-## 확인 (판정자 항목 대조; 인용은 `rN/judge/*.quotes.md` 에서 모두 원문에 있음)
+## Check (cross-check of judge items; every quotation is in the source in `rN/judge/*.quotes.md`)
 
-- 확정: R1 A 11화 장부(옛 설정 문장), R2 B 24화(같은 장면에서 바위틈과 방파제 끝이 함께), R3 A 7화 메모의 물음표(4화에서 확정했는데 미확인) + 9화 새 모순(한낮 마늘 vs 저녁 콩), R3 B 새 모순(새 4화 장면과 바로 뒤 장면의 "올라가기로 했다 / 올라가 보자"), R4 A 9화 두 곳(벼랑 밑에서 주웠다고 답함), R6 A 3화 자기소개(A 가 고치지 않음), R6 B 7화 "류 소장님" (직전에 중개인이라 밝힌 뒤에도 소장님 호칭).
-- 경계(세지 않음): R3 A 7화 나머지 두 항목(알고 있었다는 문장과 '그제야'), R3 B s18 "틀렸을 수도 있어요"(같은 장면에서 사실이 아니라고도 말함), R3 B s11a "사실이 아닐지도 모른다고 생각했다"(코드는 `believes not hospital_alibi`; 서윤의 신중한 반응). 기각: R5 B s11 "머릿속에서 맞춰졌다"(조각을 가리키는 말이 없음). **정정(리뷰어)**: 처음 R5 B 의 "s11a 가 s9~s11 앞에 놓였다" 항목을 "판정자 전제가 틀렸다"고 적었으나 틀린 것은 우리 쪽이다. `bUnits` 가 `Atoi("11a")=0` 으로 s11a 를 s9 앞에 놓은 채 판정 입력을 만들었다(retcon2 의 s11b 도 같은 버그). 정렬을 고치고(`sceneLess`, 시험 `TestSceneLessSuffix`) R3·R5 의 B 만 올바른 순서로 다시 판정했다(`judge/b2.*`, 호출 2; 옛 `judge/b.*` 는 증거로 남김). 재판정: R3 B 새 모순 1(s11a "올라가 보기로 했어요", 이미 올라간 뒤) 확정 + 경계 2, R5 B 잔여 1건은 기각. 세부는 `verification.md`.
-- 민감도: 경계를 모두 세면 A 8 / B 5. 결론(B < A)은 바뀌지 않는다.
+- Confirmed: R1 A episode 11 ledger (a sentence of the old setting), R2 B episode 24 (rock crevice and breakwater end together in the same scene), R3 A episode 7 memo question mark (established in episode 4 yet unconfirmed) + episode 9 new contradiction (midday garlic vs evening beans), R3 B new contradiction (the new episode 4 scene and the immediately following scene's "decided to go up / let's go up"), R4 A two places in episode 9 (answers that she picked it up under the cliff), R6 A episode 3 self-introduction (A did not fix it), R6 B episode 7 "류 소장님" ("Manager Ryu") (still addressed as manager even after just stating he is a broker).
+- Borderline (not counted): R3 A the other two items in episode 7 (the sentence that she had known, and 'only then'), R3 B s18 "틀렸을 수도 있어요" ("may have been wrong") (she also says it is not true in the same scene), R3 B s11a "사실이 아닐지도 모른다고 생각했다" ("thought it might not be true") (the code is `believes not hospital_alibi`; Seo-yun's cautious reaction). Rejected: R5 B s11 "머릿속에서 맞춰졌다" ("it fit together in her head") (nothing points to the shard). **Correction (reviewer)**: I first wrote the R5 B item "s11a was placed before s9–s11" as "the judge's premise is wrong", but it was we who were wrong. `bUnits` built the judge input with s11a placed before s9 because `Atoi("11a")=0` (retcon2's s11b has the same bug). We fixed the sort (`sceneLess`, test `TestSceneLessSuffix`) and re-judged only B for R3 and R5 in the correct order (`judge/b2.*`, 2 calls; the old `judge/b.*` is kept as evidence). Re-judgment: R3 B new contradiction 1 (s11a "올라가 보기로 했어요", "I decided to go up and look", after she has already gone up) confirmed + borderline 2; R5 B's one residual item was rejected. Details in `verification.md`.
+- Sensitivity: counting all borderline items gives A 8 / B 5. The conclusion (B < A) does not change.
 
-# 판정 (사전 기록한 규칙)
+# Verdict (the pre-registered rule)
 
-| 조건 | 값 | 충족 |
+| Condition | Value | Met |
 |---|---|---|
-| 1. 확정 잔여 + 새 모순 합 B < A | 3 < 6 | 예 |
-| 2. 어느 재설정에서도 B ≥ A + 2 가 없음 | 최대 R2 에서 1 대 0 (차 +1) | 예 |
-| 3. 부수 변경 합 B ≤ A | 47 ≤ 2,247 | 예 |
-| 4. 총 가중 비용 B ≤ 1.0 × A | 1,247,242 ÷ 1,339,803 = **0.93×** | 예 |
+| 1. Sum of confirmed residual + new contradictions B < A | 3 < 6 | Yes |
+| 2. In no reset is B ≥ A + 2 | at most 1 vs 0 in R2 (difference +1) | Yes |
+| 3. Collateral change sum B ≤ A | 47 ≤ 2,247 | Yes |
+| 4. Total weighted cost B ≤ 1.0 × A | 1,247,242 ÷ 1,339,803 = **0.93×** | Yes |
 
-**판정: 사전 규칙상 "수정 근거 있음"(조건 4 개 충족). 그러나 비용 우위는 입증되지 않았다.** B ÷ A 는 세 값이다: **0.93×**(실행 그대로), **0.80×**(R6 제외; A 가 아무것도 고치지 않은 R6 의 A 는 5,266 이라 이를 빼면 B 에 유리해진다), **1.12×**(R4 의 첫 선택 실패에도 R6 과 같은 규칙, 즉 A 가 아무것도 고치지 않는 것으로 처리하면: A = 1,339,803 − 238,138 + 첫 선택 7,222 = 1,108,887, B ÷ A = 1,247,242 ÷ 1,108,887; 리뷰어 계산 1.13×와 반올림 차). 빈 선택 규칙이 R4 가 실패한 뒤에 만들어져 R4 는 재선택을 받았고 R6 은 받지 못했다(비대칭). 이 경우 A 의 R4 잔여도 늘 것이므로 정확도는 B 에 더 유리하다. 조건 4 는 처리 방식에 따라 뒤집힌다. 그 밖에 A 비용의 큰 분산(R2 의 A 486,680 대 retcon2 의 132,661, 3.7배)과 12화 길이(A 의 요약 방식에 유리)를 유의.
+**Verdict: under the pre-registered rule, "revision evidence present" (all 4 conditions met). But a cost advantage is not established.** B ÷ A has three values: **0.93×** (the run as is), **0.80×** (excluding R6; A's R6, where A changed nothing, is 5,266, and removing it favors B), **1.12×** (applying the same rule as R6 even though R4's first pick failed, i.e. treating it as A changing nothing: A = 1,339,803 − 238,138 + first pick 7,222 = 1,108,887, B ÷ A = 1,247,242 ÷ 1,108,887; the reviewer's calculation of 1.13× differs by rounding). The empty-pick rule was made after R4 failed, so R4 got a re-pick and R6 did not (asymmetry). In that case A's R4 residual would also grow, so accuracy favors B even more. Condition 4 flips depending on the handling. Also note the large variance in A's cost (R2's A 486,680 vs retcon2's 132,661, 3.7×) and the 12-episode length (which favors A's summary method).
 
-# 한계
+# Limitations
 
-- **A 의 R6 은 과소 집계되었을 수 있다**(판정자가 e08:41 을 놓쳤을 가능성). 이는 A 에 유리하게 작용한다.
-- 단서: A 의 2,247자 중 1,069자는 R3 e04 의 키워드 사전 누락에서 나왔다. 이를 빼면 약 1,178자 대 47자이고, 결론은 그대로다.
-- n = 6, 12화, 단일 검증자, 각 팔 1회(분산 미측정): A 비용이 같은 재설정에서 retcon2 와 3.7배(R2)까지 달랐다.
-- **A 의 R6 은 선택 단계가 12화만 골라 아무것도 고치지 않았다**(제외 범위 때문에 못 쓰는 선택). 이것을 "A 실패"로 셌다(잔여 1). R4 도 첫 선택이 같은 이유로 실패해 한 번 다시 불렀다(재선택은 프로토콜 밖의 재시도; 비용 1 호출은 낭비로 적고 가격 가중에는 넣지 않았다).
-- 실행이 두 프로세스로 나뉘었다(도구 수정 때문). 앞 프로세스는 R3 까지 완료 후 R4 선택에서 종료했고 모델 호출 상태는 남지 않는다. 둘 다 같은 `calls.jsonl` 에 이어서 기록했고 호출 가드의 누적은 이어졌다.
-- 호출은 B 가 A 의 6.7배(221 대 33)다. 비용이 비슷해진 것은 B 의 렌더가 haiku low 라 토큰 단가가 낮아서다. 상태 낡음 장면(68)이 IR 낡음(27)보다 많아 상태 패치 호출이 호출 수를 키웠다.
-- 패치 렌더의 문체는 판정하지 않았다. s32~s35 제외.
-- PG 적재: 기준선 도장 1회 + `dieg revise` 마다 후보 검증 적재. 추가 진단 적재 없음.
+- **A's R6 may be under-counted** (possibly the judge missed e08:41). This works in A's favor.
+- Caveat: 1,069 of A's 2,247 characters came from a keyword-dictionary gap in R3 e04. Without it, about 1,178 vs 47, and the conclusion stays.
+- n = 6, 12 episodes, a single verifier, one run per arm (variance not measured): A's cost differed from retcon2 by up to 3.7× (R2) for the same reset.
+- **In A's R6, the pick stage chose only episode 12 and changed nothing** (a pick unusable because of the excluded scope). We counted this as an "A failure" (residual 1). R4's first pick failed for the same reason too and was called once more (the re-pick is a retry outside the protocol; its 1-call cost is noted as waste and not put in the price weight).
+- The run was split across two processes (because of a tool fix). The earlier process ended at R4's pick after finishing through R3, and no model-call state remains. Both recorded to the same `calls.jsonl` and the call guard's total continued.
+- B makes 6.7× A's calls (221 vs 33). Costs became similar because B's renders are haiku low, with a low token unit price. State-stale scenes (68) outnumber IR-stale scenes (27), so the state patch calls inflated the call count.
+- The style of patch renders was not judged. s32–s35 excluded.
+- PG loads: 1 baseline stamp + a candidate-verification load per `dieg revise`. No extra diagnostic loads.
 
-# 파일
+# Files
 
-`README.md`, `verification.md`, `retcons.json`, `calls.jsonl`(269행), `results.json`(R4~R6), `results-r1-3.json`, `run-1.log`, `run-2.log`, `base/`(run3 경로 + 도장 찍힌 해시 목록 `stamped-hashes.txt`; 산문은 run3 와 동일), `r1/ … r6/`(`a/eps/`, `a/calls.jsonl`, `b/story`, `b/rounds`, `b/calls.jsonl`, `b/novel/` = 바뀐·새 장면만 + `b/novel-unchanged-hashes.txt`(나머지의 도장 해시), `judge/`: 옛 `b.*`(순서 버그 입력) 와 재판정 `b2.*`(R3·R5)). 용량을 줄이려고 `base/b` 전체, `rN/b/novel.md`(판정 입력에 그대로 있음), 중복 `run.log` 는 지웠다.
+`README.md`, `verification.md`, `retcons.json`, `calls.jsonl` (269 rows), `results.json` (R4–R6), `results-r1-3.json`, `run-1.log`, `run-2.log`, `base/` (the run3 path + the stamped hash list `stamped-hashes.txt`; prose is identical to run3), `r1/ … r6/` (`a/eps/`, `a/calls.jsonl`, `b/story`, `b/rounds`, `b/calls.jsonl`, `b/novel/` = changed and new scenes only + `b/novel-unchanged-hashes.txt` (the stamped hashes of the rest), `judge/`: the old `b.*` (order-bug input) and the re-judgment `b2.*` (R3 and R5)). To reduce size we deleted all of `base/b`, `rN/b/novel.md` (it is in the judge input as is), and the duplicate `run.log`.

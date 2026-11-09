@@ -1,4 +1,4 @@
-# 데모 이야기
+# Demo story
 
-`dieg demo` 가 쓰는 짧은 이야기(「등대의 열쇠」)의 원본은 [`cmd/dieg/demo/`](../../cmd/dieg/demo/) 에 있다(바이너리에 내장된다).
-PG 만 있으면 구독 없이 돈다: `dieg demo [--scene <id>]`.
+The source of the short story ("The Lighthouse Key") that `dieg demo` uses lives in [`cmd/dieg/demo/`](../../cmd/dieg/demo/) (it is embedded in the binary).
+It runs without a subscription as long as PG is available: `dieg demo [--scene <id>]`.

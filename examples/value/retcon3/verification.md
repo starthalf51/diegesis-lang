@@ -1,41 +1,41 @@
-# 판정자 항목 확인 (단일 검증자 + 리뷰어 재계산)
+# Judge item check (single verifier + reviewer recount)
 
-판정 원문: `rN/judge/{a,b}.out.txt`, 인용 자동 대조 `*.quotes.md`(모든 인용 "있음"). R3·R5 의 B 는 장면 순서 버그(s11a 가 s9 앞) 때문에 `judge/b2.*` 로 다시 판정했다. 옛 `b.*` 는 증거로 남기되 아래 B 는 b2 기준이다. 세는 방식: 곳마다 1건, 양팔 동일.
+Judge raw output: `rN/judge/{a,b}.out.txt`; automatic quotation cross-check `*.quotes.md` (all quotations "present"). For R3 and R5, B was re-judged as `judge/b2.*` because of a scene-order bug (s11a placed before s9). The old `b.*` is kept as evidence, but B below is based on b2. Counting method: 1 per location, identical for both arms.
 
-분류: 확정(세는 것) / 경계(세지 않음) / 기각.
+Classification: confirmed (counted) / borderline (not counted) / rejected.
 
-## A (직접 쓰기)
+## A (direct writing)
 
-| 재설정 | 항목 | 분류 | 근거(원문 인용) |
+| Reset | Item | Classification | Basis (source quotation) |
 |---|---|---|---|
-| R1 | 11화 근무 장부 | 확정 잔여 | "몸싸움 중 렌즈 하단 파손" — 재설정(영호가 혼자 깸)과 충돌 |
-| R2 | (판정자 0건) | — | |
-| R3 | 7화 메모 물음표 | 확정 잔여 | "이장의 목포 병원 입원은 거짓…"에 물음표(4화에서 확정한 사실을 미확인으로) |
-| R3 | 7화 "토요일 저녁부터 알고 있었다 … 노인의 기억" | 경계 | 4화부터 알았다는 문장과 모순이라기보다 어색함 |
-| R3 | 7화 "그제야 … 맞아떨어졌다" | 경계 | 5화 확인을 처음처럼 쓰나 4화 앎과 직접 충돌은 아님 |
-| R3 | 9화 새 모순 | 확정 새 모순 | "콩을 고르던 아랫집 할머니가 지나가듯…" 대 4화 "마늘 껍질을 쓸어 담고" (한낮/저녁, 먼저 꺼낸 쪽) |
-| R4 | 9화 "동쪽 벼랑 밑예…" | 확정 잔여 | 수아가 최근 벼랑 밑에서 주웠다고 답함(재설정: 하은이 오래전 주움) |
-| R4 | 9화 "동쪽 벼랑 밑에서 아이가 주웠어요" | 확정 잔여 | 서윤이 영호에게 같은 옛 출처를 말함(다른 자리) |
-| R5 | (0건) | — | |
-| R6 | 3화 자기소개 | 확정 잔여 | "이번 사업 현장 책임자입니다" — A 는 아무것도 고치지 않음 |
+| R1 | Episode 11 duty ledger | confirmed residual | "몸싸움 중 렌즈 하단 파손" ("lower part of the lens broken during the scuffle") — clashes with the reset (Yeong-ho broke it alone) |
+| R2 | (judge 0 items) | — | |
+| R3 | Episode 7 memo question mark | confirmed residual | A question mark on "이장의 목포 병원 입원은 거짓…" ("The village head's hospitalization at the Mokpo hospital is false…") (a fact established in episode 4 turned into unconfirmed) |
+| R3 | Episode 7 "토요일 저녁부터 알고 있었다 … 노인의 기억" ("had known since Saturday evening … the old man's memory") | borderline | Awkward rather than a contradiction with the sentence that she knew from episode 4 |
+| R3 | Episode 7 "그제야 … 맞아떨어졌다" ("only then … it fit together") | borderline | Writes the episode 5 confirmation as if it were the first, but it does not directly clash with the knowledge from episode 4 |
+| R3 | Episode 9 new contradiction | confirmed new contradiction | "콩을 고르던 아랫집 할머니가 지나가듯…" ("the grandmother from the lower house, who was sorting beans, said in passing…") vs episode 4 "마늘 껍질을 쓸어 담고" ("sweeping up garlic skins") (midday/evening, the one who raised it first) |
+| R4 | Episode 9 "동쪽 벼랑 밑예…" | confirmed residual | Su-a answers that she recently picked it up under the cliff (the reset: Ha-eun picked it up long ago) |
+| R4 | Episode 9 "동쪽 벼랑 밑에서 아이가 주웠어요" ("A child found it under the east cliff") | confirmed residual | Seo-yun tells Yeong-ho the same old source (a different location) |
+| R5 | (0 items) | — | |
+| R6 | Episode 3 self-introduction | confirmed residual | "이번 사업 현장 책임자입니다" ("I am the site manager for this project") — A changed nothing |
 
-A: 확정 6 (잔여 5 + 새 모순 1), 경계 2 → 포함 8.
+A: confirmed 6 (residual 5 + new contradictions 1), borderline 2 → 8 with them.
 
 ## B (dieg revise)
 
-| 재설정 | 항목 | 분류 | 근거 |
+| Reset | Item | Classification | Basis |
 |---|---|---|---|
-| R1 | (0건) | — | |
-| R2 | 24화(장면) | 확정 잔여 | 같은 장면에 "등대 아래 바위틈은 밤사이…"와 "선착장 방파제 끝에서 찾았어요" |
-| R3 | s11a "올라가 보기로 했어요 / 꼭대기 렌즈가 깨져…" (새 모순) | 확정 새 모순 | s11a 는 `when: after s11` 로 서윤이 올라간 뒤인데 아직 안 올라간 것처럼 말함 (b2 판정; 옛 판정은 다른 이유로 같은 장면을 지적) |
-| R3 | s18 "그 말이 틀렸을 수도 있어요" | 경계 | 같은 장면에서 "사실이 아니에요"라고도 말함. 대사의 신중한 표현 |
-| R3 | s11a "사실이 아닐지도 모른다고 생각했다" | 경계 | 코드 `believes not hospital_alibi` 와 어긋나나 신중한 반응으로 읽힘(리뷰어 지적, 처음 놓침) |
-| R4 | (0건) | — | |
-| R5 | s11 "머릿속에서 … 맞춰졌다"(조각을 본 뒤에야 가능하다는 지적) | 기각 | 조각을 가리키는 말이 없고 렌즈 모양을 보고 떠올린 것일 수 있음. (옛 판정의 "s11a 가 s9 앞" 항목은 정렬 버그 산물) |
-| R6 | s7 "류 소장님" | 확정 잔여 | 직전 "저는 개발사 사람이 아니라 … 중개인입니다" 뒤에도 소장님 호칭 |
+| R1 | (0 items) | — | |
+| R2 | Scene 24 | confirmed residual | The same scene has both "등대 아래 바위틈은 밤사이…" ("the rock crevice below the lighthouse overnight…") and "선착장 방파제 끝에서 찾았어요" ("I found it at the end of the pier breakwater") |
+| R3 | s11a "올라가 보기로 했어요 / 꼭대기 렌즈가 깨져…" ("I decided to go up and look / the lens at the top is broken…") (new contradiction) | confirmed new contradiction | s11a is `when: after s11`, after Seo-yun has gone up, yet she talks as if she had not gone up yet (b2 judgment; the old judgment pointed at the same scene for a different reason) |
+| R3 | s18 "그 말이 틀렸을 수도 있어요" ("that statement may have been wrong") | borderline | In the same scene she also says "사실이 아니에요" ("it is not true"). A cautious wording in dialogue |
+| R3 | s11a "사실이 아닐지도 모른다고 생각했다" ("thought it might not be true") | borderline | Clashes with the code `believes not hospital_alibi` but reads as a cautious reaction (pointed out by the reviewer, missed at first) |
+| R4 | (0 items) | — | |
+| R5 | s11 "머릿속에서 … 맞춰졌다" ("in her head … it fit together") (the remark that this is possible only after seeing the shard) | rejected | Nothing points to the shard, and it could be something recalled from seeing the lens's shape. (The old judgment's item "s11a before s9" was a product of the sorting bug) |
+| R6 | s7 "류 소장님" ("Manager Ryu") | confirmed residual | Even after the immediately preceding "저는 개발사 사람이 아니라 … 중개인입니다" ("I am not a developer's person … I am a broker") the title "manager" is still used |
 
-B: 확정 3 (잔여 2 + 새 모순 1), 경계 2 → 포함 5. 재판정 전후 B 합은 같다(3).
+B: confirmed 3 (residual 2 + new contradiction 1), borderline 2 → 5 with them. The B total is the same (3) before and after re-judging.
 
-## 합계
+## Totals
 
-A 6 (경계 포함 8), B 3 (경계 포함 5). 재설정별 B ≥ A + 2 인 곳 없음. 조건 1·2 는 경계를 모두 세어도(8 대 5) 유지된다.
+A 6 (8 with borderline), B 3 (5 with borderline). In no reset is B ≥ A + 2. Conditions 1 and 2 hold even when all borderline items are counted (8 vs 5).

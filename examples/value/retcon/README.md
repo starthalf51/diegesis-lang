@@ -1,135 +1,135 @@
-# 가설 ② — 연재 도중 설정 변경(retcon)은 Diegesis 가 더 안전하고 싸다
+# Hypothesis ② — changing a setting mid-serial (retcon) is safer and cheaper with Diegesis
 
-Diegesis(AI 가 코딩 → PG 가 검증 → 렌더러가 산문)로 쓰는 쪽(B)에 분명한 이유가 있는지 보는 검증 스파이크 중 하나다.
+This is one of the validation spikes that check whether writing with Diegesis (the AI codes → PG verifies → the renderer writes prose), i.e. arm B, has a clear reason to exist.
 
-**가설 ②.** 이야기 중간의 사실 하나를 바꾸는 일은 B 가 더 안전하고 싸다.
-- B: IR 과 해시 백로그로 영향받는 장면을 기계적으로 찾아 그 장면만 다시 렌더한다.
-- A: 글을 다시 읽고 다시 써야 하고, 놓친다.
+**Hypothesis ②.** Changing one fact in the middle of a story is safer and cheaper with B.
+- B: the IR and the hash backlog mechanically find the affected scenes, and only those scenes are re-rendered.
+- A: must re-read and rewrite the text, and misses things.
 
-**상태: 실행 완료(재설정 3개 / 계획 4개).** "설계(사전 기록)"는 실호출 전에 쓴 것이고 실행 뒤 고치지 않았다(아래 "한계"의 R4 미실행·B 복사본 처리 참고). 결과는 설계 뒤에 붙였다.
+**Status: run complete (3 resets / 4 planned).** The "Design (recorded beforehand)" section was written before the real calls and not edited after the run (see "Limitations" below for R4 not run and the handling of the B copy). The results are appended after the design.
 
-# 설계(사전 기록)
+# Design (recorded beforehand)
 
-## 재료와 방법
+## Material and method
 
-- 재료: `examples/serial/run3` 의 끝난 이야기. A = `a/eps/e01~e12.md`, B = `b/`(Diegesis 이야기 `story/`, 산문 `novel/`).
-- **A 의 수정 방법** = `tools/serial` 의 A 수정(`direct.go` `armA.revise`)과 같은 프롬프트·순서: `PickPrompt` 로 영향받는 화 고르기 1회 → 고른 화마다 `RewritePrompt` 1회(앞 화는 수정 반영본) → `SummaryPrompt` 로 누적 요약 갱신 1회. 입력은 run3 가 끝났을 때의 개요·누적 요약·최종 화별 방향(plan + replan-1 + replan-2)·12개 화. 모델은 하네스와 같은 opus/medium. 코드는 `tools/serial/retcon.go`(같은 프롬프트 함수를 그대로 부른다).
-- **B 의 수정 방법** = 하네스 `runBRevise` 와 같은 `dieg revise <작품> "요청" --render-effort low`(카드 검증기는 dieg 기본값, 렌더 haiku effort low, 코딩 opus, 추출 sonnet). `--scenes` 상한 없음.
-- 요청 문장은 두 팔에 **글자 그대로 같다**. 재설정마다 두 팔 각각 **최종 run3 이야기의 새 복사본**에 독립 적용한다(누적 아님).
-- **B 복사본에서 뺀 것:** 렌더된 적 없는 s32~s35(파이프라인 절단). `dieg revise` 는 렌더 기록(해시)이 없는 장면을 "새 장면"으로 보고 렌더하므로, 그대로 두면 재설정과 무관한 4장면 렌더가 비용·부수 변경에 섞인다. 그래서 복사본에서 `story/ep12/` 와 `story/ep11/s32.dieg.md` 를 뺐다(뺀 뒤 `dieg check` 통과). B 는 s1~s31 로만 판정한다.
-- **판정 범위:** A 는 1~11화, B 는 11화까지의 장면(s1~s31, 렌더된 것 전부). 둘 다 12화를 보지 않는다(B 에는 12화가 없다). A 는 12화까지 고쳐 쓸 수 있고 그 비용은 센다.
-- PG: `dieg revise` 가 후보 이야기를 검증하려고 `yeoul` 작품을 스스로 로드한다. 재설정 4번이 같은 작품명을 각자 다른 내용으로 다시 올리므로 "한 번만 올리기"는 지킬 수 없다(수정본마다 내용이 다르다). 별도로 하는 로드는 없다.
+- Material: the finished stories of `examples/serial/run3`. A = `a/eps/e01~e12.md`, B = `b/` (the Diegesis story `story/`, prose `novel/`).
+- **A's revision method** = the same prompts and order as A's revision in `tools/serial` (`direct.go` `armA.revise`): choose affected episodes once with `PickPrompt` → `RewritePrompt` once per chosen episode (earlier episodes use the revised version) → update the cumulative summary once with `SummaryPrompt`. Input is the outline, cumulative summary, final per-episode directions (plan + replan-1 + replan-2), and the 12 episodes as of the end of run3. The model is opus/medium, same as the harness. The code is `tools/serial/retcon.go` (it calls the same prompt functions as they are).
+- **B's revision method** = the same `dieg revise <work> "request" --render-effort low` as the harness's `runBRevise` (card verifier at the dieg default, render haiku effort low, coding opus, extraction sonnet). No `--scenes` cap.
+- The request sentence is **literally identical** for both arms. For each reset, each arm applies it independently to **a fresh copy of the final run3 story** (not cumulative).
+- **Removed from the B copy:** s32–s35, which were never rendered (pipeline cutoff). `dieg revise` sees scenes with no render record (hash) as "new scenes" and renders them, so left as is, 4 scene renders unrelated to the reset would be mixed into cost and collateral change. So we removed `story/ep12/` and `story/ep11/s32.dieg.md` from the copy (`dieg check` passes after removal). B is judged only on s1–s31.
+- **Judgment scope:** A is episodes 1–11, B is scenes through episode 11 (s1–s31, everything rendered). Neither looks at episode 12 (B has no episode 12). A can revise up to episode 12 and that cost is counted.
+- PG: `dieg revise` loads the `yeoul` work itself to verify the candidate story. The 4 resets each reload the same work name with different content, so "load only once" cannot be kept (each revision has different content). There is no separate load.
 
-## 재설정 4개 (요청 문장, A·B 동일)
+## 4 resets (request sentences, same for A and B)
 
-두 이야기의 인물은 아이디어(`examples/serial/idea.txt`)에서 같다. 수정 1 로 A 는 강민재를 임소정으로, B 는 윤태오·김해솔로 바꿨으므로 **이 인물들 외의 공통 인물**(서윤, 말순, 도경태, 하은, 백영호, 류지환, 문기철, 수아)만 쓴다. 사실은 모두 2~5화(위령제, 유리 조각, 등대 오르기)에 처음 나오고 뒤 화가 기댄다.
+The characters of the two stories are the same from the idea (`examples/serial/idea.txt`). In revision 1, A changed Kang Min-jae to Im So-jeong and B changed to Yun Tae-o and Kim Hae-sol, so we use only the **common characters other than these** (Seo-yun, Mal-sun, Do Gyeong-tae, Ha-eun, Baek Yeong-ho, Ryu Ji-hwan, Mun Gi-cheol, Su-a). All facts first appear in episodes 2–5 (the memorial service, the glass shard, climbing the lighthouse), and later episodes rely on them.
 
-| ID | 종류 | 요청 |
+| ID | Kind | Request |
 |---|---|---|
-| R1 | 누가 일으켰나 | 그날 밤 등대 렌즈를 깨뜨린 사람은 도경태가 아니라 백영호이며(불을 다시 켜려다 혼자 램프에 부딪혀 깼다), 렌즈가 깨진 경위를 말하거나 짐작하는 모든 장면을 이에 맞게 고쳐라. |
-| R2 | 소품의 위치 | 정수아가 두꺼운 유리 조각을 주운 곳은 등대 아래 바위틈이 아니라 선착장 방파제 끝이며, 그 장소가 나오는 모든 장면을 이에 맞게 고쳐라. |
-| R3 | 비밀을 안 시점(앞당김) | 서윤은 도경태의 병원 알리바이가 거짓이라는 것을 진료부를 보기 훨씬 전인 4화(등대에 오른 날)에 이미 알게 되며(누구에게서 알았는지는 정해도 된다), 4화 이후 서윤이 그 알리바이를 여전히 믿는 것처럼 나오는 모든 부분을 이에 맞게 고쳐라. |
-| R4 | 조연의 관계 | 정수아는 백영호와 남남이 아니라 그의 손녀이며, 수아가 나오거나 백영호의 가족·혼자 사는 처지가 언급되는 모든 장면을 이에 맞게 고쳐라. |
+| R1 | Who caused it | 그날 밤 등대 렌즈를 깨뜨린 사람은 도경태가 아니라 백영호이며(불을 다시 켜려다 혼자 램프에 부딪혀 깼다), 렌즈가 깨진 경위를 말하거나 짐작하는 모든 장면을 이에 맞게 고쳐라. ("The person who broke the lighthouse lens that night was not Do Gyeong-tae but Baek Yeong-ho (trying to relight it, he bumped into the lamp alone and broke it); fix every scene that says or guesses how the lens was broken.") |
+| R2 | Prop location | 정수아가 두꺼운 유리 조각을 주운 곳은 등대 아래 바위틈이 아니라 선착장 방파제 끝이며, 그 장소가 나오는 모든 장면을 이에 맞게 고쳐라. ("The place where Jeong Su-a picked up the thick glass shard was not among the rocks below the lighthouse but at the end of the pier breakwater; fix every scene where that place appears.") |
+| R3 | When a secret was learned (moved earlier) | 서윤은 도경태의 병원 알리바이가 거짓이라는 것을 진료부를 보기 훨씬 전인 4화(등대에 오른 날)에 이미 알게 되며(누구에게서 알았는지는 정해도 된다), 4화 이후 서윤이 그 알리바이를 여전히 믿는 것처럼 나오는 모든 부분을 이에 맞게 고쳐라. ("Seo-yun already learns in episode 4 (the day she climbed the lighthouse), long before seeing the medical record, that Do Gyeong-tae's hospital alibi is false (you may decide who told her); fix every part after episode 4 where Seo-yun appears to still believe that alibi.") |
+| R4 | A supporting character's relationship | 정수아는 백영호와 남남이 아니라 그의 손녀이며, 수아가 나오거나 백영호의 가족·혼자 사는 처지가 언급되는 모든 장면을 이에 맞게 고쳐라. ("Jeong Su-a is not a stranger to Baek Yeong-ho but his granddaughter; fix every scene where Su-a appears or Baek Yeong-ho's family or living alone is mentioned.") |
 
-(`tools/serial/retcon.go` 의 `retcons` 와 같은 문장. 재설정 R1 은 두 이야기 모두 "도경태가 등대에서 몸싸움 끝에 렌즈를 깼다"로 쓴 설정을 뒤집는다.)
+(The same sentences as `retcons` in `tools/serial/retcon.go`. Reset R1 reverses the setting that both stories wrote as "Do Gyeong-tae broke the lens in a scuffle at the lighthouse".)
 
-## 측정
+## Measurement
 
-- **(a) 잔여 모순.** 팔·재설정마다 판정 1회(sonnet, 하네스 판정과 같은 문체의 프롬프트: 재설정 문장 + 수정 뒤 전문 → 아직 어긋나는 곳 `residual` 과 수정 때문에 새로 생긴 모순 `introduced` 를 원문 인용과 함께 JSON 으로). 판정 항목을 내가 원문에서 하나씩 확인해 확정/기각을 인용과 함께 `verification.md` 에 적는다. 표의 잔여는 **확정된 것만** 센다. `introduced` 는 수정 전 원문에 이미 있던 오류인지 대조해서 새 것만 센다(별도 열).
-- **(b) 비용.** 호출 수와 가중 토큰. run3 README 공식 그대로: 가중 입력 = 입력 + 0.1×캐시 읽기 + 1.25×캐시 쓰기, 가격 가중 = Σ(모델 계수 × (가중 입력 + 5×출력)), opus 1·sonnet 0.6·haiku 0.2. 호출 라벨 기준 모델 분류도 하네스 `modelOf` 와 같다. 판정 호출은 비용에 넣지 않고 호출 수 예산에만 센다.
-- **(c) 부수 변경.** 단위 = A 는 화, B 는 장면(렌더 산문 파일). 각 단위의 수정 전·후 글자(룬) 편집 거리를 센다(deterministic, `editDist`). **영향 단위**는 사전에 정한 키워드가 **수정 전 원문**에 있는 단위다: R1 `렌즈|파편|유리 조각|깨뜨`, R2 `조각|바위틈|벼랑 밑|벼랑 바로`, R3 `알리바이|병원|맹장|진료부|흉터`, R4 `수아|영호`. 부수 변경 = 영향 단위 밖에서 바뀐 글자 수. (A 는 화가 길어 한 화를 다시 쓰면 그 안의 무관한 문장도 바뀐다. 그것도 부수 변경으로 센다 — 이 가설이 말하는 "다시 쓰는 위험"이다.) 총 변경 글자와 바뀐 단위 수도 같이 적는다.
+- **(a) Residual contradictions.** One judgment per arm and reset (sonnet, a prompt in the same style as the harness judgment: reset sentence + full text after revision → the places that still conflict as `residual` and the contradictions newly created by the revision as `introduced`, as JSON with source quotations). I check each judge item against the source one by one and record confirmed/rejected with quotations in `verification.md`. The table counts **only confirmed** residuals. `introduced` is compared against whether the error was already in the pre-revision source, and only new ones are counted (separate row).
+- **(b) Cost.** Call count and weighted tokens. Exactly the run3 README formula: weighted input = input + 0.1×cache read + 1.25×cache write, price weight = Σ(model factor × (weighted input + 5×output)), opus 1, sonnet 0.6, haiku 0.2. The model classification by call label is also the same as the harness `modelOf`. Judgment calls are not put into cost and are counted only in the call-count budget.
+- **(c) Collateral change.** Unit = episode for A, scene (rendered prose file) for B. We count the character (rune) edit distance between before and after for each unit (deterministic, `editDist`). **Affected units** are units where the pre-set keywords occur in the **pre-revision source**: R1 `렌즈|파편|유리 조각|깨뜨`, R2 `조각|바위틈|벼랑 밑|벼랑 바로`, R3 `알리바이|병원|맹장|진료부|흉터`, R4 `수아|영호`. Collateral change = characters changed outside the affected units. (An A episode is long, so rewriting one episode also changes unrelated sentences inside it. That is counted as collateral change too — it is the "rewriting risk" this hypothesis speaks of.) Total changed characters and the number of changed units are also noted.
 
-## 판정 기준 (사전 고정)
+## Verdict criteria (fixed beforehand)
 
-- **수정 근거 있음:** B 의 확정 잔여 합 < A 의 합, **그리고** 어느 재설정에서도 B 잔여 ≥ A 잔여 + 2 가 아님, **그리고** B 의 부수 변경이 더 적음.
-- **수정 근거 약함:** 잔여가 B 쪽으로 기울지만 위 조건을 다 채우지는 못함.
-- **수정 근거 없음:** 그 밖.
-- 비용은 항상 함께 적는다. **12화는 A 의 컨텍스트에 다 들어가는 규모이고, 이는 A 에게 유리한 영역이다**(A 는 요약 + 직전 화만 보지만, 재설정 한 번에 전체를 통째로 훑어도 비용이 작다). 더 긴 연재에서의 결과를 대신하지 않는다.
+- **Revision evidence present:** B's confirmed residual total < A's total, **and** in no reset is B residual ≥ A residual + 2, **and** B's collateral change is smaller.
+- **Revision evidence weak:** residuals lean toward B but not all the conditions above are met.
+- **Revision evidence absent:** otherwise.
+- Cost is always written alongside. **12 episodes is a scale that fits entirely in A's context, and that is the region that favors A** (A sees only the summary + the previous episode, but even scanning everything per reset costs little). It does not stand in for results on a longer serial.
 
-## 예산·절차
+## Budget and procedure
 
-- 실호출 상한 120회. 호출마다 직전에 예산 가드(사용 + 1 + 판정 예약 ≤ 120)를 거치고, 모든 호출을 `calls.jsonl` 에 남긴다(B 의 dieg 호출은 dieg 가 쓴 `rN/b/calls.jsonl` 을 라벨 접두어 `rN-B-` 로 옮겨 적는다). `dieg revise` 는 한 프로세스 안에서 호출을 하므로 시작 전에 최악 22회를 예약한다.
-- 한 프로세스가 R1(A→B→판정) → R2 → R3 → R4 순으로 돈다. 예산이 모자라 끊겨도 재설정 단위로 끊기므로 팔 사이가 공평하다.
-- 먼저 `noclaude` 껍데기를 PATH 에 두고 단위 시험과 가짜 완성기(`-rc-dry`)로 전체를 돌려 명령을 확인했다: `dieg revise <작품> "<요청>" --render-effort low`.
+- Real-call cap 120. Each call goes through a budget guard right before it (used + 1 + judgment reservation ≤ 120), and every call is logged to `calls.jsonl` (B's dieg calls are copied from `rN/b/calls.jsonl` written by dieg with the label prefix `rN-B-`). `dieg revise` makes calls inside one process, so we reserve a worst case of 22 before starting.
+- One process runs R1 (A→B→judgment) → R2 → R3 → R4 in order. Even if cut off for lack of budget, it is cut at a reset boundary, so the two arms are fair.
+- First, with the `noclaude` shim on PATH, we ran the unit tests and the whole flow with the fake completer (`-rc-dry`) to check the command: `dieg revise <work> "<request>" --render-effort low`.
 
-# 결과
+# Results
 
-재설정 R1~R3 만 돌았다. **R4 는 호출 상한 때문에 실행하지 못했다**(113회 사용, R4 시작 조건 "사용 + 30 ≤ 120"을 못 채움; 아래 호출 수). 판정 기준은 사전에 정한 그대로 3개에 적용했다.
+Only resets R1–R3 ran. **R4 could not run because of the call cap** (113 used; the R4 start condition "used + 30 ≤ 120" was not met; see call count below). The verdict criteria were applied to the 3 as pre-set.
 
-## 표 (재설정별 A / B)
+## Table (A / B per reset)
 
-| | R1 렌즈를 깬 사람 | R2 유리 조각 위치 | R3 알리바이를 안 시점 | 합 |
+| | R1 who broke the lens | R2 glass shard location | R3 when the alibi was learned | Total |
 |---|---|---|---|---|
-| **확정 잔여** (판정자 항목, 검증 후) | A **1** / B **0** | A **3** / B **0** | A **0** / B **0** | A **4** / B **0** |
-| 확정 새 모순 (수정이 만든 것) | 0 / 0 | 0 / 1 | 1 / 0 | A 1 / B 1 |
-| 경계 (세지 않음) | 0 / 1 | 0 / 0 | 0 / 1 | A 0 / B 2 |
-| 감사로 더 찾은 잔여 (판정자가 놓침) | 0 / 0 | A +1 / 0 | 0 / 0 | A +1 / B 0 |
-| **호출 수** | 4 / 27 (순 24) | 3 / 44 (순 41) | 8 / 21 (순 19) | 15 / 92 (순 84) |
-| 가중 입력 (입력+0.1읽기+1.25쓰기) | 52,569 / 166,834 | 31,690 / 210,222 | 147,900 / 142,199 | 232,159 / 519,255 (순 489,142) |
-| 출력 토큰 | 17,121 / 54,231 | 10,985 / 66,265 | 45,017 / 48,212 | 73,123 / 168,708 (순 155,871) |
-| 가격 가중 (opus 1·sonnet 0.6·haiku 0.2, 출력×5) | 138,174 / 243,352 (순 230,802) | 86,615 / 241,765 (순 230,962) | 372,985 / 217,589 (순 207,377) | 597,774 / 702,706 (순 669,141) |
-| 다시 쓴 단위 / 전체 (A 화, B 장면) | 1/11 | 1/11 | 6/11 | |
-| └ 키워드 영향 단위 중 바뀐 것 | A 1/6 · B 7/14 | A 1/6 · B 10/10 | A 5/8 · B 3/14 | |
-| 총 변경 글자 (편집 거리) | 701 / 9,906 | 263 / 16,595 | 4,098 / 6,543 | 5,062 / 33,044 |
-| **부수 변경 글자** (영향 단위 밖) | A **0** / B **2,796** (s22·s23·s29) | A **0** / B **6,814** (7장면) | A **1,250** (4화) / B **3,959** (4장면) | A **1,250** / B **13,569** |
-| 새로 생긴 장면 (부수에서 뺌) | — / s32 1,966자 | — / s32 1,425자 | — / s32 1,280자(레트콘 장면), s33 1,983자 | |
+| **Confirmed residual** (judge items, after verification) | A **1** / B **0** | A **3** / B **0** | A **0** / B **0** | A **4** / B **0** |
+| Confirmed new contradictions (created by the revision) | 0 / 0 | 0 / 1 | 1 / 0 | A 1 / B 1 |
+| Borderline (not counted) | 0 / 1 | 0 / 0 | 0 / 1 | A 0 / B 2 |
+| More residuals found by audit (missed by the judge) | 0 / 0 | A +1 / 0 | 0 / 0 | A +1 / B 0 |
+| **Calls** | 4 / 27 (net 24) | 3 / 44 (net 41) | 8 / 21 (net 19) | 15 / 92 (net 84) |
+| Weighted input (input+0.1 read+1.25 write) | 52,569 / 166,834 | 31,690 / 210,222 | 147,900 / 142,199 | 232,159 / 519,255 (net 489,142) |
+| Output tokens | 17,121 / 54,231 | 10,985 / 66,265 | 45,017 / 48,212 | 73,123 / 168,708 (net 155,871) |
+| Price weight (opus 1, sonnet 0.6, haiku 0.2, output ×5) | 138,174 / 243,352 (net 230,802) | 86,615 / 241,765 (net 230,962) | 372,985 / 217,589 (net 207,377) | 597,774 / 702,706 (net 669,141) |
+| Units rewritten / total (A episodes, B scenes) | 1/11 | 1/11 | 6/11 | |
+| └ changed among keyword-affected units | A 1/6 · B 7/14 | A 1/6 · B 10/10 | A 5/8 · B 3/14 | |
+| Total changed chars (edit distance) | 701 / 9,906 | 263 / 16,595 | 4,098 / 6,543 | 5,062 / 33,044 |
+| **Collateral change chars** (outside affected units) | A **0** / B **2,796** (s22, s23, s29) | A **0** / B **6,814** (7 scenes) | A **1,250** (episode 4) / B **3,959** (4 scenes) | A **1,250** / B **13,569** |
+| Newly created scenes (excluded from collateral) | — / s32 1,966 chars | — / s32 1,425 chars | — / s32 1,280 chars (retcon scene), s33 1,983 chars | |
 
-- "순"은 B 복사본에서 s32 칸(11화)을 비운 탓에 `dieg revise` 가 다시 만든 장면(R1 s32, R2 s32, R3 s33)의 렌더·추출 호출을 뺀 값이다. R3 의 s32 는 4화에 새로 넣은 레트콘 장면이라 뺀 값에 포함시킨다(재설정 작업이다).
-- A 는 12화도 고쳐 쓸 수 있다. R1 에서 12화를 다시 썼다(영향 단위, 부수 아님; 판정은 1~11화만 봤다).
-- 가격 가중은 run3 README 의 가정(s = 0.6, h = 0.2, 출력 = 입력 × 5)이며 실제 가격표가 아니다. 판정 6회(sonnet)는 어느 쪽 비용에도 넣지 않았다.
-- 판정 항목·확정/기각 근거: [`verification.md`](verification.md). 판정 원문: `rN/judge/`. 수정된 텍스트: `rN/a/eps/`(고친 화만; 나머지는 run3 와 같다), `rN/b/novel/`·`rN/b/story/`. 기계 판독 결과: `results.json`(실행 때 출력), `results2.json`(추가 장면 분리·순 비용을 파일에서 다시 계산, 호출 없음).
+- "Net" is the value with the render and extract calls of the scenes `dieg revise` recreated (R1 s32, R2 s32, R3 s33) removed, because we emptied the s32 slot (episode 11) in the B copy. R3's s32 is a retcon scene newly inserted in episode 4, so it stays in the net value (it is reset work).
+- A can also rewrite episode 12. In R1 it rewrote episode 12 (an affected unit, not collateral; the judgment looked only at episodes 1–11).
+- The price weight uses the run3 README's assumptions (s = 0.6, h = 0.2, output = input × 5) and is not an actual price list. The 6 judgments (sonnet) are not included in either side's cost.
+- Judge items and the confirm/reject basis: [`verification.md`](verification.md). Judge text: `rN/judge/`. Revised text: `rN/a/eps/` (only the revised episodes; the rest are the same as run3), `rN/b/novel/`, `rN/b/story/`. Machine-readable results: `results.json` (printed at run time), `results2.json` (extra-scene separation and net cost recomputed from files, no calls).
 
-## 각 재설정에서 일어난 일
+## What happened in each reset
 
-- **R1.** A 는 선택 호출이 10·12화만 골랐다. 11화의 장부 요약 한 줄("몸싸움 중 렌즈 하단 파손")이 옛 설정으로 남았다(확정 1). B 는 8~11화의 10장면을 다시 렌더했고(키워드 영향 14장면 중 7), 판정자 항목은 경계 1 로 남았다. 렌더를 다시 하면 재설정과 무관한 장면(s22·s23·s29, 2,796자)의 글도 바뀌었다.
-- **R2.** A 는 선택 호출이 4화 한 화만 골랐다. 놓친 곳이 3화(조각을 주운 곳을 처음 말하는 대사)와 9화(두 군데)다(확정 3, 감사 +1). B 는 17장면을 다시 렌더해 조각 위치를 전 장면에서 방파제 끝으로 바꿨다(잔여 0). 대신 6화에 "방파제 끝의 등대 불"이 들어가 등대 위치와 어긋났다(새 모순 1). 이 재설정이 **가설 ② 가 말하는 상황**(A 가 놓치고 B 가 기계적으로 찾음)에 가장 가깝다.
-- **R3.** A 는 4~9화 6화를 다시 썼고(8호출) 잔여는 없었다. 4화와 8화의 시각 표기가 낮/저녁으로 어긋났다(새 모순 1, 사소). B 는 4화에 새 장면 s32(태오가 입원 기록 없음을 보여 줌)를 넣고 s12~s14·s18~s21 일곱 장면을 다시 렌더했다(호출 21). 이 건은 B 가 가격 가중으로 A 보다 쌌다(217,589 대 372,985).
+- **R1.** A's pick call chose only episodes 10 and 12. The one-line ledger summary in episode 11 ("lens lower part broken during the scuffle") stayed as the old setting (confirmed 1). B re-rendered 10 scenes in episodes 8–11 (7 of the 14 keyword-affected scenes), and the judge item was left as borderline 1. Re-rendering also changed the text of scenes unrelated to the reset (s22, s23, s29, 2,796 characters).
+- **R2.** A's pick call chose only episode 4. The places it missed are episode 3 (the line that first says where the shard was picked up) and episode 9 (two places) (confirmed 3, audit +1). B re-rendered 17 scenes and changed the shard location to the end of the breakwater in all scenes (residual 0). Instead, episode 6 gained "the lighthouse light at the end of the breakwater", which clashed with the lighthouse's location (new contradiction 1). This reset is the closest to the **situation hypothesis ② describes** (A misses, B finds mechanically).
+- **R3.** A rewrote 6 episodes, 4–9 (8 calls) and had no residual. The time markings in episodes 4 and 8 clashed as day/evening (new contradiction 1, minor). B inserted a new scene s32 in episode 4 (Tae-o shows that there is no hospital record) and re-rendered seven scenes s12–s14 and s18–s21 (21 calls). In this case B was cheaper than A by price weight (217,589 vs 372,985).
 
-# 판정
+# Verdict
 
-사전 기준에 3개 재설정을 적용한다.
+The pre-set criteria are applied to the 3 resets.
 
-| 조건 | 값 | 충족 |
+| Condition | Value | Met |
 |---|---|---|
-| B 의 확정 잔여 합 < A 의 합 | B 0 < A 4 (새 모순까지 합치면 B 1 < A 5) | 예 |
-| 어느 재설정에서도 B 잔여 ≥ A + 2 가 아님 | R1 0 대 1, R2 0 대 3, R3 0 대 0 | 예 |
-| B 의 부수 변경이 더 적음 | B 13,569자 > A 1,250자 (재설정마다도 B 가 많거나 같다) | **아니오** |
+| B's confirmed residual total < A's total | B 0 < A 4 (adding new contradictions, B 1 < A 5) | Yes |
+| In no reset is B residual ≥ A + 2 | R1 0 vs 1, R2 0 vs 3, R3 0 vs 0 | Yes |
+| B's collateral change is smaller | B 13,569 chars > A 1,250 chars (per reset too, B is larger or equal) | **No** |
 
-**판정: 수정 근거 약함.** 잔여 모순은 B 쪽이 적고(0 대 4) 그 차이는 A 의 선택 호출이 영향 화를 놓친 R2 에서 나왔다. 가설의 핵심 주장("A 는 놓친다")과 맞는다. 그러나 부수 변경 조건을 채우지 못했다. B 의 `revise` 는 렌더 요청이 바뀐 장면을 통째로 다시 렌더하므로, 재설정과 상관없는 문장도 바뀐다(13,569자, 바뀐 장면 10·17·7개). A 는 고른 화만 쓰고(그 화 안의 문장도 새로 쓰지만 대부분 영향 화 안이다) 부수 변경이 적었다.
+**Verdict: revision evidence weak.** Residual contradictions are fewer for B (0 vs 4), and that difference came from R2, where A's pick call missed the affected episodes. This matches the hypothesis's core claim ("A misses"). But the collateral change condition was not met. B's `revise` re-renders scenes whose render request changed wholesale, so sentences unrelated to the reset change too (13,569 characters, 10, 17, and 7 scenes changed). A writes only the chosen episodes (sentences inside those episodes are also rewritten, but mostly inside affected episodes), and its collateral change was small.
 
-**비용은 B 가 더 든다.** 호출 수 92 대 15(순 84), 가중 입력 519k 대 232k, 출력 169k 대 73k. 가격 가중으로도 B 702,706 대 A 597,774(1.18배; 순 669,141 이면 1.12배). 재설정 하나가 B 에서 21~44호출, A 에서 3~8호출이다. 가격 가중이 B 에게 유리한 건 R3 한 번이다(0.58배).
+**B costs more.** Calls 92 vs 15 (net 84), weighted input 519k vs 232k, output 169k vs 73k. In price weight too, B is 702,706 vs A 597,774 (1.18×; 1.12× if net 669,141). One reset is 21–44 calls for B and 3–8 calls for A. Price weight favors B only once, in R3 (0.58×).
 
-**12화 규모는 A 의 컨텍스트에 다 들어가는 영역이고, 이는 A 에게 유리한 조건이다.** A 의 `pick` 은 누적 요약만 보고 화를 고르는데, 이 규모에서 요약이 충분히 상세해 R1·R3 에서는 영향 화를 거의 다 짚었다. R2 에서만 놓쳤다(`pick` 이 보는 누적 요약 `a/summary.md` 에는 유리 조각 항목 자체가 없다). 더 길어지면 요약이 사실을 잃어 A 의 누락이 늘 가능성이 있고, B 의 장면 단위 영향 파악이 더 중요해질 수 있다. 이 스파이크는 그것을 재지 못했다.
+**12 episodes is a region that fits entirely in A's context, which is a condition favoring A.** A's `pick` chooses episodes by looking only at the cumulative summary, and at this scale the summary was detailed enough that it caught nearly all affected episodes in R1 and R3. It missed only in R2 (the cumulative summary `a/summary.md` that `pick` sees has no entry for the glass shard at all). With a longer serial the summary may lose facts and A's omissions may grow, and B's scene-level impact identification may become more important. This spike could not measure that.
 
-# 호출 수
+# Call count
 
-- 사용 **113 / 상한 120.** A 15 (선택 3 + 장면 재작성 9 + 요약 3), B 92 (dieg 가 쓴 `rN/b/calls.jsonl`: 코드 라운드 6, 렌더·추출 86), 판정 6. 전부 `calls.jsonl` 에 있다(B 호출은 `rN-B-` 접두어). 실패한 호출 0 (`err` 비어 있음).
-- **낭비:** B 복사본에서 s32(렌더된 적 없음)를 비운 탓에 `dieg revise` 가 s32/s33 장면을 다시 만든 호출이 R1 3 + R2 3 + R3 2 = 8회다(표의 "순" 이 이를 뺀 값). 설계 단계의 판단 오류다: 비운 뒤 `dieg check` 는 통과했지만 PG 검증이 "회수되지 않은 설정"을 잡아 AI 가 그 칸을 메웠다. 안 비웠다면 s32~s35 4장면 렌더가 끼었을 것이라 어느 쪽이든 B 비용에 군더더기가 생겼다.
-- 시작 전 단위 시험·가짜 완성기(`-rc-dry`) 전 구간 실행에서 실호출 0 (`noclaude` 껍데기).
-- 가드: 호출 직전 "사용 + 1 + 판정 예약 ≤ 120", `dieg revise` 는 시작 전 22회 예약, 재설정 시작은 "사용 + 30 ≤ 120". R4 는 113 + 30 > 120 이라 시작하지 않았다(A 만 돌리면 비교가 안 맞아 하지 않았다).
+- Used **113 / cap 120.** A 15 (pick 3 + scene rewrites 9 + summary 3), B 92 (`rN/b/calls.jsonl` written by dieg: code rounds 6, render/extract 86), judgment 6. All are in `calls.jsonl` (B calls have the `rN-B-` prefix). Failed calls 0 (`err` empty).
+- **Waste:** because we emptied s32 (never rendered) in the B copy, the calls where `dieg revise` recreated scenes s32/s33 are R1 3 + R2 3 + R3 2 = 8 (the table's "net" removes these). It was a judgment error at the design stage: after emptying, `dieg check` passed but PG verification caught an "unpaid setup" and the AI filled the slot. Had we not emptied it, the renders of the 4 scenes s32–s35 would have been mixed in, so either way B's cost got some padding.
+- 0 real calls in the pre-start unit tests and the full fake-completer run (`-rc-dry`) (`noclaude` shim).
+- Guards: "used + 1 + judgment reservation ≤ 120" right before a call, `dieg revise` reserves 22 before starting, and a reset starts when "used + 30 ≤ 120". R4 did not start since 113 + 30 > 120 (running only A would not make a fair comparison, so we did not).
 
-# 한계
+# Limitations
 
-- **R4 미실행.** 4개 중 3개만 측정했다. 합계·판정은 R1~R3 기준이다. R4(조연 관계 교체)는 설계에는 있다.
-- **n = 3, 판정 1회씩, 사람 대조도 1명.** 판정자(sonnet 1회)가 놓친 항목이 있다(A R2 +1). 키워드 감사는 키워드에 안 걸리는 모순을 못 본다. A·B 에 같은 범위로 했지만 확정 잔여 0 인 B 쪽도 "0"이 아니라 "못 찾음"일 수 있다.
-- **두 팔의 이야기가 다르다.** 같은 아이디어에서 따로 쓴 두 이야기라 재설정이 닿는 장면 수가 같지 않다(영향 키워드 단위: R1 A 6/B 14, R2 A 6/B 10, R3 A 8/B 14). B 쪽 이야기가 해당 사실을 더 많은 장면에 흩어 놓았다.
-- **부수 변경의 정의가 키워드다.** 영향 단위를 수정 전 원문 키워드로 정했다(사전 기록). 키워드가 느슨해서 "영향"으로 센 단위가 많으면 부수 변경이 줄고, 빡빡하면 늘어난다. 단위도 달라서 A 는 화(약 4,000자), B 는 장면(약 1,300자)이다. 새로 생긴 장면(4건)은 부수에서 뺐다.
-- **B 복사본이 온전하지 않다.** 렌더된 적 없는 s32~s35 를 피하려고 12화와 s32 를 비웠다. B 는 s1~s31 만, A 는 1~11화만 판정받았다. A 는 12화도 고쳐 쓸 수 있어 비용에는 12화 재작성이 들어 있다(R1).
-- **A 의 `pick` 입력은 run3 가 끝났을 때의 누적 요약이다.** 이 요약은 마지막 수정의 흔적을 포함한다. 하네스가 수정 때마다 주던 것과 같은 방법이다.
-- **A 의 판정과 B 의 판정이 같은 자리인가.** 판정 프롬프트는 같지만 B 텍스트는 장면, A 텍스트는 화 단위로 헤더를 붙였다.
-- 이 스파이크는 "수정할 때 B 가 낫다"를 입증하지도 반증하지도 못한다. 잔여 모순은 B 쪽이 적었고 비용·부수 변경은 A 쪽이 적었다. 방향이 갈린다.
+- **R4 not run.** Only 3 of the 4 were measured. Totals and the verdict are based on R1–R3. R4 (replacing a supporting character's relationship) is in the design.
+- **n = 3, one judgment each, one human checker.** There are items the judge (sonnet, once) missed (A R2 +1). The keyword audit cannot see contradictions that miss the keywords. It was done to the same scope for A and B, but B's confirmed residual of 0 may also be "not found" rather than "0".
+- **The two arms' stories differ.** They are two stories written separately from the same idea, so the number of scenes a reset reaches is not the same (keyword-affected units: R1 A 6/B 14, R2 A 6/B 10, R3 A 8/B 14). B's story scattered the fact across more scenes.
+- **The definition of collateral change is the keywords.** The affected units were set by keywords in the pre-revision source (recorded beforehand). If the keywords are loose and many units count as "affected", collateral change shrinks; if tight, it grows. The units also differ: A is an episode (about 4,000 characters), B is a scene (about 1,300 characters). Newly created scenes (4) were excluded from collateral.
+- **The B copy is not intact.** To avoid the never-rendered s32–s35 we emptied episode 12 and s32. B was judged only on s1–s31 and A only on episodes 1–11. A can also rewrite episode 12, so the cost includes the episode 12 rewrite (R1).
+- **A's `pick` input is the cumulative summary as of the end of run3.** This summary contains traces of the last revision. It is the same method the harness gave at each revision.
+- **Are A's and B's judgments at the same place?** The judge prompt is the same, but B's text is headed per scene and A's per episode.
+- This spike neither proves nor disproves "B is better at revision". Residual contradictions were fewer for B, and cost and collateral change were smaller for A. The directions split.
 
-# 파일
+# Files
 
-- `README.md` (이 문서), `verification.md`, `calls.jsonl`, `results.json`, `results2.json`
-- `r1/ r2/ r3/` — `a/eps/`(고친 화), `a/calls.jsonl`, `b/`(수정된 Diegesis 작품: `story/`, `novel/`, `calls.jsonl`), `b.log`, `judge/`(`{a,b}.prompt.txt`, `.out.txt`, `.quotes.md`), `judge.calls.jsonl`
-- 도구: `tools/serial/retcon.go` (하위 명령 `retcon`), `tools/serial/retcon_test.go`
+- `README.md` (this document), `verification.md`, `calls.jsonl`, `results.json`, `results2.json`
+- `r1/ r2/ r3/` — `a/eps/` (revised episodes), `a/calls.jsonl`, `b/` (the revised Diegesis work: `story/`, `novel/`, `calls.jsonl`), `b.log`, `judge/` (`{a,b}.prompt.txt`, `.out.txt`, `.quotes.md`), `judge.calls.jsonl`
+- Tools: `tools/serial/retcon.go` (subcommand `retcon`), `tools/serial/retcon_test.go`
 
-재현:
+Reproduction:
 
 ```
 export PATH=<go-install>/bin:$PATH
 export SL_PG_DSN='postgres://sl:sl@localhost:55432/sl?sslmode=disable'
 go run ./tools/serial retcon -rc-out examples/value/retcon -rc-budget 120
-go run ./tools/serial retcon -rc-out examples/value/retcon -rc-recompute   # 파일에서 비용·부수 변경 재계산(호출 없음)
+go run ./tools/serial retcon -rc-out examples/value/retcon -rc-recompute   # recompute cost and collateral change from files (no calls)
 ```
