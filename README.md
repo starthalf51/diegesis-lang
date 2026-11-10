@@ -4,6 +4,17 @@ A programming language for novels. You write characters, facts, scenes and speec
 
 **Status: experimental preview.** The grammar and IR may change in any 0.x release. Prose output is Korean by default (see [Output language](#output-language)).
 
+- **Change the middle of a serial, and only what should change does.** In a measured retcon test, `dieg revise` touched 47 characters of unrelated text where a direct AI edit touched 2,247, with fewer contradictions left (3 vs 6). Not shown to be cheaper. [Details](#why-diegesis).
+- **Runs on local models too.** The coding step can use an Ollama model (`--code-model ollama:gemma4:26b`); the compiler and SQL checks catch its mistakes and feed them back. `dieg convert` turns public-domain stories into Diegesis code the same way. Experimental.
+
+```sl
+enter lady_macbeth
+lady_macbeth reads macbeth_letter src 1.5.1
+lady_macbeth thinks: "Yet do I fear thy nature; / It is too full o' the milk of human kindness" src 1.5.16
+enter messenger
+messenger tells lady_macbeth: duncan_comes "The king comes here to-night." src 1.5.32
+```
+
 한국어 문서: [README.ko.md](README.ko.md)
 
 ## Why Diegesis
