@@ -156,7 +156,7 @@ func (k *counter) Complete(ctx context.Context, system, user string) (render.Res
 	return k.c.Complete(ctx, system, user)
 }
 
-// cmdWrite runs `dieg write <idea.txt | "item sentence"> -o <dir> [--rounds N] [--backend id] [--no-render] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--render-effort low|medium|high] [--force]`.
+// cmdWrite runs `dieg write <idea.txt | "item sentence"> -o <dir> [--rounds N] [--backend id] [--no-render] [--allow-warn] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--render-effort low|medium|high] [--force]`.
 // Exit 1 when the code is not clean after the rounds (nothing rendered), 3 when a rendered scene failed verification.
 // --scenes N renders only the first N shown scenes (to fit a call budget).
 func cmdWrite(args []string) int {
@@ -204,6 +204,8 @@ func commonFlag(args []string, i int, o *write.Opts, styles *string, limit *int)
 		o.NoDigest = true
 	case a == "--no-render":
 		o.Render = false
+	case a == "--allow-warn":
+		o.AllowWarn = true
 	case a == "--skeleton" || a == "--skeleton=true" || a == "--skeleton=false":
 		o.Skeleton = a != "--skeleton=false"
 	case (a == "--rounds" || a == "--scenes") && i+1 < len(args):
@@ -246,11 +248,11 @@ func commonFlag(args []string, i int, o *write.Opts, styles *string, limit *int)
 // meters builds the metered completers: coding on o.CodeModel at o.CodeEffort, render and extract on their own
 // models, all logged into one Meter writing f and counted in one counter.
 func meters(o write.Opts, f io.Writer) (*render.Meter, render.Completers, *counter) {
-	k := &counter{c: render.NewClaudeCLIWith(o.CodeModel, o.CodeEffort), n: new(atomic.Int64)}
+	k := &counter{c: render.NewCompleter(o.CodeModel, o.CodeEffort), n: new(atomic.Int64)}
 	m := render.NewMeter(k, f)
 	cs := render.Completers{
-		Render:  m.With(&counter{c: render.NewClaudeCLIWith(o.RenderModel, o.RenderEffort), n: k.n}),
-		Extract: m.With(&counter{c: render.NewClaudeCLIWith(o.ExtractModel, "low"), n: k.n}),
+		Render:  m.With(&counter{c: render.NewCompleter(o.RenderModel, o.RenderEffort), n: k.n}),
+		Extract: m.With(&counter{c: render.NewCompleter(o.ExtractModel, "low"), n: k.n}),
 	}
 	return m, cs, k
 }

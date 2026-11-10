@@ -49,6 +49,8 @@ type Opts struct {
 	Digest                               func(ctx context.Context, sceneID string) (text, state string, err error) // render path: per-scene PG world-state digest; text is appended to the render prompt, only the state-only part is hashed for staleness; nil = none
 	Skip                                 []string // Rerender: scene ids never rendered even if stale (CLI: revise --skip)
 	Verifier                             string   // "card" (default, render.ScoreCard checklist) or "open" (open re-extraction)
+	AllowWarn                            bool     // Loop: warn diagnostics do not block and are not fed back (errors still do)
+	Coverage                             func(dir string) int // Loop: how much of the source a round's code covers; when set, an error-free round wins, then the higher coverage, so dropping scenes cannot buy fewer errors
 }
 
 func DefaultOpts() Opts {
@@ -56,8 +58,8 @@ func DefaultOpts() Opts {
 		CodeModel: "claude-opus-5-5", RenderModel: "claude-haiku-5-5", ExtractModel: "claude-sonnet-5-5"}
 }
 
-// Result: Rounds used, whether the last code is clean, its diagnostics (the blocking ones and any info),
-// and Dir = <out>/story holding the last well-formed code.
+// Result: Rounds used, whether the best code is clean, its diagnostics (the blocking ones and any info),
+// and Dir = <out>/story holding the best round's code (fewest errors, then warns; the earlier round on ties).
 type Result struct {
 	Rounds int
 	Clean  bool
@@ -80,9 +82,9 @@ func bundleDiag(msg string) []Diag {
 
 // Loop asks c for code, checks it, and feeds diagnostics back until clean or o.Rounds is spent. Round r's
 // raw output is <out>/rounds/r<r>.raw.txt and its code <out>/rounds/r<r>/. A malformed bundle is one "bundle"
-// diagnostic and consumes its round; the next prompt shows the last well-formed bundle. The last well-formed
-// code is copied to <out>/story/ either way and <out>/diags.txt holds that code's diagnostics (a later malformed
-// round does not overwrite it; with no well-formed round it holds the last bundle diagnostic). Loop never renders.
+// diagnostic and consumes its round; the next prompt shows the last well-formed bundle. The best well-formed
+// round (fewest errors, then warns; the earlier round on ties) is copied to <out>/story/ either way and
+// <out>/diags.txt holds its diagnostics (a later worse or malformed round does not overwrite it;with no well-formed round it holds the last bundle diagnostic). Loop never renders.
 func Loop(ctx context.Context, c render.Completer, check Checker, idea string, refs Refs, o Opts) (Result, error) {
 	if o.Rounds <= 0 {
 		o.Rounds = DefaultOpts().Rounds
@@ -91,8 +93,18 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 		return Result{}, fmt.Errorf("write: no output dir")
 	}
 	res := Result{Dir: filepath.Join(o.Out, "story")}
-	var last map[string]string // last well-formed bundle
-	var lastDiags []Diag       // its diagnostics
+	// blk: the diagnostics that keep a round from being clean; with AllowWarn only errors.
+	blk := func(ds []Diag) (out []Diag) {
+		for _, d := range blocking(ds) {
+			if d.Severity == "error" || !o.AllowWarn {
+				out = append(out, d)
+			}
+		}
+		return
+	}
+	var best map[string]string // best well-formed bundle: fewest errors, then fewest warns, the earlier round on a tie
+	var bestDiags []Diag       // its diagnostics
+	var bestE, bestW, bestC int
 	var bundle string
 	user := CodePrompt(idea, refs, o.Reserved, o.Skeleton)
 	for r := 1; r <= o.Rounds; r++ {
@@ -125,30 +137,45 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 			if res.Diags, err = check(ctx, rdir); err != nil {
 				return res, fmt.Errorf("round %d check: %w", r, err)
 			}
-			last, lastDiags = files, res.Diags
 			if bundle, err = PackFiles(rdir); err != nil {
 				return res, err
 			}
-			res.Clean = true
+			e, w := 0, 0
 			for _, d := range res.Diags {
-				res.Clean = res.Clean && !d.Blocking()
+				switch d.Severity {
+				case "error":
+					e++
+				case "warn":
+					w++
+				}
 			}
+			cov, better := 0, e < bestE || e == bestE && w < bestW
+			if o.Coverage != nil {
+				cov = o.Coverage(rdir)
+				if (e == 0) != (bestE == 0) {
+					better = e == 0
+				} else if cov != bestC {
+					better = cov > bestC
+				}
+			}
+			if best == nil || better {
+				best, bestDiags, bestE, bestW, bestC = files, res.Diags, e, w, cov
+			}
+			res.Clean = len(blk(res.Diags)) == 0
 		}
 		if res.Clean {
 			break
 		}
-		user = FixPrompt(idea, refs, o.Reserved, o.Skeleton, bundle, blocking(res.Diags))
+		user = FixPrompt(idea, refs, o.Reserved, o.Skeleton, bundle, blk(res.Diags))
 	}
-	if last != nil {
-		if err := WriteFiles(res.Dir, last); err != nil {
+	if best != nil {
+		if err := WriteFiles(res.Dir, best); err != nil {
 			return res, err
 		}
-	}
-	if last == nil {
-		lastDiags = res.Diags
+		res.Diags, res.Clean = bestDiags, len(blk(bestDiags)) == 0
 	}
 	var sb strings.Builder
-	for _, d := range lastDiags {
+	for _, d := range res.Diags {
 		sb.WriteString(d.String() + "\n")
 	}
 	return res, os.WriteFile(filepath.Join(o.Out, "diags.txt"), []byte(sb.String()), 0o644)

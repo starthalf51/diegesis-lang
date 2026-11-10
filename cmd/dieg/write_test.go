@@ -235,3 +235,12 @@ func TestCallCapExact(t *testing.T) {
 		t.Errorf("passed=%d counted=%d, want 5/5", ok.Load(), k.n.Load())
 	}
 }
+
+func TestConvertRejectsRenderFlags(t *testing.T) {
+	for _, f := range [][]string{{"--scenes", "3"}, {"--render-model", "claude-haiku-5-5"}, {"--extract-model", "claude-haiku-5-5"},
+		{"--render-effort", "low"}, {"--no-digest"}, {"--verifier", "card"}, {"--backend", "b"}, {"--styles", "s"}} {
+		if c := cmdConvert(append([]string{"story.txt", "-o", t.TempDir()}, f...)); c != 2 {
+			t.Errorf("convert %v exit %d", f, c)
+		}
+	}
+}

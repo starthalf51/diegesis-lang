@@ -208,7 +208,7 @@ func TestLoopDiagsTxtDescribesStory(t *testing.T) {
 	f := &fakeLLM{replies: []string{good, "no header"}}
 	chk, _ := checks([]Diag{{File: "cast.dieg.md", Line: 1, Col: 1, Severity: "warn", Rule: "dead-actor", Msg: "m"}})
 	res, err := Loop(ctx, f, chk, "idea", testRefs(t), Opts{Rounds: 2, Out: out})
-	if err != nil || res.Clean || res.Diags[0].Rule != "bundle" {
+	if err != nil || res.Clean || res.Diags[0].Rule != "dead-actor" {
 		t.Fatalf("%+v %v", res, err)
 	}
 	b, _ := os.ReadFile(filepath.Join(out, "diags.txt"))
@@ -242,4 +242,94 @@ func TestSkeletonCodePrompt(t *testing.T) {
 	if !strings.Contains(on, "8–12") || !strings.Contains(on, "exit all") {
 		t.Error("skeleton keeps the other rules")
 	}
+}
+
+func rerr(rule string) Diag  { return Diag{File: "cast.dieg.md", Line: 1, Col: 1, Severity: "error", Rule: rule, Msg: "m"} }
+func rwarn(rule string) Diag { return Diag{File: "cast.dieg.md", Line: 1, Col: 1, Severity: "warn", Rule: rule, Msg: "m"} }
+
+func goodWith(body string) string {
+	return "=== FILE: cast.dieg.md ===\n# cast\n=== FILE: scenes/s1.dieg.md ===\n# " + body + "\n" + End + "\n"
+}
+
+func storyHas(t *testing.T, out, want string) {
+	t.Helper()
+	if b, _ := os.ReadFile(filepath.Join(out, "story", "scenes", "s1.dieg.md")); !strings.Contains(string(b), want) {
+		t.Errorf("story/ lacks %q: %q", want, b)
+	}
+}
+
+func TestLoopKeepsBestRound(t *testing.T) {
+	out := t.TempDir()
+	f := &fakeLLM{replies: []string{goodWith("one"), goodWith("two")}}
+	chk, _ := checks([]Diag{rwarn("w1")}, []Diag{rerr("e1"), rerr("e2")})
+	res, err := Loop(ctx, f, chk, "idea", testRefs(t), Opts{Rounds: 2, Out: out})
+	if err != nil || res.Clean || res.Rounds != 2 {
+		t.Fatalf("%+v %v", res, err)
+	}
+	if len(res.Diags) != 1 || res.Diags[0].Rule != "w1" {
+		t.Errorf("Result.Diags not round 1: %+v", res.Diags)
+	}
+	storyHas(t, out, "one")
+	if b, _ := os.ReadFile(filepath.Join(out, "diags.txt")); !strings.Contains(string(b), "w1") || strings.Contains(string(b), "e1") {
+		t.Errorf("diags.txt not round 1: %q", b)
+	}
+
+	// a tie keeps the earlier round
+	out = t.TempDir()
+	f = &fakeLLM{replies: []string{goodWith("one"), goodWith("two")}}
+	chk, _ = checks([]Diag{rwarn("w1")}, []Diag{rwarn("w2")})
+	res, err = Loop(ctx, f, chk, "idea", testRefs(t), Opts{Rounds: 2, Out: out})
+	if err != nil || res.Diags[0].Rule != "w1" {
+		t.Fatalf("tie: %+v %v", res, err)
+	}
+	storyHas(t, out, "one")
+
+	// a later strictly better round wins; a malformed round is never a candidate
+	out = t.TempDir()
+	f = &fakeLLM{replies: []string{goodWith("one"), "no header", goodWith("three")}}
+	chk, _ = checks([]Diag{rerr("e1")}, []Diag{rwarn("w3")})
+	res, err = Loop(ctx, f, chk, "idea", testRefs(t), Opts{Rounds: 3, Out: out})
+	if err != nil || res.Diags[0].Rule != "w3" {
+		t.Fatalf("better: %+v %v", res, err)
+	}
+	storyHas(t, out, "three")
+}
+
+func TestLoopAllowWarn(t *testing.T) {
+	out := t.TempDir()
+	f := &fakeLLM{replies: []string{good}}
+	chk, _ := checks([]Diag{rwarn("w1")})
+	res, err := Loop(ctx, f, chk, "idea", testRefs(t), Opts{Rounds: 4, Out: out, AllowWarn: true})
+	if err != nil || !res.Clean || res.Rounds != 1 || len(f.prompts) != 1 {
+		t.Fatalf("%+v %v prompts=%d", res, err, len(f.prompts))
+	}
+
+	// errors still block, and only they are sent back
+	out = t.TempDir()
+	f = &fakeLLM{replies: []string{good, good}}
+	chk, _ = checks([]Diag{rwarn("w1"), rerr("e1")}, nil)
+	res, err = Loop(ctx, f, chk, "idea", testRefs(t), Opts{Rounds: 4, Out: out, AllowWarn: true})
+	if err != nil || !res.Clean || res.Rounds != 2 {
+		t.Fatalf("%+v %v", res, err)
+	}
+	if !strings.Contains(f.prompts[1], "e1") || strings.Contains(f.prompts[1], "w1") {
+		t.Error("fix prompt should carry the error only")
+	}
+}
+
+func TestLoopCoveragePrefersFullRound(t *testing.T) {
+	out := t.TempDir()
+	f := &fakeLLM{replies: []string{goodWith("full"), goodWith("short")}}
+	chk, _ := checks([]Diag{rerr("e1"), rerr("e2")}, []Diag{rerr("e3")})
+	cov := func(dir string) int {
+		if b, _ := PackFiles(dir); strings.Contains(b, "full") {
+			return 10
+		}
+		return 1
+	}
+	res, err := Loop(ctx, f, chk, "idea", testRefs(t), Opts{Rounds: 2, Out: out, Coverage: cov})
+	if err != nil || len(res.Diags) != 2 {
+		t.Fatalf("%+v %v", res, err)
+	}
+	storyHas(t, out, "full") // fewer errors from dropping scenes does not win
 }
