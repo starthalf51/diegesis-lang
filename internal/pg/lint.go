@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"path"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -90,6 +91,24 @@ func Rules(dir fs.FS) ([]Rule, error) {
 	return out, err
 }
 
+// MergeRules appends extra (project-local rules) to base (built-in rules). An ID that already exists in base,
+// or repeats inside extra, is an error: built-in rules cannot be overridden.
+func MergeRules(base, extra []Rule) ([]Rule, error) {
+	seen := map[string]bool{}
+	for _, r := range base {
+		seen[r.ID] = true
+	}
+	out := slices.Clone(base)
+	for _, r := range extra {
+		if seen[r.ID] {
+			return nil, fmt.Errorf("rules: duplicate rule id %q (%s)", r.ID, r.Path)
+		}
+		seen[r.ID] = true
+		out = append(out, r)
+	}
+	return out, nil
+}
+
 // targetSrc is the source position of a diagnostic target. Used when the rule did not give src_id directly.
 // The suppression target of a statement inside a scene (when belief presence …) is that scene (sema).
 const targetSrc = `
@@ -130,10 +149,20 @@ SELECT d.run_id, d.rule_id, d.severity, coalesce(d.target_kind, ''), coalesce(d.
 // Lint runs every lint-layer rule on a work and inserts the results into diagnostic under a new run_id (previous lint results are deleted),
 // attaches the targets' src, marks suppression with exactly matching waivers, then returns them together with the derive diagnostics.
 // The verdict is made by the rule SQL. This only copies the columns (ADR-010).
-func Lint(ctx context.Context, db *pgxpool.Pool, work string, rulesDir fs.FS) ([]Diagnostic, error) {
+// extra are project rule directories, merged after the built-in ones (IDs must not collide).
+func Lint(ctx context.Context, db *pgxpool.Pool, work string, rulesDir fs.FS, extra ...fs.FS) ([]Diagnostic, error) {
 	rules, err := Rules(rulesDir)
 	if err != nil {
 		return nil, err
+	}
+	for _, x := range extra {
+		more, err := Rules(x)
+		if err != nil {
+			return nil, err
+		}
+		if rules, err = MergeRules(rules, more); err != nil {
+			return nil, err
+		}
 	}
 	tx, err := db.Begin(ctx)
 	if err != nil {

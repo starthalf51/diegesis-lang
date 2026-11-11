@@ -68,7 +68,7 @@ SELECT … AS target, …
 ```
 
 - For each result row, the runner attaches the `src` of `target`, puts it in `diagnostic`, and checks it against `waiver` to mark whether it is waived.
-- Loading from per-genre subfolders and the `--rules` flag are not implemented.
+- `dieg lint <work> --rules <dir>` runs the `*.sql` rules in a project directory (same header format, same file-name = rule-ID requirement) in addition to the built-in ones. A rule ID that collides with a built-in rule or repeats inside the directory is an error; built-in rules cannot be overridden. A directory with no `.sql` file is also an error. Loading from per-genre subfolders is not implemented.
 
 ## Pattern library (`patterns/*.sql`, 9 patterns)
 

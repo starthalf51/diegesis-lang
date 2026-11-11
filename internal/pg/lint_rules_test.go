@@ -4,6 +4,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
 // fixture: bad violates the rule (want = that rule's diagnostics), good is the normal version of the same situation (0 diagnostics).
@@ -262,5 +264,24 @@ account acc4 of ev by b
 	}
 	if !strings.Contains(msg, "acc2") || !strings.Contains(msg, "acc3") {
 		t.Errorf("collapsed message should name every account lacking p: %q", msg)
+	}
+}
+
+func TestMergeRulesDuplicate(t *testing.T) {
+	base := []pg.Rule{{ID: "info-flow"}}
+	_, err := pg.MergeRules(base, []pg.Rule{{ID: "info-flow", Path: "x/info-flow.sql"}})
+	if err == nil || !strings.Contains(err.Error(), `duplicate rule id "info-flow"`) {
+		t.Fatalf("err = %v", err)
+	}
+	if _, err := pg.MergeRules(nil, []pg.Rule{{ID: "a"}, {ID: "a"}}); err == nil {
+		t.Fatal("duplicate inside extra accepted")
+	}
+}
+
+func TestMergeRulesAppends(t *testing.T) {
+	base := []pg.Rule{{ID: "info-flow"}, {ID: "b"}}
+	got, err := pg.MergeRules(base, []pg.Rule{{ID: "gd-x"}})
+	if err != nil || len(got) != 3 || got[2].ID != "gd-x" || len(base) != 2 {
+		t.Fatalf("got %v, %v", got, err)
 	}
 }
