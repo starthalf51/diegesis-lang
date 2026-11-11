@@ -80,6 +80,7 @@ dieg patterns hamlet               # 서사 패턴 라이브러리(patterns/*.sq
 dieg stats macbeth                 # 지표(metric_*): 출석, 정보 비대칭, 긴장도, 아나크로니 …
 dieg demo                          # 내장 데모 이야기: 경고·누가 무엇을 아는가·세계 상태(PG 필요, 모델 호출 없음)
 dieg render-check corpus/macbeth   # 장면을 산문으로 렌더하고 다시 추출해 IR 과 비교(캐시 사용)
+dieg convert story.txt -o out/conv # 공개 도메인 소설 → 디제시스 코드(렌더 없음, 모델 호출)
 ```
 
 `dieg test` 는 변이 탐지율을 전체·move-before 제외·린트만(질의 탐지 제외, 보고용) 으로 찍는다.
@@ -118,6 +119,14 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 - `continue`: `dieg write -o <dir>` 로 만든 폴더에 다음 화(`story/epNN/`)를 더한다. AI 는 앞 화 전문이 아니라 PG 가 만든 **상태 요약**(참인 사실, 누가 무엇을 믿는지, 독자에게 아직 숨긴 것)을 입력으로 받는다. 과거 화 파일은 바뀌지 않는다(기존 경로를 건드린 묶음은 거부). 새 화의 장면만 렌더한다.
 - `revise`: 요청대로 `story/` 를 고친다(파일 삭제 가능). 복사본에서 검사·린트 루프를 돌고, 깨끗할 때만 `story/` 를 원자적으로 바꾼다. 렌더 입력이 바뀐 장면과 새 장면만 다시 렌더한다(장면별 해시를 디스크에 둔다).
 - 두 명령 모두 `write` 와 같은 모델·효과 플래그를 받는다. 종료 코드도 같다.
+
+## 로컬 모델과 변환
+
+- `ollama:<이름>` 모델(예: `--code-model ollama:gemma4:26b`)은 `OLLAMA_HOST`(기본 `localhost:11434`) 의 Ollama 서버로 간다. `DIEG_OLLAMA_CTX` 는 num_ctx(기본 32768)이고, 프롬프트가 이를 채우면 dieg 는 오류를 낸다.
+- `--finish-model M`(`--finish-rounds N`): 주 라운드 뒤에도 깨끗하지 않은 코드를 다른 모델(예: `claude-haiku-5-5`)에게 넘긴다. `--allow-warn`: 경고만 남은 라운드를 통과시킨다. 셋 다 `write`·`convert` 전용이다(`continue`·`revise` 는 exit 2).
+- 하이브리드 예: `dieg write "<아이템>" -o out/h --code-model ollama:gemma4:26b --finish-model claude-haiku-5-5 --allow-warn`
+- `dieg convert <text.txt> -o <dir>`: 공개 도메인 소설을 디제시스 코드로 옮긴다(렌더 없음, `--force` 로 덮어씀).
+- 텍스트 내려받기: `go run ./tools/fetchtext -o data/raw gutenberg:<id>` 또는 `wikisource-ko:<제목>`.
 
 ## 모델·효과·뼈대 모드
 

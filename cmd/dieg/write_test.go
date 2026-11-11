@@ -266,3 +266,35 @@ func TestFinishFlags(t *testing.T) {
 		t.Error("finish flags must work in convert")
 	}
 }
+
+func TestAllowWarnOnlyWriteConvert(t *testing.T) {
+	for _, f := range [][]string{{"--allow-warn"}, {"--finish-model", "claude-haiku-5-5"}, {"--finish-rounds", "2"}} {
+		if c := cmdContinue(append([]string{t.TempDir(), "--ep", "2"}, f...)); c != 2 {
+			t.Errorf("continue %v exit %d, want 2", f, c)
+		}
+		if c := cmdRevise(append([]string{t.TempDir(), "change"}, f...)); c != 2 {
+			t.Errorf("revise %v exit %d, want 2", f, c)
+		}
+	}
+	if c := cmdWrite([]string{"idea", "-o", t.TempDir(), "--finish-rounds", "2"}); c != 2 {
+		t.Errorf("write --finish-rounds without --finish-model: exit %d, want 2", c)
+	}
+	if c := cmdConvert([]string{"f.txt", "-o", t.TempDir(), "--finish-rounds", "2"}); c != 2 {
+		t.Errorf("convert --finish-rounds without --finish-model: exit %d, want 2", c)
+	}
+}
+
+func TestCmdConvertGuards(t *testing.T) {
+	dir, out := t.TempDir(), t.TempDir()
+	short := filepath.Join(dir, "short.txt")
+	os.WriteFile(short, []byte("A para.\n"), 0o644)
+	os.MkdirAll(filepath.Join(out, "story"), 0o755)
+	if c := cmdConvert([]string{short, "-o", out}); c != 1 {
+		t.Errorf("existing story/ without --force: exit %d, want 1", c)
+	}
+	long := filepath.Join(dir, "long.txt")
+	os.WriteFile(long, []byte(strings.Repeat("가", 12001)), 0o644)
+	if c := cmdConvert([]string{long, "-o", t.TempDir()}); c != 1 {
+		t.Errorf("too long: exit %d, want 1", c)
+	}
+}

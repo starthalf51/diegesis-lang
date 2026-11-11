@@ -87,7 +87,7 @@ func bundleDiag(msg string) []Diag {
 // raw output is <out>/rounds/r<r>.raw.txt and its code <out>/rounds/r<r>/. A malformed bundle is one "bundle"
 // diagnostic and consumes its round; the next prompt shows the last well-formed bundle. The best well-formed
 // round (fewest errors, then warns; the earlier round on ties) is copied to <out>/story/ either way and
-// <out>/diags.txt holds its diagnostics (a later worse or malformed round does not overwrite it;with no well-formed round it holds the last bundle diagnostic). Loop never renders.
+// <out>/diags.txt holds its diagnostics (a later worse or malformed round does not overwrite it; with no well-formed round it holds the last bundle diagnostic). Loop never renders.
 func Loop(ctx context.Context, c render.Completer, check Checker, idea string, refs Refs, o Opts) (Result, error) {
 	if o.Rounds <= 0 {
 		o.Rounds = DefaultOpts().Rounds

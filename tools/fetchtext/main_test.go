@@ -25,6 +25,7 @@ func TestSafe(t *testing.T) {
 		"a/b: c":                 "a-b-c",
 		"":                       "text",
 		" ? ":                    "-",
+		"end. ":                  "end",
 		"con":                    "_con",
 		"NUL":                    "_NUL",
 		"Com1":                   "_Com1",

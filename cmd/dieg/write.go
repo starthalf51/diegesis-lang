@@ -181,7 +181,7 @@ func cmdWrite(args []string) int {
 			return usage()
 		}
 	}
-	if idea == "" || o.Out == "" {
+	if idea == "" || o.Out == "" || finishRoundsAlone(o) {
 		return usage()
 	}
 	if b, err := os.ReadFile(idea); err == nil {
@@ -194,6 +194,12 @@ func cmdWrite(args []string) int {
 	}
 	return code
 }
+
+// writeOnly lists the commonFlag flags that only write and convert take; continue and revise reject them.
+var writeOnly = map[string]bool{"--allow-warn": true, "--finish-model": true, "--finish-rounds": true}
+
+// finishRoundsAlone reports --finish-rounds given without --finish-model (it would do nothing).
+func finishRoundsAlone(o write.Opts) bool { return o.FinishRounds > 0 && o.FinishModel == "" }
 
 // commonFlag parses the write/continue flag at args[i]: ok=false when it is not one, code≠0 (usage 2) for a bad
 // value, else the index of its last token. Bad models and efforts exit 2 before any call.

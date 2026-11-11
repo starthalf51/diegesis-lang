@@ -27,6 +27,9 @@ func cmdRevise(args []string) int {
 		switch a := args[i]; {
 		case code != 0:
 			return code
+		case ok && writeOnly[a]:
+			fmt.Fprintf(os.Stderr, "dieg: %s is only for write and convert\n", a)
+			return 2
 		case ok:
 			i = j
 		case a == "--skip" && i+1 < len(args):

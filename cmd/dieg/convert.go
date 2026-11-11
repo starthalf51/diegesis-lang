@@ -43,7 +43,7 @@ func cmdConvert(args []string) int {
 			return usage()
 		}
 	}
-	if file == "" || o.Out == "" {
+	if file == "" || o.Out == "" || finishRoundsAlone(o) {
 		return usage()
 	}
 	if err := runConvert(file, o, force); err != nil {

@@ -12,6 +12,9 @@ import (
 
 const maxConvertRunes = 12000
 
+// blankLine separates paragraphs: a line with only spaces or tabs counts as blank.
+var blankLine = regexp.MustCompile(`\n[ \t]*\n`)
+
 // ConvertIdea turns a public-domain story text into a write.Loop idea: a Korean instruction followed by the
 // text with its paragraphs numbered ¶1, ¶2, … and returns the paragraph count. Leading `#` header lines
 // (tools/fetchtext) are dropped.
@@ -35,7 +38,7 @@ func ConvertIdea(title, text string) (string, int, error) {
 		"- 죽음은 `dies <id>` 로 쓴다(`<id> dies` 가 아니다). 동사는 참고 문서에 있는 것만 쓴다.\n\n"+
 		"## 원문\n", title, title)
 	n := 0
-	for _, p := range strings.Split(body, "\n\n") {
+	for _, p := range blankLine.Split(body, -1) {
 		if p = strings.TrimSpace(p); p != "" {
 			n++
 			fmt.Fprintf(&sb, "\n¶%d %s\n", n, p)

@@ -67,4 +67,14 @@ dieg write "등대지기가 편지 한 통을 숨긴다" -o out/story1
 The prose is Korean by default (backend `ko-haera`; the coding prompt requires Korean), so write the idea in Korean or expect Korean output either way. This asks the model for Diegesis code, feeds `check`/`lint` diagnostics back, then renders and verifies each scene. Output: `out/story1/story/` (code), `novel.md` (prose), `calls.jsonl` (token log). Use `--no-render` to stop at code, and `DIEG_CALL_CAP=N` to hard-limit model calls.
 Then `dieg continue out/story1 --ep 2` adds an episode and `dieg revise out/story1 "change request"` edits the story.
 
+## 5. Local models (Ollama)
+
+A model name `ollama:<name>` (for example `ollama:gemma4:26b`) goes to an Ollama server at `OLLAMA_HOST` (default `localhost:11434`). `DIEG_OLLAMA_CTX` sets `num_ctx` (default 32768); `dieg` fails with an error if the prompt fills it. The compiler and SQL checks feed the local model's mistakes back, and `--finish-model` hands code that is still unclean after the main rounds to a stronger model. `--allow-warn` lets a round pass with warnings only.
+
+```sh
+dieg write "<idea>" -o out/hybrid --code-model ollama:gemma4:26b --finish-model claude-haiku-5-5 --allow-warn
+```
+
+`dieg convert <text.txt> -o <dir>` turns a public-domain story into Diegesis code (no render). Download texts with `go run ./tools/fetchtext -o data/raw gutenberg:<id>` or `wikisource-ko:<title>`.
+
 More: [docs index](README.md). Design notes and ADRs referenced there are not published.

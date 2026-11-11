@@ -140,8 +140,11 @@ The same steps, with more detail: [docs/quickstart.md](docs/quickstart.md).
 | `dieg stats <work>` | Metrics: presence, information asymmetry, tension, anachrony ... | no |
 | `dieg demo` | Load the embedded demo story; print warnings, who knows what, world state (needs PG) | no |
 | `dieg write` / `continue` / `revise` | Idea → code → checked → rendered prose; next episode; edit | yes |
+| `dieg convert <text.txt> -o <dir>` | Public-domain story → Diegesis code through the same check loop (no render; `--force` to overwrite) | yes |
 | `dieg render <work> <scene> --backend <id> [--verify]` | Render one scene | yes |
 | `dieg stamp <work-dir>` | Add state hashes to stories written before v0.7.0 | no |
+
+Model names of the form `ollama:<name>` (e.g. `--code-model ollama:gemma4:26b`) run on a local Ollama server. `--finish-model M` hands code that is still unclean after the main rounds to another model, and `--allow-warn` lets a round pass with warnings only (`write` and `convert`). See [Local models](docs/quickstart.md#5-local-models-ollama).
 
 `dieg` with no arguments prints the full usage.
 
