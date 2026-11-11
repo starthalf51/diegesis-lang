@@ -121,7 +121,7 @@ dieg continue out/story1 --ep 2
 dieg revise out/story1 "편지를 지도로 바꿔줘"
 ```
 
-`write` asks the model for Diegesis code, feeds `check`/`lint` diagnostics back until the code is clean, then renders and verifies each scene. Output: `out/story1/story/` (code), `out/story1/novel.md` (prose), `out/story1/calls.jsonl` (token log). `continue` adds an episode from the PG state; `revise` edits the code, then patches only the affected sentences of affected scenes. Use `--no-render` to stop at code, and `DIEG_CALL_CAP=N` to hard-limit model calls.
+`write` asks the model for Diegesis code, feeds `check`/`lint` diagnostics back until the code is clean, then renders and verifies each scene. Output: `out/story1/story/` (code), `out/story1/novel.md` (prose), `out/story1/calls.jsonl` (token log). `continue` adds an episode from the PG state; `revise` edits the code, then patches only the affected sentences of affected scenes. Use `--no-render` to stop at code, and `DIEG_CALL_CAP=N` to hard-limit model calls (local Ollama calls count too; leave room for `--finish-model` rounds).
 
 The same steps, with more detail: [docs/quickstart.md](docs/quickstart.md).
 

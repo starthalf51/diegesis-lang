@@ -38,6 +38,6 @@ Wall time 30 minutes.
 
 ## What this does and does not show
 
-- **Shown:** a weak local model gets most of the way (28 → 4 errors) with only compiler feedback, and the pipeline finishes a verified episode with no hand edits.
-- **Not shown: a token saving on coding.** On a simpler idea, haiku alone was clean in 2 rounds (54,518 output tokens, 4 minutes). Here the haiku finish used 58,480 output tokens, because each round rewrites every file. The local draft did not shrink haiku's work. A patch-style finish (only the files with errors) is the obvious next step; until then the local model pays off for bulk work where Claude would not run at all (e.g. `dieg convert` batches overnight).
+- **Shown:** with only compiler feedback a weak local model cut the errors from 28 to 4, and the pipeline finishes a verified episode with no hand edits.
+- **Not shown: a token saving on coding.** On a simpler idea, haiku alone was clean in 2 rounds (54,518 output tokens, 4 minutes). Here the haiku finish used 58,480 output tokens, because each round rewrites every file. The local draft did not shrink haiku's work. A patch-style finish (only the files with errors) is the obvious next step; until then, the untested hypothesis is that the local model pays off in bulk work run overnight (e.g. `dieg convert` batches), where it carries most rounds and Claude only finishes.
 - One run, one idea. Prose quality was not judged.
