@@ -50,6 +50,9 @@ type Opts struct {
 	Skip                                 []string // Rerender: scene ids never rendered even if stale (CLI: revise --skip)
 	Verifier                             string   // "card" (default, render.ScoreCard checklist) or "open" (open re-extraction)
 	AllowWarn                            bool     // Loop: warn diagnostics do not block and are not fed back (errors still do)
+	Finish                               render.Completer     // Loop: when the Rounds end unclean, this model continues from the best round (nil = none)
+	FinishRounds                         int                  // Loop: finish rounds, 0 = 2
+	FinishModel                          string               // CLI: --finish-model; the CLI builds Finish from it
 	Coverage                             func(dir string) int // Loop: how much of the source a round's code covers; when set, an error-free round wins, then the higher coverage, so dropping scenes cannot buy fewer errors
 }
 
@@ -106,13 +109,28 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 	var bestDiags []Diag       // its diagnostics
 	var bestE, bestW, bestC int
 	var bundle string
+	var bestDir string // the round directory holding best
+	fr := 0
+	if o.Finish != nil {
+		if fr = o.FinishRounds; fr <= 0 {
+			fr = 2
+		}
+	}
 	user := CodePrompt(idea, refs, o.Reserved, o.Skeleton)
-	for r := 1; r <= o.Rounds; r++ {
-		l := "code-r" + strconv.Itoa(r)
+	for r := 1; r <= o.Rounds+fr; r++ {
+		cc, l := c, "code-r"+strconv.Itoa(r)
 		if r > 1 {
 			l = "fix-r" + strconv.Itoa(r)
 		}
-		out, err := label(c, l).Complete(ctx, System, user)
+		if r > o.Rounds { // finish rounds: another model continues, from the best round's code
+			cc, l = o.Finish, "finish-r"+strconv.Itoa(r-o.Rounds)
+			if r == o.Rounds+1 && bestDir != "" {
+				if b, err := PackFiles(bestDir); err == nil {
+					user = FixPrompt(idea, refs, o.Reserved, o.Skeleton, b, GroupDiags(blk(bestDiags)))
+				}
+			}
+		}
+		out, err := label(cc, l).Complete(ctx, System, user)
 		if err != nil {
 			return res, fmt.Errorf("round %d: %w", r, err)
 		}
@@ -159,14 +177,14 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 				}
 			}
 			if best == nil || better {
-				best, bestDiags, bestE, bestW, bestC = files, res.Diags, e, w, cov
+				best, bestDiags, bestE, bestW, bestC, bestDir = files, res.Diags, e, w, cov, rdir
 			}
 			res.Clean = len(blk(res.Diags)) == 0
 		}
 		if res.Clean {
 			break
 		}
-		user = FixPrompt(idea, refs, o.Reserved, o.Skeleton, bundle, blk(res.Diags))
+		user = FixPrompt(idea, refs, o.Reserved, o.Skeleton, bundle, GroupDiags(blk(res.Diags)))
 	}
 	if best != nil {
 		if err := WriteFiles(res.Dir, best); err != nil {
@@ -179,6 +197,29 @@ func Loop(ctx context.Context, c render.Completer, check Checker, idea string, r
 		sb.WriteString(d.String() + "\n")
 	}
 	return res, os.WriteFile(filepath.Join(o.Out, "diags.txt"), []byte(sb.String()), 0o644)
+}
+
+// GroupDiags collapses diagnostics with the same rule and message into one, in first-seen order: the first one's
+// position, Msg suffixed with the count and that position. A weak model then sees root causes, not 18 copies.
+func GroupDiags(ds []Diag) []Diag {
+	type key struct{ rule, msg string }
+	idx, n := map[key]int{}, map[key]int{}
+	var out []Diag
+	for _, d := range ds {
+		k := key{d.Rule, d.Msg}
+		if _, ok := idx[k]; !ok {
+			idx[k] = len(out)
+			out = append(out, d)
+		}
+		n[k]++
+	}
+	for k, i := range idx {
+		if n[k] > 1 {
+			d := out[i]
+			out[i].Msg = fmt.Sprintf("%s (%d places; first at %s:%d:%d)", d.Msg, n[k], d.File, d.Line, d.Col)
+		}
+	}
+	return out
 }
 
 func blocking(ds []Diag) []Diag {
