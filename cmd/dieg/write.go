@@ -156,7 +156,7 @@ func (k *counter) Complete(ctx context.Context, system, user string) (render.Res
 	return k.c.Complete(ctx, system, user)
 }
 
-// cmdWrite runs `dieg write <idea.txt | "item sentence"> -o <dir> [--rounds N] [--backend id] [--no-render] [--allow-warn] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--render-effort low|medium|high] [--force]`.
+// cmdWrite runs `dieg write <idea.txt | "item sentence"> -o <dir> [--rounds N] [--backend id] [--no-render] [--allow-warn] [--scenes N] [--styles dir] [--code-model M] [--render-model M] [--extract-model M] [--code-effort low|medium|high] [--render-effort low|medium|high] [--finish-model M] [--finish-rounds N] [--force]`.
 // Exit 1 when the code is not clean after the rounds (nothing rendered), 3 when a rendered scene failed verification.
 // --scenes N renders only the first N shown scenes (to fit a call budget).
 func cmdWrite(args []string) int {
@@ -181,7 +181,7 @@ func cmdWrite(args []string) int {
 			return usage()
 		}
 	}
-	if idea == "" || o.Out == "" {
+	if idea == "" || o.Out == "" || finishRoundsAlone(o) {
 		return usage()
 	}
 	if b, err := os.ReadFile(idea); err == nil {
@@ -194,6 +194,12 @@ func cmdWrite(args []string) int {
 	}
 	return code
 }
+
+// writeOnly lists the commonFlag flags that only write and convert take; continue and revise reject them.
+var writeOnly = map[string]bool{"--allow-warn": true, "--finish-model": true, "--finish-rounds": true}
+
+// finishRoundsAlone reports --finish-rounds given without --finish-model (it would do nothing).
+func finishRoundsAlone(o write.Opts) bool { return o.FinishRounds > 0 && o.FinishModel == "" }
 
 // commonFlag parses the write/continue flag at args[i]: ok=false when it is not one, code≠0 (usage 2) for a bad
 // value, else the index of its last token. Bad models and efforts exit 2 before any call.
@@ -229,6 +235,20 @@ func commonFlag(args []string, i int, o *write.Opts, styles *string, limit *int)
 		}
 		*map[string]*string{"--code-effort": &o.CodeEffort, "--render-effort": &o.RenderEffort}[a] = args[i+1]
 		return i + 1, true, 0
+	case a == "--finish-model" && i+1 < len(args):
+		if err := render.ValidModel(args[i+1]); err != nil {
+			fmt.Fprintln(os.Stderr, "dieg:", err)
+			return i, false, 2
+		}
+		o.FinishModel = args[i+1]
+		return i + 1, true, 0
+	case a == "--finish-rounds" && i+1 < len(args):
+		n, err := strconv.Atoi(args[i+1])
+		if err != nil || n < 1 {
+			return i, false, usage()
+		}
+		o.FinishRounds = n
+		return i + 1, true, 0
 	case a == "--verifier" && i+1 < len(args):
 		if v := args[i+1]; v != "card" && v != "open" {
 			fmt.Fprintf(os.Stderr, "dieg: --verifier %q: want card or open\n", v)
@@ -255,6 +275,14 @@ func meters(o write.Opts, f io.Writer) (*render.Meter, render.Completers, *count
 		Extract: m.With(&counter{c: render.NewCompleter(o.ExtractModel, "low"), n: k.n}),
 	}
 	return m, cs, k
+}
+
+// withFinish sets o.Finish from --finish-model: its own model at the code effort, behind the same counter and meter.
+func withFinish(o write.Opts, m *render.Meter, k *counter) write.Opts {
+	if o.FinishModel != "" {
+		o.Finish = m.With(&counter{c: render.NewCompleter(o.FinishModel, o.CodeEffort), n: k.n})
+	}
+	return o
 }
 
 // summaryLine prints "<cmd>: rounds=… clean=… scenes=… failed=… calls=… tokens …".
@@ -293,6 +321,7 @@ func runWrite(idea, styles string, limit int, o write.Opts, force bool) (int, er
 	}
 	defer f.Close()
 	m, cs, k := meters(o, f)
+	o = withFinish(o, m, k)
 	o.Reserved = corpusWorks()
 	ctx := context.Background()
 	summary := summaryLine("write", m, k, o.Out)

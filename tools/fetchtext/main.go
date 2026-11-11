@@ -149,6 +149,7 @@ func safe(s string) string {
 	if r := []rune(s); len(r) > 80 {
 		s = string(r[:80])
 	}
+	s = strings.TrimRight(s, ". ") // Windows drops trailing dots and spaces from names
 	if s == "" {
 		return "text"
 	}

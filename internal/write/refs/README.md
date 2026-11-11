@@ -5,7 +5,7 @@
 **상태: 실험 단계 미리보기(experimental preview).** 0.x 판에서는 문법·IR·명령이 바뀔 수 있다.
 
 - **연재 중간을 바꿔도 바뀌어야 할 곳만 바뀐다.** 재설정 측정에서 `dieg revise` 는 무관한 글을 47자 건드렸고 AI 직접 수정은 2,247자를 건드렸다. 남은 모순도 3 대 6. 더 싸다는 것은 입증되지 않았다(→ [측정 결과](#측정-결과)).
-- **로컬 모델로도 돈다.** 코딩 단계에 Ollama 모델을 쓸 수 있다(`--code-model ollama:gemma4:26b`). 모델의 실수는 컴파일러와 SQL 검사가 잡아 되돌려 준다. `dieg convert` 는 같은 방식으로 퍼블릭 도메인 소설을 디제시스 코드로 옮긴다. 실험 기능.
+- **로컬 모델로도 돈다.** 코딩 단계에 Ollama 모델을 쓸 수 있다(`--code-model ollama:gemma4:26b`). 모델의 실수는 컴파일러와 SQL 검사가 잡아 되돌려 준다. `dieg convert` 는 같은 방식으로 퍼블릭 도메인 소설을 디제시스 코드로 옮긴다. 실험 기능. 로컬 초안 → haiku 마무리·렌더로 끝까지 뽑은 1화: [`examples/local-hybrid`](examples/local-hybrid/README.md).
 
 
 소설을 위한 프로그래밍 언어. 인물·사실·장면·발화(`tells`, `lies`, `sees` …)를 `.dieg.md` 파일에 적으면
@@ -80,6 +80,7 @@ dieg patterns hamlet               # 서사 패턴 라이브러리(patterns/*.sq
 dieg stats macbeth                 # 지표(metric_*): 출석, 정보 비대칭, 긴장도, 아나크로니 …
 dieg demo                          # 내장 데모 이야기: 경고·누가 무엇을 아는가·세계 상태(PG 필요, 모델 호출 없음)
 dieg render-check corpus/macbeth   # 장면을 산문으로 렌더하고 다시 추출해 IR 과 비교(캐시 사용)
+dieg convert story.txt -o out/conv # 공개 도메인 소설 → 디제시스 코드(렌더 없음, 모델 호출)
 ```
 
 `dieg test` 는 변이 탐지율을 전체·move-before 제외·린트만(질의 탐지 제외, 보고용) 으로 찍는다.
@@ -118,6 +119,14 @@ dieg revise out/story1 "수정 요청 한 문장" [--rounds N] [--scenes N] [--n
 - `continue`: `dieg write -o <dir>` 로 만든 폴더에 다음 화(`story/epNN/`)를 더한다. AI 는 앞 화 전문이 아니라 PG 가 만든 **상태 요약**(참인 사실, 누가 무엇을 믿는지, 독자에게 아직 숨긴 것)을 입력으로 받는다. 과거 화 파일은 바뀌지 않는다(기존 경로를 건드린 묶음은 거부). 새 화의 장면만 렌더한다.
 - `revise`: 요청대로 `story/` 를 고친다(파일 삭제 가능). 복사본에서 검사·린트 루프를 돌고, 깨끗할 때만 `story/` 를 원자적으로 바꾼다. 렌더 입력이 바뀐 장면과 새 장면만 다시 렌더한다(장면별 해시를 디스크에 둔다).
 - 두 명령 모두 `write` 와 같은 모델·효과 플래그를 받는다. 종료 코드도 같다.
+
+## 로컬 모델과 변환
+
+- `ollama:<이름>` 모델(예: `--code-model ollama:gemma4:26b`)은 `OLLAMA_HOST`(기본 `localhost:11434`) 의 Ollama 서버로 간다. `DIEG_OLLAMA_CTX` 는 num_ctx(기본 32768)이고, 프롬프트가 이를 채우면 dieg 는 오류를 낸다.
+- `--finish-model M`(`--finish-rounds N`): 주 라운드 뒤에도 깨끗하지 않은 코드를 다른 모델(예: `claude-haiku-5-5`)에게 넘긴다. `--allow-warn`: 경고만 남은 라운드를 통과시킨다. 셋 다 `write`·`convert` 전용이다(`continue`·`revise` 는 exit 2).
+- 하이브리드 예: `dieg write "<아이템>" -o out/h --code-model ollama:gemma4:26b --finish-model claude-haiku-5-5 --allow-warn`
+- `dieg convert <text.txt> -o <dir>`: 공개 도메인 소설을 디제시스 코드로 옮긴다(렌더 없음, `--force` 로 덮어씀).
+- 텍스트 내려받기: `go run ./tools/fetchtext -o data/raw gutenberg:<id>` 또는 `wikisource-ko:<제목>`.
 
 ## 모델·효과·뼈대 모드
 
@@ -224,6 +233,7 @@ go vet ./...
 | v0.8.0 | 플랜 8: 공개 준비(Apache-2.0, 위생 점검 `tools/pubcheck`, `docs/`), 영어 README·`docs/quickstart.md`·`examples/showcase`, 재설정 재측정(retcon3) |
 | v0.9.0 | 플랜 9: 첫 사용 경험(`dieg demo`, `scripts/quickstart.sh`·`.ps1`, 컴포즈 ghcr 이미지, 릴리스 워크플로, `docs/releasing.md`), `attribute-conflict` 가 `X.at` 이동도 허용 |
 | v0.9.1 | 플랜 10: 배포 보안 — PG 이미지 게시 중단(공식 `apache/age` digest 고정, 로컬 빌드만), 릴리스 액션 SHA 고정·최소 권한·빌드 출처 증명, 빠른 시작 스크립트가 체크섬·`gh attestation verify` 실패 시 바이너리 삭제, `SECURITY.md`·dependabot |
+| v0.10.0 | 플랜 11·12: 로컬 모델(`ollama:<name>`, `OLLAMA_HOST`·`DIEG_OLLAMA_CTX`), `dieg convert`(퍼블릭 도메인 원문 → 코드, `src` 문단 번호, 원문 커버리지로 최선 라운드), `tools/fetchtext`, 최선 라운드 유지·`--allow-warn`, 수정 피드백 진단 묶기, `--finish-model`(로컬 초안을 다른 모델이 마무리), `examples/local-hybrid` |
 
 ## 라이선스
 

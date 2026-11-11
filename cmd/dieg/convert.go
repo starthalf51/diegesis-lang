@@ -14,7 +14,7 @@ import (
 var renderOnly = map[string]bool{"--scenes": true, "--render-model": true, "--extract-model": true, "--render-effort": true,
 	"--no-digest": true, "--verifier": true, "--backend": true, "--styles": true}
 
-// cmdConvert runs `dieg convert <file> -o <dir> [--rounds N] [--code-model M] [--code-effort E] [--allow-warn] [--force]`:
+// cmdConvert runs `dieg convert <file> -o <dir> [--rounds N] [--code-model M] [--code-effort E] [--finish-model M] [--finish-rounds N] [--allow-warn] [--force]`:
 // a public-domain story text becomes Diegesis code through the write loop; nothing is rendered.
 func cmdConvert(args []string) int {
 	o := write.DefaultOpts()
@@ -43,7 +43,7 @@ func cmdConvert(args []string) int {
 			return usage()
 		}
 	}
-	if file == "" || o.Out == "" {
+	if file == "" || o.Out == "" || finishRoundsAlone(o) {
 		return usage()
 	}
 	if err := runConvert(file, o, force); err != nil {
@@ -85,6 +85,7 @@ func runConvert(file string, o write.Opts, force bool) error {
 	}
 	defer f.Close()
 	m, _, k := meters(o, f)
+	o = withFinish(o, m, k)
 	o.Reserved = corpusWorks()
 	summary := summaryLine("convert", m, k, o.Out)
 	o.Coverage = write.SrcCoverage

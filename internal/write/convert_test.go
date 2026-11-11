@@ -44,3 +44,10 @@ func TestSrcCoverageAndChecker(t *testing.T) {
 		t.Errorf("2 of 11 paragraphs should be a coverage error: %v", ds)
 	}
 }
+
+func TestConvertIdeaWhitespaceLines(t *testing.T) {
+	_, n, err := ConvertIdea("T", "One.\n \t \nTwo.\n\t\nThree.\n")
+	if err != nil || n != 3 {
+		t.Errorf("paragraphs = %d, %v; want 3", n, err)
+	}
+}

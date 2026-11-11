@@ -5,7 +5,7 @@ A programming language for novels. You write characters, facts, scenes and speec
 **Status: experimental preview.** The grammar and IR may change in any 0.x release. Prose output is Korean by default (see [Output language](#output-language)).
 
 - **Change the middle of a serial, and only what should change does.** In a measured retcon test, `dieg revise` touched 47 characters of unrelated text where a direct AI edit touched 2,247, with fewer contradictions left (3 vs 6). Not shown to be cheaper. [Details](#why-diegesis).
-- **Runs on local models too.** The coding step can use an Ollama model (`--code-model ollama:gemma4:26b`); the compiler and SQL checks catch its mistakes and feed them back. `dieg convert` turns public-domain stories into Diegesis code the same way. Experimental.
+- **Runs on local models too.** The coding step can use an Ollama model (`--code-model ollama:gemma4:26b`); the compiler and SQL checks catch its mistakes and feed them back. `dieg convert` turns public-domain stories into Diegesis code the same way. Experimental; one end-to-end episode (local draft, haiku finish and render): [`examples/local-hybrid`](examples/local-hybrid/README.md).
 
 ```sl
 enter lady_macbeth
@@ -121,7 +121,7 @@ dieg continue out/story1 --ep 2
 dieg revise out/story1 "편지를 지도로 바꿔줘"
 ```
 
-`write` asks the model for Diegesis code, feeds `check`/`lint` diagnostics back until the code is clean, then renders and verifies each scene. Output: `out/story1/story/` (code), `out/story1/novel.md` (prose), `out/story1/calls.jsonl` (token log). `continue` adds an episode from the PG state; `revise` edits the code, then patches only the affected sentences of affected scenes. Use `--no-render` to stop at code, and `DIEG_CALL_CAP=N` to hard-limit model calls.
+`write` asks the model for Diegesis code, feeds `check`/`lint` diagnostics back until the code is clean, then renders and verifies each scene. Output: `out/story1/story/` (code), `out/story1/novel.md` (prose), `out/story1/calls.jsonl` (token log). `continue` adds an episode from the PG state; `revise` edits the code, then patches only the affected sentences of affected scenes. Use `--no-render` to stop at code, and `DIEG_CALL_CAP=N` to hard-limit model calls (local Ollama calls count too; leave room for `--finish-model` rounds).
 
 The same steps, with more detail: [docs/quickstart.md](docs/quickstart.md).
 
@@ -140,8 +140,11 @@ The same steps, with more detail: [docs/quickstart.md](docs/quickstart.md).
 | `dieg stats <work>` | Metrics: presence, information asymmetry, tension, anachrony ... | no |
 | `dieg demo` | Load the embedded demo story; print warnings, who knows what, world state (needs PG) | no |
 | `dieg write` / `continue` / `revise` | Idea → code → checked → rendered prose; next episode; edit | yes |
+| `dieg convert <text.txt> -o <dir>` | Public-domain story → Diegesis code through the same check loop (no render; `--force` to overwrite) | yes |
 | `dieg render <work> <scene> --backend <id> [--verify]` | Render one scene | yes |
 | `dieg stamp <work-dir>` | Add state hashes to stories written before v0.7.0 | no |
+
+Model names of the form `ollama:<name>` (e.g. `--code-model ollama:gemma4:26b`) run on a local Ollama server. `--finish-model M` hands code that is still unclean after the main rounds to another model, and `--allow-warn` lets a round pass with warnings only (`write` and `convert`). See [Local models](docs/quickstart.md#5-local-models-ollama).
 
 `dieg` with no arguments prints the full usage.
 

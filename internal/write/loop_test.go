@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -332,4 +333,56 @@ func TestLoopCoveragePrefersFullRound(t *testing.T) {
 		t.Fatalf("%+v %v", res, err)
 	}
 	storyHas(t, out, "full") // fewer errors from dropping scenes does not win
+}
+
+func TestGroupDiags(t *testing.T) {
+	var ds []Diag
+	ds = append(ds, Diag{File: "ep01/s9.dieg.md", Line: 1, Col: 1, Severity: "warn", Rule: "other", Msg: "x"})
+	for i := 0; i < 18; i++ {
+		ds = append(ds, Diag{File: "ep01/s" + strconv.Itoa(i) + ".dieg.md", Line: 5 + i, Col: 3, Severity: "error", Rule: "no-name", Msg: "missing name"})
+	}
+	ds = append(ds, Diag{File: "ep01/s1.dieg.md", Line: 2, Col: 1, Severity: "error", Rule: "no-name", Msg: "different"})
+	got := GroupDiags(ds)
+	if len(got) != 3 || got[0].Rule != "other" || got[0].Msg != "x" || got[2].Msg != "different" {
+		t.Fatalf("%+v", got)
+	}
+	g := got[1]
+	if g.File != "ep01/s0.dieg.md" || g.Line != 5 || g.Col != 3 || g.Msg != "missing name (18 places; first at ep01/s0.dieg.md:5:3)" {
+		t.Errorf("group %+v", g)
+	}
+}
+
+func TestLoopFinish(t *testing.T) {
+	out := t.TempDir()
+	main := &fakeLLM{replies: []string{goodWith("main1"), goodWith("main2")}}
+	fin := &fakeLLM{replies: []string{goodWith("fin1"), goodWith("fin2")}}
+	chk, _ := checks([]Diag{rwarn("w1")}, []Diag{rerr("e1"), rerr("e2")}, []Diag{rerr("e3")}, nil)
+	res, err := Loop(ctx, main, chk, "idea", testRefs(t), Opts{Rounds: 2, Out: out, Finish: fin})
+	if err != nil || !res.Clean || res.Rounds != 4 || len(fin.prompts) != 2 || len(main.prompts) != 2 {
+		t.Fatalf("%+v %v finish=%d", res, err, len(fin.prompts))
+	}
+	if !strings.Contains(fin.prompts[0], "main1") || strings.Contains(fin.prompts[0], "main2") {
+		t.Error("first finish prompt should carry the best round's code, not the last")
+	}
+	storyHas(t, out, "fin2")
+
+	// clean in the main rounds: the finisher is never called
+	out = t.TempDir()
+	main = &fakeLLM{replies: []string{good}}
+	fin = &fakeLLM{replies: []string{good}}
+	chk, _ = checks(nil)
+	res, err = Loop(ctx, main, chk, "idea", testRefs(t), Opts{Rounds: 2, Out: out, Finish: fin})
+	if err != nil || !res.Clean || res.Rounds != 1 || len(fin.prompts) != 0 {
+		t.Fatalf("%+v %v finish=%d", res, err, len(fin.prompts))
+	}
+
+	// FinishRounds bounds the extra rounds
+	out = t.TempDir()
+	main = &fakeLLM{replies: []string{good}}
+	fin = &fakeLLM{replies: []string{good}}
+	chk, _ = checks([]Diag{rerr("e1")})
+	res, err = Loop(ctx, main, chk, "idea", testRefs(t), Opts{Rounds: 1, Out: out, Finish: fin, FinishRounds: 1})
+	if err != nil || res.Clean || res.Rounds != 2 || len(fin.prompts) != 1 {
+		t.Fatalf("%+v %v finish=%d", res, err, len(fin.prompts))
+	}
 }

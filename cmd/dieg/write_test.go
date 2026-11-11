@@ -174,7 +174,9 @@ func TestVerifierFlag(t *testing.T) {
 		"write":    func(d string) int { return cmdWrite([]string{"idea", "-o", d, "--verifier", "bogus"}) },
 		"continue": func(d string) int { return cmdContinue([]string{d, "--ep", "2", "--verifier", "bogus"}) },
 		"revise":   func(d string) int { return cmdRevise([]string{d, "요청", "--verifier", "bogus"}) },
-		"render":   func(d string) int { return cmdRender([]string{"w", "s", "--backend", "b", "--verify", "--verifier", "bogus"}) },
+		"render": func(d string) int {
+			return cmdRender([]string{"w", "s", "--backend", "b", "--verify", "--verifier", "bogus"})
+		},
 	} {
 		dir := t.TempDir()
 		if c := run(dir); c != 2 {
@@ -242,5 +244,57 @@ func TestConvertRejectsRenderFlags(t *testing.T) {
 		if c := cmdConvert(append([]string{"story.txt", "-o", t.TempDir()}, f...)); c != 2 {
 			t.Errorf("convert %v exit %d", f, c)
 		}
+	}
+}
+
+func TestFinishFlags(t *testing.T) {
+	for name, c := range map[string]int{
+		"write model":    cmdWrite([]string{"idea", "-o", t.TempDir(), "--finish-model", "nope"}),
+		"convert model":  cmdConvert([]string{"f.txt", "-o", t.TempDir(), "--finish-model", "nope"}),
+		"write rounds":   cmdWrite([]string{"idea", "-o", t.TempDir(), "--finish-rounds", "0"}),
+		"convert rounds": cmdConvert([]string{"f.txt", "-o", t.TempDir(), "--finish-rounds", "x"}),
+	} {
+		if c != 2 {
+			t.Errorf("%s: exit %d, want 2", name, c)
+		}
+	}
+	o := write.DefaultOpts()
+	if _, ok, c := commonFlag([]string{"--finish-model", "claude-sonnet-5-5"}, 0, &o, new(string), new(int)); !ok || c != 0 || o.FinishModel != "claude-sonnet-5-5" {
+		t.Errorf("--finish-model not parsed: ok=%t c=%d %q", ok, c, o.FinishModel)
+	}
+	if renderOnly["--finish-model"] || renderOnly["--finish-rounds"] {
+		t.Error("finish flags must work in convert")
+	}
+}
+
+func TestAllowWarnOnlyWriteConvert(t *testing.T) {
+	for _, f := range [][]string{{"--allow-warn"}, {"--finish-model", "claude-haiku-5-5"}, {"--finish-rounds", "2"}} {
+		if c := cmdContinue(append([]string{t.TempDir(), "--ep", "2"}, f...)); c != 2 {
+			t.Errorf("continue %v exit %d, want 2", f, c)
+		}
+		if c := cmdRevise(append([]string{t.TempDir(), "change"}, f...)); c != 2 {
+			t.Errorf("revise %v exit %d, want 2", f, c)
+		}
+	}
+	if c := cmdWrite([]string{"idea", "-o", t.TempDir(), "--finish-rounds", "2"}); c != 2 {
+		t.Errorf("write --finish-rounds without --finish-model: exit %d, want 2", c)
+	}
+	if c := cmdConvert([]string{"f.txt", "-o", t.TempDir(), "--finish-rounds", "2"}); c != 2 {
+		t.Errorf("convert --finish-rounds without --finish-model: exit %d, want 2", c)
+	}
+}
+
+func TestCmdConvertGuards(t *testing.T) {
+	dir, out := t.TempDir(), t.TempDir()
+	short := filepath.Join(dir, "short.txt")
+	os.WriteFile(short, []byte("A para.\n"), 0o644)
+	os.MkdirAll(filepath.Join(out, "story"), 0o755)
+	if c := cmdConvert([]string{short, "-o", out}); c != 1 {
+		t.Errorf("existing story/ without --force: exit %d, want 1", c)
+	}
+	long := filepath.Join(dir, "long.txt")
+	os.WriteFile(long, []byte(strings.Repeat("가", 12001)), 0o644)
+	if c := cmdConvert([]string{long, "-o", t.TempDir()}); c != 1 {
+		t.Errorf("too long: exit %d, want 1", c)
 	}
 }
