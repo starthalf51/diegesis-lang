@@ -233,6 +233,7 @@ go vet ./...
 | v0.8.0 | 플랜 8: 공개 준비(Apache-2.0, 위생 점검 `tools/pubcheck`, `docs/`), 영어 README·`docs/quickstart.md`·`examples/showcase`, 재설정 재측정(retcon3) |
 | v0.9.0 | 플랜 9: 첫 사용 경험(`dieg demo`, `scripts/quickstart.sh`·`.ps1`, 컴포즈 ghcr 이미지, 릴리스 워크플로, `docs/releasing.md`), `attribute-conflict` 가 `X.at` 이동도 허용 |
 | v0.9.1 | 플랜 10: 배포 보안 — PG 이미지 게시 중단(공식 `apache/age` digest 고정, 로컬 빌드만), 릴리스 액션 SHA 고정·최소 권한·빌드 출처 증명, 빠른 시작 스크립트가 체크섬·`gh attestation verify` 실패 시 바이너리 삭제, `SECURITY.md`·dependabot |
+| v0.10.0 | 플랜 11·12: 로컬 모델(`ollama:<name>`, `OLLAMA_HOST`·`DIEG_OLLAMA_CTX`), `dieg convert`(퍼블릭 도메인 원문 → 코드, `src` 문단 번호, 원문 커버리지로 최선 라운드), `tools/fetchtext`, 최선 라운드 유지·`--allow-warn`, 수정 피드백 진단 묶기, `--finish-model`(로컬 초안을 다른 모델이 마무리), `examples/local-hybrid` |
 
 ## 라이선스
 
