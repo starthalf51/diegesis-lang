@@ -24,12 +24,17 @@ type Part struct {
 	Text    string
 }
 
-var epilogueRE = regexp.MustCompile(`(?i)^\W*epilogue`)
+var (
+	epilogueRE = regexp.MustCompile(`(?i)^\W*epilogue`)
+	headNum    = regexp.MustCompile(`\d+`)
+)
 
 // SplitBook cuts text at the lines chapterRE matches. Text before the first heading is dropped, and so is a
-// heading with no text under it (a table of contents), which also takes no chapter number: chapters are numbered
-// 1, 2, … in order, an "Epilogue" heading is chapter 0. A chapter over max runes is split at paragraph
-// boundaries into nearly even parts of at most max runes.
+// heading with no text under it (a contents list entry). A chapter takes the first number in its heading
+// ("CHAPTER 32. The Cetology" → 32), else its position among the kept chapters; an "Epilogue" heading is chapter 0.
+// A chapter met twice is an error, not a silent drop: a contents list whose last entry is followed by front matter
+// (Gutenberg's "Epilogue" then ETYMOLOGY) collides with the real chapter, so the caller strips the front matter.
+// A chapter over max runes is split at paragraph boundaries into nearly even parts of at most max runes.
 func SplitBook(text string, chapterRE *regexp.Regexp, max int) ([]Part, error) {
 	type chapter struct {
 		title string
@@ -48,6 +53,7 @@ func SplitBook(text string, chapterRE *regexp.Regexp, max int) ([]Part, error) {
 	}
 	var parts []Part
 	n := 0
+	seen := map[string]string{} // part stem → heading, to refuse a chapter met twice
 	for _, c := range chs {
 		var ps []string
 		for _, p := range blankLine.Split(strings.Join(c.body, "\n"), -1) {
@@ -62,7 +68,15 @@ func SplitBook(text string, chapterRE *regexp.Regexp, max int) ([]Part, error) {
 		if !epilogueRE.MatchString(c.title) {
 			n++
 			num = n
+			if d := headNum.FindString(c.title); d != "" {
+				num, _ = strconv.Atoi(d)
+			}
 		}
+		key := PartStem(Part{Chapter: num})
+		if prev, dup := seen[key]; dup {
+			return nil, fmt.Errorf("convert-book: chapter %q twice (headings %q and %q): strip the front matter before the first chapter (a contents list) or tighten --chapter-re", key, prev, c.title)
+		}
+		seen[key] = c.title
 		all := strings.Join(ps, "\n\n")
 		total := len([]rune(all))
 		if total <= max {
@@ -188,7 +202,7 @@ func ConvertBook(ctx context.Context, c render.Completer, check Checker, work, t
 			return unclean, err
 		}
 		before, start := tokens(c), time.Now()
-		res, err := Loop(ctx, c, CoverageChecker(partChecker(check, book, file, known), n), idea, refs, po)
+		res, err := Loop(ctx, c, CoverageChecker(partChecker(check, book, file, work+"."+stem, known), n), idea, refs, po)
 		if err != nil {
 			return unclean, fmt.Errorf("%s: %w", stem, err)
 		}
@@ -292,8 +306,9 @@ func bookRules(work, title string, p Part, file string, mods, list []string) str
 }
 
 // partChecker checks a round that must be exactly the one file `file`, together with the book's other files (in a
-// temp dir), and adds a dup-decl error for each id the book already declares.
-func partChecker(check Checker, book, file string, known map[string]string) Checker {
+// temp dir), and adds a dup-decl error for each id the book already declares. A file whose module is not `module`
+// is refused before checking: metrics group a work's parts by module name.
+func partChecker(check Checker, book, file, module string, known map[string]string) Checker {
 	return func(ctx context.Context, dir string) ([]Diag, error) {
 		var extra []string
 		filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
@@ -305,6 +320,15 @@ func partChecker(check Checker, book, file string, known map[string]string) Chec
 		src, err := os.ReadFile(filepath.Join(dir, file))
 		if err != nil || len(extra) > 0 {
 			return bundleDiag(fmt.Sprintf("write exactly one file, %s; got %v", file, extra)), nil
+		}
+		f, _ := syntax.ParseFile(file, src)
+		if f.Module == nil || f.Module.Name != module {
+			got := "none"
+			if f.Module != nil {
+				got = f.Module.Name
+			}
+			return []Diag{{File: file, Line: 1, Col: 1, Severity: "error", Rule: "bundle",
+				Msg: fmt.Sprintf("the frontmatter must say `module: %s` (got %s)", module, got)}}, nil
 		}
 		tmp, err := os.MkdirTemp("", "dieg-book-")
 		if err != nil {
@@ -334,7 +358,6 @@ func partChecker(check Checker, book, file string, known map[string]string) Chec
 		if err != nil {
 			return ds, err
 		}
-		f, _ := syntax.ParseFile(file, src)
 		for _, it := range f.Items {
 			if d, ok := it.(*syntax.Decl); ok {
 				if mod, dup := known[d.ID.Name]; dup {

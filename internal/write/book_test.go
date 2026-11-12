@@ -128,3 +128,41 @@ func TestConvertBookRefs(t *testing.T) {
 		t.Errorf("resume called the model %d times, err %v", len(f2.prompts), err)
 	}
 }
+
+func TestSplitBookHeadingNumbers(t *testing.T) {
+	parts, err := SplitBook("CHAPTER 3. C\n\nx\n\nCHAPTER 7. G\n\ny\n\nEpilogue\n\nz\n", chapterRE, 12000)
+	if err != nil || len(parts) != 3 || parts[0].Chapter != 3 || parts[1].Chapter != 7 || parts[2].Chapter != 0 {
+		t.Fatalf("chapters should come from the heading numbers: %+v %v", parts, err)
+	}
+}
+
+// A Gutenberg contents list ends with "Epilogue" and is followed by front matter: that front matter would become a
+// second epilogue, so SplitBook refuses the text instead of dropping either one.
+func TestSplitBookContentsList(t *testing.T) {
+	text := "CONTENTS\n\nCHAPTER 1. Loomings.\n\nCHAPTER 2. The Carpet-Bag.\n\nCHAPTER 3. The Spouter-Inn.\n\nEpilogue\n\n" +
+		"ETYMOLOGY.\n\nEXTRACTS.\n\nCHAPTER 1. Loomings.\n\nCall me Ishmael.\n\nCHAPTER 2. The Carpet-Bag.\n\nb\n\n" +
+		"CHAPTER 3. The Spouter-Inn.\n\nc\n\nEpilogue\n\nThe drama's done.\n"
+	_, err := SplitBook(text, chapterRE, 12000)
+	if err == nil || !strings.Contains(err.Error(), `"epilogue" twice`) || !strings.Contains(err.Error(), "front matter") {
+		t.Fatalf("want a duplicate-epilogue error, got %v", err)
+	}
+	// with the front matter cut (Task 2's preparation) the same text splits cleanly
+	parts, err := SplitBook(text[strings.Index(text, "EXTRACTS.\n\n")+len("EXTRACTS.\n\n"):], chapterRE, 12000)
+	if err != nil || len(parts) != 4 || parts[0].Chapter != 1 || parts[3].Text != "The drama's done." {
+		t.Fatalf("%+v %v", parts, err)
+	}
+}
+
+func TestPartCheckerModule(t *testing.T) {
+	book, dir := t.TempDir(), t.TempDir()
+	os.WriteFile(filepath.Join(dir, "ch001.dieg.md"), []byte("---\nmodule: moby.chapter1\n---\n"), 0o644)
+	none := func(context.Context, string) ([]Diag, error) { return nil, nil }
+	ds, err := partChecker(none, book, "ch001.dieg.md", "moby.ch001", nil)(ctx, dir)
+	if err != nil || len(ds) != 1 || ds[0].Severity != "error" || !strings.Contains(ds[0].Msg, "module: moby.ch001") {
+		t.Fatalf("want a module mismatch error, got %v %v", ds, err)
+	}
+	os.WriteFile(filepath.Join(dir, "ch001.dieg.md"), []byte("---\nmodule: moby.ch001\n---\n"), 0o644)
+	if ds, err := partChecker(none, book, "ch001.dieg.md", "moby.ch001", nil)(ctx, dir); err != nil || len(ds) != 0 {
+		t.Fatalf("matching module: %v %v", ds, err)
+	}
+}

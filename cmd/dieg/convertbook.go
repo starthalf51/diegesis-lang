@@ -81,6 +81,9 @@ func runConvertBook(file, reSrc, chapters string, o write.Opts) (int, error) {
 			parts = append(parts, p)
 		}
 	}
+	if len(parts) == 0 {
+		return 1, fmt.Errorf("--chapters %q selects none of the %d parts", chapters, len(all))
+	}
 	title := strings.TrimSuffix(filepath.Base(file), filepath.Ext(file))
 	work := nonIdent.ReplaceAllString(strings.ToLower(title), "")
 	if work == "" || work[0] < 'a' || work[0] > 'z' {
