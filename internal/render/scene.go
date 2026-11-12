@@ -63,8 +63,8 @@ type Scene struct {
 	Withheld     []string   `json:"withheld"`
 	Narration    string     `json:"narration"`               // "first-person" | "third-person" (default)
 	FreeDialogue bool       `json:"free_dialogue,omitempty"` // renderer may write dialogue for speech acts (skeleton mode)
-	TermsNew     []Term     `json:"terms_new"`   // terms this scene introduces to the reader
-	TermsKnown   []Term     `json:"terms_known"` // terms explained in earlier scenes
+	TermsNew     []Term     `json:"terms_new"`               // terms this scene introduces to the reader
+	TermsKnown   []Term     `json:"terms_known"`             // terms explained in earlier scenes
 }
 
 var verbs = map[string]bool{
