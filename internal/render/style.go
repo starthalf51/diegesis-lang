@@ -9,14 +9,17 @@ import (
 )
 
 type StyleSample struct {
-	ID            string `json:"id"`
-	Author        string `json:"author"`
-	Lang          string `json:"lang"`
-	Work          string `json:"work"`
-	Source        string `json:"source"`
-	Text          string `json:"text"`
-	DiedYear      int    `json:"died_year"`
-	PublishedYear int    `json:"published_year"`
+	ID            string     `json:"id"`
+	Author        string     `json:"author"`
+	Lang          string     `json:"lang"`
+	Work          string     `json:"work"`
+	Source        string     `json:"source"`
+	Text          string     `json:"text"`
+	DiedYear      int        `json:"died_year"`
+	PublishedYear int        `json:"published_year"`
+	Rules         []string   `json:"rules"`   // style rules, listed in the system prompt
+	Lexicon       []LexEntry `json:"lexicon"` // word choices
+	Opening       string     `json:"opening"` // opening-sentence instruction used with --opening
 }
 
 // CheckPublicDomain: author dead 70+ years (KR) and published 95+ years ago (US).
@@ -61,8 +64,26 @@ func LoadStyle(p string) (StyleSample, error) {
 	if err := json.Unmarshal(b, &s); err != nil {
 		return s, fmt.Errorf("%s: %w", p, err)
 	}
-	if err := CheckPublicDomain(s, 2026); err != nil {
+	if err := CheckStyle(s); err != nil {
 		return s, fmt.Errorf("%s: %w", p, err)
 	}
 	return s, nil
+}
+
+// LexEntry is one word choice: use Use for the concept For; never any of Avoid.
+type LexEntry struct {
+	Use   string   `json:"use"`
+	For   string   `json:"for"`
+	Avoid []string `json:"avoid"`
+}
+
+// CheckStyle validates a style: a sample text must be public domain (2026); a rules-only style (no text) skips that check; a style with neither is an error.
+func CheckStyle(s StyleSample) error {
+	if s.Text == "" {
+		if len(s.Rules) == 0 && len(s.Lexicon) == 0 {
+			return fmt.Errorf("style %q has neither sample text nor rules", s.ID)
+		}
+		return nil
+	}
+	return CheckPublicDomain(s, 2026)
 }

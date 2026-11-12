@@ -62,10 +62,30 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 		sb.WriteString("- In first-person narration, never report another character's unspoken thoughts.\n")
 	}
 	fmt.Fprintf(&sb, "- Output only the prose, written in %s. No title, headings, notes, or commentary.\n", ln)
-	if style != nil {
+	if style != nil && style.Text != "" {
 		sb.WriteString("\nWrite in the prose style of the following sample. Imitate its voice, rhythm, and diction, not its content.\n\n<style_sample>\n")
 		sb.WriteString(style.Text)
 		sb.WriteString("\n</style_sample>\n")
+	}
+	if style != nil && len(style.Rules) > 0 {
+		sb.WriteString("\nStyle rules:\n")
+		for _, r := range style.Rules {
+			fmt.Fprintf(&sb, "- %s\n", r)
+		}
+	}
+	if style != nil && len(style.Lexicon) > 0 {
+		sb.WriteString("\nWord choices:\n")
+		for _, l := range style.Lexicon {
+			fmt.Fprintf(&sb, "- use %q for %s", l.Use, l.For)
+			if len(l.Avoid) > 0 {
+				q := make([]string, len(l.Avoid))
+				for i, a := range l.Avoid {
+					q[i] = fmt.Sprintf("%q", a)
+				}
+				fmt.Fprintf(&sb, "; never %s", strings.Join(q, ", "))
+			}
+			sb.WriteString("\n")
+		}
 	}
 	system = sb.String()
 
@@ -160,6 +180,13 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 		if len(d.Omit) > 0 {
 			fmt.Fprintf(&sb, "- omit: %s\n", strings.Join(d.Omit, "; "))
 		}
+	}
+	if s.Opening {
+		op := "The first sentence must hook a first-time reader: one concrete, surprising situation in the narrator's voice, no setting summary."
+		if style != nil && style.Opening != "" {
+			op = style.Opening
+		}
+		fmt.Fprintf(&sb, "\n## Opening sentence\n%s\n", op)
 	}
 	return system, sb.String(), nil
 }

@@ -57,7 +57,7 @@ func LoadBackends(dir string) ([]Backend, error) {
 		if _, ok := toneRule[b.Tone]; b.Tone != "" && (!ok || b.Lang != "ko") {
 			return nil, fmt.Errorf("%s: unknown tone %q for %s", p, b.Tone, b.Lang)
 		}
-		if err := CheckPublicDomain(b.Sample, 2026); err != nil {
+		if err := CheckStyle(b.Sample); err != nil {
 			return nil, fmt.Errorf("%s: %w", p, err)
 		}
 		out = append(out, b)

@@ -59,11 +59,14 @@ func backend(dir, id string) (render.Backend, error) {
 func cmdRender(args []string) int {
 	var pos []string
 	id, out, styles, verify, retries := "", "", "styles", false, 2
+	opening := false
 	verifier, verifierSet := "card", false
 	dw := write.DefaultOpts()
 	rm, xm, re := dw.RenderModel, dw.ExtractModel, dw.RenderEffort
 	for i := 0; i < len(args); i++ {
 		switch a := args[i]; {
+		case a == "--opening":
+			opening = true
 		case a == "--verify":
 			verify = true
 		case a == "--verifier" && i+1 < len(args):
@@ -109,7 +112,7 @@ func cmdRender(args []string) int {
 		fmt.Fprintln(os.Stderr, "dieg: --verifier needs --verify")
 		return 2
 	}
-	pass, err := renderOnce(pos[0], pos[1], id, out, styles, verify, retries, rm, xm, re, verifier)
+	pass, err := renderOnce(pos[0], pos[1], id, out, styles, verify, opening, retries, rm, xm, re, verifier)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
@@ -121,7 +124,7 @@ func cmdRender(args []string) int {
 }
 
 // renderOnce writes the prose even when pass=false (--verify went to the limit and still did not pass).
-func renderOnce(target, scene, id, out, styles string, verify bool, retries int, rm, xm, re, verifier string) (bool, error) {
+func renderOnce(target, scene, id, out, styles string, verify, opening bool, retries int, rm, xm, re, verifier string) (bool, error) {
 	b, err := backend(styles, id)
 	if err != nil {
 		return false, err
@@ -130,6 +133,7 @@ func renderOnce(target, scene, id, out, styles string, verify bool, retries int,
 	if err != nil {
 		return false, err
 	}
+	s.Opening = opening // goes into the prompt, so the render hash differs from a render without it
 	var text string
 	pass := true
 	if verify {

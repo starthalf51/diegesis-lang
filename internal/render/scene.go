@@ -65,6 +65,7 @@ type Scene struct {
 	FreeDialogue bool       `json:"free_dialogue,omitempty"` // renderer may write dialogue for speech acts (skeleton mode)
 	TermsNew     []Term     `json:"terms_new"`               // terms this scene introduces to the reader
 	TermsKnown   []Term     `json:"terms_known"`             // terms explained in earlier scenes
+	Opening      bool       `json:"opening,omitempty"`       // dieg render --opening: ask for a hooking first sentence
 }
 
 var verbs = map[string]bool{
