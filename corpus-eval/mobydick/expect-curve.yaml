@@ -1,0 +1,9 @@
+# Labels for Moby-Dick (Melville, 1851). Chapters match `dieg curve` module names by suffix.
+valley: [ch032]   # Ch. 32 "Cetology": the narrator pauses the plot for an essay classifying whales into folios, octavos and duodecimos.
+high: [ch036, ch133, ch134, ch135]
+source:
+  ch032: 'Cetology -- "Already we are boldly launched upon the deep; but soon we shall be lost in its unshored, harbourless immensities."; the long classification by book size, plot at a standstill.'
+  ch036: 'The Quarter-Deck -- Ahab nails the gold doubloon to the mast and swears the crew to the hunt: "Death to Moby Dick!"'
+  ch133: 'The Chase, First Day -- Moby Dick is sighted and Ahab''s boat is smashed in the first encounter.'
+  ch134: 'The Chase, Second Day -- Fedallah is lost; the whale drags Ahab''s boat.'
+  ch135: 'The Chase, Third Day -- the final pursuit; Ahab is dragged under, the Pequod sinks.'
