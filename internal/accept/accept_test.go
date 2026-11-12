@@ -165,3 +165,12 @@ func TestJudgeRequiresBothRates(t *testing.T) {
 		t.Errorf("lint-only %d/%d, wo %d/%d = %v, want 18/23, 15/20 = 0.75", r.HitLint, r.Counted, r.HitLintWoMoveBefore, r.CountedWoMoveBefore, r.RateLintWoMoveBefore)
 	}
 }
+
+// An error-severity lint diag (reader-unknown-term) is a finding like a warn: unexpected → false positive.
+func TestAcceptCountsErrors(t *testing.T) {
+	in := passing()
+	in.Diags = append(in.Diags, diag("reader-unknown-term", "m/1.3#a7", "error", false))
+	if r := Judge(parse(t), in); r.Pass || len(r.FalsePositives) != 1 {
+		t.Fatalf("error diag not counted: %+v", r)
+	}
+}

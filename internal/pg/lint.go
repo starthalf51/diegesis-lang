@@ -41,6 +41,8 @@ func (d Diagnostic) String() string {
 	s := fmt.Sprintf("%s:%d:%d: %s %s: %s", d.File, d.Line, d.Col, d.Severity, d.Rule, d.Message)
 	if d.Waived {
 		s += " [waived: " + d.Reason + "]"
+	} else if d.Reason != "" && d.Severity == "error" {
+		s += " (error: cannot be waived)"
 	}
 	return s
 }
@@ -128,9 +130,10 @@ UPDATE diagnostic d SET src_id = t.src_id FROM (
 ) t WHERE d.work_id = $1 AND d.run_id = $2 AND d.src_id IS NULL AND t.k = d.target_kind AND t.id = d.target_id`
 
 // Suppression: only waivers whose rule and target (kind, id) match exactly (Review Focus 1). Also applied to derive diagnostics.
+// An error is never suppressed (ruling T1-R2): the matching waiver only shows up as Reason.
 const applyWaivers = `
 UPDATE diagnostic d SET waived = true
- WHERE d.work_id = $1 AND d.run_id IN ($2, 'derive') AND NOT d.waived AND EXISTS (
+ WHERE d.work_id = $1 AND d.run_id IN ($2, 'derive') AND NOT d.waived AND d.severity <> 'error' AND EXISTS (
    SELECT 1 FROM waiver v WHERE v.work_id = $1 AND v.rule = d.rule_id
       AND v.target_kind = d.target_kind AND v.target_id = d.target_id)`
 

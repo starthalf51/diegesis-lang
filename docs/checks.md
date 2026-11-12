@@ -121,6 +121,7 @@ scene 1 at hall
 - An empty reason is a compile error (`waiver-reason`).
 - A waived diagnostic is not deleted but kept with `waived=true`. So "the list of intended inconsistencies in this work" becomes an artifact in its own right. `dieg test` treats an undeclared waiver as a failure.
 - A work-wide waiver is `allow rule-id: "…"` in the `work` block.
+- An **error** cannot be waived (today only `reader-unknown-term`). A matching `#! allow` leaves it unwaived: `dieg lint` prints it with `(error: cannot be waived)` and exits 1, and the `write`/`convert` loops still block on it (also with `--allow-warn`). warn and info waivers work as above.
 - Limit: a `when` waiver targets the whole scene.
 
 ## Evaluation — `dieg test`

@@ -62,7 +62,7 @@ func newHarness(ctx context.Context, db *pgxpool.Pool, base *ir.Work, baseDiags 
 	log io.Writer) (*harness, error) {
 	h := &harness{db: db, work: base.Works[0].ID, base: base, before: map[string]bool{}}
 	for _, d := range baseDiags {
-		if d.Severity == "warn" && !d.Waived {
+		if finding(d.Severity) && !d.Waived {
 			h.before[d.Rule+" "+short(h.work, d.TargetID)] = true
 		}
 	}
@@ -112,7 +112,7 @@ func (h *harness) run(ctx context.Context, id string, m mutate.Mutation) (Mutant
 	ds, err := loadLint(ctx, h.db, mutate.Rename(mutate.Apply(h.base, res.Mutation), id))
 	if err == nil {
 		for _, d := range ds {
-			if d.Severity != "warn" || d.Waived || h.before[d.Rule+" "+short(id, d.TargetID)] {
+			if !finding(d.Severity) || d.Waived || h.before[d.Rule+" "+short(id, d.TargetID)] {
 				continue
 			}
 			if !slices.Contains(res.Rules, d.Rule) {

@@ -73,3 +73,18 @@ func TestTermExplainedAt(t *testing.T) {
 		t.Errorf("got %v, want %v", got, want)
 	}
 }
+
+// Ruling T1-R2: an error cannot be waived. The matching pragma leaves it unwaived and the CLI form says so.
+func TestReaderUnknownTermNotWaivable(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, terms+"scene 1\n  enter a, b\n  #! allow reader-unknown-term: \"house style\"\n  a tells b: fj\n")
+	ds := lint(t, pool, id)
+	if got := of(ds, "reader-unknown-term", id); !slices.Equal(got, []string{"t.s/1#a1/error"}) {
+		t.Fatalf("got %v", got)
+	}
+	for _, d := range ds {
+		if d.Rule == "reader-unknown-term" && !strings.HasSuffix(d.String(), "(error: cannot be waived)") {
+			t.Errorf("String() = %s", d)
+		}
+	}
+}
