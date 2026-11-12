@@ -70,7 +70,7 @@ SELECT … AS target, …
 - For each result row, the runner attaches the `src` of `target`, puts it in `diagnostic`, and checks it against `waiver` to mark whether it is waived.
 - `dieg lint <work> --rules <dir>` runs the `*.sql` rules in a project directory (same header format, same file-name = rule-ID requirement) in addition to the built-in ones. A rule ID that collides with a built-in rule or repeats inside the directory is an error; built-in rules cannot be overridden. A directory with no `.sql` file is also an error. Subfolders under `--rules` are read recursively; per-genre selection is not implemented. Project rules must be `layer: lint` (derive-layer rows come only from load-time logic, so any other layer is rejected).
 
-## Pattern library (`patterns/*.sql`, 9 patterns)
+## Pattern library (`patterns/*.sql`, 10 patterns)
 
 A pattern is the **detection of a structure**, not a violation. One file is one pattern, and its body is a SELECT where `$1` = the work. `dieg patterns` loads the results into `pattern_match` and you view them through the `pattern_result` view → [storage](storage.md#patterns)
 
@@ -85,6 +85,7 @@ A pattern is the **detection of a structure**, not a violation. One file is one 
 | `deception-chain` | deception | Deception → the recipient believes → an action that uses that belief as its `because` |
 | `counter-deception` | deception | The recipient of a deception doubts it or already believes the opposite — not fooled |
 | `recognition` | identity | The set of characters who believe a `tag identity` fact grows in telling order, and grows through `sees` at least once |
+| `bookend` | structure | The opening and closing scenes share characters, places and facts more than the opening shares with the middle (`metric_structure` bookend >= 0.2) |
 
 - If the author declares `pattern <id> [at <scene>]`, a match is expected. If there is none, `pattern-missing`.
 - The expected number of patterns per corpus is in `expect.yaml`, and `dieg test` checks it.

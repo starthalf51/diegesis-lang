@@ -80,7 +80,7 @@ What changed from the design draft:
 - Pattern definitions are `patterns/*.sql`. One file is one pattern, and its body is a SELECT where `$1` = the work. The runner (`internal/pg/patterns.go`) only moves the results into `pattern_match`. Judgment is done by the pattern SQL and the reader model.
 - The author's declaration `pattern <id> [at <scene>]` is a `pattern_decl`. If declared and there is no match, `pattern-missing` (warn). If there is a match but no declaration, it is only reported.
 - The `pattern_result` view shows the matches of the most recent run joined with the declarations. The metrics and `dieg patterns` read it.
-- List and meaning → [checks](checks.md#pattern-library-patternssql-9-patterns)
+- List and meaning → [checks](checks.md#pattern-library-patternssql-10-patterns)
 
 ## Metrics (014)
 
