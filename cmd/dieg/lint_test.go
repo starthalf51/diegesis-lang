@@ -26,9 +26,15 @@ func captureStderr(t *testing.T, f func()) string {
 
 func TestLintRulesFlag(t *testing.T) {
 	empty := t.TempDir()
+	derive := t.TempDir()
+	hdr := "-- rule: p-one\n-- severity: warn\n-- layer: derive\n-- summary: x\nSELECT 1 WHERE false;\n"
+	if err := os.WriteFile(filepath.Join(derive, "p-one.sql"), []byte(hdr), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	for _, c := range []struct{ rules, want string }{
 		{filepath.Join(empty, "missing"), "--rules"},
 		{empty, "no rules"},
+		{derive, "layer: lint"},
 	} {
 		var code int
 		msg := captureStderr(t, func() { code = cmdLint([]string{"somework", "--rules", c.rules}) })

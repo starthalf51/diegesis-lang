@@ -52,7 +52,15 @@ func cmdLint(args []string) int {
 				if len(more) == 0 {
 					err = fmt.Errorf("--rules %s: no rules (*.sql) found", rulesDir)
 				} else {
-					_, err = pg.MergeRules(bundled, more)
+					for _, r := range more {
+						if r.Layer != "lint" { // derive rows come only from load-time logic; such a rule would never run
+							err = fmt.Errorf("%s: project rules must be layer: lint (got %q)", filepath.Join(rulesDir, r.Path), r.Layer)
+							break
+						}
+					}
+					if err == nil {
+						_, err = pg.MergeRules(bundled, more)
+					}
 				}
 			}
 		}
