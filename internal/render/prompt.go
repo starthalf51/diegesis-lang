@@ -15,7 +15,7 @@ const (
 
 var langName = map[string]string{"ko": "Korean", "en": "English"}
 
-// BuildPrompt returns a cacheable system prompt (fixed per variant/lang/style)
+// BuildPrompt returns a cacheable system prompt (fixed per variant/lang/style and the reader-stack flags: terms present, narration)
 // and a per-scene user prompt. Variant a ignores style; b and c require a style in lang.
 func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, user string, err error) {
 	ln, ok := langName[lang]
@@ -51,9 +51,16 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	sb.WriteString("- Never state or imply any fact listed under \"Must not state or imply\", not even as a hint, a foreshadowing, or a character's guess.\n")
 	sb.WriteString("- A fact marked false is only what a character says, believes or pretends. Never state it in the narrator's own voice as what happened.\n")
 	sb.WriteString("- Stay in the stated point of view. Use the people's names in the scene's language.\n")
-	sb.WriteString("- Do not coin new jargon: any work-specific word must be one of the listed terms.\n")
-	sb.WriteString("- Never nest narration inside a quote; a quote is only what the character says aloud.\n")
-	sb.WriteString("- In first-person narration, never report another character's unspoken thoughts.\n")
+	hasTerms := len(s.TermsNew)+len(s.TermsKnown) > 0
+	if hasTerms {
+		sb.WriteString("- Do not coin new jargon: any work-specific word must be one of the listed terms.\n")
+	}
+	if hasTerms || s.Narration != "" {
+		sb.WriteString("- Never nest narration inside a quote; a quote is only what the character says aloud.\n")
+	}
+	if s.Narration == "first-person" {
+		sb.WriteString("- In first-person narration, never report another character's unspoken thoughts.\n")
+	}
 	fmt.Fprintf(&sb, "- Output only the prose, written in %s. No title, headings, notes, or commentary.\n", ln)
 	if style != nil {
 		sb.WriteString("\nWrite in the prose style of the following sample. Imitate its voice, rhythm, and diction, not its content.\n\n<style_sample>\n")

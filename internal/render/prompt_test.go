@@ -203,12 +203,31 @@ func TestPromptTerms(t *testing.T) {
 	if !strings.Contains(u, hk+"- 칩\n") || strings.Contains(u, hn) {
 		t.Errorf("known only:\n%s", u)
 	}
-	sys, _, _ := BuildPrompt(s, VariantIROnly, "en", nil)
-	for _, r := range []string{"Do not coin new jargon: any work-specific word must be one of the listed terms.",
-		"Never nest narration inside a quote; a quote is only what the character says aloud.",
-		"In first-person narration, never report another character's unspoken thoughts."} {
-		if !strings.Contains(sys, r) {
-			t.Errorf("system lacks %q", r)
+	const jargon = "Do not coin new jargon: any work-specific word must be one of the listed terms."
+	const nest = "Never nest narration inside a quote; a quote is only what the character says aloud."
+	const thoughts = "In first-person narration, never report another character's unspoken thoughts."
+	for _, tc := range []struct {
+		name                   string
+		terms                  bool
+		narration              string
+		jargon, nest, thoughts bool
+	}{
+		{"plain", false, "", false, false, false},
+		{"third person", false, "third-person", false, true, false},
+		{"first person", false, "first-person", false, true, true},
+		{"terms", true, "", true, true, false},
+		{"terms first person", true, "first-person", true, true, true},
+	} {
+		c := s
+		c.TermsNew, c.TermsKnown, c.Narration = nil, nil, tc.narration
+		if tc.terms {
+			c.TermsKnown = []Term{{"칩", "신분 칩"}}
+		}
+		sys, _, _ := BuildPrompt(c, VariantIROnly, "en", nil)
+		for r, want := range map[string]bool{jargon: tc.jargon, nest: tc.nest, thoughts: tc.thoughts} {
+			if strings.Contains(sys, r) != want {
+				t.Errorf("%s: rule %q present=%v, want %v", tc.name, r, !want, want)
+			}
 		}
 	}
 }
