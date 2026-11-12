@@ -235,6 +235,7 @@ go vet ./...
 | v0.9.1 | 플랜 10: 배포 보안 — PG 이미지 게시 중단(공식 `apache/age` digest 고정, 로컬 빌드만), 릴리스 액션 SHA 고정·최소 권한·빌드 출처 증명, 빠른 시작 스크립트가 체크섬·`gh attestation verify` 실패 시 바이너리 삭제, `SECURITY.md`·dependabot |
 | v0.10.0 | 플랜 11·12: 로컬 모델(`ollama:<name>`, `OLLAMA_HOST`·`DIEG_OLLAMA_CTX`), `dieg convert`(퍼블릭 도메인 원문 → 코드, `src` 문단 번호, 원문 커버리지로 최선 라운드), `tools/fetchtext`, 최선 라운드 유지·`--allow-warn`, 수정 피드백 진단 묶기, `--finish-model`(로컬 초안을 다른 모델이 마무리), `examples/local-hybrid` |
 | v0.11.0 | 플랜 13: `dieg lint --rules <dir>` — 작품별 규칙 디렉터리를 내장 규칙과 함께 실행(ID 충돌·빈 디렉터리·`layer: lint` 아닌 규칙은 DB 연결 전 오류). 첫 사용처: 『홍길동은 하나만 남는다』 세계 규칙 |
+| v0.12.0 | 플랜 14: 명작 측정 — `dieg convert-book`(장 단위 변환), 몰입 지수(017)·`dieg curve`(장별 곡선·골짜기), 구조미 지수(018, `bookend` 패턴), `tools/curvecheck`. 『모비 딕』 마의 구간 검증은 FAIL(「Cetology」가 곡선 꼭대기) |
 
 ## 라이선스
 
