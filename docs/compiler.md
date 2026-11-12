@@ -122,10 +122,13 @@ dieg load  <ir.json|dir>                load into PG (including derive and the A
 dieg lint  <work|dir|ir.json> [--json] [--rules <dir>]  run rules/*.sql
 dieg patterns <work|dir> [--json]       run patterns/*.sql, refresh pattern_match
 dieg stats <work> [--metric name] [--json]   query metric_*
+dieg curve <work|dir> [--by module|scene] [--json]   engagement curve per chapter (parts merged) or scene; marks valleys (mean − 1 sd)
 dieg test <corpus-dir> [--seed N] [--mutants N]   acceptance verdict: expected diagnostics, queries, patterns + mutation test
 dieg render <work|dir> <scene> --backend <id> [--verify] [-o file]   → rendering.md
 dieg render-check <corpus...> [--force | --force-extract] [--only <work>/<scene>.<backend>]
 dieg write / continue / revise / stamp  idea → code → novel pipeline (LLM calls)
+dieg convert <story.txt> -o <dir>        public-domain story → Diegesis code (LLM calls, no render)
+dieg convert-book <book.txt> -o <dir> --chapter-re <re> [--chapters 1-36,epilogue]   chapter-wise conversion into one work in <dir>/book
 ```
 
 - With `--json`, diagnostics are emitted as an array with the same content.

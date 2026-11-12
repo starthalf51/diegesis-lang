@@ -34,6 +34,8 @@ Only the number increases. A file already used is not edited (013 layering on to
 | 014 | metrics `metric_*` · `graph_*` |
 | 015 | read-only role `sl_ro` |
 | 016 | `sl_ro` privilege cleanup: all dashboard functions are INVOKER, and execute rights go only to a list of names |
+| 017 | engagement metrics `metric_novelty` · `metric_payoff` · `metric_drag` · `metric_engagement` · `metric_module_engagement` |
+| 018 | structure metric `metric_structure` (bookend, payoff_ratio) and the `structure` pattern layer |
 
 ## Tables
 
@@ -96,6 +98,12 @@ Every function takes `(work text)` and returns 0 rows for an empty work. The x a
 | `metric_anachrony` | telling order vs. story time. Points whose time is not constrained are excluded |
 | `metric_pace` | the scene's story-time span (seconds) vs. act count. If the end is a point with no time, the span is NULL |
 | `graph_nodes`, `graph_edges` | character graph. Edge = number of scenes attended together + number of TOLD |
+| `metric_novelty` (017) | facts first revealed to the reader in that scene |
+| `metric_payoff` (017) | payoffs + released withholds + deceptions exposed to the reader in that scene |
+| `metric_drag` (017) | 1 if the scene has no acts or no one on stage, else 0 |
+| `metric_engagement` (017) | `eng_tension`·tension + `eng_novelty`·novelty + `eng_payoff`·payoff − `eng_drag`·drag, each term divided by its maximum in the work; weights in `metric_weights` (default 1). Read with `dieg curve` |
+| `metric_module_engagement` (017) | mean engagement per module (chapter part), ordered by first `discourse_ord` |
+| `metric_structure` (018) | two rows: `bookend` = Jaccard(first 10%, last 10%) − Jaccard(first 10%, middle 10%) over characters, places and facts (no row if the windows overlap); `payoff_ratio` = paid setups / setups (no row without setups) |
 
 - The pattern term of `metric_tension` is non-zero only if `dieg patterns` has been run first.
 - `metric_anachrony` returns 0 rows for a work with no absolute times. That is not an error.
