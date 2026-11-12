@@ -37,7 +37,8 @@ func Valleys(xs []float64) []bool {
 		ss += (x - mean) * (x - mean)
 	}
 	sd := math.Sqrt(ss / float64(len(xs)))
-	if sd == 0 {
+	// sd below float noise relative to the mean counts as flat (e.g. 0.1,0.1,0.1).
+	if sd <= 1e-9*math.Max(1, math.Abs(mean)) {
 		return out
 	}
 	for i, x := range xs {

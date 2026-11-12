@@ -12,6 +12,12 @@ func TestValleys(t *testing.T) {
 	if got, want := Valleys([]float64{5, 5, 5, 1, 5}), []bool{false, false, false, true, false}; !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v want %v", got, want)
 	}
+	if got := Valleys([]float64{4, 4, 6, 6}); !reflect.DeepEqual(got, []bool{true, true, false, false}) {
+		t.Errorf("boundary: got %v", got)
+	}
+	if got := Valleys([]float64{0.1, 0.1, 0.1}); !reflect.DeepEqual(got, []bool{false, false, false}) {
+		t.Errorf("flat float: got %v", got)
+	}
 	if got := Valleys([]float64{3, 3, 3}); !reflect.DeepEqual(got, []bool{false, false, false}) {
 		t.Errorf("flat: got %v", got)
 	}
@@ -39,12 +45,14 @@ func TestCurveFormat(t *testing.T) {
 }
 
 func TestGroupChapters(t *testing.T) {
+	// Out of order, unequal n: weighted mean (2.75) != unweighted (3); min first_ord != first seen.
 	in := []curveRow{
-		{"mobydick.ch032a", 10, 2, 4, false}, {"mobydick.ch032b", 14, 2, 2, false}, {"mobydick.ch032c", 18, 4, 3, false},
-		{"mobydick.ch033", 30, 1, 5, false}, {"mobydick.epilogue", 40, 1, 1, false}, {"macbeth.act1", 50, 3, 2, false},
+		{"mobydick.ch033", 12, 1, 5, false},
+		{"mobydick.ch032b", 14, 3, 2, false}, {"mobydick.ch032c", 18, 4, 3, false}, {"mobydick.ch032a", 10, 1, 4, false},
+		{"mobydick.epilogue", 40, 1, 1, false}, {"macbeth.act1", 50, 3, 2, false},
 	}
 	got := groupChapters(in)
-	want := []curveRow{{"mobydick.ch032", 10, 8, 3, false}, {"mobydick.ch033", 30, 1, 5, false}, {"mobydick.epilogue", 40, 1, 1, false}, {"macbeth.act1", 50, 3, 2, false}}
+	want := []curveRow{{"mobydick.ch032", 10, 8, 2.75, false}, {"mobydick.ch033", 12, 1, 5, false}, {"mobydick.epilogue", 40, 1, 1, false}, {"macbeth.act1", 50, 3, 2, false}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v want %v", got, want)
 	}
