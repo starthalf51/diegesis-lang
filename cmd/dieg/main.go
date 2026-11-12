@@ -51,6 +51,9 @@ func main() {
 	if args[0] == "convert" {
 		os.Exit(cmdConvert(args[1:]))
 	}
+	if args[0] == "convert-book" {
+		os.Exit(cmdConvertBook(args[1:]))
+	}
 	if args[0] == "continue" {
 		os.Exit(cmdContinue(args[1:]))
 	}
