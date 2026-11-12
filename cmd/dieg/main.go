@@ -15,7 +15,7 @@ import (
 )
 
 // version is SemVer. Bump it together with the git tag (v0.2.0) when releasing. Until 1.0 the grammar may change.
-var version = "0.10.0"
+var version = "0.11.0"
 
 func main() {
 	args := os.Args[1:]

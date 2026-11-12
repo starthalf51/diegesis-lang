@@ -119,7 +119,7 @@ dieg db migrate                         apply migrations
 dieg check <dir> [--json]               parsing and semantic analysis only. No DB needed
 dieg build <dir> -o ir.json
 dieg load  <ir.json|dir>                load into PG (including derive and the AGE projection)
-dieg lint  <work|dir|ir.json> [--json]  run rules/*.sql
+dieg lint  <work|dir|ir.json> [--json] [--rules <dir>]  run rules/*.sql
 dieg patterns <work|dir> [--json]       run patterns/*.sql, refresh pattern_match
 dieg stats <work> [--metric name] [--json]   query metric_*
 dieg test <corpus-dir> [--seed N] [--mutants N]   acceptance verdict: expected diagnostics, queries, patterns + mutation test
@@ -129,7 +129,7 @@ dieg write / continue / revise / stamp  idea → code → novel pipeline (LLM ca
 ```
 
 - With `--json`, diagnostics are emitted as an array with the same content.
-- In the design but not implemented: `explain`, `fmt`, `show`, `verify-prose`, `import/export story-skills`, `lint --rules` (the rules are bundled in `rules/` via `embed.go`).
+- In the design but not implemented: `explain`, `fmt`, `show`, `verify-prose`, `import/export story-skills` (the built-in rules are bundled in `rules/` via `embed.go`).
 
 ## What it does not do
 
