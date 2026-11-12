@@ -91,7 +91,12 @@ func (w *walker) stmt(n syntax.Node) (string, string) {
 	case *syntax.Render:
 		for _, e := range n.Entries {
 			vals := append([]string{}, e.Values...)
-			if e.Key == "narration" && (len(e.Values) != 1 || e.Values[0] != "first-person" && e.Values[0] != "third-person") {
+			if e.Key == "pov" { // the stored value stays as written; only checked here
+				for _, v := range e.Values[:1] {
+					b.want(m, syntax.Ident{Pos: e.Pos, Name: v}, "pov character", "character")
+				}
+			}
+			if e.Key == "narration" && (len(e.Values) != 1 || (e.Values[0] != "first-person" && e.Values[0] != "third-person")) {
 				b.errf(e.Pos, "arg-kind", "narration takes first-person or third-person")
 				continue
 			}

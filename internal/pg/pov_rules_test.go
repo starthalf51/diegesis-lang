@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// pov-offstage: render pov X, but X is not on stage (entered, not yet exited) in the scene; a mention is not presence.
+// pov-offstage: render pov X, but X never enters the scene (any presence row counts; a mention is not presence).
 // pov-mind-leak: in a first-person scene, an act of `thinks` by someone other than the pov character.
 func TestPovRules(t *testing.T) {
 	pool := open(t)
@@ -20,6 +20,9 @@ func TestPovRules(t *testing.T) {
 		{"first person, pov thinks", "scene 1\n  enter a, b\n  render\n    pov a\n    narration first-person\n  a thinks: \"hm\"\n", nil, nil},
 		{"third person, other thinks", "scene 1\n  enter a, b\n  render\n    pov a\n    narration third-person\n  b thinks: \"hm\"\n", nil, nil},
 		{"no pov", "scene 1\n  enter a, b\n  render\n    narration first-person\n  b thinks: \"hm\"\n", nil, nil},
+		{"qualified pov enters", "scene 1\n  enter a, b\n  render\n    pov t.s/a\n", nil, nil},
+		{"qualified pov thinks", "scene 1\n  enter a, b\n  render\n    pov t.s/a\n    narration first-person\n  a thinks: \"hm\"\n", nil, nil},
+		{"unresolved role thinks", "role chief \"Chief\"\nscene 1\n  enter a, b\n  render\n    pov a\n    narration first-person\n  role:chief thinks: \"hm\"\n", nil, nil},
 	} {
 		id := compileLoad(t, pool, tc.scene)
 		ds := lint(t, pool, id)

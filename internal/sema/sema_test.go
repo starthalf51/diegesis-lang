@@ -446,3 +446,11 @@ func TestRenderNarration(t *testing.T) {
 		t.Errorf("diags = %v", diags)
 	}
 }
+
+// render pov must name a declared character; the stored value stays as written.
+func TestRenderPovRef(t *testing.T) {
+	_, diags := build(t, "module t.s\nimport t.cast\nscene 1 at room\n  render\n    pov nosuch\n")
+	if len(diags) != 1 || diags[0].Rule != "undefined-ref" || diags[0].Severity != "error" {
+		t.Errorf("diags = %v", diags)
+	}
+}

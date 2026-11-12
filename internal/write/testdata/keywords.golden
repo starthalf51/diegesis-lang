@@ -23,7 +23,7 @@
 - `pattern-missing` (warn): 작가가 선언한 서사 패턴이 작품에서 검출되지 않았다
 - `payoff-without-setup` (warn): 복선(setup)이 없거나 회수보다 앞서지 않는다
 - `pov-mind-leak` (error): 1인칭 장면에서 화자가 남의 속마음을 안다
-- `pov-offstage` (error): 시점 인물이 장면에 등장하지 않는다
+- `pov-offstage` (error): 시점 인물이 장면에 한 번도 등장하지 않는다
 - `reader-unknown-term` (error): 작품 고유 용어가 설명되기 전에 독자에게 닿는다
 - `relative-time-fact` (warn): 사실 텍스트에 상대 시간("열이틀 뒤", "in twelve days")이 박혀 있다
 - `retell-known` (warn): 청자가 이미 믿는 사실을 같은 화자가 같은 말로 다시 알려 준다 (그 사이 청자의 믿음은 변하지 않았다)
