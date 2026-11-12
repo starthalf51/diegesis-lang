@@ -174,6 +174,8 @@ scene 1
   a lies b: q
 `,
 	},
+	// bookend is exercised by TestStructureBookend (its target is the work, whose ID is random); this entry only registers the file.
+	"bookend": {},
 	"recognition": {
 		match: `fact who "the stranger is A" true tag identity
 scene 1

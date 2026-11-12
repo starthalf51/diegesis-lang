@@ -33,7 +33,7 @@ type Match struct {
 	Declared   bool            `json:"declared"`
 }
 
-var layers = map[string]bool{"foreshadow": true, "information": true, "deception": true, "identity": true}
+var layers = map[string]bool{"foreshadow": true, "information": true, "deception": true, "identity": true, "structure": true}
 
 // PatternDefs reads the embedded pattern library. The pattern ID must equal the file name.
 func PatternDefs() ([]Pattern, error) { return readPatterns(patterns.FS) }
@@ -68,7 +68,7 @@ func readPatterns(dir fs.FS) ([]Pattern, error) {
 		case x.ID != strings.TrimSuffix(path.Base(p), ".sql"):
 			return fmt.Errorf("%s: header pattern %q must match the file name", p, x.ID)
 		case !layers[x.Layer]:
-			return fmt.Errorf("%s: layer %q, want foreshadow|information|deception|identity", p, x.Layer)
+			return fmt.Errorf("%s: layer %q, want foreshadow|information|deception|identity|structure", p, x.Layer)
 		}
 		out = append(out, x)
 		return nil

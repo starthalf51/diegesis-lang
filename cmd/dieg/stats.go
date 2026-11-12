@@ -13,10 +13,10 @@ import (
 	"github.com/starthalf51/diegesis-lang/internal/pg"
 )
 
-// statsMetrics are the SQL functions of migration 014 (all take the work id).
-var statsMetrics = []string{"presence", "asymmetry", "open_setups", "active_deceptions", "tension", "anachrony", "pace"}
+// statsMetrics are the SQL functions of migrations 014 and 017 (all take the work id).
+var statsMetrics = []string{"presence", "asymmetry", "open_setups", "active_deceptions", "tension", "anachrony", "pace", "novelty", "payoff", "drag", "engagement", "module_engagement"}
 
-// cmdStats runs `dieg stats <work> [--metric name] [--json]`: prints migration 014's metric_* functions
+// cmdStats runs `dieg stats <work> [--metric name] [--json]`: prints migrations 014 and 017 metric_* functions
 // (default: all) or graph_nodes / graph_edges. Computation is SQL; this only formats rows.
 func cmdStats(args []string) int {
 	var work, metric string
