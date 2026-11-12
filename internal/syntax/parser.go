@@ -213,7 +213,7 @@ func (c *cur) end() {
 }
 
 var declKinds = map[string]bool{"character": true, "group": true, "place": true, "thing": true,
-	"faction": true, "role": true, "fact": true, "artifact": true, "thread": true}
+	"faction": true, "role": true, "fact": true, "artifact": true, "thread": true, "term": true}
 
 var topOnly = map[string]bool{"module": true, "import": true, "work": true, "scene": true,
 	"event": true, "account": true, "distance": true}

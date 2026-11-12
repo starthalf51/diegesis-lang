@@ -19,7 +19,7 @@
 
 file        = header { top } ;
 header      = "module" qname NL { "import" qname NL } ;             (* module 두 번 → dup-decl, 같은 import 두 번 → dup-decl *)
-top         = work | decl | scene | event | account | setup | distance | parent | life | belief | attribute | pattern | pragma ;
+top         = work | decl | term | scene | event | account | setup | distance | parent | life | belief | attribute | pattern | pragma ;
               (* 최상위 attribute = 처음부터 참(IR at_pt "") *)
               (* 최상위 belief = 배경 지식: 시점 없이 처음부터 믿는다(IR at_pt "") *)
 
@@ -29,6 +29,8 @@ wattr       = "unit" ident | "start" date | name | pragma ;
 decl        = kind ident [ string { "," string } ] [tier] [ "=" prop ] [bool] [ "tag" ident ] [ BLOCK(attr) ] ;
               (* tag 은 fact 만(다른 종류면 arg-kind). tag identity = 정체 사실: recognition 패턴이 고른다(R3) *)
 kind        = "character" | "group" | "place" | "thing" | "faction" | "role" | "fact" | "artifact" | "thread" ;
+term        = "term" ident string { [","] string } "=" string [ BLOCK(attr) ] ;
+              (* a work-specific word: surfaces (Korean surface forms) = "=" gloss. Explained to the reader by render explain *)
 tier        = "major" | "minor" | "extra" ;
 bool        = "true" | "false" ;
 attr        = name
@@ -90,7 +92,7 @@ pattern     = "pattern" ident [ "at" ident ] ;                       (* 작가 �
 pragma      = "#!" "allow" ruleid ":" string ;                       (* 바로 다음 문장에 붙는다(sema) *)
 render      = "render" BLOCK(rentry) ;
 rentry      = rkey rvalue { [","] rvalue } ;
-rkey        = "pov" | "pace" | "tension" | "focus" | "omit" | "show" ;
+rkey        = "pov" | "pace" | "tension" | "focus" | "omit" | "show" | "explain" ;      (* explain takes term ids (arg-kind otherwise) *)
 rvalue      = word | string ;
 
 (* 식 *)

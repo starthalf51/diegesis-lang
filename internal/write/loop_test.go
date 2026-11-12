@@ -316,6 +316,15 @@ func TestLoopAllowWarn(t *testing.T) {
 	if !strings.Contains(f.prompts[1], "e1") || strings.Contains(f.prompts[1], "w1") {
 		t.Error("fix prompt should carry the error only")
 	}
+
+	// an error-severity lint rule (reader-unknown-term) is not passed by AllowWarn either
+	out = t.TempDir()
+	f = &fakeLLM{replies: []string{good}}
+	chk, _ = checks([]Diag{rerr("reader-unknown-term")})
+	res, err = Loop(ctx, f, chk, "idea", testRefs(t), Opts{Rounds: 1, Out: out, AllowWarn: true})
+	if err != nil || res.Clean || len(res.Diags) != 1 || res.Diags[0].Rule != "reader-unknown-term" {
+		t.Fatalf("lint error passed: %+v %v", res, err)
+	}
 }
 
 func TestLoopCoveragePrefersFullRound(t *testing.T) {

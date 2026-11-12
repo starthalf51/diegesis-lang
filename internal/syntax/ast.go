@@ -76,13 +76,14 @@ type Work struct {
 
 type Decl struct {
 	Pos
-	Kind  string // character group place thing faction role fact artifact thread
+	Kind  string // character group place thing faction role fact artifact thread term
 	ID    Ident
 	Names []string
 	Tier  string
 	Def   *Prop  // fact x = prop
 	Value string // "true" | "false" | ""
 	Tag   string // `tag <name>` (fact only, checked by sema)
+	Gloss string // term only: `= "gloss"` (Names are the surfaces)
 	Attrs []Node // Name Members Knows Held Shared Contains Belief Text Pragma
 }
 

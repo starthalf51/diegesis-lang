@@ -397,3 +397,37 @@ event E "e"
 		t.Errorf("edges:\n got %v\nwant %v", got, want)
 	}
 }
+
+// term: surfaces become names, the gloss an attribute; `render explain` takes terms only.
+func TestTermExplain(t *testing.T) {
+	w, diags := build(t, `module t.s
+import t.cast
+term jokbo "족보" "족보 창" = "국가 기록"
+scene 1 at room
+  render
+    explain jokbo
+`)
+	noErrors(t, diags)
+	var names []string
+	for _, n := range w.Names {
+		if n.OwnerID == "t/t.s/jokbo" {
+			names = append(names, n.Text)
+		}
+	}
+	if !slices.Equal(names, []string{"족보", "족보 창"}) || len(w.Attributes) != 1 || w.Attributes[0].Key != "gloss" ||
+		w.Attributes[0].Value != "국가 기록" || w.Attributes[0].EntityID != "t/t.s/jokbo" {
+		t.Errorf("names = %v, attrs = %+v", names, w.Attributes)
+	}
+	if len(w.Entities) == 0 || w.Entities[len(w.Entities)-1].Kind != "term" {
+		t.Errorf("entities = %+v", w.Entities)
+	}
+	if len(w.Directives) != 1 || !slices.Equal(w.Directives[0].Values, []string{"t/t.s/jokbo"}) {
+		t.Errorf("directives = %+v", w.Directives)
+	}
+	for src, want := range map[string]string{"explain a": "arg-kind", "explain nothing": "undefined-ref"} {
+		_, diags := build(t, "module t.s\nimport t.cast\nscene 1 at room\n  render\n    "+src+"\n")
+		if len(diags) != 1 || diags[0].Rule != want || diags[0].Severity != "error" {
+			t.Errorf("%s: diags = %v, want %s", src, diags, want)
+		}
+	}
+}
