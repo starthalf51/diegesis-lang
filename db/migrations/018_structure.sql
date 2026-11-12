@@ -2,6 +2,8 @@
 --   bookend = Jaccard(front, back) - Jaccard(front, middle) over the set of characters on stage, places and facts asserted
 --   (shown scenes in discourse_ord order). n scenes, window w = max(1, floor(n*0.1)); front = ranks 1..w, back = n-w+1..n,
 --   middle = w scenes centred at rank floor(n/2). If front and back overlap (n < 2w) no bookend row is emitted.
+--   Limits: for n = 2,3 the middle window coincides with the front one, so bookend <= 0 by construction; while n < 20 the window is
+--   a single scene (w = 1), so the value is coarse (a one-scene Jaccard).
 --   payoff_ratio = setups with at least one payoff / all setups (no row without setups).
 SET LOCAL search_path = public, ag_catalog;
 

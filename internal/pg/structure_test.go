@@ -107,3 +107,42 @@ scene 2
 		t.Errorf("no setups but payoff_ratio row: %v", got)
 	}
 }
+
+func near(got map[string]float64, want float64) bool {
+	v, ok := got["bookend"]
+	return ok && v-want < 1e-6 && want-v < 1e-6
+}
+
+// Exact values (10 scenes, windows of 1, middle = scene 5). The middle world (yard, m, o, q) is disjoint from the opening.
+const hallABq = "hall|  enter a, b\n  b tells a: q\n"
+const yardMO = "yard|  enter m, o\n  m tells o: q\n"
+
+func TestStructureExactValues(t *testing.T) {
+	mid := func(int) string { return yardMO }
+	cases := []struct {
+		name        string
+		first, last string
+		want        float64
+	}{
+		// front {a,b,hall,p}, back {a,b,hall,q}: 3 shared of 5 — differ ONLY in the fact.
+		{"fact-only", hallAB, hallABq, 0.6},
+		// back asserts np (= not p): the same base fact as the front, so the sets are identical.
+		{"negated-alias", hallAB, "hall|  enter a, b\n  a tells b: np\n", 1},
+		// the fact is asserted twice in each end scene: counted once.
+		{"asserted-twice", "hall|  enter a, b\n  a tells b: p\n  b tells a: p\n", "hall|  enter a, b\n  a tells b: p\n  a tells b: np\n", 1},
+	}
+	for _, c := range cases {
+		got, _, _ := structure(t, structBody(10, c.first, c.last, mid))
+		if !near(got, c.want) {
+			t.Errorf("%s: bookend = %v, want %v", c.name, got, c.want)
+		}
+	}
+}
+
+// Partial overlap: front {a,b,hall,p}, back {a,c,hall,q}: 2 shared of 6 = 1/3; middle disjoint.
+func TestStructurePartialOverlap(t *testing.T) {
+	got, _, _ := structure(t, structBody(10, hallAB, "hall|  enter a, c\n  c tells a: q\n", func(int) string { return yardMO }))
+	if v := got["bookend"]; v < 0.3333-1e-6 || v > 0.3333+1e-6 { // stored with 4 decimals
+		t.Errorf("bookend = %v, want 1/3", got)
+	}
+}
