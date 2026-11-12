@@ -11,7 +11,7 @@ var verbs = map[string]bool{"tells": true, "says": true, "hails": true, "asks": 
 	"whispers": true, "aside": true, "thinks": true, "sees": true, "shows": true, "reads": true,
 	"writes": true, "sends": true, "orders": true, "decrees": true, "does": true, "enacts": true}
 
-var rkeys = map[string]bool{"pov": true, "pace": true, "tension": true, "focus": true, "omit": true, "show": true, "explain": true}
+var rkeys = map[string]bool{"pov": true, "pace": true, "tension": true, "focus": true, "omit": true, "show": true, "explain": true, "narration": true}
 
 // words that end an act's idlist / start its next clause
 var actStop = map[string]bool{"to": true, "with": true, "because": true, "src": true}

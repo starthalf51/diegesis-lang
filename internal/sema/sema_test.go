@@ -431,3 +431,18 @@ scene 1 at room
 		}
 	}
 }
+
+// narration is a render key restricted to first-person | third-person.
+func TestRenderNarration(t *testing.T) {
+	for _, v := range []string{"first-person", "third-person"} {
+		w, diags := build(t, "module t.s\nimport t.cast\nscene 1 at room\n  render\n    narration "+v+"\n")
+		noErrors(t, diags)
+		if len(w.Directives) != 1 || w.Directives[0].Key != "narration" || !slices.Equal(w.Directives[0].Values, []string{v}) {
+			t.Errorf("%s: directives = %+v", v, w.Directives)
+		}
+	}
+	_, diags := build(t, "module t.s\nimport t.cast\nscene 1 at room\n  render\n    narration second-person\n")
+	if len(diags) != 1 || diags[0].Rule != "arg-kind" || diags[0].Severity != "error" {
+		t.Errorf("diags = %v", diags)
+	}
+}

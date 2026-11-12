@@ -2,7 +2,7 @@
 
 # Checks — layer placement, linter, patterns
 
-> Principle: an **error** is raised only when the IR would lose meaning. Every contradiction inside the story is reported as a **difference (warn)** or a **report (info)**. Judgment is SQL inside PG. → [storage](storage.md) The one lint error is `reader-unknown-term`: a word the reader cannot understand yet is a defect of the telling, not a story difference, so it blocks like a compile error.
+> Principle: an **error** is raised only when the IR would lose meaning. Every contradiction inside the story is reported as a **difference (warn)** or a **report (info)**. Judgment is SQL inside PG. → [storage](storage.md) The lint errors are `reader-unknown-term`, `pov-offstage` and `pov-mind-leak`: a word the reader cannot understand yet, or a point of view that cannot exist, is a defect of the telling, not a story difference, so it blocks like a compile error.
 
 ## Layer placement
 
@@ -17,7 +17,7 @@
 | Overlapping holding spans of one role `role-overlap`, ambiguous speaker `role-ambiguous` | PG `resolve_roles` (derive diagnostic) | warn |
 | Time-constraint cycle `time-cycle` | PG `solve_time` (derive diagnostic) | warn |
 | Two holders of one role at the same time | DB exclusion constraint (`role_holder`) | error |
-| All other story contradictions | lint rules `rules/*.sql` | warn / info (`reader-unknown-term`: error) |
+| All other story contradictions | lint rules `rules/*.sql` | warn / info (`reader-unknown-term`, `pov-offstage`, `pov-mind-leak`: error) |
 | Narrative patterns | `patterns/*.sql` | report (only a missing declaration is warn) |
 
 `stale-prose` and `rendered-edited` (rendered prose is stale or was hand-edited) exist only in the design and are not implemented.
@@ -47,6 +47,8 @@
 | `account-variance` | info | act | The facts contained differ between accounts of the same event |
 | `inferred-deception` | info | act | A document judged to have been written knowing it was false — check whether it is the author's mistake |
 | `reader-unknown-term` | error | act | A declared `term` surface reaches the reader before a scene at or before it in the telling has `render explain` for it |
+| `pov-offstage` | error | scene | `render pov X` names a character who is not on stage (entered, not yet exited) in the scene; `mention` does not count |
+| `pov-mind-leak` | error | act | In a `render narration first-person` scene, a `thinks` act belongs to someone other than the pov character |
 | `time-cycle` | warn | when | Time constraints form a cycle (derive) |
 
 
@@ -121,7 +123,7 @@ scene 1 at hall
 - An empty reason is a compile error (`waiver-reason`).
 - A waived diagnostic is not deleted but kept with `waived=true`. So "the list of intended inconsistencies in this work" becomes an artifact in its own right. `dieg test` treats an undeclared waiver as a failure.
 - A work-wide waiver is `allow rule-id: "…"` in the `work` block.
-- An **error** cannot be waived (today only `reader-unknown-term`). A matching `#! allow` leaves it unwaived: `dieg lint` prints it with `(error: cannot be waived)` and exits 1, and the `write`/`convert` loops still block on it (also with `--allow-warn`). warn and info waivers work as above.
+- An **error** cannot be waived (today `reader-unknown-term`, `pov-offstage`, `pov-mind-leak`). A matching `#! allow` leaves it unwaived: `dieg lint` prints it with `(error: cannot be waived)` and exits 1, and the `write`/`convert` loops still block on it (also with `--allow-warn`). warn and info waivers work as above.
 - Limit: a `when` waiver targets the whole scene.
 
 ## Evaluation — `dieg test`

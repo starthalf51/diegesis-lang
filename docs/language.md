@@ -245,7 +245,7 @@ setup       = "setup" ident ("promise"|"hint"|"symbol") ":" (prop|string) ;
 payoff      = "payoff" qname ;
 pragma      = "#!" "allow" ruleid ":" string ;                    (* attaches to the next statement *)
 render      = "render" BLOCK(rkey rvalue) ;
-rkey        = "pov"|"pace"|"tension"|"focus"|"omit"|"show"|"explain" ;
+rkey        = "pov"|"pace"|"tension"|"focus"|"omit"|"show"|"explain"|"narration" ;
 ```
 
 ## Deliberately left out

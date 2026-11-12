@@ -92,7 +92,7 @@ pattern     = "pattern" ident [ "at" ident ] ;                       (* 작가 �
 pragma      = "#!" "allow" ruleid ":" string ;                       (* 바로 다음 문장에 붙는다(sema) *)
 render      = "render" BLOCK(rentry) ;
 rentry      = rkey rvalue { [","] rvalue } ;
-rkey        = "pov" | "pace" | "tension" | "focus" | "omit" | "show" | "explain" ;      (* explain takes term ids (arg-kind otherwise) *)
+rkey        = "pov" | "pace" | "tension" | "focus" | "omit" | "show" | "explain" | "narration" ;      (* explain takes term ids (arg-kind otherwise); narration takes first-person | third-person *)
 rvalue      = word | string ;
 
 (* 식 *)
