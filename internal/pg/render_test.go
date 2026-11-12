@@ -120,3 +120,33 @@ func TestRenderScenesValidate(t *testing.T) {
 		}
 	}
 }
+
+// Render cards carry the terms explained in this scene (new) and in earlier told scenes (known); `discourse after` is honored.
+func TestRenderSceneTerms(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, terms+"scene 1\n  enter a, b\n  render\n    explain jokbo\n  a tells b: fj\nscene 2\n  enter a\n  render\n    explain chip\n")
+	card := func(sc string) render.Scene {
+		b, err := pg.RenderScene(context.Background(), pool, id, sc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		s, err := render.ParseScene(b)
+		if err != nil {
+			t.Fatalf("%v\n%s", err, b)
+		}
+		return s
+	}
+	s1, s2 := card("1"), card("2")
+	want := func(got []render.Term, surf, gloss string) {
+		t.Helper()
+		if len(got) != 1 || got[0].Surface != surf || got[0].Gloss != gloss {
+			t.Errorf("got %+v, want %s", got, surf)
+		}
+	}
+	want(s1.TermsNew, "족보", "모든 시민의 신원과 배급을 묶은 국가 기록")
+	want(s2.TermsNew, "칩", "손목에 박힌 신분 칩")
+	want(s2.TermsKnown, "족보", "모든 시민의 신원과 배급을 묶은 국가 기록")
+	if len(s1.TermsKnown) != 0 {
+		t.Errorf("s1 known: %+v", s1.TermsKnown)
+	}
+}

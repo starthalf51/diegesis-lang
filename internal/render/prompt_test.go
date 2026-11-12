@@ -184,3 +184,31 @@ func TestPromptFreeDialogue(t *testing.T) {
 		t.Error("only the rule line may differ")
 	}
 }
+
+func TestPromptTerms(t *testing.T) {
+	s := mustLoad(t, "testdata/scenes/holmes-scandal-opening.json")
+	_, base, _ := BuildPrompt(s, VariantIROnly, "en", nil)
+	const hn = "## New terms — introduce each to a reader who has never heard it, inside the story, using its meaning\n"
+	const hk = "## Terms the reader already knows\n"
+	if strings.Contains(base, hn) || strings.Contains(base, hk) {
+		t.Fatal("term sections present without terms")
+	}
+	s.TermsNew = []Term{{"족보", "국가 기록"}}
+	_, u, _ := BuildPrompt(s, VariantIROnly, "en", nil)
+	if !strings.Contains(u, hn+"- 족보: 국가 기록\n") || strings.Contains(u, hk) {
+		t.Errorf("new only:\n%s", u)
+	}
+	s.TermsNew, s.TermsKnown = nil, []Term{{"칩", "신분 칩"}}
+	_, u, _ = BuildPrompt(s, VariantIROnly, "en", nil)
+	if !strings.Contains(u, hk+"- 칩\n") || strings.Contains(u, hn) {
+		t.Errorf("known only:\n%s", u)
+	}
+	sys, _, _ := BuildPrompt(s, VariantIROnly, "en", nil)
+	for _, r := range []string{"Do not coin new jargon: any work-specific word must be one of the listed terms.",
+		"Never nest narration inside a quote; a quote is only what the character says aloud.",
+		"In first-person narration, never report another character's unspoken thoughts."} {
+		if !strings.Contains(sys, r) {
+			t.Errorf("system lacks %q", r)
+		}
+	}
+}

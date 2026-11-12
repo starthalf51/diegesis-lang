@@ -51,6 +51,9 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	sb.WriteString("- Never state or imply any fact listed under \"Must not state or imply\", not even as a hint, a foreshadowing, or a character's guess.\n")
 	sb.WriteString("- A fact marked false is only what a character says, believes or pretends. Never state it in the narrator's own voice as what happened.\n")
 	sb.WriteString("- Stay in the stated point of view. Use the people's names in the scene's language.\n")
+	sb.WriteString("- Do not coin new jargon: any work-specific word must be one of the listed terms.\n")
+	sb.WriteString("- Never nest narration inside a quote; a quote is only what the character says aloud.\n")
+	sb.WriteString("- In first-person narration, never report another character's unspoken thoughts.\n")
 	fmt.Fprintf(&sb, "- Output only the prose, written in %s. No title, headings, notes, or commentary.\n", ln)
 	if style != nil {
 		sb.WriteString("\nWrite in the prose style of the following sample. Imitate its voice, rhythm, and diction, not its content.\n\n<style_sample>\n")
@@ -124,6 +127,18 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 		fmt.Fprintf(&sb, "\n## Point of view\nNarrate from %s's point of view.\n", name(s.Directives.POV))
 		if s.Narration == "first-person" {
 			fmt.Fprintf(&sb, "Narration: first person, as %s\n", name(s.Directives.POV))
+		}
+	}
+	if len(s.TermsNew) > 0 {
+		sb.WriteString("\n## New terms — introduce each to a reader who has never heard it, inside the story, using its meaning\n")
+		for _, t := range s.TermsNew {
+			fmt.Fprintf(&sb, "- %s: %s\n", t.Surface, t.Gloss)
+		}
+	}
+	if len(s.TermsKnown) > 0 {
+		sb.WriteString("\n## Terms the reader already knows\n")
+		for _, t := range s.TermsKnown {
+			fmt.Fprintf(&sb, "- %s\n", t.Surface)
 		}
 	}
 	factList("The point-of-view character believes", s.POVBeliefs)
