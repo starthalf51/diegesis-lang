@@ -150,3 +150,31 @@ func TestRenderSceneTerms(t *testing.T) {
 		t.Errorf("s1 known: %+v", s1.TermsKnown)
 	}
 }
+
+// A term explained again in a later scene is new there (not known); a scene between them still knows it.
+func TestRenderSceneTermsReexplain(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, terms+"scene 1\n  enter a, b\n  render\n    explain jokbo\n  a tells b: fj\nscene 2\n  enter a\nscene 3\n  enter a\n  render\n    explain jokbo\n")
+	surf := func(ts []render.Term) (out []string) {
+		for _, x := range ts {
+			out = append(out, x.Surface)
+		}
+		return
+	}
+	for _, tc := range []struct {
+		sc          string
+		isNew, know []string
+	}{{"1", []string{"족보"}, nil}, {"2", nil, []string{"족보"}}, {"3", []string{"족보"}, nil}} {
+		b, err := pg.RenderScene(context.Background(), pool, id, tc.sc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		s, err := render.ParseScene(b)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !slices.Equal(surf(s.TermsNew), tc.isNew) || !slices.Equal(surf(s.TermsKnown), tc.know) {
+			t.Errorf("scene %s: new %v known %v, want %v / %v", tc.sc, surf(s.TermsNew), surf(s.TermsKnown), tc.isNew, tc.know)
+		}
+	}
+}
