@@ -15,7 +15,10 @@ import (
 // answers the next canned response (JSON array of strings) and exits.
 func TestMain(m *testing.M) {
 	if rf := os.Getenv("READCHECK_FAKE_RESP"); rf != "" {
-		io.Copy(io.Discard, os.Stdin)
+		in, _ := io.ReadAll(os.Stdin)
+		if sf := os.Getenv("READCHECK_FAKE_STDIN"); sf != "" {
+			os.WriteFile(sf, in, 0o644)
+		}
 		if cf := os.Getenv("READCHECK_FAKE_CWD"); cf != "" {
 			wd, _ := os.Getwd()
 			os.WriteFile(cf, []byte(wd), 0o644)
@@ -199,5 +202,95 @@ func TestReadcheckColdOnlyExit(t *testing.T) {
 	code, _ = runFake(t, []string{cold(0, 0, 0, true)}, []string{"--cold-only"}, "ep.md")
 	if code != 0 {
 		t.Errorf("cold-only pass exit %d", code)
+	}
+}
+
+// kinds builds a cold response with n confusions of each given kind.
+func kinds(m map[string]int) string {
+	cs := []map[string]string{}
+	for k, n := range m {
+		for i := 0; i < n; i++ {
+			cs = append(cs, map[string]string{"kind": k, "text": "x"})
+		}
+	}
+	b, _ := json.Marshal(map[string]any{"summary": "s", "confusions": cs, "continue": true})
+	return string(b)
+}
+
+func TestReadcheckNewKinds(t *testing.T) {
+	for _, c := range []struct {
+		name string
+		m    map[string]int
+		want string
+	}{
+		{"repeat 1", map[string]int{"repeat": 1}, "FAIL"},
+		{"dump 2", map[string]int{"dump": 2}, "FAIL"},
+		{"flat 2", map[string]int{"flat": 2}, "FAIL"},
+		{"dump 1 flat 1", map[string]int{"dump": 1, "flat": 1}, "PASS"},
+	} {
+		_, out := runFake(t, []string{kinds(c.m), "A", "B"}, nil, "ep.md")
+		if !strings.Contains(out, c.want) {
+			t.Errorf("%s: %q", c.name, out)
+		}
+		for k, n := range c.m {
+			if !strings.Contains(out, fmt.Sprintf("%s=%d", k, n)) {
+				t.Errorf("%s: %s count missing in %q", c.name, k, out)
+			}
+		}
+	}
+}
+
+func TestReadcheckStateFile(t *testing.T) {
+	dir := t.TempDir()
+	rf := filepath.Join(dir, "resp.json")
+	b, _ := json.Marshal([]string{kinds(nil), "A", "B", kinds(nil), "A", "B"})
+	os.WriteFile(rf, b, 0o644)
+	ref := filepath.Join(dir, "ref.txt")
+	os.WriteFile(ref, []byte("ref text"), 0o644)
+	os.WriteFile(filepath.Join(dir, "ep02.md"), []byte("EPTWO"), 0o644)
+	os.WriteFile(filepath.Join(dir, "ep03.md"), []byte("EPTHREE"), 0o644)
+	os.WriteFile(filepath.Join(dir, "ep02.state.txt"), []byte("용어 칩: 신분 칩\n"), 0o644)
+	exe, _ := os.Executable()
+	t.Setenv("READCHECK_CLAUDE", exe)
+	t.Setenv("READCHECK_FAKE_RESP", rf)
+	sf := filepath.Join(dir, "stdin.txt")
+	t.Setenv("READCHECK_FAKE_STDIN", sf)
+	var out bytes.Buffer
+	if code := run([]string{"--ref", ref, "--cold-only", filepath.Join(dir, "ep02.md")}, &out); code != 0 {
+		t.Fatalf("exit %d %q", code, out.String())
+	}
+	got, _ := os.ReadFile(sf)
+	if !strings.Contains(string(got), "당신은 앞 회차를 읽었습니다. 다음은 지금까지 당신이 알게 된 것입니다:") || !strings.Contains(string(got), "용어 칩: 신분 칩") {
+		t.Errorf("state not in prompt: %q", got)
+	}
+	// no sibling state file -> first-time reader
+	run([]string{"--ref", ref, "--cold-only", filepath.Join(dir, "ep03.md")}, &out)
+	got, _ = os.ReadFile(sf)
+	if strings.Contains(string(got), "다음은 지금까지 당신이 알게 된 것입니다") || !strings.Contains(string(got), "EPTHREE") {
+		t.Errorf("ep03 should be cold: %q", got)
+	}
+	// explicit --state applies to every episode
+	os.WriteFile(filepath.Join(dir, "all.txt"), []byte("등장인물: 안\n"), 0o644)
+	run([]string{"--ref", ref, "--cold-only", "--state", filepath.Join(dir, "all.txt"), filepath.Join(dir, "ep03.md")}, &out)
+	got, _ = os.ReadFile(sf)
+	if !strings.Contains(string(got), "등장인물: 안") {
+		t.Errorf("--state ignored: %q", got)
+	}
+}
+
+func TestReadcheckUnknownNewKind(t *testing.T) {
+	bad := `{"summary":"s","confusions":[{"kind":"boring","text":"x"}],"continue":true}`
+	code, out := runFake(t, []string{bad, bad}, []string{"--budget", "6"}, "ep.md")
+	if code != 1 || !strings.Contains(out, "UNDECIDED") {
+		t.Errorf("exit %d %q", code, out)
+	}
+}
+
+func TestColdPromptTermExcludesNames(t *testing.T) {
+	p := coldPromptFor("")
+	for _, w := range []string{"이름은 문맥상 이름임이 분명하면 term 이 아니다", "옥호"} {
+		if !strings.Contains(p, w) {
+			t.Errorf("prompt lacks %q", w)
+		}
 	}
 }

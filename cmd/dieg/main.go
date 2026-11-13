@@ -75,6 +75,9 @@ func main() {
 	if args[0] == "curve" {
 		os.Exit(cmdCurve(args[1:]))
 	}
+	if args[0] == "reader-state" {
+		os.Exit(cmdReaderState(args[1:]))
+	}
 	if args[0] == "stats" {
 		os.Exit(cmdStats(args[1:]))
 	}
