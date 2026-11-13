@@ -22,9 +22,9 @@
 
 `stale-prose` and `rendered-edited` (rendered prose is stale or was hand-edited) exist only in the design and are not implemented.
 
-## Lint rules (`rules/*.sql`, 21)
+## Lint rules (`rules/*.sql`, 25)
 
-19 are `layer: lint` (run by the linter), and `time-cycle` alone is `layer: derive` (it only shows a diagnostic that derive already produced; the linter does not run it).
+24 are `layer: lint` (run by the linter), and `time-cycle` alone is `layer: derive` (it only shows a diagnostic that derive already produced; the linter does not run it).
 
 | Rule | Level | Target | Meaning |
 |---|---|---|---|
@@ -49,6 +49,7 @@
 | `reader-unknown-term` | error | act | A declared `term` surface reaches the reader before a scene at or before it in the telling has `render explain` for it |
 | `term-re-explained` | warn | scene | A scene's `render explain` names a term an earlier scene in the telling already explains (use `recap`) |
 | `scene-no-turn` | warn | scene | In a work that uses `design` blocks, a shown scene has no `turn` (silent when the work has no design block) |
+| `scene-ends-passive` | warn | scene | A shown scene with a `design` block and a `pov` whose last act (beats included) is not an active act (does, says, tells, asks, orders, writes, sends, shows, lies, whispers, hails, decrees, enacts) by the pov character |
 | `pov-offstage` | error | scene | `render pov X` names a character who never enters the scene (no `enter`; `mention` does not count, a later `exit` is not considered) |
 | `pov-mind-leak` | error | act | In a `render narration first-person` scene, a `thinks` act belongs to someone other than the pov character |
 | `time-cycle` | warn | when | Time constraints form a cycle (derive) |

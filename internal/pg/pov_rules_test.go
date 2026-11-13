@@ -34,3 +34,26 @@ func TestPovRules(t *testing.T) {
 		}
 	}
 }
+
+// scene-ends-passive: a design scene with a pov must end on an active act by the pov character.
+func TestSceneEndsPassive(t *testing.T) {
+	pool := open(t)
+	const hdr = "scene 1\n  enter a, b\n  render\n    pov a\n  design\n    turn \"fear\" -> courage\n"
+	for _, tc := range []struct {
+		name, src string
+		want      []string
+	}{
+		{"pov thinks last", hdr + "  a thinks: \"hm\"\n", []string{"t.s/1/warn"}},
+		{"other does last", hdr + "  a does go\n  b does leave\n", []string{"t.s/1/warn"}},
+		{"pov does last", hdr + "  b does leave\n  a does go\n", nil},
+		{"no design", "scene 1\n  enter a, b\n  render\n    pov a\n  a thinks: \"hm\"\n", nil},
+		{"no pov", "scene 1\n  enter a, b\n  design\n    turn \"fear\" -> courage\n  a thinks: \"hm\"\n", nil},
+		{"beat last active", hdr + "  a thinks: \"hm\"\n  beat x:\n    a does go\n", nil},
+		{"beat last passive", hdr + "  a does go\n  beat x:\n    a thinks: \"hm\"\n", []string{"t.s/1/warn"}},
+	} {
+		id := compileLoad(t, pool, tc.src)
+		if got := of(lint(t, pool, id), "scene-ends-passive", id); !slices.Equal(got, tc.want) {
+			t.Errorf("%s: got %v, want %v", tc.name, got, tc.want)
+		}
+	}
+}
