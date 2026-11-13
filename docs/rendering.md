@@ -21,7 +21,7 @@ The default verifier is the **checklist card** (`--verifier card`).
 - It builds a list of expected facts from the request, and in one LLM call receives JSON saying whether the prose covers each item (yes/no), whether subject and verb are right, and whether a fact to be hidden was revealed.
 - The deterministic axes (register ratio, length) are counted without an LLM.
 - Pass criteria: 0 leaks, and omissions + wrong kinds ≤ 1. There is a second stage that re-checks only the items reported as "absent" (the structure can only rescue).
-- Whether it invented an event that is not in the IR (G2) cannot be trusted with either method, so it was taken off the gate and is reported **as a warning only**.
+- Whether it invented an event that is not in the IR (G2) cannot be trusted with either method, so it was taken off the gate and is reported **as a warning only** (ADR-028). Exception (T3-R2): under style `flesh: "novel"` the card asks only for plot-bearing additions, so every non-`texture` addition goes to Hallucinated and fails the render with feedback; a `speech` addition is covered by a fact-less speech act of the same character only in skeleton (free-dialogue) mode.
 - On failure, feedback (missing facts, wrong subjects, leaks) is appended to the end of the prompt and it renders again, at most `1 + --retries` times. If it still does not pass at the limit, the prose is written anyway but the exit code is 3.
 
 `--verifier open` is the earlier method. A separate LLM call re-extracts the IR from the prose and diffs it against the original scene (a missing speech act = plot loss, a new fact = hallucination, a `withheld` proposition appearing = leak).

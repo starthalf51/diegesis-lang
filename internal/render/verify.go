@@ -19,7 +19,7 @@ type VerifyOpts struct {
 	StateRm, StateAd []string
 }
 
-// Passed is whether the fact criteria pass. The open path is ADR-019 (hallucination 0, leak 0, missing ≤ MaxMissing); the card path is ADR-028 (leak 0, missing+wrong kind ≤ 1, G2 is a warning only — Hallucinated is always empty).
+// Passed is whether the fact criteria pass. The open path is ADR-019 (hallucination 0, leak 0, missing ≤ MaxMissing); the card path is ADR-028 (leak 0, missing+wrong kind ≤ 1, G2 is a warning only — Hallucinated is always empty; under flesh "novel", T3-R2, plot additions are Hallucinated and fail).
 // The open path is stricter than render-check's ADR-012 (missing ≤ 1 allowed). If scoring broke (ExtractError) it is not a pass.
 func Passed(r Render) bool {
 	p := r.Report

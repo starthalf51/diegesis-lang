@@ -239,6 +239,9 @@ func patchFeedback(s Scene, lang string, rep Report) string {
 	for _, l := range rep.Leaked {
 		b.WriteString("- 드러나면 안 되는 내용이 드러났다. 지울 것: " + describe(s, lang, l) + "\n")
 	}
+	for _, h := range rep.Hallucinated { // card Hallucinated is non-empty only under flesh "novel" (T3-R2)
+		b.WriteString("- 장면에 없는 내용을 덧붙였다. 지울 것: " + h + "\n")
+	}
 	if rep.ExtractError != "" {
 		b.WriteString("- 검수 오류: " + rep.ExtractError + "\n")
 	}

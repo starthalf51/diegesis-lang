@@ -136,8 +136,8 @@ func TestFleshCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(r.Warnings, []string{"방을 나갔다"}) {
-		t.Errorf("warnings %v", r.Warnings)
+	if !reflect.DeepEqual(r.Hallucinated, []string{"방을 나갔다"}) || len(r.Warnings) != 0 {
+		t.Errorf("hallucinated %v, warnings %v", r.Hallucinated, r.Warnings)
 	}
 }
 
@@ -181,7 +181,47 @@ func TestFleshFactMind(t *testing.T) {
 {"kind":"mind","actor":"jun","verb":"thinks","text":"준은 의심했다","quote":"y"},
 {"kind":"speech","actor":"jun","verb":"says","text":"준이 여기 있다고 말했다","quote":"z"}]}`)}}
 	r, err := ScoreCard(ctx, f, fleshScene(), Backend{Lang: "en", Sample: StyleSample{Flesh: "novel"}}, "prose", CardOpts{Tier2: "off"})
-	if err != nil || !reflect.DeepEqual(r.Warnings, []string{"준은 알고 있었다", "준은 의심했다", "준이 여기 있다고 말했다"}) {
-		t.Errorf("card warnings %v, %v", r.Warnings, err)
+	if err != nil || !reflect.DeepEqual(r.Hallucinated, []string{"준은 알고 있었다", "준은 의심했다", "준이 여기 있다고 말했다"}) {
+		t.Errorf("card hallucinated %v, %v", r.Hallucinated, err)
+	}
+}
+
+// T3-R2: under flesh "novel" card plot additions are Hallucinated (fail + feedback); a speech addition is covered by a
+// fact-less speech act only in FreeDialogue mode. Legacy keeps warnings only and coveredByIR as before.
+func TestFleshCardFails(t *testing.T) {
+	reply := `{"items":[{"id":"E1","fact_present":"yes","as_stated":"yes","quote":"q"}],"withheld":[],
+"other":[{"kind":"speech","actor":"jun","verb":"says","targets":["min"],"text":"준이 여기 있다고 말했다","quote":"여기 있다."}]}`
+	score := func(s Scene, flesh string) Report {
+		t.Helper()
+		f := &fakeCompleter{replies: []Result{tierReply(reply)}}
+		r, err := ScoreCard(ctx, f, s, Backend{Lang: "en", Sample: StyleSample{Flesh: flesh}}, "prose", CardOpts{Tier2: "off"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r
+	}
+	const line = "준이 여기 있다고 말했다"
+	rep := score(fleshScene(), "novel")
+	if !reflect.DeepEqual(rep.Hallucinated, []string{line}) || len(rep.Warnings) != 0 {
+		t.Errorf("novel: hallucinated %v warnings %v", rep.Hallucinated, rep.Warnings)
+	}
+	if Passed(Render{Report: rep}) || !strings.Contains(feedback(fleshScene(), "en", rep), line) || !strings.Contains(patchFeedback(fleshScene(), "en", rep), line) {
+		t.Error("novel speech addition must fail and be fed back")
+	}
+	talk := fleshScene() // jun has a fact-less speech act toward min
+	talk.Beats[0].Acts = append(talk.Beats[0].Acts, Act{Actor: "jun", Verb: "says", Targets: []string{"min"}})
+	if rep := score(talk, "novel"); !reflect.DeepEqual(rep.Hallucinated, []string{line}) {
+		t.Errorf("novel, no free dialogue: fact-less act must not cover invented speech: %v", rep.Hallucinated)
+	}
+	free := talk
+	free.FreeDialogue = true
+	if rep := score(free, "novel"); len(rep.Hallucinated)+len(rep.Warnings) != 0 {
+		t.Errorf("novel + free dialogue: covered, got %v / %v", rep.Hallucinated, rep.Warnings)
+	}
+	if rep := score(fleshScene(), ""); len(rep.Hallucinated) != 0 || !reflect.DeepEqual(rep.Warnings, []string{line}) {
+		t.Errorf("legacy: %v / %v", rep.Hallucinated, rep.Warnings)
+	}
+	if rep := score(talk, ""); len(rep.Hallucinated)+len(rep.Warnings) != 0 {
+		t.Errorf("legacy coveredByIR: %v / %v", rep.Hallucinated, rep.Warnings)
 	}
 }

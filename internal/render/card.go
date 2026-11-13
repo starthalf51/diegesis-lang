@@ -267,7 +267,9 @@ func ask(ctx context.Context, c Completer, sys, user string, parse func(string) 
 }
 
 // ScoreCard scores one render against the checklist (stage 1 + stage 2 once if needed). An unusable answer is left in Report.ExtractError and the error is nil.
-// G2 candidates (other) are not re-asked and are left only as Warnings. Hallucinated is always empty.
+// G2 candidates (other) are not re-asked. Legacy (ADR-028): left only as Warnings, Hallucinated is always empty.
+// Flesh "novel" (T3-R2): the prompt asks for plot-bearing additions only, so every non-texture one goes to Hallucinated
+// and fails the render; a speech addition is covered by a fact-less speech act only in FreeDialogue mode.
 func ScoreCard(ctx context.Context, c Completer, s Scene, b Backend, prose string, o CardOpts) (Report, error) {
 	s.Flesh = b.Sample.Flesh
 	rep := Report{Missing: []string{}, Hallucinated: []string{}, Leaked: []string{}}
@@ -335,7 +337,13 @@ func ScoreCard(ctx context.Context, c Completer, s Scene, b Backend, prose strin
 		}
 	}
 	for _, ev := range cd.other {
-		if !s.authored(ev) && !coveredByIR(s, ev) && !s.texture(ev) {
+		novel := s.Flesh == "novel"
+		covered := coveredByIR(s, ev) && !(novel && ev.Kind == "speech" && !s.FreeDialogue)
+		switch {
+		case s.authored(ev) || covered || s.texture(ev):
+		case novel:
+			rep.Hallucinated = append(rep.Hallucinated, ev.Label())
+		default:
 			rep.Warnings = append(rep.Warnings, ev.Label())
 		}
 	}
