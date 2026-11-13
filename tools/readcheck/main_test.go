@@ -81,7 +81,8 @@ func TestReadcheckVerdict(t *testing.T) {
 		exit0 bool
 	}{
 		{"pass", cold(1, 0, 0, true), []string{"A\nwhy", "A\nwhy"}, "PASS", "1/2", true},
-		{"structural", cold(2, 0, 0, true), []string{"A", "B"}, "FAIL", "2/2", false},
+		{"structural 2", cold(2, 0, 0, true), []string{"A", "B"}, "PASS", "2/2", true},
+		{"structural 3", cold(3, 0, 0, true), []string{"A", "B"}, "FAIL", "2/2", false},
 		{"term", cold(0, 1, 0, true), []string{"A", "B"}, "FAIL", "2/2", false},
 		{"pair0", cold(0, 0, 0, true), []string{"B", "A"}, "FAIL", "0/2", false},
 		{"vocab ignored", cold(0, 0, 9, false), []string{"A", "B"}, "PASS", "2/2", true},

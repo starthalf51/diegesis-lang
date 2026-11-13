@@ -3,7 +3,7 @@
 //
 //	go run ./tools/readcheck --ref corpus-eval/readcheck/ref-unsu.txt [--model opus] [--budget N] [--cold-only] ep.md...
 //
-// Per episode: structural <= 1, term == 0, and the episode wins >= 1 of 2 order-swapped pairs against the
+// Per episode: structural <= maxStructural (2), term == 0, and the episode wins >= 1 of 2 order-swapped pairs against the
 // reference. vocab and artifact confusions are ignored; `continue` is recorded only. READCHECK_CLAUDE
 // replaces the `claude` command (tests).
 package main
@@ -21,6 +21,9 @@ import (
 	"strings"
 	"time"
 )
+
+// maxStructural is fixed: calibrated on the reference (measured 2), user decision 2026-11-13. Do not change.
+const maxStructural = 2
 
 const coldPrompt = `다음은 한국어 소설의 한 회차입니다. 당신은 이 작품에 대해 아무것도 모르는 일반 독자입니다. 사전 지식이나 추측으로 메우지 말고, 글에 쓰인 것만으로 답하세요.
 1) 무슨 일이 일어났는지 3~5문장으로 요약하세요.
@@ -152,7 +155,7 @@ func (g *gate) episode(path, ref string, coldOnly bool) (string, bool) {
 		}
 	}
 	cont := map[bool]string{true: "y", false: "n"}[c.Continue]
-	pass := s <= 1 && t == 0 && (coldOnly || wins >= 1)
+	pass := s <= maxStructural && t == 0 && (coldOnly || wins >= 1)
 	v := map[bool]string{true: "PASS", false: "FAIL"}[pass]
 	return fmt.Sprintf("%s structural=%d term=%d pair=%s continue=%s → %s", path, s, t, pairs, cont, v), pass
 }
