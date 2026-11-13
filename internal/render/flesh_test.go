@@ -49,7 +49,7 @@ func TestFleshContract(t *testing.T) {
 	sn.Flesh = "novel"
 	xL, _ := BuildExtractPrompt(s, "en", "p")
 	xN, _ := BuildExtractPrompt(sn, "en", "p")
-	for _, w := range []string{`"kind"`, "event, possession, location, life, relationship, name, contradiction", "Do not report sensory detail"} {
+	for _, w := range fleshVerifierPhrases {
 		if !strings.Contains(xN, w) || strings.Contains(xL, w) {
 			t.Errorf("extract prompt %q: novel %v, legacy %v", w, strings.Contains(xN, w), strings.Contains(xL, w))
 		}
@@ -64,7 +64,7 @@ func TestFleshContract(t *testing.T) {
 	}
 	cL, _ := BuildCardPrompt(s, "en", "p")
 	cN, _ := BuildCardPrompt(sn, "en", "p")
-	if cL != cardSys1 || !strings.Contains(cN, `"kind"`) || !strings.Contains(cN, "Do not report sensory detail") {
+	if cL != cardSys1 || !containsAll(cN, fleshVerifierPhrases) {
 		t.Error("card prompt does not follow flesh")
 	}
 
@@ -87,7 +87,7 @@ func fleshScene() Scene {
 	}
 }
 
-// Schema pinned: new_events items carry "kind", one of event, possession, location, life, relationship, name, contradiction
+// Schema pinned: new_events items carry "kind", one of event, possession, location, life, relationship, name, contradiction, fact, mind
 // (plot) or texture (never counted under flesh "novel"). Empty or unknown kind counts (fail closed).
 func TestFleshDiff(t *testing.T) {
 	e, err := ParseExtracted(`{"acts":[{"actor":"min","verb":"tells","targets":["jun"],"fact":"f1"}],"facts_stated":["f1"],"new_events":[
@@ -138,5 +138,47 @@ func TestFleshCard(t *testing.T) {
 	}
 	if !reflect.DeepEqual(r.Warnings, []string{"방을 나갔다"}) {
 		t.Errorf("warnings %v", r.Warnings)
+	}
+}
+
+// fleshVerifierPhrases must appear in both novel verifier prompts (re-extraction and card).
+var fleshVerifierPhrases = []string{
+	`"kind"`,
+	"event, possession, location, life, relationship, name, contradiction, fact, mind",
+	"a revelation of a new fact",
+	"another character's unspoken thoughts in first-person narration",
+	"Do not report sensory detail",
+	"the point-of-view character's reactions or inner thoughts that state no new fact",
+}
+
+func containsAll(s string, ws []string) bool {
+	for _, w := range ws {
+		if !strings.Contains(s, w) {
+			return false
+		}
+	}
+	return true
+}
+
+func TestFleshFactMind(t *testing.T) {
+	s := fleshScene()
+	s.Flesh = "novel"
+	base := Extracted{Acts: []ExtractedAct{{Actor: "min", Verb: "tells", Targets: []string{"jun"}, Fact: "f1"}}, FactsStated: []string{"f1"}}
+	for _, ev := range []NewEvent{
+		{Kind: "fact", Actor: "min", Verb: "thinks", Text: "준은 처음부터 알고 있었다"},
+		{Kind: "mind", Actor: "jun", Verb: "thinks", Text: "준은 속으로 민을 의심했다"},
+	} {
+		x := base
+		x.NewEvents = []NewEvent{ev}
+		if r := Diff(s, x); len(r.Hallucinated) != 1 {
+			t.Errorf("%s: hallucinated %v", ev.Kind, r.Hallucinated)
+		}
+	}
+	f := &fakeCompleter{replies: []Result{tierReply(`{"items":[{"id":"E1","fact_present":"yes","as_stated":"yes","quote":"q"}],"withheld":[],
+"other":[{"kind":"fact","actor":"min","verb":"thinks","text":"준은 알고 있었다","quote":"x"},
+{"kind":"mind","actor":"jun","verb":"thinks","text":"준은 의심했다","quote":"y"}]}`)}}
+	r, err := ScoreCard(ctx, f, fleshScene(), Backend{Lang: "en", Sample: StyleSample{Flesh: "novel"}}, "prose", CardOpts{Tier2: "off"})
+	if err != nil || !reflect.DeepEqual(r.Warnings, []string{"준은 알고 있었다", "준은 의심했다"}) {
+		t.Errorf("card warnings %v, %v", r.Warnings, err)
 	}
 }
