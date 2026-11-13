@@ -288,9 +288,81 @@ func TestReadcheckUnknownNewKind(t *testing.T) {
 
 func TestColdPromptTermExcludesNames(t *testing.T) {
 	p := coldPromptFor("")
-	for _, w := range []string{"이름은 문맥상 이름임이 분명하면 term 이 아니다", "옥호"} {
+	for _, w := range []string{"이름은 문맥상 이름임이 분명하면 term 이 아니다", "푸른 약국"} {
 		if !strings.Contains(p, w) {
 			t.Errorf("prompt lacks %q", w)
 		}
 	}
+}
+
+func TestPromptsAreMediumNeutral(t *testing.T) {
+	for _, p := range []string{coldPromptFor(""), coldPromptFor("용어 칩: x"), pairIntro} {
+		for _, bad := range []string{"novel", "소설", "옥호", "미닫이", "나루터"} {
+			if strings.Contains(p, bad) {
+				t.Errorf("prompt contains %q", bad)
+			}
+		}
+	}
+	for _, want := range []string{"푸른 약국", "출입 규칙"} {
+		if !strings.Contains(coldPromptFor(""), want) {
+			t.Errorf("cold prompt lacks example %q", want)
+		}
+	}
+}
+
+func TestReadcheckStateFailClosed(t *testing.T) {
+	dir := t.TempDir()
+	rf := filepath.Join(dir, "resp.json")
+	b, _ := json.Marshal([]string{kinds(nil), kinds(nil), kinds(nil)})
+	os.WriteFile(rf, b, 0o644)
+	ref := filepath.Join(dir, "ref.txt")
+	os.WriteFile(ref, []byte("ref"), 0o644)
+	for _, n := range []string{"ep01", "ep02", "ep03"} {
+		os.WriteFile(filepath.Join(dir, n+".md"), []byte(n), 0o644)
+	}
+	os.WriteFile(filepath.Join(dir, "ep02.state.txt"), []byte("등장인물: 안\n"), 0o644)
+	exe, _ := os.Executable()
+	t.Setenv("READCHECK_CLAUDE", exe)
+	t.Setenv("READCHECK_FAKE_RESP", rf)
+	ep := func(n string) string { return filepath.Join(dir, n+".md") }
+	// an explicit --state that cannot be read: exit 1, no model call
+	var out bytes.Buffer
+	var code int
+	errs := captureStderr(t, func() {
+		code = run([]string{"--ref", ref, "--cold-only", "--state", filepath.Join(dir, "nope.txt"), ep("ep02")}, &out)
+	})
+	if code != 1 || !strings.Contains(errs, "nope.txt") || strings.Contains(out.String(), "calls=") {
+		t.Errorf("missing --state: exit %d out %q err %q", code, out.String(), errs)
+	}
+	if _, err := os.Stat(rf + ".n"); err == nil {
+		t.Errorf("model was called despite unreadable --state")
+	}
+	// result lines show the state; ep01 has none (no warning for the first episode), ep03 lacks one while ep02 has one (warn)
+	out.Reset()
+	errs = captureStderr(t, func() {
+		code = run([]string{"--ref", ref, "--cold-only", ep("ep01"), ep("ep02"), ep("ep03")}, &out)
+	})
+	lines := strings.Split(strings.TrimSpace(out.String()), "\n")
+	if !strings.Contains(lines[0], "state=none") || !strings.Contains(lines[1], "state="+filepath.Join(dir, "ep02.state.txt")) || !strings.Contains(lines[2], "state=none") {
+		t.Errorf("state= missing: %q", out.String())
+	}
+	if !strings.Contains(errs, "ep03.md") || strings.Contains(errs, "ep01.md") {
+		t.Errorf("warning wrong: %q", errs)
+	}
+}
+
+// captureStderr runs f with os.Stderr redirected and returns what it wrote.
+func captureStderr(t *testing.T, f func()) string {
+	t.Helper()
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	old := os.Stderr
+	os.Stderr = w
+	f()
+	os.Stderr = old
+	w.Close()
+	b, _ := io.ReadAll(r)
+	return string(b)
 }
