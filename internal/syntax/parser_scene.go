@@ -127,6 +127,14 @@ func (c *cur) stmt() Node {
 			r.Entries = append(r.Entries, e.(*RenderEntry))
 		}
 		return r
+	case "design":
+		c.k++
+		c.end()
+		d := &Design{Pos: t.Pos}
+		for _, e := range c.children((*cur).dentry) {
+			d.Entries = append(d.Entries, e.(*RenderEntry))
+		}
+		return d
 	case "reveal":
 		c.k++
 		r := &Reveal{Pos: t.Pos, Prop: c.prop()}
@@ -337,4 +345,38 @@ func (c *cur) belief() Node {
 	}
 	c.end()
 	return b
+}
+
+// design entry: goal ident ":" string | turn (word|string) "->" (word|string) | tempo word
+func (c *cur) dentry() Node {
+	t := c.peek()
+	if t == nil || t.Kind != tWord || (t.Val != "goal" && t.Val != "turn" && t.Val != "tempo") {
+		c.fail("unknown design key %s (want goal, turn or tempo)", describe(t))
+	}
+	c.k++
+	e := &RenderEntry{Pos: t.Pos, Key: t.Val}
+	val := func(what string) string {
+		if s, ok := c.str(); ok {
+			return s
+		}
+		return c.word(what).Val
+	}
+	switch t.Val {
+	case "goal":
+		e.Values = append(e.Values, c.word("goal character").Val)
+		c.expect(":")
+		s, ok := c.str()
+		if !ok {
+			c.fail("goal needs a quoted text, found %s", describe(c.peek()))
+		}
+		e.Values = append(e.Values, s)
+	case "turn":
+		e.Values = append(e.Values, val("turn start"))
+		c.expect("->")
+		e.Values = append(e.Values, val("turn end"))
+	default:
+		e.Values = append(e.Values, c.word("tempo").Val)
+	}
+	c.end()
+	return e
 }

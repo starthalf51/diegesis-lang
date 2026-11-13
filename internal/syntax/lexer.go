@@ -10,7 +10,7 @@ type tokKind int
 const (
 	tWord   tokKind = iota // identifiers, numbers, ids, durations, dates, refs
 	tString                // "…" (Val is unescaped)
-	tPunct                 // : , ( ) = ..
+	tPunct                 // : , ( ) = .. ->
 	tPragma                // #!
 )
 
@@ -105,6 +105,9 @@ func lexRunes(rs []rune, i, ln, col0 int, diag func(Diag)) ([]tok, bool) {
 			i = j + 1
 		case r == '.' && i+1 < len(rs) && rs[i+1] == '.':
 			toks = append(toks, tok{tPunct, "..", p, p.Col + 2})
+			i += 2
+		case r == '-' && i+1 < len(rs) && rs[i+1] == '>':
+			toks = append(toks, tok{tPunct, "->", p, p.Col + 2})
 			i += 2
 		case strings.ContainsRune(":,()=", r):
 			toks = append(toks, tok{tPunct, string(r), p, p.Col + 1})

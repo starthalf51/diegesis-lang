@@ -378,3 +378,9 @@ func tree(v reflect.Value, withPos bool) any {
 		return v.Interface()
 	}
 }
+
+// Design is a scene's medium-neutral design block: goal, turn, tempo. Goal Values = [character, text]; turn = [from, to]; tempo = [kind].
+type Design struct {
+	Pos
+	Entries []*RenderEntry
+}

@@ -2,6 +2,7 @@ package sema
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/starthalf51/diegesis-lang/internal/ir"
 	"github.com/starthalf51/diegesis-lang/internal/syntax"
@@ -109,6 +110,26 @@ func (w *walker) stmt(n syntax.Node) (string, string) {
 				}
 			}
 			m.out.Directives = append(m.out.Directives, ir.Directive{SceneID: c.id, Key: e.Key,
+				Values: vals, SrcID: b.srcID(e.Pos)})
+		}
+		return "directive", c.id
+	case *syntax.Design:
+		for _, e := range n.Entries {
+			vals := append([]string{}, e.Values...)
+			switch e.Key {
+			case "goal":
+				id := b.want(m, syntax.Ident{Pos: e.Pos, Name: vals[0]}, "goal character", "character")
+				if id == "" {
+					continue
+				}
+				vals[0] = id
+			case "tempo":
+				if !slices.Contains([]string{"scene", "summary", "ellipsis"}, vals[0]) {
+					b.errf(e.Pos, "arg-kind", "tempo takes scene, summary or ellipsis")
+					continue
+				}
+			}
+			m.out.Directives = append(m.out.Directives, ir.Directive{SceneID: c.id, Key: "design." + e.Key,
 				Values: vals, SrcID: b.srcID(e.Pos)})
 		}
 		return "directive", c.id

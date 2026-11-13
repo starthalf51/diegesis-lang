@@ -231,3 +231,25 @@ func TestPromptTerms(t *testing.T) {
 		}
 	}
 }
+
+func TestPromptSceneDesign(t *testing.T) {
+	s := mustLoad(t, "testdata/scenes/holmes-scandal-opening.json")
+	_, plain, _ := BuildPrompt(s, VariantIROnly, "en", nil)
+	if strings.Contains(plain, "## Scene design") {
+		t.Error("no design data: no section")
+	}
+	s.Goal = Goal{Who: s.Cast[0].ID, Text: "reach the gate"}
+	s.Turn = Turn{From: "despair", To: "hope"}
+	s.Tempo = "summary"
+	_, u, _ := BuildPrompt(s, VariantIROnly, "en", nil)
+	for _, w := range []string{"## Scene design", " wants reach the gate", "turn: from despair to hope — build the scene toward this change", "tempo: summary — compress: report the acts briefly"} {
+		if !strings.Contains(u, w) {
+			t.Errorf("missing %q in\n%s", w, u)
+		}
+	}
+	s.Tempo = "ellipsis"
+	_, u, _ = BuildPrompt(s, VariantIROnly, "en", nil)
+	if !strings.Contains(u, "skip time: open after the acts, mention them in passing") {
+		t.Error("ellipsis wording")
+	}
+}

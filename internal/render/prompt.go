@@ -187,6 +187,23 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 			fmt.Fprintf(&sb, "- omit: %s\n", strings.Join(d.Omit, "; "))
 		}
 	}
+	if s.Goal.Text != "" || s.Turn.To != "" || s.Tempo != "" {
+		sb.WriteString("\n## Scene design\n")
+		if s.Goal.Text != "" {
+			fmt.Fprintf(&sb, "- goal: %s wants %s\n", name(s.Goal.Who), s.Goal.Text)
+		}
+		if s.Turn.To != "" {
+			fmt.Fprintf(&sb, "- turn: from %s to %s — build the scene toward this change\n", s.Turn.From, s.Turn.To)
+		}
+		switch s.Tempo {
+		case "scene":
+			sb.WriteString("- tempo: scene\n")
+		case "summary":
+			sb.WriteString("- tempo: summary — compress: report the acts briefly\n")
+		case "ellipsis":
+			sb.WriteString("- tempo: ellipsis — skip time: open after the acts, mention them in passing\n")
+		}
+	}
 	if s.Opening {
 		op := "The first sentence must hook a first-time reader: one concrete, surprising situation in the narrator's voice, no setting summary."
 		if style != nil && style.Opening != "" {
