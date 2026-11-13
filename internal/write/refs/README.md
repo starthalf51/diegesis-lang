@@ -236,6 +236,7 @@ go vet ./...
 | v0.10.0 | 플랜 11·12: 로컬 모델(`ollama:<name>`, `OLLAMA_HOST`·`DIEG_OLLAMA_CTX`), `dieg convert`(퍼블릭 도메인 원문 → 코드, `src` 문단 번호, 원문 커버리지로 최선 라운드), `tools/fetchtext`, 최선 라운드 유지·`--allow-warn`, 수정 피드백 진단 묶기, `--finish-model`(로컬 초안을 다른 모델이 마무리), `examples/local-hybrid` |
 | v0.11.0 | 플랜 13: `dieg lint --rules <dir>` — 작품별 규칙 디렉터리를 내장 규칙과 함께 실행(ID 충돌·빈 디렉터리·`layer: lint` 아닌 규칙은 DB 연결 전 오류). 첫 사용처: 『홍길동은 하나만 남는다』 세계 규칙 |
 | v0.12.0 | 플랜 14: 명작 측정 — `dieg convert-book`(장 단위 변환), 몰입 지수(017)·`dieg curve`(장별 곡선·골짜기), 구조미 지수(018, `bookend` 패턴), `tools/curvecheck`. 『모비 딕』 마의 구간 검증은 FAIL(「Cetology」가 곡선 꼭대기) |
+| v0.13.0 | 플랜 15: 독자 스택 — `term`·`render explain`·`narration`, 끌 수 없는 error 규칙 `reader-unknown-term`·`pov-offstage`·`pov-mind-leak`; 렌더 카드 용어(새 용어·아는 용어)와 조건부 독자 규칙; 문체 rules·lexicon·`--opening`; `tools/readcheck`(opus 처음 읽는 독자, error≤2·term 0·짝 비교 1/2, 예산 고정). 홍길동 1~3화 기능 검증은 FAIL |
 
 ## 라이선스
 
