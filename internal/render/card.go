@@ -108,9 +108,18 @@ const cardSys2 = `You re-check a few disputed points of a prose against its chec
 Reply with a single ` + "```json" + ` fenced block and nothing else, shaped as {"recheck":[{"id":"E1","fact_present":"yes","as_stated":"yes","quote":""}]}.`
 
 // BuildCardPrompt is the stage-1 prompt. The hidden section is attached only when there are hidden facts.
+// Under flesh "novel" the "other" rule asks for plot-bearing additions only, each with a kind (same schema as the re-extraction).
 func BuildCardPrompt(s Scene, lang, prose string) (system, user string) {
-	return cardSys1, cardCatalog(s, lang) + cardChecklist(s) + "\n## Prose\n" + prose + "\n"
+	system = cardSys1
+	if s.Flesh == "novel" {
+		system = strings.Replace(system, legacyCardOther, fleshCardOther, 1)
+	}
+	return system, cardCatalog(s, lang) + cardChecklist(s) + "\n## Prose\n" + prose + "\n"
 }
+
+const legacyCardOther = `3. other: plot events or facts stated in the prose that are NOT covered by any checklist or withheld item: an action or revelation that changes the situation. Ignore description, gesture, setting and manner, and anything that merely restates a listed item. Each as {`
+
+const fleshCardOther = `3. other: plot-bearing additions in the prose that are NOT covered by any checklist or withheld item: a new event; any change of possession, location (a character leaving the place), life or death, or relationship; a new named character or place; anything that contradicts a listed item. Do not report sensory detail, gestures, small movements within the same place, a character's reactions or inner thoughts, or atmosphere, nor anything that merely restates a listed item. Each as {"kind":"<one of: event, possession, location, life, relationship, name, contradiction>",`
 
 type rawItem struct {
 	ID          string `json:"id"`
@@ -126,8 +135,8 @@ type rawCard struct {
 		Revealed string `json:"revealed"`
 	} `json:"withheld"`
 	Other []struct {
-		Actor, Verb, Action, Text string
-		Targets                   []string
+		Actor, Verb, Action, Text, Kind string
+		Targets                         []string
 	} `json:"other"`
 }
 
@@ -229,7 +238,7 @@ func ParseCard(s Scene, text string) (card, error) {
 		}
 	}
 	for _, x := range o.Other {
-		c.other = append(c.other, NewEvent{Actor: x.Actor, Verb: x.Verb, Targets: x.Targets, Action: x.Action, Text: x.Text})
+		c.other = append(c.other, NewEvent{Actor: x.Actor, Verb: x.Verb, Targets: x.Targets, Action: x.Action, Text: x.Text, Kind: x.Kind})
 	}
 	return c, nil
 }
@@ -260,6 +269,7 @@ func ask(ctx context.Context, c Completer, sys, user string, parse func(string) 
 // ScoreCard scores one render against the checklist (stage 1 + stage 2 once if needed). An unusable answer is left in Report.ExtractError and the error is nil.
 // G2 candidates (other) are not re-asked and are left only as Warnings. Hallucinated is always empty.
 func ScoreCard(ctx context.Context, c Completer, s Scene, b Backend, prose string, o CardOpts) (Report, error) {
+	s.Flesh = b.Sample.Flesh
 	rep := Report{Missing: []string{}, Hallucinated: []string{}, Leaked: []string{}}
 	sys, user := BuildCardPrompt(s, b.Lang, prose)
 	var cd card
@@ -325,7 +335,7 @@ func ScoreCard(ctx context.Context, c Completer, s Scene, b Backend, prose strin
 		}
 	}
 	for _, ev := range cd.other {
-		if !s.authored(ev) && !coveredByIR(s, ev) {
+		if !s.authored(ev) && !coveredByIR(s, ev) && !s.texture(ev) {
 			rep.Warnings = append(rep.Warnings, ev.Label())
 		}
 	}

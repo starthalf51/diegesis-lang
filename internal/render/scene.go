@@ -70,6 +70,7 @@ type Scene struct {
 	Turn         Turn       `json:"turn"`                    // scene design: the value change across the scene
 	Tempo        string     `json:"tempo"`                   // scene design: "" | scene | summary | ellipsis
 	Opening      bool       `json:"opening,omitempty"`       // dieg render --opening: ask for a hooking first sentence
+	Flesh        string     `json:"-"`                       // the backend style's flesh mode; selects the re-extraction and card prompts
 }
 
 var verbs = map[string]bool{

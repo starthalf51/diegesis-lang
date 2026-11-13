@@ -39,7 +39,14 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "You are a fiction writer. You will receive a scene specification (places, characters, an ordered list of story acts, and facts). Write the scene as continuous prose in %s.\n\n", ln)
 	sb.WriteString("Rules:\n")
-	sb.WriteString("- Narrate every act, in the given order. Do not omit any act and do not add events, actions, or facts that are not in the specification.\n")
+	if style != nil && style.Flesh == "novel" { // flesh contract: the bone stays fixed, texture is allowed, a reaction is required
+		sb.WriteString("- Narrate every act, in the given order. Do not omit any act.\n")
+		sb.WriteString("- After each key act (speech, discovery, decision, reveal), give the point-of-view character's reaction — body, feeling, or thought.\n")
+		sb.WriteString("- You may add: sensory detail, gestures, small movements within the same place, the point-of-view character's inner thoughts, atmosphere.\n")
+		sb.WriteString("- Never add: new events; any change of possession, location (leaving the place), life or death, or relationship; new named characters or places; anything that contradicts the acts or facts; another character's unspoken thoughts in first person.\n")
+	} else {
+		sb.WriteString("- Narrate every act, in the given order. Do not omit any act and do not add events, actions, or facts that are not in the specification.\n")
+	}
 	sb.WriteString("- Do not add any speech, even reported speech, that is not an act in the specification, and do not draw on any known version of this story.\n")
 	sb.WriteString("- Do not restate a fact through a character's thoughts or reactions unless an act gives it; convey each fact through the act that carries it.\n")
 	sb.WriteString("- An act with a fact (after the colon) must make that fact clear to the reader through that act and its actor. For a `sees` act, say that its actor sees or hears the thing, not only that it happens.\n")

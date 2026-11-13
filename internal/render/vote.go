@@ -115,7 +115,7 @@ func Vote(s Scene, xs []Extracted) Extracted {
 	kept := make([][]NewEvent, len(xs))
 	for i, x := range xs {
 		for _, ev := range x.NewEvents {
-			if !s.authored(ev) {
+			if !s.authored(ev) && !s.texture(ev) {
 				kept[i] = append(kept[i], ev)
 			}
 		}

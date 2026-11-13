@@ -252,7 +252,7 @@ func PatchVerified(ctx context.Context, cs Completers, work string, old, nw Scen
 	rm, ad := SceneDiff(old, nw)
 	rm, ad = append(rm, prefixed(o.StateRm)...), append(ad, prefixed(o.StateAd)...)
 	diff, sys := diffText(rm, ad), patchSystem(b, nw)
-	r := Render{Work: work, Scene: nw.ID, Backend: b.ID, Lang: b.Lang, Tone: b.Tone}
+	r := Render{Work: work, Scene: nw.ID, Backend: b.ID, Lang: b.Lang, Tone: b.Tone, Flesh: b.Sample.Flesh}
 	ps, pu, err := b.Prompt(nw)
 	if err != nil {
 		return r, 0, err

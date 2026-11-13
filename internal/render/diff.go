@@ -62,7 +62,7 @@ func Diff(s Scene, e Extracted) Report {
 		check(id)
 	}
 	for _, n := range e.NewEvents {
-		if !s.authored(n) {
+		if !s.authored(n) && !s.texture(n) {
 			hall[n.Label()] = true
 		}
 	}
@@ -98,6 +98,10 @@ func Diff(s Scene, e Extracted) Report {
 	sort.Strings(halluc)
 	return Report{Missing: miss, Hallucinated: halluc, Leaked: leak.sorted()}
 }
+
+// texture reports whether a new_event is texture the flesh contract allows: only kind "texture" under flesh "novel".
+// An empty or unknown kind still counts (fail closed), and the legacy mode ignores kind.
+func (s Scene) texture(n NewEvent) bool { return s.Flesh == "novel" && n.Kind == "texture" }
 
 type set map[string]bool
 
