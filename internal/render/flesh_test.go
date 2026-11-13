@@ -87,7 +87,7 @@ func fleshScene() Scene {
 	}
 }
 
-// Schema pinned: new_events items carry "kind", one of event, possession, location, life, relationship, name, contradiction, fact, mind
+// Schema pinned: new_events items carry "kind", one of event, possession, location, life, relationship, name, contradiction, fact, mind, speech
 // (plot) or texture (never counted under flesh "novel"). Empty or unknown kind counts (fail closed).
 func TestFleshDiff(t *testing.T) {
 	e, err := ParseExtracted(`{"acts":[{"actor":"min","verb":"tells","targets":["jun"],"fact":"f1"}],"facts_stated":["f1"],"new_events":[
@@ -144,7 +144,8 @@ func TestFleshCard(t *testing.T) {
 // fleshVerifierPhrases must appear in both novel verifier prompts (re-extraction and card).
 var fleshVerifierPhrases = []string{
 	`"kind"`,
-	"event, possession, location, life, relationship, name, contradiction, fact, mind",
+	"event, possession, location, life, relationship, name, contradiction, fact, mind, speech",
+	"any line of speech or reported speech that is not one of the acts",
 	"a revelation of a new fact",
 	"another character's unspoken thoughts in first-person narration",
 	"Do not report sensory detail",
@@ -167,6 +168,7 @@ func TestFleshFactMind(t *testing.T) {
 	for _, ev := range []NewEvent{
 		{Kind: "fact", Actor: "min", Verb: "thinks", Text: "준은 처음부터 알고 있었다"},
 		{Kind: "mind", Actor: "jun", Verb: "thinks", Text: "준은 속으로 민을 의심했다"},
+		{Kind: "speech", Actor: "jun", Verb: "says", Text: "준이 \"여기 있다.\" 하고 말했다"},
 	} {
 		x := base
 		x.NewEvents = []NewEvent{ev}
@@ -176,9 +178,10 @@ func TestFleshFactMind(t *testing.T) {
 	}
 	f := &fakeCompleter{replies: []Result{tierReply(`{"items":[{"id":"E1","fact_present":"yes","as_stated":"yes","quote":"q"}],"withheld":[],
 "other":[{"kind":"fact","actor":"min","verb":"thinks","text":"준은 알고 있었다","quote":"x"},
-{"kind":"mind","actor":"jun","verb":"thinks","text":"준은 의심했다","quote":"y"}]}`)}}
+{"kind":"mind","actor":"jun","verb":"thinks","text":"준은 의심했다","quote":"y"},
+{"kind":"speech","actor":"jun","verb":"says","text":"준이 여기 있다고 말했다","quote":"z"}]}`)}}
 	r, err := ScoreCard(ctx, f, fleshScene(), Backend{Lang: "en", Sample: StyleSample{Flesh: "novel"}}, "prose", CardOpts{Tier2: "off"})
-	if err != nil || !reflect.DeepEqual(r.Warnings, []string{"준은 알고 있었다", "준은 의심했다"}) {
+	if err != nil || !reflect.DeepEqual(r.Warnings, []string{"준은 알고 있었다", "준은 의심했다", "준이 여기 있다고 말했다"}) {
 		t.Errorf("card warnings %v, %v", r.Warnings, err)
 	}
 }

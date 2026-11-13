@@ -29,7 +29,7 @@ type NewEvent struct {
 	Targets []string `json:"targets"`
 	Action  string   `json:"action"`
 	Text    string   `json:"text"`
-	Kind    string   `json:"kind,omitempty"` // flesh "novel": event, possession, location, life, relationship, name, contradiction, fact, mind, or texture
+	Kind    string   `json:"kind,omitempty"` // flesh "novel": event, possession, location, life, relationship, name, contradiction, fact, mind, speech, or texture
 }
 
 func (n *NewEvent) UnmarshalJSON(b []byte) error {
@@ -58,7 +58,7 @@ func (n NewEvent) Label() string {
 const legacyNewEvents = `- new_events: plot events only: an action or revelation that changes the situation, not already reported in acts, and not covered by any listed fact. Ignore description, gesture, setting, and manner. Each as an object {`
 
 // fleshNewEvents is the plot-bearing-only rule for flesh "novel": texture is not reported, so it never reaches Hallucinated.
-const fleshNewEvents = `- new_events: plot-bearing additions only, not already reported in acts and not covered by any listed fact: a new event; any change of possession, location (a character leaving the place), life or death, or relationship; a new named character or place; a revelation of a new fact; another character's unspoken thoughts in first-person narration; anything that contradicts a listed fact. Do not report sensory detail, gestures, small movements within the same place, the point-of-view character's reactions or inner thoughts that state no new fact, or atmosphere. Each as an object {"kind": "<one of: event, possession, location, life, relationship, name, contradiction, fact, mind>", `
+const fleshNewEvents = `- new_events: plot-bearing additions only, not already reported in acts and not covered by any listed fact: a new event; any change of possession, location (a character leaving the place), life or death, or relationship; a new named character or place; a revelation of a new fact; another character's unspoken thoughts in first-person narration; any line of speech or reported speech that is not one of the acts; anything that contradicts a listed fact. Do not report sensory detail, gestures, small movements within the same place, the point-of-view character's reactions or inner thoughts that state no new fact (inner thoughts are not speech), or atmosphere. Each as an object {"kind": "<one of: event, possession, location, life, relationship, name, contradiction, fact, mind, speech>", `
 
 // BuildExtractPrompt shows the extractor only the prose and an unlabeled
 // catalog (all entities with all names, all facts). No answer key.
