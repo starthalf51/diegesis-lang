@@ -14,6 +14,7 @@ type Report struct {
 	Warnings     []string `json:"warnings,omitempty"`
 	Scores       *Scores  `json:"scores,omitempty"`
 	Patched      bool     `json:"patched,omitempty"` // final prose came from a sentence patch, not a full render
+	Prose        []string `json:"prose,omitempty"`   // term-prose check failures: definition sentences, unrendered terms
 }
 
 // VerbClass collapses synonyms; an unknown verb is its own class so it never silently matches.

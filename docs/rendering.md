@@ -46,6 +46,47 @@ When the author edits the code (IR), only scenes whose render request changed an
 - The `sample` object may carry `flesh`: `""` (default, bone only) or `"novel"` (any other value is an error). With `"novel"` the render system prompt replaces "do not add events, actions, or facts" with the flesh contract: after each key act (speech, discovery, decision, reveal) the point-of-view character reacts (body, feeling, or thought); sensory detail, gestures, small movements within the same place, the POV character's inner thoughts and atmosphere may be added; new events, any change of possession, location (leaving the place), life or death, or relationship, new named characters or places, contradictions, and another character's unspoken thoughts in first person are forbidden. The speech rule stays. Both verifiers follow it: the open re-extraction prompt (and so `extract_hash`) and the card's `other` rule ask for plot-bearing additions only, each tagged `kind` (`event`, `possession`, `location`, `life`, `relationship`, `name`, `contradiction`, `fact` for a revelation of a new fact, `mind` for another character's unspoken thoughts in first-person narration); only the POV character's reactions or thoughts that state no new fact are excluded; an item tagged `texture` is dropped before the vote, the diff and the card warnings, while an empty or unknown kind still counts. The render record stores `flesh` so a re-judge from cache uses the same rule. With `flesh` empty every prompt, `render_hash` and `extract_hash` are byte-identical to before.
 - Scene design (migration 023): the card carries `goal` (`{who, text}`), `turn` (`{from, to}`) and `tempo`; the user prompt adds `## Scene design` (goal, turn, tempo with a compress or skip-time hint for summary and ellipsis) only when present.
 - Reader terms (migrations 020–022): the render card carries `terms_new` (terms first explained in this scene, `{surface, gloss}`), `terms_known` (terms explained earlier in the telling, including a repeated `explain`) and `terms_recap` (this scene's `recap` targets). The user prompt lists them under `## New terms`, `## Terms the reader already knows` and `## Remind briefly`. When a scene has terms or a `narration` directive, the system prompt adds the reader-stack rules (no coined jargon; no narration nested in a quote; in first person, no other character's unspoken thoughts). Scenes without these features get the same prompt as before.
+ch010 5
+ch011 1
+ch012 15
+ch013 3
+ch014 17
+ch015 11
+ch016 8
+ch030 34
+ch017 6
+ch031 38
+ch018 16
+ch032 40
+ch019 21
+ch033 39
+ch034 23
+ch035 36
+ch036 32
+epilogue 33
+ch133 29
+ch134 31
+ch135 30
+ch001 14
+ch002 9
+ch003 4
+ch004 10
+ch005 7
+ch006 19
+ch007 2
+ch020 18
+ch021 24
+ch008 13
+ch022 22
+ch009 12
+ch023 25
+ch024 27
+ch025 28
+ch026 20
+ch027 37
+ch028 26
+ch029 35
+- Term prose checks (migration 024, `internal/render/prose.go`): a `terms_new` item also carries `via` (`explain … via …`, `""` when absent), which the prompt prints as `(via: …)`; the section header tells the model to weave each term in through action, dialogue, consequence or the senses and never to write a definition sentence. In `RenderVerified` a scene with `terms_new` is checked after each render with two deterministic checks: `ProseDefinitions` (a narration sentence outside quotes whose subject is the surface and which reads as a definition: ko `<surface>(은|는|이란|란) … (이다|을/를 말한다|라고 부른다)`, en `<surface> is/was a(n)/the …` or `… is called <surface>`) and `UnrenderedTerms` (a new term's surface is missing from the prose). A hit fails the attempt (`Report.Prose`), the offending sentences/terms go into the next attempt's `## Fix from the previous draft`, within the usual retry cap. Scenes without new terms are not checked. Known limit: a copular metaphor with the term as subject ("돔은 감옥이다") also matches.
 - The loader checks the copyright expiry of each sample. Only samples whose author died more than 70 years ago (Korea) and which were published more than 95 years ago (US) pass. The stricter of the two applies. If even one file fails the check, loading is an error.
 - Naming a living author in the prompt to direct the style is also forbidden. Only the sample text is the basis of the style.
 - Korean translations are not used as style samples. Korean output is **generated** from the IR, not translated, so Korean style samples are taken only from the original texts of Korean authors.

@@ -165,7 +165,12 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	}
 	if len(s.TermsNew) > 0 {
 		sb.WriteString("\n## New terms — introduce each to a reader who has never heard it, inside the story, using its meaning\n")
+		sb.WriteString("Weave each into the scene through action, dialogue, consequence or the senses (the given `via`, if any). Never write a definition sentence; partial understanding is fine.\n")
 		for _, t := range s.TermsNew {
+			if t.Via != "" {
+				fmt.Fprintf(&sb, "- %s: %s (via: %s)\n", t.Surface, t.Gloss, t.Via)
+				continue
+			}
 			fmt.Fprintf(&sb, "- %s: %s\n", t.Surface, t.Gloss)
 		}
 	}

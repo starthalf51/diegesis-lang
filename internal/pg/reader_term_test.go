@@ -124,3 +124,27 @@ func TestReaderRecap(t *testing.T) {
 		}
 	}
 }
+
+// `explain … via …` reaches the render card as the via of each term listed on that line (migration 024).
+func TestRenderSceneTermsVia(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, terms+"scene 1\n  enter a, b\n  render\n    explain jokbo via dialogue\n    explain chip via sense\n  a tells b: fj\nscene 2\n  enter a\n  render\n    explain jokbo\n")
+	// terms order by id: chip, jokbo
+	for sc, want := range map[string][]string{"1": {"sense", "dialogue"}} {
+		b, err := pg.RenderScene(context.Background(), pool, id, sc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		s, err := render.ParseScene(b)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var got []string
+		for _, x := range s.TermsNew {
+			got = append(got, x.Via)
+		}
+		if !slices.Equal(got, want) {
+			t.Errorf("scene %s: vias %v want %v", sc, got, want)
+		}
+	}
+}

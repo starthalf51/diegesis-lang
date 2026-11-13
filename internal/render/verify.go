@@ -23,7 +23,7 @@ type VerifyOpts struct {
 // The open path is stricter than render-check's ADR-012 (missing ≤ 1 allowed). If scoring broke (ExtractError) it is not a pass.
 func Passed(r Render) bool {
 	p := r.Report
-	return p.ExtractError == "" && len(p.Hallucinated) == 0 && len(p.Leaked) == 0 && len(p.Missing) <= MaxMissing
+	return p.ExtractError == "" && len(p.Hallucinated) == 0 && len(p.Leaked) == 0 && len(p.Missing) <= MaxMissing && len(p.Prose) == 0
 }
 
 // RenderVerified repeats render → re-extract → diff up to 1+Retries times until it passes. The failed diff is attached as feedback to the end of the next render's
@@ -47,10 +47,12 @@ func RenderVerified2(ctx context.Context, cs Completers, work string, s Scene, b
 		if r, err = renderWith(ctx, cs.Render, cs.Extract, work, s, b, o.K, o.UserSuffix, extra, o.card()); err != nil {
 			return r, n, err
 		}
+		defs, miss := proseIssues(s, b.Lang, r)
+		r.Report.Prose = append(append([]string{}, defs...), miss...)
 		if Passed(r) || n > o.Retries {
 			return r, n, nil
 		}
-		extra = feedback(s, b.Lang, r.Report)
+		extra = feedback(s, b.Lang, r.Report) + proseFeedback(defs, miss)
 	}
 }
 
@@ -109,4 +111,34 @@ func (o VerifyOpts) card() *CardOpts {
 		return &o.Card
 	}
 	return nil
+}
+
+// proseIssues runs the deterministic term checks; only a scene with terms_new is checked, and a draft that was cut off is not.
+func proseIssues(s Scene, lang string, r Render) (defs, miss []string) {
+	if len(s.TermsNew) == 0 || r.StopReason != "end_turn" {
+		return nil, nil
+	}
+	var surf []string
+	for _, t := range s.TermsNew {
+		surf = append(surf, t.Surface)
+	}
+	return ProseDefinitions(r.Prose, lang, surf), UnrenderedTerms(r.Prose, surf)
+}
+
+// proseFeedback continues the "## Fix from the previous draft" section written by feedback.
+func proseFeedback(defs, miss []string) string {
+	var b strings.Builder
+	if len(defs) > 0 {
+		b.WriteString("These sentences define a term like a dictionary. Rewrite them as action, dialogue, consequence or sensation; partial understanding is fine:\n")
+		for _, d := range defs {
+			b.WriteString("- " + d + "\n")
+		}
+	}
+	if len(miss) > 0 {
+		b.WriteString("These new terms do not appear in the prose; weave each in by its exact surface form:\n")
+		for _, m := range miss {
+			b.WriteString("- " + m + "\n")
+		}
+	}
+	return b.String()
 }

@@ -46,6 +46,7 @@ type Directives struct {
 type Term struct {
 	Surface string `json:"surface"`
 	Gloss   string `json:"gloss"`
+	Via     string `json:"via,omitempty"` // how to weave it in: action | dialogue | consequence | sense (terms_new only)
 }
 
 type Scene struct {
