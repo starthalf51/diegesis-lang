@@ -168,7 +168,7 @@ scene 3.1 at court
 
 ### Terms
 
-A work-specific word is declared once with its surface forms and a gloss: `term <id> "<surface>" ["<surface2>"…] = "<gloss>"`. A shown scene explains it to the reader with `explain <id>[, <id>…]` in its `render` block. If a surface reaches the reader (fact text carried by an act, a quote, a `does` action, or `render focus`) as a whole word — Korean particles after it are allowed, so `"칩"` does not match `칩거` — before any scene at or before that point in the telling explains it, lint reports the error `reader-unknown-term`.
+A work-specific word is declared once with its surface forms and a gloss: `term <id> "<surface>" ["<surface2>"…] = "<gloss>"`. A shown scene explains it to the reader with `explain <id>[, <id>…]` in its `render` block. If a surface reaches the reader (fact text carried by an act, a quote, a `does` action, or `render focus`) as a whole word — Korean particles after it are allowed, so `"칩"` does not match `칩거` — before any scene at or before that point in the telling explains it, lint reports the error `reader-unknown-term`. The reader stack accumulates over the telling: a term is new only where it is first explained. A later `explain` of the same term draws the warning `term-re-explained`; to remind the reader briefly, use `recap <id>[, <id>…]` in `render` (the renderer writes one short phrase, never a definition).
 
 <!-- check -->
 ```sl
@@ -245,7 +245,7 @@ setup       = "setup" ident ("promise"|"hint"|"symbol") ":" (prop|string) ;
 payoff      = "payoff" qname ;
 pragma      = "#!" "allow" ruleid ":" string ;                    (* attaches to the next statement *)
 render      = "render" BLOCK(rkey rvalue) ;
-rkey        = "pov"|"pace"|"tension"|"focus"|"omit"|"show"|"explain"|"narration" ;
+rkey        = "pov"|"pace"|"tension"|"focus"|"omit"|"show"|"explain"|"recap"|"narration" ;
 ```
 
 ## Deliberately left out

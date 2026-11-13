@@ -47,6 +47,7 @@
 | `account-variance` | info | act | The facts contained differ between accounts of the same event |
 | `inferred-deception` | info | act | A document judged to have been written knowing it was false — check whether it is the author's mistake |
 | `reader-unknown-term` | error | act | A declared `term` surface reaches the reader before a scene at or before it in the telling has `render explain` for it |
+| `term-re-explained` | warn | scene | A scene's `render explain` names a term an earlier scene in the telling already explains (use `recap`) |
 | `pov-offstage` | error | scene | `render pov X` names a character who never enters the scene (no `enter`; `mention` does not count, a later `exit` is not considered) |
 | `pov-mind-leak` | error | act | In a `render narration first-person` scene, a `thinks` act belongs to someone other than the pov character |
 | `time-cycle` | warn | when | Time constraints form a cycle (derive) |

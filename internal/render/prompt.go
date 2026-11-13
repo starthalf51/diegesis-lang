@@ -51,7 +51,7 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	sb.WriteString("- Never state or imply any fact listed under \"Must not state or imply\", not even as a hint, a foreshadowing, or a character's guess.\n")
 	sb.WriteString("- A fact marked false is only what a character says, believes or pretends. Never state it in the narrator's own voice as what happened.\n")
 	sb.WriteString("- Stay in the stated point of view. Use the people's names in the scene's language.\n")
-	hasTerms := len(s.TermsNew)+len(s.TermsKnown) > 0
+	hasTerms := len(s.TermsNew)+len(s.TermsKnown)+len(s.TermsRecap) > 0
 	if hasTerms {
 		sb.WriteString("- Do not coin new jargon: any work-specific word must be one of the listed terms.\n")
 	}
@@ -165,6 +165,12 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	if len(s.TermsKnown) > 0 {
 		sb.WriteString("\n## Terms the reader already knows\n")
 		for _, t := range s.TermsKnown {
+			fmt.Fprintf(&sb, "- %s\n", t.Surface)
+		}
+	}
+	if len(s.TermsRecap) > 0 {
+		sb.WriteString("\n## Remind briefly (the reader already met these; one short phrase, never a definition)\n")
+		for _, t := range s.TermsRecap {
 			fmt.Fprintf(&sb, "- %s\n", t.Surface)
 		}
 	}

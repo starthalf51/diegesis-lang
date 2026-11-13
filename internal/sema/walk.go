@@ -100,7 +100,7 @@ func (w *walker) stmt(n syntax.Node) (string, string) {
 				b.errf(e.Pos, "arg-kind", "narration takes first-person or third-person")
 				continue
 			}
-			if e.Key == "explain" { // values are term ids
+			if e.Key == "explain" || e.Key == "recap" { // values are term ids
 				vals = []string{}
 				for _, v := range e.Values {
 					if id := b.want(m, syntax.Ident{Pos: e.Pos, Name: v}, "explained term", "term"); id != "" {

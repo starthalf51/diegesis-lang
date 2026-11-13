@@ -151,7 +151,7 @@ func TestRenderSceneTerms(t *testing.T) {
 	}
 }
 
-// A term explained again in a later scene is new there (not known); a scene between them still knows it.
+// A term explained again in a later scene is known there, not new (plan 16); a scene between them still knows it.
 func TestRenderSceneTermsReexplain(t *testing.T) {
 	pool := open(t)
 	id := compileLoad(t, pool, terms+"scene 1\n  enter a, b\n  render\n    explain jokbo\n  a tells b: fj\nscene 2\n  enter a\nscene 3\n  enter a\n  render\n    explain jokbo\n")
@@ -164,7 +164,7 @@ func TestRenderSceneTermsReexplain(t *testing.T) {
 	for _, tc := range []struct {
 		sc          string
 		isNew, know []string
-	}{{"1", []string{"족보"}, nil}, {"2", nil, []string{"족보"}}, {"3", []string{"족보"}, nil}} {
+	}{{"1", []string{"족보"}, nil}, {"2", nil, []string{"족보"}}, {"3", nil, []string{"족보"}}} {
 		b, err := pg.RenderScene(context.Background(), pool, id, tc.sc)
 		if err != nil {
 			t.Fatal(err)
