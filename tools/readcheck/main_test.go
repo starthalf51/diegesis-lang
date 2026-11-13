@@ -16,6 +16,10 @@ import (
 func TestMain(m *testing.M) {
 	if rf := os.Getenv("READCHECK_FAKE_RESP"); rf != "" {
 		io.Copy(io.Discard, os.Stdin)
+		if cf := os.Getenv("READCHECK_FAKE_CWD"); cf != "" {
+			wd, _ := os.Getwd()
+			os.WriteFile(cf, []byte(wd), 0o644)
+		}
 		var resp []string
 		b, _ := os.ReadFile(rf)
 		json.Unmarshal(b, &resp)
@@ -34,7 +38,7 @@ func TestMain(m *testing.M) {
 }
 
 func cold(structural, term, vocab int, cont bool) string {
-	var cs []map[string]string
+	cs := []map[string]string{}
 	for i := 0; i < structural; i++ {
 		cs = append(cs, map[string]string{"kind": "structural", "text": "x"})
 	}
@@ -113,5 +117,40 @@ func TestReadcheckBudget(t *testing.T) {
 	code, out := runFake(t, []string{cold(0, 0, 0, true), "A", "B"}, []string{"--budget", "4"}, "a.md", "b.md")
 	if code != 1 || !strings.Contains(out, "b.md SKIPPED(budget)") || !strings.Contains(out, "calls=3/4") {
 		t.Errorf("exit %d out %q", code, out)
+	}
+}
+
+func TestReadcheckStrictParse(t *testing.T) {
+	// summary only -> unparsable -> retry
+	code, out := runFake(t, []string{`{"summary":"s","continue":true}`, cold(0, 0, 0, true), "A", "B"}, []string{"--budget", "6"}, "ep.md")
+	if code != 0 || !strings.Contains(out, "calls=4/6") {
+		t.Errorf("summary-only: exit %d out %q", code, out)
+	}
+	// "Structural " is normalised
+	r := `{"summary":"s","confusions":[{"kind":"Structural ","text":"x"},{"kind":" STRUCTURAL","text":"y"},{"kind":"structural","text":"z"}],"continue":true}`
+	_, out = runFake(t, []string{r, "A", "B"}, nil, "ep.md")
+	if !strings.Contains(out, "structural=3") || !strings.Contains(out, "FAIL") {
+		t.Errorf("normalise: %q", out)
+	}
+	// unknown kind -> unparsable both times -> UNDECIDED
+	bad := `{"summary":"s","confusions":[{"kind":"plot","text":"x"}],"continue":true}`
+	code, out = runFake(t, []string{bad, bad}, []string{"--budget", "6"}, "ep.md")
+	if code != 1 || !strings.Contains(out, "UNDECIDED") {
+		t.Errorf("plot kind: exit %d out %q", code, out)
+	}
+}
+
+func TestReadcheckIsolatedCwd(t *testing.T) {
+	dir := t.TempDir()
+	cwdf := filepath.Join(dir, "cwd.txt")
+	t.Setenv("READCHECK_FAKE_CWD", cwdf)
+	runFake(t, []string{cold(0, 0, 0, true), "A", "B"}, nil, "ep.md")
+	got, _ := os.ReadFile(cwdf)
+	here, _ := os.Getwd()
+	if len(got) == 0 || string(got) == here {
+		t.Errorf("fake saw cwd %q, caller %q", got, here)
+	}
+	if _, err := os.Stat(string(got)); err == nil {
+		t.Errorf("temp cwd %q not removed", got)
 	}
 }

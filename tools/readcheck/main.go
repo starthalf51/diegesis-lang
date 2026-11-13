@@ -57,7 +57,7 @@ func parseCold(s string) (coldRead, bool) {
 			continue
 		}
 		var c coldRead
-		if json.NewDecoder(strings.NewReader(s[i:])).Decode(&c) == nil && (c.Summary != nil || c.Confusions != nil) {
+		if json.NewDecoder(strings.NewReader(s[i:])).Decode(&c) == nil && c.valid() {
 			return c, true
 		}
 	}
@@ -89,13 +89,21 @@ func (g *gate) ask(prompt string) (string, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, bin, "-p", "--model", g.model)
+	dir, err := os.MkdirTemp("", "readcheck-")
+	if err != nil {
+		return "", err
+	}
+	defer os.RemoveAll(dir)
+	// Reader isolation: empty cwd, no tools, no MCP, no settings/hooks, no skills, no saved session.
+	cmd := exec.CommandContext(ctx, bin, "-p", "--model", g.model, "--tools", "", "--strict-mcp-config",
+		"--setting-sources", "", "--disable-slash-commands", "--no-session-persistence")
+	cmd.Dir = dir
 	cmd.Stdin = strings.NewReader(prompt)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = io.Discard // warnings live here; the answer is stdout
 	g.used++
-	err := cmd.Run()
+	err = cmd.Run()
 	return out.String(), err
 }
 
@@ -147,7 +155,7 @@ func (g *gate) episode(path, ref string, coldOnly bool) (string, bool) {
 	}
 	s, t := 0, 0
 	for _, x := range c.confusions() {
-		switch x.Kind {
+		switch x.Kind { // kinds already normalised by valid()
 		case "structural":
 			s++
 		case "term":
@@ -208,4 +216,21 @@ func (c coldRead) confusions() []confusion {
 		return nil
 	}
 	return *c.Confusions
+}
+
+// valid requires a summary and a confusions array whose kinds are all known; kinds are normalised in place.
+func (c *coldRead) valid() bool {
+	if c.Summary == nil || c.Confusions == nil {
+		return false
+	}
+	cs := *c.Confusions
+	for i := range cs {
+		cs[i].Kind = strings.ToLower(strings.TrimSpace(cs[i].Kind))
+		switch cs[i].Kind {
+		case "structural", "term", "vocab", "artifact":
+		default:
+			return false
+		}
+	}
+	return true
 }
