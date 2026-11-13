@@ -1,6 +1,7 @@
 package pg_test
 
 import (
+	"bytes"
 	"context"
 	"slices"
 	"testing"
@@ -176,5 +177,34 @@ func TestRenderSceneTermsReexplain(t *testing.T) {
 		if !slices.Equal(surf(s.TermsNew), tc.isNew) || !slices.Equal(surf(s.TermsKnown), tc.know) {
 			t.Errorf("scene %s: new %v known %v, want %v / %v", tc.sc, surf(s.TermsNew), surf(s.TermsKnown), tc.isNew, tc.know)
 		}
+	}
+}
+
+// A design scene hands off the previous shown scene's end state (plan 18); the first scene and non-design scenes carry none. An exit that is the scene's last statement is not told apart from staying (presence.to_pt is the scene end either way).
+func TestRenderSceneHandoff(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, "scene 1\n  enter a, b\n  a tells b: p\n  exit b\n  a tells b: p\nscene 2\n  enter a\n  design\n    turn \"x\" -> y\nscene 3\n  enter a\n")
+	card := func(sc string) render.Scene {
+		b, err := pg.RenderScene(context.Background(), pool, id, sc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if sc != "2" && bytes.Contains(b, []byte(`"handoff"`)) {
+			t.Errorf("scene %s: handoff key present:\n%s", sc, b)
+		}
+		s, err := render.ParseScene(b)
+		if err != nil {
+			t.Fatalf("%v\n%s", err, b)
+		}
+		return s
+	}
+	card("1")
+	card("3")
+	h := card("2").Handoff
+	if h == nil {
+		t.Fatal("scene 2: no handoff")
+	}
+	if h.Place != "" || h.Last != "A (tells): P" || !slices.Equal(h.Present, []string{"a"}) {
+		t.Errorf("handoff %+v", h)
 	}
 }

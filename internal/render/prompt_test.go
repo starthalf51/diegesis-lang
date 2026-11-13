@@ -254,3 +254,24 @@ func TestPromptSceneDesign(t *testing.T) {
 		t.Error("ellipsis wording")
 	}
 }
+
+func TestPromptHandoff(t *testing.T) {
+	s := mustLoad(t, "testdata/scenes/holmes-scandal-opening.json")
+	_, plain, _ := BuildPrompt(s, VariantIROnly, "en", nil)
+	if strings.Contains(plain, "Where the previous scene ended") {
+		t.Error("no handoff: no section")
+	}
+	s.Previously = "Scene 1: x."
+	s.Handoff = &Handoff{Place: "the bridge", Last: "Holmes (tells): the door is open", Present: []string{s.Cast[0].ID}}
+	_, u, _ := BuildPrompt(s, VariantIROnly, "en", nil)
+	want := "## Previously\nScene 1: x.\n\n## Where the previous scene ended\nPlace: the bridge\nLast act: Holmes (tells): the door is open\nStill there: " +
+		s.Cast[0].Names["en"][0] + "\nBegin from this state. If this scene opens in another place or later, make the move or the time skip clear in the first lines. Characters not still there must enter before they act.\n"
+	if !strings.Contains(u, want) {
+		t.Errorf("want\n%s\nin\n%s", want, u)
+	}
+	s.Handoff.Present = nil
+	_, u, _ = BuildPrompt(s, VariantIROnly, "en", nil)
+	if !strings.Contains(u, "Still there: no one\n") {
+		t.Errorf("empty present:\n%s", u)
+	}
+}

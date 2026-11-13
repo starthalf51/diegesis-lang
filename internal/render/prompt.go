@@ -128,6 +128,14 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	if s.Previously != "" {
 		fmt.Fprintf(&sb, "\n## Previously\n%s\n", s.Previously)
 	}
+	if h := s.Handoff; h != nil {
+		still := "no one"
+		if len(h.Present) > 0 {
+			still = names(h.Present)
+		}
+		fmt.Fprintf(&sb, "\n## Where the previous scene ended\nPlace: %s\nLast act: %s\nStill there: %s\n", h.Place, h.Last, still)
+		sb.WriteString("Begin from this state. If this scene opens in another place or later, make the move or the time skip clear in the first lines. Characters not still there must enter before they act.\n")
+	}
 	fmt.Fprintf(&sb, "\n## Place\n%s\n\n## Characters\n", s.Place)
 	for _, e := range s.Cast {
 		fmt.Fprintf(&sb, "- %s\n", name(e.ID))
