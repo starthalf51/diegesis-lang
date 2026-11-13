@@ -3,7 +3,7 @@
 //
 //	go run ./tools/readcheck --ref corpus-eval/readcheck/ref-unsu.txt [--model opus] [--budget N] [--cold-only] ep.md...
 //
-// Per episode: structural <= maxStructural (2), term == 0, and the episode wins >= 1 of 2 order-swapped pairs against the
+// Per episode: error <= maxError (2), term == 0, and the episode wins >= 1 of 2 order-swapped pairs against the
 // reference. vocab and artifact confusions are ignored; `continue` is recorded only. READCHECK_CLAUDE
 // replaces the `claude` command (tests).
 package main
@@ -22,19 +22,20 @@ import (
 	"time"
 )
 
-// maxStructural is fixed: calibrated on the reference (measured 2), user decision 2026-11-13. Do not change.
-const maxStructural = 2
+// maxError is fixed: user decision 2026-11-13 (value 2 now applies to `error`; `open` is recorded only). Do not change.
+const maxError = 2
 
 const coldPrompt = `다음은 한국어 소설의 한 회차입니다. 당신은 이 작품에 대해 아무것도 모르는 일반 독자입니다. 사전 지식이나 추측으로 메우지 말고, 글에 쓰인 것만으로 답하세요.
 1) 무슨 일이 일어났는지 3~5문장으로 요약하세요.
-2) 읽다가 헷갈린 지점을 모두 나열하고, 각각 아래 넷 중 하나로 분류하세요. 없으면 빈 배열.
-   - structural: 모순, 시점, 장면 연속성, 누가 말하는지
+2) 읽다가 헷갈린 지점을 모두 나열하고, 각각 아래 다섯 중 하나로 분류하세요. 없으면 빈 배열.
+   - error: 진짜 결함. 서술끼리의 모순(수·장소·시간·누가 무엇을 가졌는지), 시점 위반(서술자가 알 수 없는 것을 말함), 이미 떠난 장소에 인물이 있거나 장면 연속성이 끊김, 누가 말하는지 불분명함, 인용 안에 서술이 끼어듦. 예: 한 문단에서는 문이 잠겼다고 하고 바로 뒤에서는 아무 일 없이 열고 들어간다.
+   - open: 아직 답이 나오지 않은 의문, 또는 뒤에서 풀릴 수 있는 일시적 모호함(궁금증을 끄는 장치, 작가의 곁말, "아직 설명되지 않음"). 예: 인물이 "그 약속"을 언급하지만 무슨 약속인지 아직 안 나온다.
    - term: 작품 고유 용어·설정이 설명 없이 나옴
    - vocab: 고어, 방언, 일반 어휘
    - artifact: 원문 추출 흔적, 편집 기호
 3) 다음 회를 읽고 싶은지 true/false 로 답하세요.
 설명 없이 JSON 객체 하나만 출력하세요(코드 펜스 없이):
-{"summary": "...", "confusions": [{"kind": "structural|term|vocab|artifact", "text": "..."}], "continue": true}
+{"summary": "...", "confusions": [{"kind": "error|open|term|vocab|artifact", "text": "..."}], "continue": true}
 ---
 `
 
@@ -153,19 +154,21 @@ func (g *gate) episode(path, ref string, coldOnly bool) (string, bool) {
 	if !ok {
 		return fmt.Sprintf("%s UNDECIDED (unparsable or budget exhausted)", path), false
 	}
-	s, t := 0, 0
+	e, o, t := 0, 0, 0
 	for _, x := range c.confusions() {
 		switch x.Kind { // kinds already normalised by valid()
-		case "structural":
-			s++
+		case "error":
+			e++
+		case "open":
+			o++
 		case "term":
 			t++
 		}
 	}
 	cont := map[bool]string{true: "y", false: "n"}[c.Continue]
-	pass := s <= maxStructural && t == 0 && (coldOnly || wins >= 1)
+	pass := e <= maxError && t == 0 && (coldOnly || wins >= 1)
 	v := map[bool]string{true: "PASS", false: "FAIL"}[pass]
-	return fmt.Sprintf("%s structural=%d term=%d pair=%s continue=%s → %s", path, s, t, pairs, cont, v), pass
+	return fmt.Sprintf("%s error=%d open=%d term=%d pair=%s continue=%s → %s", path, e, o, t, pairs, cont, v), pass
 }
 
 func run(args []string, out io.Writer) int {
@@ -227,7 +230,7 @@ func (c *coldRead) valid() bool {
 	for i := range cs {
 		cs[i].Kind = strings.ToLower(strings.TrimSpace(cs[i].Kind))
 		switch cs[i].Kind {
-		case "structural", "term", "vocab", "artifact":
+		case "error", "open", "term", "vocab", "artifact":
 		default:
 			return false
 		}

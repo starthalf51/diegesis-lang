@@ -37,10 +37,10 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func cold(structural, term, vocab int, cont bool) string {
+func cold(errs, term, vocab int, cont bool) string {
 	cs := []map[string]string{}
-	for i := 0; i < structural; i++ {
-		cs = append(cs, map[string]string{"kind": "structural", "text": "x"})
+	for i := 0; i < errs; i++ {
+		cs = append(cs, map[string]string{"kind": "error", "text": "x"})
 	}
 	for i := 0; i < term; i++ {
 		cs = append(cs, map[string]string{"kind": "term", "text": "x"})
@@ -85,8 +85,8 @@ func TestReadcheckVerdict(t *testing.T) {
 		exit0 bool
 	}{
 		{"pass", cold(1, 0, 0, true), []string{"A\nwhy", "A\nwhy"}, "PASS", "1/2", true},
-		{"structural 2", cold(2, 0, 0, true), []string{"A", "B"}, "PASS", "2/2", true},
-		{"structural 3", cold(3, 0, 0, true), []string{"A", "B"}, "FAIL", "2/2", false},
+		{"error 2", cold(2, 0, 0, true), []string{"A", "B"}, "PASS", "2/2", true},
+		{"error 3", cold(3, 0, 0, true), []string{"A", "B"}, "FAIL", "2/2", false},
 		{"term", cold(0, 1, 0, true), []string{"A", "B"}, "FAIL", "2/2", false},
 		{"pair0", cold(0, 0, 0, true), []string{"B", "A"}, "FAIL", "0/2", false},
 		{"vocab ignored", cold(0, 0, 9, false), []string{"A", "B"}, "PASS", "2/2", true},
@@ -127,9 +127,9 @@ func TestReadcheckStrictParse(t *testing.T) {
 		t.Errorf("summary-only: exit %d out %q", code, out)
 	}
 	// "Structural " is normalised
-	r := `{"summary":"s","confusions":[{"kind":"Structural ","text":"x"},{"kind":" STRUCTURAL","text":"y"},{"kind":"structural","text":"z"}],"continue":true}`
+	r := `{"summary":"s","confusions":[{"kind":"Error ","text":"x"},{"kind":" ERROR","text":"y"},{"kind":"error","text":"z"}],"continue":true}`
 	_, out = runFake(t, []string{r, "A", "B"}, nil, "ep.md")
-	if !strings.Contains(out, "structural=3") || !strings.Contains(out, "FAIL") {
+	if !strings.Contains(out, "error=3") || !strings.Contains(out, "FAIL") {
 		t.Errorf("normalise: %q", out)
 	}
 	// unknown kind -> unparsable both times -> UNDECIDED
@@ -152,5 +152,22 @@ func TestReadcheckIsolatedCwd(t *testing.T) {
 	}
 	if _, err := os.Stat(string(got)); err == nil {
 		t.Errorf("temp cwd %q not removed", got)
+	}
+}
+
+func TestReadcheckOpenIgnoredLegacyRejected(t *testing.T) {
+	var cs []string
+	for i := 0; i < 9; i++ {
+		cs = append(cs, `{"kind":"open","text":"x"}`)
+	}
+	open9 := `{"summary":"s","confusions":[` + strings.Join(cs, ",") + `],"continue":true}`
+	_, out := runFake(t, []string{open9, "A", "B"}, nil, "ep.md")
+	if !strings.Contains(out, "error=0 open=9 term=0") || !strings.Contains(out, "PASS") {
+		t.Errorf("open 9: %q", out)
+	}
+	legacy := `{"summary":"s","confusions":[{"kind":"structural","text":"x"}],"continue":true}`
+	code, out := runFake(t, []string{legacy, legacy}, []string{"--budget", "6"}, "ep.md")
+	if code != 1 || !strings.Contains(out, "UNDECIDED") {
+		t.Errorf("legacy: exit %d %q", code, out)
 	}
 }
