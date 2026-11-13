@@ -17,7 +17,14 @@ import (
 type readerSt struct {
 	Terms []map[string]string `json:"terms"` // {surface, gloss}
 	Cast  []string            `json:"cast"`
-	Facts []string            `json:"facts"`
+	Facts []rsFact            `json:"facts"`
+}
+
+// rsFact is one statement the reader holds. Value is whether it is true in the work: a lie or forged artifact the reader
+// took in is listed with Value false.
+type rsFact struct {
+	Text  string `json:"text"`
+	Value bool   `json:"value"`
 }
 
 // Text is the plain-text state file that readcheck prepends to the reader prompt ("" when nothing is known yet).
@@ -30,13 +37,17 @@ func (s readerSt) Text() string {
 		fmt.Fprintf(&b, "등장인물: %s\n", strings.Join(s.Cast, ", "))
 	}
 	for _, f := range s.Facts {
-		fmt.Fprintf(&b, "알려진 사실: %s\n", f)
+		if f.Value {
+			fmt.Fprintf(&b, "알려진 사실: %s\n", f.Text)
+		} else {
+			fmt.Fprintf(&b, "알려진 사실: (사실 아님) %s\n", f.Text)
+		}
 	}
 	return b.String()
 }
 
 func readerState(ctx context.Context, pool *pgxpool.Pool, work, until string) (readerSt, error) {
-	s := readerSt{Terms: []map[string]string{}, Cast: []string{}, Facts: []string{}}
+	s := readerSt{Terms: []map[string]string{}, Cast: []string{}, Facts: []rsFact{}}
 	var o int
 	if err := pool.QueryRow(ctx, `SELECT o.ord FROM scene_told_ord($1) o JOIN scene x ON x.id = o.scene_id
 		WHERE x.id = $2 OR lint_short(x.id) = $2`, work, until).Scan(&o); err != nil {
@@ -69,15 +80,12 @@ func readerState(ctx context.Context, pool *pgxpool.Pool, work, until string) (r
 		return s, err
 	}
 	// reader_knows.from_ord is a scene's discourse_ord; keep the changes whose scene is told before `until`, latest per fact.
-	err := q(`SELECT render_fact_text($1, k.fact_id), k.value::text FROM (
+	err := q(`SELECT CASE WHEN k.value THEN '' ELSE '[아님] ' END || render_fact_text($1, k.fact_id), (render_fact_true($1, k.fact_id) = k.value)::text FROM (
 		SELECT DISTINCT ON (k.fact_id) k.fact_id, k.value, k.from_ord FROM reader_knows($1) k
 		 WHERE k.from_ord IN (SELECT sc.discourse_ord FROM scene sc JOIN scene_told_ord($1) o ON o.scene_id = sc.id WHERE o.ord < $2)
 		 ORDER BY k.fact_id, k.from_ord DESC) k ORDER BY k.from_ord, k.fact_id`,
 		func(a, b string) {
-			if b != "true" {
-				a = "(사실 아님) " + a
-			}
-			s.Facts = append(s.Facts, a)
+			s.Facts = append(s.Facts, rsFact{Text: a, Value: b == "true"})
 		})
 	return s, err
 }
