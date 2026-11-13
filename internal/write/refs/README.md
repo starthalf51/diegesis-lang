@@ -237,6 +237,7 @@ go vet ./...
 | v0.11.0 | 플랜 13: `dieg lint --rules <dir>` — 작품별 규칙 디렉터리를 내장 규칙과 함께 실행(ID 충돌·빈 디렉터리·`layer: lint` 아닌 규칙은 DB 연결 전 오류). 첫 사용처: 『홍길동은 하나만 남는다』 세계 규칙 |
 | v0.12.0 | 플랜 14: 명작 측정 — `dieg convert-book`(장 단위 변환), 몰입 지수(017)·`dieg curve`(장별 곡선·골짜기), 구조미 지수(018, `bookend` 패턴), `tools/curvecheck`. 『모비 딕』 마의 구간 검증은 FAIL(「Cetology」가 곡선 꼭대기) |
 | v0.13.0 | 플랜 15: 독자 스택 — `term`·`render explain`·`narration`, 끌 수 없는 error 규칙 `reader-unknown-term`·`pov-offstage`·`pov-mind-leak`; 렌더 카드 용어(새 용어·아는 용어)와 조건부 독자 규칙; 문체 rules·lexicon·`--opening`; `tools/readcheck`(opus 처음 읽는 독자, error≤2·term 0·짝 비교 1/2, 예산 고정). 홍길동 1~3화 기능 검증은 FAIL |
+| v0.14.0 | 플랜 16: 뼈와 살 — 독자 스택 누적(첫 설명만 새 용어, `recap`, `term-re-explained`), 장면 설계 `design`(goal·turn·tempo, `scene-no-turn`), 살 계약 `flesh: "novel"`(반응 의무·질감 허용·줄거리 추가 실패, 카드 경로 포함), `explain … via`와 정의문·미렌더 용어 검사, `dieg reader-state`와 누적 readcheck(repeat·dump·flat, 기준작 「동백꽃」). 홍길동 1~3화 기능 검증은 FAIL(짝 비교 0/12) |
 
 ## 라이선스
 
