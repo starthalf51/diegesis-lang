@@ -129,3 +129,67 @@ func TestReaderStateMarksFalseFacts(t *testing.T) {
 		t.Errorf("scene 1 facts leak into until 1: %+v", s3.Facts)
 	}
 }
+
+// I2: "(사실 아님)" only when the reader was shown the falsity strictly before --until (a `lies` act, or the
+// truth disclosed earlier); a false fact taken in by `tells` with the reveal still ahead is printed as believed.
+const rsTwist = `
+work RST "T"
+character a "Ann"
+character b "Bob"
+character c "Cyd"
+fact f4 "열쇠는 서랍에 있다" false
+scene 1
+  enter a, b
+  a tells b: f4
+scene 2
+  enter a
+scene 3
+  enter a
+scene 4
+  enter a
+  reveal not f4
+scene 5
+  enter a, c
+  c tells a: f4
+scene 6
+  enter a
+`
+
+func TestReaderStateFalsityTiming(t *testing.T) {
+	if os.Getenv("SL_PG_DSN") == "" {
+		t.Skip("SL_PG_DSN not set")
+	}
+	dir := t.TempDir()
+	src := "---\nmodule: rst.s\nmode: authored\n---\n\n```sl\n" + rsTwist + "```\n"
+	os.WriteFile(filepath.Join(dir, "w.dieg.md"), []byte(src), 0o644)
+	work, err := load(dir, io.Discard)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pool, err := pg.Connect(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	defer pool.Exec(context.Background(), `DELETE FROM work WHERE id=$1`, work)
+	out := func(until string) string {
+		s, err := readerState(context.Background(), pool, work, until)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return s.Text()
+	}
+	const fact = "열쇠는 서랍에 있다"
+	if s := out("3"); !strings.Contains(s, "알려진 사실: "+fact) || strings.Contains(s, "사실 아님") {
+		t.Errorf("until 3: the reveal in scene 4 must not leak:\n%s", s)
+	}
+	if s := out("4"); strings.Contains(s, "사실 아님") {
+		t.Errorf("until 4: reveal is in scene 4 itself, not before:\n%s", s)
+	}
+	if s := out("5"); !strings.Contains(s, "[아님] "+fact) || strings.Contains(s, "사실 아님") {
+		t.Errorf("until 5: the reader holds the revealed truth:\n%s", s)
+	}
+	if s := out("6"); !strings.Contains(s, "알려진 사실: (사실 아님) "+fact) {
+		t.Errorf("until 6: re-told after the reveal, must be marked:\n%s", s)
+	}
+}

@@ -20,8 +20,9 @@ type readerSt struct {
 	Facts []rsFact            `json:"facts"`
 }
 
-// rsFact is one statement the reader holds. Value is whether it is true in the work: a lie or forged artifact the reader
-// took in is listed with Value false.
+// rsFact is one statement the reader holds. Value is false only when the statement is false in the work and the reader
+// was already shown that before --until (it came by `lies`, or the truth was disclosed earlier). A deception whose
+// reveal is still ahead is listed with Value true, as the reader holds it.
 type rsFact struct {
 	Text  string `json:"text"`
 	Value bool   `json:"value"`
@@ -80,9 +81,14 @@ func readerState(ctx context.Context, pool *pgxpool.Pool, work, until string) (r
 		return s, err
 	}
 	// reader_knows.from_ord is a scene's discourse_ord; keep the changes whose scene is told before `until`, latest per fact.
-	err := q(`SELECT CASE WHEN k.value THEN '' ELSE '[아님] ' END || render_fact_text($1, k.fact_id), (render_fact_true($1, k.fact_id) = k.value)::text FROM (
+	// A held value is marked false only if the reader was shown its falsity before `until`: a `lies` disclosure of it, or a
+	// disclosure of the opposite value (reveal, narration). fact.truth is timeless, so it never decides alone (I2).
+	err := q(`WITH told AS (SELECT sc.discourse_ord FROM scene sc JOIN scene_told_ord($1) o ON o.scene_id = sc.id WHERE o.ord < $2)
+		SELECT CASE WHEN k.value THEN '' ELSE '[아님] ' END || render_fact_text($1, k.fact_id),
+		 (NOT coalesce(render_fact_true($1, k.fact_id) <> k.value, false) OR NOT EXISTS (SELECT 1 FROM reader_events($1) e
+		   WHERE e.fact_id = k.fact_id AND e.ord IN (SELECT * FROM told) AND (e.value <> k.value OR e.via = 'lies')))::text FROM (
 		SELECT DISTINCT ON (k.fact_id) k.fact_id, k.value, k.from_ord FROM reader_knows($1) k
-		 WHERE k.from_ord IN (SELECT sc.discourse_ord FROM scene sc JOIN scene_told_ord($1) o ON o.scene_id = sc.id WHERE o.ord < $2)
+		 WHERE k.from_ord IN (SELECT * FROM told)
 		 ORDER BY k.fact_id, k.from_ord DESC) k ORDER BY k.from_ord, k.fact_id`,
 		func(a, b string) {
 			s.Facts = append(s.Facts, rsFact{Text: a, Value: b == "true"})

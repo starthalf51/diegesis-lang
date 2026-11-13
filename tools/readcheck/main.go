@@ -1,9 +1,12 @@
 // readcheck is the model-reader gate: a first-time-reader test plus a pairwise comparison against a
 // reference text, with fixed thresholds and a call budget.
 //
-//	go run ./tools/readcheck [--ref corpus-eval/readcheck/ref-dongbaek.txt] [--state f] [--model opus] [--budget N] [--cold-only] ep.md...
+//	go run ./tools/readcheck [--ref corpus-eval/readcheck/ref-dongbaek.txt] [--state f] [--model opus] [--budget N] [--cold-only] [--first] ep.md...
 //
 // An episode with a sibling <name>.state.txt (from `dieg reader-state`) is read by a reader who knows that state.
+// An episode with no state is judged by a first-time reader: a pass prints PASS(cold) and does not count for exit 0
+// (`repeat` cannot fire without a state). --first declares that the first file is episode 1, so it alone may be read
+// cold and prints PASS; every other stateless episode stays PASS(cold).
 //
 // Per episode: error <= maxError (2), term == 0, repeat == 0, dump <= 1, flat <= 1, and the episode wins >= 1 of 2 order-swapped pairs against the
 // reference. open, vocab and artifact confusions are recorded only; `continue` is recorded only. READCHECK_CLAUDE
@@ -46,7 +49,7 @@ const coldBody = `1) 무슨 일이 일어났는지 3~5문장으로 요약하세�
 2) 읽다가 걸린 지점을 모두 나열하고, 각각 아래 여덟 중 하나로 분류하세요. 없으면 빈 배열.
    - error: 진짜 결함. 서술끼리의 모순(수·장소·시간·누가 무엇을 가졌는지), 시점 위반(서술자가 알 수 없는 것을 말함), 이미 떠난 장소에 인물이 있거나 장면 연속성이 끊김, 누가 말하는지 불분명함, 인용 안에 서술이 끼어듦. 예: 한 문단에서는 문이 잠겼다고 하고 바로 뒤에서는 아무 일 없이 열고 들어간다.
    - open: 아직 답이 나오지 않은 의문, 또는 뒤에서 풀릴 수 있는 일시적 모호함(궁금증을 끄는 장치, 작가의 곁말, "아직 설명되지 않음"). 예: 인물이 "그 약속"을 언급하지만 무슨 약속인지 아직 안 나온다.
-   - term: 작품 고유의 설정·제도·기술·관습을 가리키는 말인데, 사건을 따라가려면 뜻을 알아야 하는데도 설명 없이 쓰임. 예: 서술이 "배급표 등급이 낮아 문이 열리지 않았다"고 하는데 등급 제도가 어디에도 설명되지 않는다. 인물·가게·집·장소·배 등의 이름은 문맥상 이름임이 분명하면 term 이 아니다(궁금하면 open 으로 쓰거나 적지 않는다). 예: 간판에 적힌 "푸른 약국"은 이름이므로 term 이 아니다.
+   - term: 작품 고유의 설정·제도·기술·관습을 가리키는 말인데, 사건을 따라가려면 뜻을 알아야 하는데도 설명 없이 쓰임. 예: 서술이 "통행패가 셋째 칸이라 다리를 건너지 못했다"고 하는데 통행패의 칸 구분이 어디에도 설명되지 않는다. 인물·가게·집·장소·배 등의 이름은 문맥상 이름임이 분명하면 term 이 아니다(궁금하면 open 으로 쓰거나 적지 않는다). 예: 간판에 적힌 "푸른 약국"은 이름이므로 term 이 아니다.
    - repeat: 앞 회차에서 이미 알게 된 것(위 목록)을 이 글이 다시 설명함. 예: 이미 알려진 출입 규칙을 서술자가 처음인 듯 다시 풀어 줌. 앞 회차가 없으면 쓰지 않는다.
    - dump: 정의문, 설명 덩어리, 대놓고 정보를 말하는 대사. 예: 서술이 "X란 Y를 뜻하는 제도다"로 시작함, 인물들이 서로 이미 아는 사정을 독자에게 들려주려고 길게 말함.
    - flat: 중요한 사건 뒤에 인물의 반응(몸짓·말·생각)이 없어 밋밋함. 예: 가족의 부고를 들었는데 다음 문장에서 바로 저녁 메뉴 이야기로 넘어감.
@@ -205,8 +208,9 @@ func run(args []string, out io.Writer) int {
 	budget := fs.Int("budget", 0, "max model calls (default files x 3)")
 	coldOnly := fs.Bool("cold-only", false, "first-time-reader test only (calibration)")
 	statePath := fs.String("state", "", "reader-state file for every episode (default: <episode>.state.txt beside each episode, if present)")
+	first := fs.Bool("first", false, "the first file is episode 1: it may be read without a state and still PASS")
 	if fs.Parse(args) != nil || fs.NArg() == 0 {
-		fmt.Fprintln(out, "usage: readcheck --ref ref.txt [--model opus] [--budget N] [--cold-only] episode.md...")
+		fmt.Fprintln(out, "usage: readcheck --ref ref.txt [--model opus] [--budget N] [--cold-only] [--first] episode.md...")
 		return 2
 	}
 	if *refPath == "" {
@@ -247,13 +251,16 @@ func run(args []string, out io.Writer) int {
 		fmt.Fprintf(os.Stderr, "readcheck: warning: no state file for %s, but others have one (read as a first-time reader)\n", strings.Join(without, ", "))
 	}
 	allPass := true
-	for _, f := range fs.Args() {
+	for i, f := range fs.Args() {
 		if g.budget-g.used < need {
 			fmt.Fprintf(out, "%s SKIPPED(budget)\n", f)
 			allPass = false
 			continue
 		}
 		line, pass := g.episode(f, string(rb), states[f], paths[f], *coldOnly)
+		if pass && paths[f] == "none" && !(*first && i == 0) { // I4: a first-time reader's pass is not a full pass
+			line, pass = line+"(cold)", false
+		}
 		fmt.Fprintln(out, line)
 		allPass = allPass && pass
 	}

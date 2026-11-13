@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -67,7 +68,7 @@ func runFake(t *testing.T, resp []string, extra []string, eps ...string) (int, s
 	exe, _ := os.Executable()
 	t.Setenv("READCHECK_CLAUDE", exe)
 	t.Setenv("READCHECK_FAKE_RESP", rf)
-	args := append([]string{"--ref", ref}, extra...)
+	args := append([]string{"--ref", ref, "--first"}, extra...) // fixtures are episode 1; "--first=false" in extra overrides
 	for _, e := range eps {
 		p := filepath.Join(dir, e)
 		os.WriteFile(p, []byte("episode "+e), 0o644)
@@ -296,8 +297,9 @@ func TestColdPromptTermExcludesNames(t *testing.T) {
 }
 
 func TestPromptsAreMediumNeutral(t *testing.T) {
-	for _, p := range []string{coldPromptFor(""), coldPromptFor("용어 칩: x"), pairIntro} {
-		for _, bad := range []string{"novel", "소설", "옥호", "미닫이", "나루터"} {
+	// I3: no medium words, and nothing from the evaluated gildong work (its institutions) in any prompt
+	for _, p := range []string{coldPromptFor(""), coldPromptFor("용어 x: y"), pairIntro} {
+		for _, bad := range []string{"novel", "소설", "옥호", "미닫이", "나루터", "배급", "족보", "돔", "칩", "등급"} {
 			if strings.Contains(p, bad) {
 				t.Errorf("prompt contains %q", bad)
 			}
@@ -306,6 +308,28 @@ func TestPromptsAreMediumNeutral(t *testing.T) {
 	for _, want := range []string{"푸른 약국", "출입 규칙"} {
 		if !strings.Contains(coldPromptFor(""), want) {
 			t.Errorf("cold prompt lacks example %q", want)
+		}
+	}
+	// every quoted example must come from no work: corpus works, and the gildong outputs when that repo sits beside this one
+	var texts []string
+	for _, root := range []string{"../../corpus", "../../../gildong-dieg/out"} {
+		filepath.WalkDir(root, func(p string, d os.DirEntry, err error) error {
+			if err == nil && !d.IsDir() && strings.HasSuffix(p, ".md") {
+				b, _ := os.ReadFile(p)
+				texts = append(texts, string(b))
+			}
+			return nil
+		})
+	}
+	if len(texts) == 0 {
+		t.Fatal("no corpus works found")
+	}
+	for _, m := range regexp.MustCompile(`"([^"]*\p{Hangul}[^"]*)"`).FindAllStringSubmatch(coldBody, -1) {
+		for _, x := range texts {
+			if strings.Contains(x, m[1]) {
+				t.Errorf("cold prompt example %q occurs in a work", m[1])
+				break
+			}
 		}
 	}
 }
@@ -365,4 +389,27 @@ func captureStderr(t *testing.T, f func()) string {
 	w.Close()
 	b, _ := io.ReadAll(r)
 	return string(b)
+}
+
+// I4: an episode judged without a state file is a first-time reader's verdict: it prints PASS(cold), which does not
+// count for exit 0. --first declares the files start at episode 1, so only the first file may be read cold.
+func TestReadcheckColdVerdict(t *testing.T) {
+	ok := []string{cold(0, 0, 0, true), cold(0, 0, 0, true)}
+	code, out := runFake(t, ok, []string{"--cold-only", "--first=false"}, "ep02.md")
+	if code != 1 || !strings.Contains(out, "→ PASS(cold)") {
+		t.Errorf("stateless without --first: exit %d out %q", code, out)
+	}
+	code, out = runFake(t, ok, []string{"--cold-only"}, "ep01.md")
+	if code != 0 || !strings.Contains(out, "→ PASS\n") {
+		t.Errorf("--first, first file: exit %d out %q", code, out)
+	}
+	code, out = runFake(t, ok, []string{"--cold-only"}, "ep01.md", "ep02.md")
+	lines := strings.Split(strings.TrimSpace(out), "\n")
+	if code != 1 || !strings.HasSuffix(lines[0], "→ PASS") || !strings.HasSuffix(lines[1], "→ PASS(cold)") {
+		t.Errorf("--first, later stateless file: exit %d out %q", code, out)
+	}
+	code, out = runFake(t, []string{cold(3, 0, 0, true)}, []string{"--cold-only", "--first=false"}, "ep02.md")
+	if code != 1 || !strings.Contains(out, "→ FAIL") {
+		t.Errorf("stateless fail stays FAIL: exit %d out %q", code, out)
+	}
 }

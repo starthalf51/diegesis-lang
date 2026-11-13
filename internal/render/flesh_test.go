@@ -9,7 +9,7 @@ import (
 var fleshContract = []string{
 	"After each key act (speech, discovery, decision, reveal), give the point-of-view character's reaction — body, feeling, or thought.",
 	"sensory detail, gestures, small movements within the same place, the point-of-view character's inner thoughts, atmosphere.",
-	"new events; any change of possession, location (leaving the place), life or death, or relationship; new named characters or places; anything that contradicts the acts or facts; another character's unspoken thoughts in first person.",
+	"new events; new facts; any change of possession, location (leaving the place), life or death, or relationship; new named characters or places; anything that contradicts the acts or facts; another character's unspoken thoughts in first person.",
 }
 
 func TestFleshContract(t *testing.T) {
@@ -223,5 +223,38 @@ func TestFleshCardFails(t *testing.T) {
 	}
 	if rep := score(talk, ""); len(rep.Hallucinated)+len(rep.Warnings) != 0 {
 		t.Errorf("legacy coveredByIR: %v / %v", rep.Hallucinated, rep.Warnings)
+	}
+}
+
+// I1: under flesh "novel" a fact-less act covers only an event addition with the same action word (and speech
+// only with FreeDialogue); plot kinds are never covered. Legacy keeps the actor + verb-class match.
+func TestFleshCardCoverageKinds(t *testing.T) {
+	s := fleshScene()
+	s.Beats[0].Acts = append(s.Beats[0].Acts, Act{Actor: "min", Verb: "does", Action: "wait"})
+	score := func(flesh, other string) Report {
+		t.Helper()
+		f := &fakeCompleter{replies: []Result{tierReply(`{"items":[{"id":"E1","fact_present":"yes","as_stated":"yes","quote":"q"}],"withheld":[],"other":[` + other + `]}`)}}
+		r, err := ScoreCard(ctx, f, s, Backend{Lang: "en", Sample: StyleSample{Flesh: flesh}}, "prose", CardOpts{Tier2: "off"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r
+	}
+	for _, other := range []string{
+		`{"kind":"possession","actor":"min","verb":"does","action":"take","text":"민이 열쇠를 집었다","quote":"x"}`,
+		`{"kind":"life","actor":"min","verb":"does","action":"kill","text":"민이 경비를 죽였다","quote":"x"}`,
+		`{"kind":"location","actor":"min","verb":"does","action":"leave","text":"민이 도시로 떠났다","quote":"x"}`,
+		`{"kind":"event","actor":"min","verb":"does","action":"run","text":"민이 달렸다","quote":"x"}`,
+		`{"kind":"","actor":"min","verb":"does","action":"take","text":"민이 열쇠를 집었다","quote":"x"}`,
+	} {
+		if rep := score("novel", other); Passed(Render{Report: rep}) || len(rep.Hallucinated) != 1 {
+			t.Errorf("novel must fail %s: %v", other, rep.Hallucinated)
+		}
+		if rep := score("", other); len(rep.Hallucinated)+len(rep.Warnings) != 0 {
+			t.Errorf("legacy coveredByIR changed for %s: %v / %v", other, rep.Hallucinated, rep.Warnings)
+		}
+	}
+	if rep := score("novel", `{"kind":"event","actor":"min","verb":"does","action":"wait","text":"민이 기다렸다","quote":"x"}`); len(rep.Hallucinated)+len(rep.Warnings) != 0 {
+		t.Errorf("novel event with the act's action word is covered: %v / %v", rep.Hallucinated, rep.Warnings)
 	}
 }

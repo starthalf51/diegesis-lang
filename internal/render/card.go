@@ -338,7 +338,10 @@ func ScoreCard(ctx context.Context, c Completer, s Scene, b Backend, prose strin
 	}
 	for _, ev := range cd.other {
 		novel := s.Flesh == "novel"
-		covered := coveredByIR(s, ev) && !(novel && ev.Kind == "speech" && !s.FreeDialogue)
+		covered := coveredByIR(s, ev, false)
+		if novel { // I1: plot kinds are never covered; an event needs the act's action word, speech needs FreeDialogue
+			covered = ev.Kind == "event" && coveredByIR(s, ev, true) || ev.Kind == "speech" && s.FreeDialogue && covered
+		}
 		switch {
 		case s.authored(ev) || covered || s.texture(ev):
 		case novel:
@@ -390,14 +393,15 @@ func resolveCastID(s Scene, x string) string {
 
 // coveredByIR: an event that re-tells an author act with no fact (orders, asks, whispers, sees, etc.) is not invented.
 // authored() only looks at does and presence, so match the other verb classes by the same subject, same verb class and overlapping objects.
-func coveredByIR(s Scene, ev NewEvent) bool {
+// With action set (flesh "novel"), the act's action word must also match, as authored() requires.
+func coveredByIR(s Scene, ev NewEvent, action bool) bool {
 	actor := resolveCastID(s, ev.Actor)
 	if actor == "" {
 		return false
 	}
 	for _, bt := range s.Beats {
 		for _, a := range bt.Acts {
-			if a.Fact != "" || a.Actor != actor || VerbClass(a.Verb) != VerbClass(ev.Verb) {
+			if a.Fact != "" || a.Actor != actor || VerbClass(a.Verb) != VerbClass(ev.Verb) || action && !strings.EqualFold(a.Action, ev.Action) {
 				continue
 			}
 			if len(ev.Targets) == 0 || len(a.Targets) == 0 {
