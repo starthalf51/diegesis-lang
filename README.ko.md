@@ -238,6 +238,7 @@ go vet ./...
 | v0.12.0 | 플랜 14: 명작 측정 — `dieg convert-book`(장 단위 변환), 몰입 지수(017)·`dieg curve`(장별 곡선·골짜기), 구조미 지수(018, `bookend` 패턴), `tools/curvecheck`. 『모비 딕』 마의 구간 검증은 FAIL(「Cetology」가 곡선 꼭대기) |
 | v0.13.0 | 플랜 15: 독자 스택 — `term`·`render explain`·`narration`, 끌 수 없는 error 규칙 `reader-unknown-term`·`pov-offstage`·`pov-mind-leak`; 렌더 카드 용어(새 용어·아는 용어)와 조건부 독자 규칙; 문체 rules·lexicon·`--opening`; `tools/readcheck`(opus 처음 읽는 독자, error≤2·term 0·짝 비교 1/2, 예산 고정). 홍길동 1~3화 기능 검증은 FAIL |
 | v0.14.0 | 플랜 16: 뼈와 살 — 독자 스택 누적(첫 설명만 새 용어, `recap`, `term-re-explained`), 장면 설계 `design`(goal·turn·tempo, `scene-no-turn`), 살 계약 `flesh: "novel"`(반응 의무·질감 허용·줄거리 추가 실패, 카드 경로 포함), `explain … via`와 정의문·미렌더 용어 검사, `dieg reader-state`와 누적 readcheck(repeat·dump·flat, 기준작 「동백꽃」). 홍길동 1~3화 기능 검증은 FAIL(짝 비교 0/12) |
+| v0.15.0 | 플랜 17: 장면이 결단으로 착지 — `scene-ends-passive`(design·pov 장면의 마지막 행위가 시점 인물의 능동 행위가 아니면 경고)와 렌더 착지 규칙(design 이 있을 때만), `term-overload`(장면당 새 용어 3개 초과), `scene-no-turn` 을 design 이 있는 모듈로 한정, 렌더 실패 로그(missing·added(kind)·leaked). 홍길동 1~3화 기능 검증은 FAIL(짝 비교 1/24) |
 
 ## 라이선스
 
