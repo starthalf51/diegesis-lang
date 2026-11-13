@@ -57,7 +57,7 @@ func RenderVerified2(ctx context.Context, cs Completers, work string, s Scene, b
 		for _, m := range miss {
 			r.Report.Prose = append(r.Report.Prose, "term-unrendered: "+m)
 		}
-		if o.Log != nil {
+		if o.Log != nil && !Passed(r) {
 			if hits := factHits(s, b.Lang, r.Report); len(hits) > 0 {
 				o.Log(n, hits)
 			}

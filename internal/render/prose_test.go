@@ -139,4 +139,21 @@ func TestVerifyLogsFactFailures(t *testing.T) {
 	if _, _, err := RenderVerified(ctx, &recorder{replies: verifyReplies("p", good)}, "w", s, b, o); err != nil || len(log) != 0 {
 		t.Errorf("passed render logged %v", log)
 	}
+	// One missing act alone is within MaxMissing: the render passes and logs nothing.
+	one := extractedFromScene(s)
+	for i, a := range one.Acts {
+		if a.Fact != "" {
+			one.Acts = append(one.Acts[:i], one.Acts[i+1:]...)
+			break
+		}
+	}
+	raw, _ = json.Marshal(one)
+	log = nil
+	got, _, err = RenderVerified(ctx, &recorder{replies: verifyReplies("p", "```json\n"+string(raw)+"\n```")}, "w", s, b, o)
+	if err != nil || !Passed(got) || len(got.Report.Missing) != 1 {
+		t.Fatalf("want pass with one missing: err=%v %+v", err, got.Report)
+	}
+	if len(log) != 0 {
+		t.Errorf("passing render with one missing logged %v", log)
+	}
 }
