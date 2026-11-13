@@ -77,4 +77,6 @@ dieg write "<idea>" -o out/hybrid --code-model ollama:gemma4:26b --finish-model 
 
 `dieg convert <text.txt> -o <dir>` turns a public-domain story into Diegesis code (no render). Download texts with `go run ./tools/fetchtext -o data/raw gutenberg:<id>` or `wikisource-ko:<title>`.
 
+`go run ./tools/readcheck --ref corpus-eval/readcheck/ref-unsu.txt <episode.md>...` asks a first-time model reader (subscription `claude` CLI, opus, isolated) to judge rendered episodes against fixed thresholds and a fixed call budget → [corpus-eval/readcheck/README.md](../corpus-eval/readcheck/README.md).
+
 More: [docs index](README.md). Design notes and ADRs referenced there are not published.

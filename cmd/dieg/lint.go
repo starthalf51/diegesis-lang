@@ -15,7 +15,7 @@ import (
 
 // cmdLint runs `dieg lint <work|dir|ir.json> [--json] [--rules <dir>]`. A dir or ir.json is
 // built and loaded first; a bare name is a work already loaded. Exit 1 when
-// any unwaived warn remains.
+// any unwaived error or warn remains.
 func cmdLint(args []string) int {
 	var target string
 	var rulesDir string
@@ -97,7 +97,7 @@ func cmdLint(args []string) int {
 		if base != "" && ds[i].File != "" {
 			ds[i].File = filepath.ToSlash(filepath.Join(base, ds[i].File))
 		}
-		failed = failed || ds[i].Severity == "warn" && !ds[i].Waived
+		failed = failed || (ds[i].Severity == "error" || ds[i].Severity == "warn") && !ds[i].Waived
 	}
 	if asJSON {
 		if ds == nil {

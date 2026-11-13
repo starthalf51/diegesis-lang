@@ -166,6 +166,26 @@ scene 3.1 at court
 - To depart from the default disclosure rule, use `withhold P until <scene>` and `reveal P at <beat>`.
 - Dramatic irony is a span where the reader knows and the character does not. A mystery is a span where something is true but the reader does not yet know. Pattern queries output these spans as a **report** (not as a warning).
 
+### Terms
+
+A work-specific word is declared once with its surface forms and a gloss: `term <id> "<surface>" ["<surface2>"…] = "<gloss>"`. A shown scene explains it to the reader with `explain <id>[, <id>…]` in its `render` block. If a surface reaches the reader (fact text carried by an act, a quote, a `does` action, or `render focus`) as a whole word — Korean particles after it are allowed, so `"칩"` does not match `칩거` — before any scene at or before that point in the telling explains it, lint reports the error `reader-unknown-term`.
+
+<!-- check -->
+```sl
+module demo.terms
+
+work demo_terms
+character anna "Anna"
+term jokbo "족보" "족보 창" = "모든 시민의 신원과 배급을 묶은 국가 기록"
+fact burned "족보가 불탔다" true
+
+scene 1
+  enter anna
+  render
+    explain jokbo
+  anna says: burned
+```
+
 <!-- check -->
 ```sl
 module demo.reader
@@ -205,9 +225,10 @@ The full grammar is in [`spec/grammar.ebnf`](../spec/grammar.ebnf). Only the ske
 ```ebnf
 file        = header { top } ;
 header      = "module" qname NL { "import" qname NL } ;
-top         = work | decl | scene | event | account | setup | distance | parent | life
+top         = work | decl | term | scene | event | account | setup | distance | parent | life
             | belief | attribute | pattern | pragma ;
 decl        = kind ident [string {"," string}] [tier] ["=" prop] [bool] ["tag" ident] [BLOCK(attr)] ;
+term        = "term" ident string {[","] string} "=" string [BLOCK(attr)] ;
 kind        = "character"|"group"|"place"|"thing"|"faction"|"role"|"fact"|"artifact"|"thread" ;
 scene       = "scene" sid ["at" ident] ["in" ident] [BLOCK(stmt)] ;
 event       = "event" ident [string] [BLOCK(stmt)] ;              (* offstage event *)
@@ -224,7 +245,7 @@ setup       = "setup" ident ("promise"|"hint"|"symbol") ":" (prop|string) ;
 payoff      = "payoff" qname ;
 pragma      = "#!" "allow" ruleid ":" string ;                    (* attaches to the next statement *)
 render      = "render" BLOCK(rkey rvalue) ;
-rkey        = "pov"|"pace"|"tension"|"focus"|"omit"|"show" ;
+rkey        = "pov"|"pace"|"tension"|"focus"|"omit"|"show"|"explain"|"narration" ;
 ```
 
 ## Deliberately left out

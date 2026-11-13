@@ -90,8 +90,26 @@ func (w *walker) stmt(n syntax.Node) (string, string) {
 		return "withhold", c.id
 	case *syntax.Render:
 		for _, e := range n.Entries {
+			vals := append([]string{}, e.Values...)
+			if e.Key == "pov" { // the stored value stays as written; only checked here
+				for _, v := range e.Values[:1] {
+					b.want(m, syntax.Ident{Pos: e.Pos, Name: v}, "pov character", "character")
+				}
+			}
+			if e.Key == "narration" && (len(e.Values) != 1 || (e.Values[0] != "first-person" && e.Values[0] != "third-person")) {
+				b.errf(e.Pos, "arg-kind", "narration takes first-person or third-person")
+				continue
+			}
+			if e.Key == "explain" { // values are term ids
+				vals = []string{}
+				for _, v := range e.Values {
+					if id := b.want(m, syntax.Ident{Pos: e.Pos, Name: v}, "explained term", "term"); id != "" {
+						vals = append(vals, id)
+					}
+				}
+			}
 			m.out.Directives = append(m.out.Directives, ir.Directive{SceneID: c.id, Key: e.Key,
-				Values: append([]string{}, e.Values...), SrcID: b.srcID(e.Pos)})
+				Values: vals, SrcID: b.srcID(e.Pos)})
 		}
 		return "directive", c.id
 	case *syntax.Setup:

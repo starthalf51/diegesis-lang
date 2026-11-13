@@ -41,6 +41,8 @@ func (d Diagnostic) String() string {
 	s := fmt.Sprintf("%s:%d:%d: %s %s: %s", d.File, d.Line, d.Col, d.Severity, d.Rule, d.Message)
 	if d.Waived {
 		s += " [waived: " + d.Reason + "]"
+	} else if d.Reason != "" && d.Severity == "error" {
+		s += " (error: cannot be waived)"
 	}
 	return s
 }
@@ -80,8 +82,8 @@ func Rules(dir fs.FS) ([]Rule, error) {
 		switch {
 		case r.ID != strings.TrimSuffix(path.Base(p), ".sql"):
 			return fmt.Errorf("%s: header rule %q must match the file name", p, r.ID)
-		case r.Severity != "warn" && r.Severity != "info":
-			return fmt.Errorf("%s: severity %q, want warn|info", p, r.Severity)
+		case r.Severity != "error" && r.Severity != "warn" && r.Severity != "info":
+			return fmt.Errorf("%s: severity %q, want error|warn|info", p, r.Severity)
 		case r.Layer != "lint" && r.Layer != "derive":
 			return fmt.Errorf("%s: layer %q, want lint|derive", p, r.Layer)
 		}
@@ -128,9 +130,10 @@ UPDATE diagnostic d SET src_id = t.src_id FROM (
 ) t WHERE d.work_id = $1 AND d.run_id = $2 AND d.src_id IS NULL AND t.k = d.target_kind AND t.id = d.target_id`
 
 // Suppression: only waivers whose rule and target (kind, id) match exactly (Review Focus 1). Also applied to derive diagnostics.
+// An error is never suppressed (ruling T1-R2): the matching waiver only shows up as Reason.
 const applyWaivers = `
 UPDATE diagnostic d SET waived = true
- WHERE d.work_id = $1 AND d.run_id IN ($2, 'derive') AND NOT d.waived AND EXISTS (
+ WHERE d.work_id = $1 AND d.run_id IN ($2, 'derive') AND NOT d.waived AND d.severity <> 'error' AND EXISTS (
    SELECT 1 FROM waiver v WHERE v.work_id = $1 AND v.rule = d.rule_id
       AND v.target_kind = d.target_kind AND v.target_id = d.target_id)`
 
@@ -256,8 +259,8 @@ func runRule(ctx context.Context, tx pgx.Tx, r Rule, work string) ([]ruleRow, er
 		if s := str(v, "severity"); s != "" {
 			x.severity = s
 		}
-		if x.severity != "warn" && x.severity != "info" {
-			return nil, fmt.Errorf("%s: row severity %q, want warn|info", r.Path, x.severity)
+		if x.severity != "error" && x.severity != "warn" && x.severity != "info" {
+			return nil, fmt.Errorf("%s: row severity %q, want error|warn|info", r.Path, x.severity)
 		}
 		if i, ok := col["src_id"]; ok {
 			x.src = v[i]

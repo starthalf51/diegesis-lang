@@ -153,7 +153,7 @@ func Judge(e *Expect, in Input) Result {
 	}
 	for i, d := range in.Diags {
 		switch {
-		case matched[i] || d.Severity != "warn":
+		case matched[i] || !finding(d.Severity):
 		case !d.Waived:
 			r.FalsePositives = append(r.FalsePositives, d)
 			fail("false positive: %s", d)
@@ -343,3 +343,6 @@ func mutantTables(b *strings.Builder, work string, ms []Mutant) {
 func shortAll(work, s string) string { return strings.ReplaceAll(s, work+"/", "") }
 
 func cell(s string) string { return strings.NewReplacer("|", "\\|", "\n", " ").Replace(s) }
+
+// finding: warn and error diagnostics are findings (expectations, false positives, mutant kills); info is a report.
+func finding(sev string) bool { return sev == "warn" || sev == "error" }

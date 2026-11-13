@@ -53,6 +53,23 @@ func (c *cur) decl() Node {
 	if reserved[d.ID.Name] {
 		c.p.errAt(d.ID.Pos, "syntax", "reserved word used as id: %q", d.ID.Name)
 	}
+	if d.Kind == "term" { // term ident string {[","] string} "=" string
+		for s, ok := c.str(); ok; s, ok = c.str() {
+			d.Names = append(d.Names, s)
+			c.accept(",")
+		}
+		if len(d.Names) == 0 {
+			c.fail("term needs at least one surface string, found %s", describe(c.peek()))
+		}
+		c.expect("=")
+		if d.Gloss, _ = c.str(); d.Gloss == "" {
+			c.fail("expected gloss string after \"=\", found %s", describe(c.peek()))
+		}
+		c.end()
+		c.p.declare("decl", d.ID)
+		d.Attrs = c.children((*cur).attr)
+		return d
+	}
 	if s, ok := c.str(); ok {
 		d.Names = append(d.Names, s)
 		for c.accept(",") {

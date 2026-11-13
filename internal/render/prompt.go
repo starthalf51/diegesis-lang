@@ -15,7 +15,7 @@ const (
 
 var langName = map[string]string{"ko": "Korean", "en": "English"}
 
-// BuildPrompt returns a cacheable system prompt (fixed per variant/lang/style)
+// BuildPrompt returns a cacheable system prompt (fixed per variant/lang/style and the reader-stack flags: terms present, narration)
 // and a per-scene user prompt. Variant a ignores style; b and c require a style in lang.
 func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, user string, err error) {
 	ln, ok := langName[lang]
@@ -51,11 +51,41 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	sb.WriteString("- Never state or imply any fact listed under \"Must not state or imply\", not even as a hint, a foreshadowing, or a character's guess.\n")
 	sb.WriteString("- A fact marked false is only what a character says, believes or pretends. Never state it in the narrator's own voice as what happened.\n")
 	sb.WriteString("- Stay in the stated point of view. Use the people's names in the scene's language.\n")
+	hasTerms := len(s.TermsNew)+len(s.TermsKnown) > 0
+	if hasTerms {
+		sb.WriteString("- Do not coin new jargon: any work-specific word must be one of the listed terms.\n")
+	}
+	if hasTerms || s.Narration != "" {
+		sb.WriteString("- Never nest narration inside a quote; a quote is only what the character says aloud.\n")
+	}
+	if s.Narration == "first-person" {
+		sb.WriteString("- In first-person narration, never report another character's unspoken thoughts.\n")
+	}
 	fmt.Fprintf(&sb, "- Output only the prose, written in %s. No title, headings, notes, or commentary.\n", ln)
-	if style != nil {
+	if style != nil && style.Text != "" {
 		sb.WriteString("\nWrite in the prose style of the following sample. Imitate its voice, rhythm, and diction, not its content.\n\n<style_sample>\n")
 		sb.WriteString(style.Text)
 		sb.WriteString("\n</style_sample>\n")
+	}
+	if style != nil && len(style.Rules) > 0 {
+		sb.WriteString("\nStyle rules:\n")
+		for _, r := range style.Rules {
+			fmt.Fprintf(&sb, "- %s\n", r)
+		}
+	}
+	if style != nil && len(style.Lexicon) > 0 {
+		sb.WriteString("\nWord choices:\n")
+		for _, l := range style.Lexicon {
+			fmt.Fprintf(&sb, "- use %q for %s", l.Use, l.For)
+			if len(l.Avoid) > 0 {
+				q := make([]string, len(l.Avoid))
+				for i, a := range l.Avoid {
+					q[i] = fmt.Sprintf("%q", a)
+				}
+				fmt.Fprintf(&sb, "; never %s", strings.Join(q, ", "))
+			}
+			sb.WriteString("\n")
+		}
 	}
 	system = sb.String()
 
@@ -126,6 +156,18 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 			fmt.Fprintf(&sb, "Narration: first person, as %s\n", name(s.Directives.POV))
 		}
 	}
+	if len(s.TermsNew) > 0 {
+		sb.WriteString("\n## New terms — introduce each to a reader who has never heard it, inside the story, using its meaning\n")
+		for _, t := range s.TermsNew {
+			fmt.Fprintf(&sb, "- %s: %s\n", t.Surface, t.Gloss)
+		}
+	}
+	if len(s.TermsKnown) > 0 {
+		sb.WriteString("\n## Terms the reader already knows\n")
+		for _, t := range s.TermsKnown {
+			fmt.Fprintf(&sb, "- %s\n", t.Surface)
+		}
+	}
 	factList("The point-of-view character believes", s.POVBeliefs)
 	factList("The reader already knows", s.ReaderKnows)
 	factList("Must not state or imply", s.Withheld)
@@ -138,6 +180,13 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 		if len(d.Omit) > 0 {
 			fmt.Fprintf(&sb, "- omit: %s\n", strings.Join(d.Omit, "; "))
 		}
+	}
+	if s.Opening {
+		op := "The first sentence must hook a first-time reader: one concrete, surprising situation in the narrator's voice, no setting summary."
+		if style != nil && style.Opening != "" {
+			op = style.Opening
+		}
+		fmt.Fprintf(&sb, "\n## Opening sentence\n%s\n", op)
 	}
 	return system, sb.String(), nil
 }

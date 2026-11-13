@@ -125,6 +125,10 @@ func (b *builder) declItem(m *module, d *syntax.Decl) (string, string) {
 	default:
 		ent = &ir.Entity{ID: id, WorkID: b.work, ModuleID: m.id, Kind: d.Kind, Tier: d.Tier, Name: name, SrcID: src}
 	}
+	if d.Kind == "term" { // surfaces are its names; the gloss is a str attribute true from the start
+		m.out.Attributes = append(m.out.Attributes, ir.Attribute{ID: id + "#gloss", EntityID: id, Key: "gloss",
+			Value: d.Gloss, Kind: "str", SrcID: src})
+	}
 	if d.Tag != "" && d.Kind != "fact" {
 		b.errf(d.ID.Pos, "arg-kind", "tag applies only to facts, not %s %q", d.Kind, d.ID.Name)
 	}
