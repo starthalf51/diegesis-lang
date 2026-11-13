@@ -12,8 +12,11 @@ func TestProseDefinitions(t *testing.T) {
 		{"족보란 시민 원장을 말한다.", "ko", "족보"},
 		{"A dome is a sealed habitat.", "en", "dome"},
 		{"This is called the Ledger.", "en", "Ledger"},
+		{"족보란 시민 원장을 말했다.", "ko", "족보"},
+		{"족보는 시민 원장이라고 불렸다.", "ko", "족보"},
+		{`"그만해." 돔은 사람이 숨 쉬는 구역이다.`, "ko", "돔"},
 	} {
-		if got := ProseDefinitions(tc.prose, tc.lang, []string{tc.surf}); len(got) != 1 || got[0] != tc.prose {
+		if got := ProseDefinitions(tc.prose, tc.lang, []string{tc.surf}); len(got) != 1 || !strings.HasSuffix(tc.prose, got[0]) {
 			t.Errorf("%q: got %v, want the sentence", tc.prose, got)
 		}
 	}
@@ -23,6 +26,9 @@ func TestProseDefinitions(t *testing.T) {
 		{"나는 돔 안에 있었다.", "ko", "돔"},
 		{`He said, "A dome is a cage." Then he left.`, "en", "dome"},
 		{"The dome was like a prison.", "en", "dome"},
+		{"돔은 텅 빈 공간이었다.", "ko", "돔"},
+		{"The dome was a mess.", "en", "dome"},
+		{"The dome was a long way off.", "en", "dome"},
 	} {
 		if got := ProseDefinitions(tc.prose, tc.lang, []string{tc.surf}); len(got) != 0 {
 			t.Errorf("%q: should not be flagged, got %v", tc.prose, got)
@@ -38,6 +44,9 @@ func TestUnrenderedTerms(t *testing.T) {
 	got := UnrenderedTerms("그는 돔을 올려다보았다.", []string{"돔", "족보"})
 	if !slices.Equal(got, []string{"족보"}) {
 		t.Errorf("got %v", got)
+	}
+	if got := UnrenderedTerms("The Dome loomed.", []string{"dome"}); len(got) != 0 {
+		t.Errorf("case: %v", got)
 	}
 	if got := UnrenderedTerms("돔 족보", []string{"돔", "족보"}); len(got) != 0 {
 		t.Errorf("got %v", got)
