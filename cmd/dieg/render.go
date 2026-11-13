@@ -137,7 +137,7 @@ func renderOnce(target, scene, id, out, styles string, verify, opening bool, ret
 	var text string
 	pass := true
 	if verify {
-		r, n, err := render.RenderVerified2(context.Background(), render.Completers{Render: render.NewCompleter(rm, re), Extract: render.NewCompleter(xm, "low")}, target, s, b, render.VerifyOpts{K: 1, Retries: retries, Verifier: verifier})
+		r, n, err := render.RenderVerified2(context.Background(), render.Completers{Render: render.NewCompleter(rm, re), Extract: render.NewCompleter(xm, "low")}, target, s, b, render.VerifyOpts{K: 1, Retries: retries, Verifier: verifier, Log: logProseHits})
 		if err != nil {
 			return false, err
 		}
@@ -369,4 +369,11 @@ func or(s, d string) string {
 		return d
 	}
 	return s
+}
+
+// logProseHits prints the prose-check hits of one failed attempt, one line each.
+func logProseHits(attempt int, hits []string) {
+	for _, h := range hits {
+		fmt.Fprintf(os.Stderr, "verify: attempt %d %s\n", attempt, h)
+	}
 }

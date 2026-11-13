@@ -17,6 +17,8 @@ type VerifyOpts struct {
 	// StateRm, StateAd (PatchVerified only): world-state lines that left / entered the digest since the old prose was
 	// written. They join the scene diff, so a patch for a scene whose own request did not change still has a diff.
 	StateRm, StateAd []string
+	// Log, if set, receives each attempt's prose-check hits ("prose-definition: <sentence>" / "term-unrendered: <surface>").
+	Log func(attempt int, hits []string)
 }
 
 // Passed is whether the fact criteria pass. The open path is ADR-019 (hallucination 0, leak 0, missing ≤ MaxMissing); the card path is ADR-028 (leak 0, missing+wrong kind ≤ 1, G2 is a warning only — Hallucinated is always empty; under flesh "novel", T3-R2, plot additions are Hallucinated and fail).
@@ -48,7 +50,16 @@ func RenderVerified2(ctx context.Context, cs Completers, work string, s Scene, b
 			return r, n, err
 		}
 		defs, miss := proseIssues(s, b.Lang, r)
-		r.Report.Prose = append(append([]string{}, defs...), miss...)
+		r.Report.Prose = nil
+		for _, d := range defs {
+			r.Report.Prose = append(r.Report.Prose, "prose-definition: "+d)
+		}
+		for _, m := range miss {
+			r.Report.Prose = append(r.Report.Prose, "term-unrendered: "+m)
+		}
+		if o.Log != nil && len(r.Report.Prose) > 0 {
+			o.Log(n, r.Report.Prose)
+		}
 		if Passed(r) || n > o.Retries {
 			return r, n, nil
 		}

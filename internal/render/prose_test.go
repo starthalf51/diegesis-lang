@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -84,5 +85,22 @@ func TestVerifyProseChecksFeedback(t *testing.T) {
 	r = &recorder{replies: verifyReplies("A dome is a sealed habitat.", good)}
 	if _, n, _ = RenderVerified(ctx, r, "w", s, b, VerifyOpts{K: 1, Retries: 2}); n != 1 {
 		t.Errorf("no-terms scene retried: n=%d", n)
+	}
+}
+
+// Every attempt's prose-check hits reach VerifyOpts.Log, tagged, and stay in Report.Prose.
+func TestVerifyLogsProseHits(t *testing.T) {
+	s, b, good, _ := verifyFixture(t)
+	s.TermsNew = []Term{{Surface: "dome", Gloss: "a sealed habitat"}}
+	r := &recorder{replies: verifyReplies("A dome is a sealed habitat.", good, "He walked.", good, "The dome loomed.", good)}
+	var log []string
+	got, n, err := RenderVerified(ctx, r, "w", s, b, VerifyOpts{K: 1, Retries: 2, Log: func(n int, hits []string) {
+		for _, h := range hits {
+			log = append(log, fmt.Sprintf("%d %s", n, h))
+		}
+	}})
+	want := []string{"1 prose-definition: A dome is a sealed habitat.", "2 term-unrendered: dome"}
+	if err != nil || n != 3 || !Passed(got) || !slices.Equal(log, want) {
+		t.Fatalf("n=%d err=%v log=%q", n, err, log)
 	}
 }
