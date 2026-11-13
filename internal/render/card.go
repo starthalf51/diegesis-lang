@@ -346,6 +346,12 @@ func ScoreCard(ctx context.Context, c Completer, s Scene, b Backend, prose strin
 		case s.authored(ev) || covered || s.texture(ev):
 		case novel:
 			rep.Hallucinated = append(rep.Hallucinated, ev.Label())
+			if ev.Kind != "" {
+				if rep.Kinds == nil {
+					rep.Kinds = map[string]string{}
+				}
+				rep.Kinds[ev.Label()] = ev.Kind
+			}
 		default:
 			rep.Warnings = append(rep.Warnings, ev.Label())
 		}

@@ -7,14 +7,15 @@ import (
 
 // Report is the diff verdict. ExtractError is set by the runner, never by Diff.
 type Report struct {
-	Missing      []string `json:"missing"`
-	Hallucinated []string `json:"hallucinated"`
-	Leaked       []string `json:"leaked"`
-	ExtractError string   `json:"extract_error"`
-	Warnings     []string `json:"warnings,omitempty"`
-	Scores       *Scores  `json:"scores,omitempty"`
-	Patched      bool     `json:"patched,omitempty"` // final prose came from a sentence patch, not a full render
-	Prose        []string `json:"prose,omitempty"`   // term-prose check failures: definition sentences, unrendered terms
+	Missing      []string          `json:"missing"`
+	Hallucinated []string          `json:"hallucinated"`
+	Leaked       []string          `json:"leaked"`
+	ExtractError string            `json:"extract_error"`
+	Warnings     []string          `json:"warnings,omitempty"`
+	Scores       *Scores           `json:"scores,omitempty"`
+	Patched      bool              `json:"patched,omitempty"` // final prose came from a sentence patch, not a full render
+	Prose        []string          `json:"prose,omitempty"`   // term-prose check failures: definition sentences, unrendered terms
+	Kinds        map[string]string `json:"-"`                 // Hallucinated label -> flesh kind, for logs only
 }
 
 // VerbClass collapses synonyms; an unknown verb is its own class so it never silently matches.
@@ -40,6 +41,7 @@ func actKey(actor, verb, fact string) string { return actor + "|" + VerbClass(ve
 func Diff(s Scene, e Extracted) Report {
 	got := map[string]int{}
 	hall, leak := set{}, set{}
+	kinds := map[string]string{}
 	withheld := map[string]bool{}
 	for _, id := range s.Withheld {
 		withheld[s.Canon(id)] = true
@@ -65,6 +67,9 @@ func Diff(s Scene, e Extracted) Report {
 	for _, n := range e.NewEvents {
 		if !s.authored(n) && !s.texture(n) {
 			hall[n.Label()] = true
+			if n.Kind != "" {
+				kinds[n.Label()] = n.Kind
+			}
 		}
 	}
 	want := map[string]int{}
@@ -97,7 +102,7 @@ func Diff(s Scene, e Extracted) Report {
 		}
 	}
 	sort.Strings(halluc)
-	return Report{Missing: miss, Hallucinated: halluc, Leaked: leak.sorted()}
+	return Report{Missing: miss, Hallucinated: halluc, Leaked: leak.sorted(), Kinds: kinds}
 }
 
 // texture reports whether a new_event is texture the flesh contract allows: only kind "texture" under flesh "novel".
