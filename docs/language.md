@@ -179,7 +179,7 @@ design
   tempo scene
 ```
 
-The renderer adds a `## Scene design` section only when a scene has a design entry. Lint `scene-no-turn` (warn) reports shown scenes without a `turn`, but only in a work where some scene has a design block.
+The renderer adds a `## Scene design` section only when a scene has a design entry. Lint `scene-no-turn` (warn) reports shown scenes without a `turn`, but only in a module (file) where some scene has a design block.
 
 <!-- check -->
 ```sl

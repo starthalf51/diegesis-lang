@@ -68,6 +68,9 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	if s.Narration == "first-person" {
 		sb.WriteString("- In first-person narration, never report another character's unspoken thoughts.\n")
 	}
+	if s.Goal.Text != "" || s.Turn.To != "" || s.Tempo != "" {
+		sb.WriteString("- End the scene on its last act, told as the point-of-view character's decision or action; add no action, movement or speech after it.\n")
+	}
 	fmt.Fprintf(&sb, "- Output only the prose, written in %s. No title, headings, notes, or commentary.\n", ln)
 	if style != nil && style.Text != "" {
 		sb.WriteString("\nWrite in the prose style of the following sample. Imitate its voice, rhythm, and diction, not its content.\n\n<style_sample>\n")

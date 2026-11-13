@@ -1,6 +1,7 @@
 package render
 
 import (
+	"encoding/json"
 	"fmt"
 	"slices"
 	"strings"
@@ -102,5 +103,57 @@ func TestVerifyLogsProseHits(t *testing.T) {
 	want := []string{"1 prose-definition: A dome is a sealed habitat.", "2 term-unrendered: dome"}
 	if err != nil || n != 3 || !Passed(got) || !slices.Equal(log, want) {
 		t.Fatalf("n=%d err=%v log=%q", n, err, log)
+	}
+}
+
+// A failed attempt logs its missing, added (with kind) and leaked items; a passed one logs nothing.
+func TestVerifyLogsFactFailures(t *testing.T) {
+	s, b, good, _ := verifyFixture(t)
+	e := extractedFromScene(s)
+	for i, a := range e.Acts {
+		if a.Fact != "" {
+			e.Acts = append(e.Acts[:i], e.Acts[i+1:]...)
+			break
+		}
+	}
+	e.FactsStated = append(e.FactsStated, "letter_forged")
+	e.NewEvents = []NewEvent{{Kind: "possession", Text: "Zhou Yu takes the key"}}
+	raw, _ := json.Marshal(e)
+	var log []string
+	o := VerifyOpts{K: 1, Retries: 0, Log: func(n int, hits []string) {
+		for _, h := range hits {
+			log = append(log, fmt.Sprintf("%d %s", n, h))
+		}
+	}}
+	got, _, err := RenderVerified(ctx, &recorder{replies: verifyReplies("p", "```json\n"+string(raw)+"\n```")}, "w", s, b, o)
+	if err != nil || Passed(got) {
+		t.Fatalf("err=%v %+v", err, got.Report)
+	}
+	joined := strings.Join(log, "\n")
+	for _, want := range []string{"1 missing: ", "1 added(possession): Zhou Yu takes the key", "1 leaked: "} {
+		if !strings.Contains(joined, want) {
+			t.Errorf("log lacks %q:\n%s", want, joined)
+		}
+	}
+	log = nil
+	if _, _, err := RenderVerified(ctx, &recorder{replies: verifyReplies("p", good)}, "w", s, b, o); err != nil || len(log) != 0 {
+		t.Errorf("passed render logged %v", log)
+	}
+	// One missing act alone is within MaxMissing: the render passes and logs nothing.
+	one := extractedFromScene(s)
+	for i, a := range one.Acts {
+		if a.Fact != "" {
+			one.Acts = append(one.Acts[:i], one.Acts[i+1:]...)
+			break
+		}
+	}
+	raw, _ = json.Marshal(one)
+	log = nil
+	got, _, err = RenderVerified(ctx, &recorder{replies: verifyReplies("p", "```json\n"+string(raw)+"\n```")}, "w", s, b, o)
+	if err != nil || !Passed(got) || len(got.Report.Missing) != 1 {
+		t.Fatalf("want pass with one missing: err=%v %+v", err, got.Report)
+	}
+	if len(log) != 0 {
+		t.Errorf("passing render with one missing logged %v", log)
 	}
 }

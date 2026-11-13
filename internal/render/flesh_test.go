@@ -258,3 +258,16 @@ func TestFleshCardCoverageKinds(t *testing.T) {
 		t.Errorf("novel event with the act's action word is covered: %v / %v", rep.Hallucinated, rep.Warnings)
 	}
 }
+
+// The card path keeps the addition's kind for the verify log.
+func TestFleshCardKeepsKind(t *testing.T) {
+	s := fleshScene()
+	f := &fakeCompleter{replies: []Result{tierReply(`{"items":[{"id":"E1","fact_present":"yes","as_stated":"yes","quote":"q"}],"withheld":[],"other":[{"kind":"possession","actor":"min","verb":"does","action":"take","text":"민이 열쇠를 집었다","quote":"x"}]}`)}}
+	rep, err := ScoreCard(ctx, f, s, Backend{Lang: "en", Sample: StyleSample{Flesh: "novel"}}, "prose", CardOpts{Tier2: "off"})
+	if err != nil || rep.Kinds["민이 열쇠를 집었다"] != "possession" {
+		t.Fatalf("err=%v %+v", err, rep)
+	}
+	if got := factHits(s, "en", rep); len(got) == 0 || !strings.Contains(strings.Join(got, "\n"), "added(possession): 민이 열쇠를 집었다") {
+		t.Errorf("hits %v", got)
+	}
+}

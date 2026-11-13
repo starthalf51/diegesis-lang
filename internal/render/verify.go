@@ -17,7 +17,7 @@ type VerifyOpts struct {
 	// StateRm, StateAd (PatchVerified only): world-state lines that left / entered the digest since the old prose was
 	// written. They join the scene diff, so a patch for a scene whose own request did not change still has a diff.
 	StateRm, StateAd []string
-	// Log, if set, receives each attempt's prose-check hits ("prose-definition: <sentence>" / "term-unrendered: <surface>").
+	// Log, if set, receives each failed attempt's hits: "missing: …", "added(<kind>): …", "leaked: …" and the prose-check hits ("prose-definition: <sentence>" / "term-unrendered: <surface>").
 	Log func(attempt int, hits []string)
 }
 
@@ -56,6 +56,11 @@ func RenderVerified2(ctx context.Context, cs Completers, work string, s Scene, b
 		}
 		for _, m := range miss {
 			r.Report.Prose = append(r.Report.Prose, "term-unrendered: "+m)
+		}
+		if o.Log != nil && !Passed(r) {
+			if hits := factHits(s, b.Lang, r.Report); len(hits) > 0 {
+				o.Log(n, hits)
+			}
 		}
 		if o.Log != nil && len(r.Report.Prose) > 0 {
 			o.Log(n, r.Report.Prose)
@@ -152,4 +157,23 @@ func proseFeedback(defs, miss []string) string {
 		}
 	}
 	return b.String()
+}
+
+// factHits lists a failed attempt's missing, added and leaked items for the log, human-readable. Empty when none.
+func factHits(s Scene, lang string, rep Report) []string {
+	var out []string
+	for _, m := range rep.Missing {
+		out = append(out, "missing: "+describe(s, lang, m))
+	}
+	for _, h := range rep.Hallucinated {
+		tag := "added"
+		if k := rep.Kinds[h]; k != "" {
+			tag += "(" + k + ")"
+		}
+		out = append(out, tag+": "+describe(s, lang, strings.TrimPrefix(strings.TrimPrefix(h, "extra-act:"), "unknown-fact:")))
+	}
+	for _, l := range rep.Leaked {
+		out = append(out, "leaked: "+describe(s, lang, l))
+	}
+	return out
 }
