@@ -171,3 +171,33 @@ func TestReadcheckOpenIgnoredLegacyRejected(t *testing.T) {
 		t.Errorf("legacy: exit %d %q", code, out)
 	}
 }
+
+func TestReadcheckPickFirstLineOnly(t *testing.T) {
+	for in, want := range map[string]bool{"Both are good.\nA is better": false, "B.\nwhy": true, "\n\nA\nwhy": true, "Warning: this sign-in ends\nA\nwhy": true, "A is better": false} {
+		if _, ok := parsePick(in); ok != want {
+			t.Errorf("parsePick(%q) ok=%v want %v", in, ok, want)
+		}
+	}
+	if v, _ := parsePick("B."); v != "B" {
+		t.Errorf("B. -> %q", v)
+	}
+}
+
+func TestReadcheckEmptySummary(t *testing.T) {
+	empty := `{"summary":"  ","confusions":[],"continue":true}`
+	code, out := runFake(t, []string{empty, cold(3, 0, 0, true), "A", "B"}, []string{"--budget", "6"}, "ep.md")
+	if code != 1 || !strings.Contains(out, "error=3") || !strings.Contains(out, "calls=4/6") {
+		t.Errorf("exit %d out %q", code, out)
+	}
+}
+
+func TestReadcheckColdOnlyExit(t *testing.T) {
+	code, _ := runFake(t, []string{cold(3, 0, 0, true)}, []string{"--cold-only"}, "ep.md")
+	if code != 1 {
+		t.Errorf("cold-only fail exit %d", code)
+	}
+	code, _ = runFake(t, []string{cold(0, 0, 0, true)}, []string{"--cold-only"}, "ep.md")
+	if code != 0 {
+		t.Errorf("cold-only pass exit %d", code)
+	}
+}

@@ -65,14 +65,19 @@ func parseCold(s string) (coldRead, bool) {
 	return coldRead{}, false
 }
 
-var pickRe = regexp.MustCompile(`^\W*([AB])(\W|$)`)
+var pickRe = regexp.MustCompile("^[*'\"` ]*([AB])[*'\"` ]*[.!:]?$")
 
-// parsePick returns the first line that starts with A or B.
+// parsePick decides on the first non-empty line only (known CLI warning lines dropped); it must be exactly A or B.
 func parsePick(s string) (string, bool) {
 	for _, l := range strings.Split(s, "\n") {
-		if m := pickRe.FindStringSubmatch(strings.TrimSpace(l)); m != nil {
+		l = strings.TrimSpace(l)
+		if l == "" || strings.HasPrefix(l, "Warning:") || strings.HasPrefix(l, "Permission allow rule") {
+			continue
+		}
+		if m := pickRe.FindStringSubmatch(l); m != nil {
 			return m[1], true
 		}
+		return "", false
 	}
 	return "", false
 }
@@ -223,7 +228,7 @@ func (c coldRead) confusions() []confusion {
 
 // valid requires a summary and a confusions array whose kinds are all known; kinds are normalised in place.
 func (c *coldRead) valid() bool {
-	if c.Summary == nil || c.Confusions == nil {
+	if c.Summary == nil || strings.TrimSpace(*c.Summary) == "" || c.Confusions == nil {
 		return false
 	}
 	cs := *c.Confusions
