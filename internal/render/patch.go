@@ -239,6 +239,9 @@ func patchFeedback(s Scene, lang string, rep Report) string {
 	for _, l := range rep.Leaked {
 		b.WriteString("- 드러나면 안 되는 내용이 드러났다. 지울 것: " + describe(s, lang, l) + "\n")
 	}
+	for _, h := range rep.Hallucinated { // card Hallucinated is non-empty only under flesh "novel" (T3-R2)
+		b.WriteString("- 장면에 없는 내용을 덧붙였다. 지울 것: " + h + "\n")
+	}
 	if rep.ExtractError != "" {
 		b.WriteString("- 검수 오류: " + rep.ExtractError + "\n")
 	}
@@ -252,7 +255,7 @@ func PatchVerified(ctx context.Context, cs Completers, work string, old, nw Scen
 	rm, ad := SceneDiff(old, nw)
 	rm, ad = append(rm, prefixed(o.StateRm)...), append(ad, prefixed(o.StateAd)...)
 	diff, sys := diffText(rm, ad), patchSystem(b, nw)
-	r := Render{Work: work, Scene: nw.ID, Backend: b.ID, Lang: b.Lang, Tone: b.Tone}
+	r := Render{Work: work, Scene: nw.ID, Backend: b.ID, Lang: b.Lang, Tone: b.Tone, Flesh: b.Sample.Flesh}
 	ps, pu, err := b.Prompt(nw)
 	if err != nil {
 		return r, 0, err

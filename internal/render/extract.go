@@ -29,6 +29,7 @@ type NewEvent struct {
 	Targets []string `json:"targets"`
 	Action  string   `json:"action"`
 	Text    string   `json:"text"`
+	Kind    string   `json:"kind,omitempty"` // flesh "novel": event, possession, location, life, relationship, name, contradiction, fact, mind, speech, or texture
 }
 
 func (n *NewEvent) UnmarshalJSON(b []byte) error {
@@ -54,6 +55,11 @@ func (n NewEvent) Label() string {
 	return strings.TrimSpace(n.Actor + " " + n.Verb + " " + n.Action + " " + strings.Join(n.Targets, ","))
 }
 
+const legacyNewEvents = `- new_events: plot events only: an action or revelation that changes the situation, not already reported in acts, and not covered by any listed fact. Ignore description, gesture, setting, and manner. Each as an object {`
+
+// fleshNewEvents is the plot-bearing-only rule for flesh "novel": texture is not reported, so it never reaches Hallucinated.
+const fleshNewEvents = `- new_events: plot-bearing additions only, not already reported in acts and not covered by any listed fact: a new event; any change of possession, location (a character leaving the place), life or death, or relationship; a new named character or place; a revelation of a new fact; another character's unspoken thoughts in first-person narration; any line of speech or reported speech that is not one of the acts; anything that contradicts a listed fact. Do not report sensory detail, gestures, small movements within the same place, the point-of-view character's reactions or inner thoughts that state no new fact (inner thoughts are not speech), or atmosphere. Each as an object {"kind": "<one of: event, possession, location, life, relationship, name, contradiction, fact, mind, speech>", `
+
 // BuildExtractPrompt shows the extractor only the prose and an unlabeled
 // catalog (all entities with all names, all facts). No answer key.
 func BuildExtractPrompt(s Scene, lang, prose string) (system, user string) {
@@ -72,6 +78,10 @@ Answer only with IDs from the catalog you are given. Do not invent IDs.
 - new_events: plot events only: an action or revelation that changes the situation, not already reported in acts, and not covered by any listed fact. Ignore description, gesture, setting, and manner. Each as an object {"actor": "<entity ID or name>", "verb": "<verb>", "targets": ["<entity IDs or names>"], "action": "<the does action word, else empty>", "text": "<one short sentence>"}. Use [] if none.
 - Judge only from what this prose says or implies to a reader who does not know the source story; ignore your knowledge of any original work.
 Reply with a single ` + "```json" + ` fenced block and nothing else, shaped as {"acts":[{"actor":"","verb":"","targets":[],"fact":""}],"facts_stated":[],"new_events":[{"actor":"","verb":"","targets":[],"action":"","text":""}]}.`
+	if s.Flesh == "novel" { // the legacy prompt above stays byte-identical; the flesh contract swaps only the new_events rule and shape
+		system = strings.Replace(system, legacyNewEvents, fleshNewEvents, 1)
+		system = strings.Replace(system, `"new_events":[{"actor":""`, `"new_events":[{"kind":"","actor":""`, 1)
+	}
 
 	var b strings.Builder
 	b.WriteString("Prose language: " + lang + "\n\n## Entities (ID: names in every language)\n")

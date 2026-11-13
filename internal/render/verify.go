@@ -17,13 +17,15 @@ type VerifyOpts struct {
 	// StateRm, StateAd (PatchVerified only): world-state lines that left / entered the digest since the old prose was
 	// written. They join the scene diff, so a patch for a scene whose own request did not change still has a diff.
 	StateRm, StateAd []string
+	// Log, if set, receives each attempt's prose-check hits ("prose-definition: <sentence>" / "term-unrendered: <surface>").
+	Log func(attempt int, hits []string)
 }
 
-// Passed is whether the fact criteria pass. The open path is ADR-019 (hallucination 0, leak 0, missing ≤ MaxMissing); the card path is ADR-028 (leak 0, missing+wrong kind ≤ 1, G2 is a warning only — Hallucinated is always empty).
+// Passed is whether the fact criteria pass. The open path is ADR-019 (hallucination 0, leak 0, missing ≤ MaxMissing); the card path is ADR-028 (leak 0, missing+wrong kind ≤ 1, G2 is a warning only — Hallucinated is always empty; under flesh "novel", T3-R2, plot additions are Hallucinated and fail).
 // The open path is stricter than render-check's ADR-012 (missing ≤ 1 allowed). If scoring broke (ExtractError) it is not a pass.
 func Passed(r Render) bool {
 	p := r.Report
-	return p.ExtractError == "" && len(p.Hallucinated) == 0 && len(p.Leaked) == 0 && len(p.Missing) <= MaxMissing
+	return p.ExtractError == "" && len(p.Hallucinated) == 0 && len(p.Leaked) == 0 && len(p.Missing) <= MaxMissing && len(p.Prose) == 0
 }
 
 // RenderVerified repeats render → re-extract → diff up to 1+Retries times until it passes. The failed diff is attached as feedback to the end of the next render's
@@ -47,10 +49,21 @@ func RenderVerified2(ctx context.Context, cs Completers, work string, s Scene, b
 		if r, err = renderWith(ctx, cs.Render, cs.Extract, work, s, b, o.K, o.UserSuffix, extra, o.card()); err != nil {
 			return r, n, err
 		}
+		defs, miss := proseIssues(s, b.Lang, r)
+		r.Report.Prose = nil
+		for _, d := range defs {
+			r.Report.Prose = append(r.Report.Prose, "prose-definition: "+d)
+		}
+		for _, m := range miss {
+			r.Report.Prose = append(r.Report.Prose, "term-unrendered: "+m)
+		}
+		if o.Log != nil && len(r.Report.Prose) > 0 {
+			o.Log(n, r.Report.Prose)
+		}
 		if Passed(r) || n > o.Retries {
 			return r, n, nil
 		}
-		extra = feedback(s, b.Lang, r.Report)
+		extra = feedback(s, b.Lang, r.Report) + proseFeedback(defs, miss)
 	}
 }
 
@@ -109,4 +122,34 @@ func (o VerifyOpts) card() *CardOpts {
 		return &o.Card
 	}
 	return nil
+}
+
+// proseIssues runs the deterministic term checks; only a scene with terms_new is checked, and a draft that was cut off is not.
+func proseIssues(s Scene, lang string, r Render) (defs, miss []string) {
+	if len(s.TermsNew) == 0 || r.StopReason != "end_turn" {
+		return nil, nil
+	}
+	var surf []string
+	for _, t := range s.TermsNew {
+		surf = append(surf, t.Surface)
+	}
+	return ProseDefinitions(r.Prose, lang, surf), UnrenderedTerms(r.Prose, surf)
+}
+
+// proseFeedback continues the "## Fix from the previous draft" section written by feedback.
+func proseFeedback(defs, miss []string) string {
+	var b strings.Builder
+	if len(defs) > 0 {
+		b.WriteString("These sentences define a term like a dictionary. Rewrite them as action, dialogue, consequence or sensation; partial understanding is fine:\n")
+		for _, d := range defs {
+			b.WriteString("- " + d + "\n")
+		}
+	}
+	if len(miss) > 0 {
+		b.WriteString("These new terms do not appear in the prose; weave each in by its exact surface form:\n")
+		for _, m := range miss {
+			b.WriteString("- " + m + "\n")
+		}
+	}
+	return b.String()
 }

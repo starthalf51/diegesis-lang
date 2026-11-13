@@ -454,3 +454,20 @@ func TestRenderPovRef(t *testing.T) {
 		t.Errorf("diags = %v", diags)
 	}
 }
+
+// `explain a, b via dialogue`: the ids stay in the explain directive; the way is kept in an explain.via directive [way, ids…].
+func TestExplainVia(t *testing.T) {
+	pre := "module t.s\nimport t.cast\nterm jokbo \"족보\" = \"국가 기록\"\nterm chip \"칩\" = \"신분 칩\"\nscene 1 at room\n  render\n    "
+	w, diags := build(t, pre+"explain jokbo, chip via dialogue\n")
+	noErrors(t, diags)
+	if len(w.Directives) != 2 || w.Directives[0].Key != "explain" || len(w.Directives[0].Values) != 2 ||
+		w.Directives[1].Key != "explain.via" || !slices.Equal(w.Directives[1].Values, []string{"dialogue", "t/t.s/jokbo", "t/t.s/chip"}) {
+		t.Errorf("directives = %+v", w.Directives)
+	}
+	for _, src := range []string{"explain jokbo via", "explain jokbo via mime", "explain jokbo via action sense", "explain via action"} {
+		_, diags := build(t, pre+src+"\n")
+		if len(diags) != 1 || diags[0].Rule != "arg-kind" || diags[0].Severity != "error" {
+			t.Errorf("%s: diags = %v", src, diags)
+		}
+	}
+}

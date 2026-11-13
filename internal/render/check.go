@@ -28,6 +28,7 @@ type Render struct {
 	Backend     string             `json:"backend"`
 	Lang        string             `json:"lang"`
 	Tone        string             `json:"tone"`
+	Flesh       string             `json:"flesh,omitempty"` // the backend style's flesh mode; Score judges with it
 	Prose       string             `json:"prose"`
 	StopReason  string             `json:"stop_reason"`
 	Extracted   Extracted          `json:"extracted"`   // Vote(Extractions)
@@ -60,6 +61,7 @@ func ExtractHash(s Scene, lang string) string {
 
 // Score recounts the deterministic judgment inputs (tone ratio, majority vote, diff) from the prose and the original re-extractions. Render and re-extraction errors (ExtractError) are kept.
 func Score(s Scene, r Render) Render {
+	s.Flesh = r.Flesh
 	r.Tones = nil
 	if r.Lang == "ko" {
 		r.Tones = ClassifyTone(r.Prose)
@@ -82,7 +84,8 @@ func RenderOne(ctx context.Context, c Completer, work string, s Scene, b Backend
 // renderWith is the body of RenderOne. It re-extracts k times, and if extra is given, appends it to the end of the user prompt and renders
 // (RenderHash is based on the prompt without extra, so the cache key does not change).
 func renderWith(ctx context.Context, c, x Completer, work string, s Scene, b Backend, k int, suffix, extra string, card *CardOpts) (Render, error) {
-	r := Render{Work: work, Scene: s.ID, Backend: b.ID, Lang: b.Lang, Tone: b.Tone}
+	s.Flesh = b.Sample.Flesh
+	r := Render{Work: work, Scene: s.ID, Backend: b.ID, Lang: b.Lang, Tone: b.Tone, Flesh: s.Flesh}
 	sys, user, err := b.Prompt(s)
 	if err != nil {
 		return r, err
@@ -150,6 +153,7 @@ type Force struct{ Render, Extract bool }
 func RenderCached(ctx context.Context, c Completer, dir, work string, s Scene, b Backend, f Force) (Render, error) {
 	md := filepath.Join(dir, filepath.FromSlash(ProsePath(work, s.ID, b.ID)))
 	rec := strings.TrimSuffix(md, ".md") + ".json"
+	s.Flesh = b.Sample.Flesh // re-extraction and its hash follow the backend's flesh mode
 	rh, err := RenderHash(s, b)
 	if err != nil {
 		return Render{}, err

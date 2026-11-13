@@ -88,7 +88,7 @@ func TestRules(t *testing.T) {
 	}
 	slices.Sort(ids)
 	want := []string{"account-variance", "attribute-conflict", "because-unbelieved", "belief-contradiction", "dead-actor", "fact-conflict", "inferred-deception", "info-flow",
-		"letter-unknown-info", "object-location", "pattern-missing", "payoff-without-setup", "pov-mind-leak", "pov-offstage", "relative-time-fact", "retell-known", "reveal-false", "reader-unknown-term", "stays-gone", "time-cycle", "unpaid-promise", "undelivered-message"}
+		"letter-unknown-info", "object-location", "pattern-missing", "payoff-without-setup", "pov-mind-leak", "pov-offstage", "relative-time-fact", "retell-known", "reveal-false", "reader-unknown-term", "stays-gone", "scene-no-turn", "term-re-explained", "time-cycle", "unpaid-promise", "undelivered-message"}
 	slices.Sort(want)
 	if !slices.Equal(ids, want) {
 		t.Errorf("rules = %v, want %v", ids, want)

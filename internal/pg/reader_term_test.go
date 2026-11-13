@@ -2,6 +2,8 @@ package pg_test
 
 import (
 	"context"
+	"github.com/starthalf51/diegesis-lang/internal/pg"
+	"github.com/starthalf51/diegesis-lang/internal/render"
 	"slices"
 	"strings"
 	"testing"
@@ -85,6 +87,64 @@ func TestReaderUnknownTermNotWaivable(t *testing.T) {
 	for _, d := range ds {
 		if d.Rule == "reader-unknown-term" && !strings.HasSuffix(d.String(), "(error: cannot be waived)") {
 			t.Errorf("String() = %s", d)
+		}
+	}
+}
+
+// Plan 16: the reader stack accumulates. A term is new only where first explained; a later explain warns and is known;
+// `recap` is a brief reminder (terms_recap) without a warning.
+func TestReaderRecap(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, terms+"scene 1\n  enter a, b\n  render\n    explain jokbo\n  a tells b: fj\nscene 2\n  enter a\n  render\n    recap jokbo\nscene 3\n  enter a\n  render\n    explain jokbo\n")
+	ds := lint(t, pool, id)
+	if got := of(ds, "term-re-explained", id); !slices.Equal(got, []string{"t.s/3/warn"}) {
+		t.Errorf("lint: got %v", got)
+	}
+	surf := func(ts []render.Term) (out []string) {
+		for _, x := range ts {
+			out = append(out, x.Surface)
+		}
+		return
+	}
+	jokbo := []string{"족보"}
+	for _, tc := range []struct {
+		sc                string
+		isNew, know, recp []string
+	}{{"1", jokbo, nil, nil}, {"2", nil, nil, jokbo}, {"3", nil, jokbo, nil}} {
+		b, err := pg.RenderScene(context.Background(), pool, id, tc.sc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		s, err := render.ParseScene(b)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !slices.Equal(surf(s.TermsNew), tc.isNew) || !slices.Equal(surf(s.TermsKnown), tc.know) || !slices.Equal(surf(s.TermsRecap), tc.recp) {
+			t.Errorf("scene %s: new %v known %v recap %v", tc.sc, surf(s.TermsNew), surf(s.TermsKnown), surf(s.TermsRecap))
+		}
+	}
+}
+
+// `explain … via …` reaches the render card as the via of each term listed on that line (migration 024).
+func TestRenderSceneTermsVia(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, terms+"scene 1\n  enter a, b\n  render\n    explain jokbo via dialogue\n    explain chip via sense\n  a tells b: fj\nscene 2\n  enter a\n  render\n    explain jokbo\n")
+	// terms order by id: chip, jokbo
+	for sc, want := range map[string][]string{"1": {"sense", "dialogue"}} {
+		b, err := pg.RenderScene(context.Background(), pool, id, sc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		s, err := render.ParseScene(b)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var got []string
+		for _, x := range s.TermsNew {
+			got = append(got, x.Via)
+		}
+		if !slices.Equal(got, want) {
+			t.Errorf("scene %s: vias %v want %v", sc, got, want)
 		}
 	}
 }

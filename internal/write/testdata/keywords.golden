@@ -28,7 +28,9 @@
 - `relative-time-fact` (warn): 사실 텍스트에 상대 시간("열이틀 뒤", "in twelve days")이 박혀 있다
 - `retell-known` (warn): 청자가 이미 믿는 사실을 같은 화자가 같은 말로 다시 알려 준다 (그 사이 청자의 믿음은 변하지 않았다)
 - `reveal-false` (warn): 거짓으로 선언된 사실을 독자에게 공개한다
+- `scene-no-turn` (warn): 설계(design) 블록이 있는 작품에서 turn 이 없는 보이는 장면
 - `stays-gone` (warn): 이야기에서 떠났다(status gone)고 선언된 인물이 다시 행동하거나 등장한다
+- `term-re-explained` (warn): 이미 설명된 용어를 다시 explain 한다 (recap 을 쓴다)
 - `time-cycle` (warn): 시간 제약이 순환한다(만족하는 일정이 없다)
 - `undelivered-message` (warn): `sends m to t with P` 의 전갈이 t 에게 전해지지 않았다
 - `unpaid-promise` (warn): promise 복선이 회수되지 않았다

@@ -17,9 +17,10 @@ type StyleSample struct {
 	Text          string     `json:"text"`
 	DiedYear      int        `json:"died_year"`
 	PublishedYear int        `json:"published_year"`
-	Rules         []string   `json:"rules"`   // style rules, listed in the system prompt
-	Lexicon       []LexEntry `json:"lexicon"` // word choices
-	Opening       string     `json:"opening"` // opening-sentence instruction used with --opening
+	Rules         []string   `json:"rules"`           // style rules, listed in the system prompt
+	Lexicon       []LexEntry `json:"lexicon"`         // word choices
+	Opening       string     `json:"opening"`         // opening-sentence instruction used with --opening
+	Flesh         string     `json:"flesh,omitempty"` // "" (bone only: add nothing) or "novel" (flesh contract: reactions required, texture allowed)
 }
 
 // CheckPublicDomain: author dead 70+ years (KR) and published 95+ years ago (US).
@@ -77,8 +78,11 @@ type LexEntry struct {
 	Avoid []string `json:"avoid"`
 }
 
-// CheckStyle validates a style: a sample text must be public domain (2026); a rules-only style (no text) skips that check; a style with neither is an error.
+// CheckStyle validates a style: flesh is "" or "novel"; a sample text must be public domain (2026); a rules-only style (no text) skips that check; a style with neither is an error.
 func CheckStyle(s StyleSample) error {
+	if s.Flesh != "" && s.Flesh != "novel" {
+		return fmt.Errorf("style %q: flesh %q, want \"\" or \"novel\"", s.ID, s.Flesh)
+	}
 	if s.Text == "" {
 		if len(s.Rules) == 0 && len(s.Lexicon) == 0 {
 			return fmt.Errorf("style %q has neither sample text nor rules", s.ID)

@@ -46,6 +46,7 @@ type Directives struct {
 type Term struct {
 	Surface string `json:"surface"`
 	Gloss   string `json:"gloss"`
+	Via     string `json:"via,omitempty"` // how to weave it in: action | dialogue | consequence | sense (terms_new only)
 }
 
 type Scene struct {
@@ -65,7 +66,12 @@ type Scene struct {
 	FreeDialogue bool       `json:"free_dialogue,omitempty"` // renderer may write dialogue for speech acts (skeleton mode)
 	TermsNew     []Term     `json:"terms_new"`               // terms this scene introduces to the reader
 	TermsKnown   []Term     `json:"terms_known"`             // terms explained in earlier scenes
+	TermsRecap   []Term     `json:"terms_recap"`             // terms this scene only reminds the reader of
+	Goal         Goal       `json:"goal"`                    // scene design: what a character wants (empty without a design block)
+	Turn         Turn       `json:"turn"`                    // scene design: the value change across the scene
+	Tempo        string     `json:"tempo"`                   // scene design: "" | scene | summary | ellipsis
 	Opening      bool       `json:"opening,omitempty"`       // dieg render --opening: ask for a hooking first sentence
+	Flesh        string     `json:"-"`                       // the backend style's flesh mode; selects the re-extraction and card prompts
 }
 
 var verbs = map[string]bool{
@@ -196,4 +202,16 @@ func (s Scene) Validate() error {
 		}
 	}
 	return errors.Join(errs...)
+}
+
+// Goal is a scene-design goal: Who (entity ID) wants Text.
+type Goal struct {
+	Who  string `json:"who"`
+	Text string `json:"text"`
+}
+
+// Turn is the value change a scene builds toward (McKee), medium-neutral.
+type Turn struct {
+	From string `json:"from"`
+	To   string `json:"to"`
 }

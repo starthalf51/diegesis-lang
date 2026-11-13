@@ -39,7 +39,14 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "You are a fiction writer. You will receive a scene specification (places, characters, an ordered list of story acts, and facts). Write the scene as continuous prose in %s.\n\n", ln)
 	sb.WriteString("Rules:\n")
-	sb.WriteString("- Narrate every act, in the given order. Do not omit any act and do not add events, actions, or facts that are not in the specification.\n")
+	if style != nil && style.Flesh == "novel" { // flesh contract: the bone stays fixed, texture is allowed, a reaction is required
+		sb.WriteString("- Narrate every act, in the given order. Do not omit any act.\n")
+		sb.WriteString("- After each key act (speech, discovery, decision, reveal), give the point-of-view character's reaction — body, feeling, or thought.\n")
+		sb.WriteString("- You may add: sensory detail, gestures, small movements within the same place, the point-of-view character's inner thoughts, atmosphere.\n")
+		sb.WriteString("- Never add: new events; new facts; any change of possession, location (leaving the place), life or death, or relationship; new named characters or places; anything that contradicts the acts or facts; another character's unspoken thoughts in first person.\n")
+	} else {
+		sb.WriteString("- Narrate every act, in the given order. Do not omit any act and do not add events, actions, or facts that are not in the specification.\n")
+	}
 	sb.WriteString("- Do not add any speech, even reported speech, that is not an act in the specification, and do not draw on any known version of this story.\n")
 	sb.WriteString("- Do not restate a fact through a character's thoughts or reactions unless an act gives it; convey each fact through the act that carries it.\n")
 	sb.WriteString("- An act with a fact (after the colon) must make that fact clear to the reader through that act and its actor. For a `sees` act, say that its actor sees or hears the thing, not only that it happens.\n")
@@ -51,7 +58,7 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	sb.WriteString("- Never state or imply any fact listed under \"Must not state or imply\", not even as a hint, a foreshadowing, or a character's guess.\n")
 	sb.WriteString("- A fact marked false is only what a character says, believes or pretends. Never state it in the narrator's own voice as what happened.\n")
 	sb.WriteString("- Stay in the stated point of view. Use the people's names in the scene's language.\n")
-	hasTerms := len(s.TermsNew)+len(s.TermsKnown) > 0
+	hasTerms := len(s.TermsNew)+len(s.TermsKnown)+len(s.TermsRecap) > 0
 	if hasTerms {
 		sb.WriteString("- Do not coin new jargon: any work-specific word must be one of the listed terms.\n")
 	}
@@ -158,13 +165,24 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	}
 	if len(s.TermsNew) > 0 {
 		sb.WriteString("\n## New terms — introduce each to a reader who has never heard it, inside the story, using its meaning\n")
+		sb.WriteString("Weave each into the scene through action, dialogue, consequence or the senses (the given `via`, if any). Never write a definition sentence; partial understanding is fine.\n")
 		for _, t := range s.TermsNew {
+			if t.Via != "" {
+				fmt.Fprintf(&sb, "- %s: %s (via: %s)\n", t.Surface, t.Gloss, t.Via)
+				continue
+			}
 			fmt.Fprintf(&sb, "- %s: %s\n", t.Surface, t.Gloss)
 		}
 	}
 	if len(s.TermsKnown) > 0 {
 		sb.WriteString("\n## Terms the reader already knows\n")
 		for _, t := range s.TermsKnown {
+			fmt.Fprintf(&sb, "- %s\n", t.Surface)
+		}
+	}
+	if len(s.TermsRecap) > 0 {
+		sb.WriteString("\n## Remind briefly (the reader already met these; one short phrase, never a definition)\n")
+		for _, t := range s.TermsRecap {
 			fmt.Fprintf(&sb, "- %s\n", t.Surface)
 		}
 	}
@@ -179,6 +197,23 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 		}
 		if len(d.Omit) > 0 {
 			fmt.Fprintf(&sb, "- omit: %s\n", strings.Join(d.Omit, "; "))
+		}
+	}
+	if s.Goal.Text != "" || s.Turn.To != "" || s.Tempo != "" {
+		sb.WriteString("\n## Scene design\n")
+		if s.Goal.Text != "" {
+			fmt.Fprintf(&sb, "- goal: %s wants %s\n", name(s.Goal.Who), s.Goal.Text)
+		}
+		if s.Turn.To != "" {
+			fmt.Fprintf(&sb, "- turn: from %s to %s — build the scene toward this change\n", s.Turn.From, s.Turn.To)
+		}
+		switch s.Tempo {
+		case "scene":
+			sb.WriteString("- tempo: scene\n")
+		case "summary":
+			sb.WriteString("- tempo: summary — compress: report the acts briefly\n")
+		case "ellipsis":
+			sb.WriteString("- tempo: ellipsis — skip time: open after the acts, mention them in passing\n")
 		}
 	}
 	if s.Opening {

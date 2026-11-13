@@ -108,9 +108,18 @@ const cardSys2 = `You re-check a few disputed points of a prose against its chec
 Reply with a single ` + "```json" + ` fenced block and nothing else, shaped as {"recheck":[{"id":"E1","fact_present":"yes","as_stated":"yes","quote":""}]}.`
 
 // BuildCardPrompt is the stage-1 prompt. The hidden section is attached only when there are hidden facts.
+// Under flesh "novel" the "other" rule asks for plot-bearing additions only, each with a kind (same schema as the re-extraction).
 func BuildCardPrompt(s Scene, lang, prose string) (system, user string) {
-	return cardSys1, cardCatalog(s, lang) + cardChecklist(s) + "\n## Prose\n" + prose + "\n"
+	system = cardSys1
+	if s.Flesh == "novel" {
+		system = strings.Replace(system, legacyCardOther, fleshCardOther, 1)
+	}
+	return system, cardCatalog(s, lang) + cardChecklist(s) + "\n## Prose\n" + prose + "\n"
 }
+
+const legacyCardOther = `3. other: plot events or facts stated in the prose that are NOT covered by any checklist or withheld item: an action or revelation that changes the situation. Ignore description, gesture, setting and manner, and anything that merely restates a listed item. Each as {`
+
+const fleshCardOther = `3. other: plot-bearing additions in the prose that are NOT covered by any checklist or withheld item: a new event; any change of possession, location (a character leaving the place), life or death, or relationship; a new named character or place; a revelation of a new fact; another character's unspoken thoughts in first-person narration; any line of speech or reported speech that is not one of the acts; anything that contradicts a listed item. Do not report sensory detail, gestures, small movements within the same place, the point-of-view character's reactions or inner thoughts that state no new fact (inner thoughts are not speech), or atmosphere, nor anything that merely restates a listed item. Each as {"kind":"<one of: event, possession, location, life, relationship, name, contradiction, fact, mind, speech>",`
 
 type rawItem struct {
 	ID          string `json:"id"`
@@ -126,8 +135,8 @@ type rawCard struct {
 		Revealed string `json:"revealed"`
 	} `json:"withheld"`
 	Other []struct {
-		Actor, Verb, Action, Text string
-		Targets                   []string
+		Actor, Verb, Action, Text, Kind string
+		Targets                         []string
 	} `json:"other"`
 }
 
@@ -229,7 +238,7 @@ func ParseCard(s Scene, text string) (card, error) {
 		}
 	}
 	for _, x := range o.Other {
-		c.other = append(c.other, NewEvent{Actor: x.Actor, Verb: x.Verb, Targets: x.Targets, Action: x.Action, Text: x.Text})
+		c.other = append(c.other, NewEvent{Actor: x.Actor, Verb: x.Verb, Targets: x.Targets, Action: x.Action, Text: x.Text, Kind: x.Kind})
 	}
 	return c, nil
 }
@@ -258,8 +267,11 @@ func ask(ctx context.Context, c Completer, sys, user string, parse func(string) 
 }
 
 // ScoreCard scores one render against the checklist (stage 1 + stage 2 once if needed). An unusable answer is left in Report.ExtractError and the error is nil.
-// G2 candidates (other) are not re-asked and are left only as Warnings. Hallucinated is always empty.
+// G2 candidates (other) are not re-asked. Legacy (ADR-028): left only as Warnings, Hallucinated is always empty.
+// Flesh "novel" (T3-R2): the prompt asks for plot-bearing additions only, so every non-texture one goes to Hallucinated
+// and fails the render; a speech addition is covered by a fact-less speech act only in FreeDialogue mode.
 func ScoreCard(ctx context.Context, c Completer, s Scene, b Backend, prose string, o CardOpts) (Report, error) {
+	s.Flesh = b.Sample.Flesh
 	rep := Report{Missing: []string{}, Hallucinated: []string{}, Leaked: []string{}}
 	sys, user := BuildCardPrompt(s, b.Lang, prose)
 	var cd card
@@ -325,7 +337,16 @@ func ScoreCard(ctx context.Context, c Completer, s Scene, b Backend, prose strin
 		}
 	}
 	for _, ev := range cd.other {
-		if !s.authored(ev) && !coveredByIR(s, ev) {
+		novel := s.Flesh == "novel"
+		covered := coveredByIR(s, ev, false)
+		if novel { // I1: plot kinds are never covered; an event needs the act's action word, speech needs FreeDialogue
+			covered = ev.Kind == "event" && coveredByIR(s, ev, true) || ev.Kind == "speech" && s.FreeDialogue && covered
+		}
+		switch {
+		case s.authored(ev) || covered || s.texture(ev):
+		case novel:
+			rep.Hallucinated = append(rep.Hallucinated, ev.Label())
+		default:
 			rep.Warnings = append(rep.Warnings, ev.Label())
 		}
 	}
@@ -372,14 +393,15 @@ func resolveCastID(s Scene, x string) string {
 
 // coveredByIR: an event that re-tells an author act with no fact (orders, asks, whispers, sees, etc.) is not invented.
 // authored() only looks at does and presence, so match the other verb classes by the same subject, same verb class and overlapping objects.
-func coveredByIR(s Scene, ev NewEvent) bool {
+// With action set (flesh "novel"), the act's action word must also match, as authored() requires.
+func coveredByIR(s Scene, ev NewEvent, action bool) bool {
 	actor := resolveCastID(s, ev.Actor)
 	if actor == "" {
 		return false
 	}
 	for _, bt := range s.Beats {
 		for _, a := range bt.Acts {
-			if a.Fact != "" || a.Actor != actor || VerbClass(a.Verb) != VerbClass(ev.Verb) {
+			if a.Fact != "" || a.Actor != actor || VerbClass(a.Verb) != VerbClass(ev.Verb) || action && !strings.EqualFold(a.Action, ev.Action) {
 				continue
 			}
 			if len(ev.Targets) == 0 || len(a.Targets) == 0 {

@@ -14,6 +14,7 @@ type Report struct {
 	Warnings     []string `json:"warnings,omitempty"`
 	Scores       *Scores  `json:"scores,omitempty"`
 	Patched      bool     `json:"patched,omitempty"` // final prose came from a sentence patch, not a full render
+	Prose        []string `json:"prose,omitempty"`   // term-prose check failures: definition sentences, unrendered terms
 }
 
 // VerbClass collapses synonyms; an unknown verb is its own class so it never silently matches.
@@ -62,7 +63,7 @@ func Diff(s Scene, e Extracted) Report {
 		check(id)
 	}
 	for _, n := range e.NewEvents {
-		if !s.authored(n) {
+		if !s.authored(n) && !s.texture(n) {
 			hall[n.Label()] = true
 		}
 	}
@@ -98,6 +99,10 @@ func Diff(s Scene, e Extracted) Report {
 	sort.Strings(halluc)
 	return Report{Missing: miss, Hallucinated: halluc, Leaked: leak.sorted()}
 }
+
+// texture reports whether a new_event is texture the flesh contract allows: only kind "texture" under flesh "novel".
+// An empty or unknown kind still counts (fail closed), and the legacy mode ignores kind.
+func (s Scene) texture(n NewEvent) bool { return s.Flesh == "novel" && n.Kind == "texture" }
 
 type set map[string]bool
 

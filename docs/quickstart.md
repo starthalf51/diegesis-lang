@@ -77,6 +77,8 @@ dieg write "<idea>" -o out/hybrid --code-model ollama:gemma4:26b --finish-model 
 
 `dieg convert <text.txt> -o <dir>` turns a public-domain story into Diegesis code (no render). Download texts with `go run ./tools/fetchtext -o data/raw gutenberg:<id>` or `wikisource-ko:<title>`.
 
-`go run ./tools/readcheck --ref corpus-eval/readcheck/ref-unsu.txt <episode.md>...` asks a first-time model reader (subscription `claude` CLI, opus, isolated) to judge rendered episodes against fixed thresholds and a fixed call budget → [corpus-eval/readcheck/README.md](../corpus-eval/readcheck/README.md).
+`go run ./tools/readcheck <episode.md>...` (default reference: 김유정 「동백꽃」, `corpus-eval/readcheck/ref-dongbaek.txt`; `--ref` per work) asks a first-time model reader (subscription `claude` CLI, opus, isolated) to judge rendered episodes against fixed thresholds and a fixed call budget → [corpus-eval/readcheck/README.md](../corpus-eval/readcheck/README.md).
+
+For a cumulative read, `dieg reader-state <work|dir> --until <scene> [--json]` prints what the reader was given before that scene (explained terms, characters seen, disclosed facts). Save it as `<episode>.state.txt` beside each episode (or pass `--state <file>`); `readcheck` prepends it to the reader prompt, and without a state file the episode is read cold: a pass then prints `PASS(cold)`, which does not count for exit 0. `--first` declares that the first file is episode 1, so it alone may pass cold.
 
 More: [docs index](README.md). Design notes and ADRs referenced there are not published.

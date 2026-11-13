@@ -190,15 +190,16 @@ func TestPromptTerms(t *testing.T) {
 	_, base, _ := BuildPrompt(s, VariantIROnly, "en", nil)
 	const hn = "## New terms — introduce each to a reader who has never heard it, inside the story, using its meaning\n"
 	const hk = "## Terms the reader already knows\n"
+	const weave = "Weave each into the scene through action, dialogue, consequence or the senses (the given `via`, if any). Never write a definition sentence; partial understanding is fine.\n"
 	if strings.Contains(base, hn) || strings.Contains(base, hk) {
 		t.Fatal("term sections present without terms")
 	}
-	s.TermsNew = []Term{{"족보", "국가 기록"}}
+	s.TermsNew = []Term{{Surface: "족보", Gloss: "국가 기록"}}
 	_, u, _ := BuildPrompt(s, VariantIROnly, "en", nil)
-	if !strings.Contains(u, hn+"- 족보: 국가 기록\n") || strings.Contains(u, hk) {
+	if !strings.Contains(u, hn+weave+"- 족보: 국가 기록\n") || strings.Contains(u, hk) {
 		t.Errorf("new only:\n%s", u)
 	}
-	s.TermsNew, s.TermsKnown = nil, []Term{{"칩", "신분 칩"}}
+	s.TermsNew, s.TermsKnown = nil, []Term{{Surface: "칩", Gloss: "신분 칩"}}
 	_, u, _ = BuildPrompt(s, VariantIROnly, "en", nil)
 	if !strings.Contains(u, hk+"- 칩\n") || strings.Contains(u, hn) {
 		t.Errorf("known only:\n%s", u)
@@ -221,7 +222,7 @@ func TestPromptTerms(t *testing.T) {
 		c := s
 		c.TermsNew, c.TermsKnown, c.Narration = nil, nil, tc.narration
 		if tc.terms {
-			c.TermsKnown = []Term{{"칩", "신분 칩"}}
+			c.TermsKnown = []Term{{Surface: "칩", Gloss: "신분 칩"}}
 		}
 		sys, _, _ := BuildPrompt(c, VariantIROnly, "en", nil)
 		for r, want := range map[string]bool{jargon: tc.jargon, nest: tc.nest, thoughts: tc.thoughts} {
@@ -229,5 +230,27 @@ func TestPromptTerms(t *testing.T) {
 				t.Errorf("%s: rule %q present=%v, want %v", tc.name, r, !want, want)
 			}
 		}
+	}
+}
+
+func TestPromptSceneDesign(t *testing.T) {
+	s := mustLoad(t, "testdata/scenes/holmes-scandal-opening.json")
+	_, plain, _ := BuildPrompt(s, VariantIROnly, "en", nil)
+	if strings.Contains(plain, "## Scene design") {
+		t.Error("no design data: no section")
+	}
+	s.Goal = Goal{Who: s.Cast[0].ID, Text: "reach the gate"}
+	s.Turn = Turn{From: "despair", To: "hope"}
+	s.Tempo = "summary"
+	_, u, _ := BuildPrompt(s, VariantIROnly, "en", nil)
+	for _, w := range []string{"## Scene design", " wants reach the gate", "turn: from despair to hope — build the scene toward this change", "tempo: summary — compress: report the acts briefly"} {
+		if !strings.Contains(u, w) {
+			t.Errorf("missing %q in\n%s", w, u)
+		}
+	}
+	s.Tempo = "ellipsis"
+	_, u, _ = BuildPrompt(s, VariantIROnly, "en", nil)
+	if !strings.Contains(u, "skip time: open after the acts, mention them in passing") {
+		t.Error("ellipsis wording")
 	}
 }

@@ -2,6 +2,7 @@ package sema
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/starthalf51/diegesis-lang/internal/ir"
 	"github.com/starthalf51/diegesis-lang/internal/syntax"
@@ -100,15 +101,48 @@ func (w *walker) stmt(n syntax.Node) (string, string) {
 				b.errf(e.Pos, "arg-kind", "narration takes first-person or third-person")
 				continue
 			}
-			if e.Key == "explain" { // values are term ids
+			way := ""
+			if e.Key == "explain" || e.Key == "recap" { // values are term ids
 				vals = []string{}
-				for _, v := range e.Values {
+				ids := e.Values
+				if i := slices.Index(ids, "via"); e.Key == "explain" && i >= 0 { // explain <id>… via <way>
+					if i == 0 || len(ids) != i+2 || !slices.Contains([]string{"action", "dialogue", "consequence", "sense"}, ids[i+1]) {
+						b.errf(e.Pos, "arg-kind", "explain takes term ids, optionally followed by via action, dialogue, consequence or sense")
+						continue
+					}
+					ids, way = ids[:i], ids[i+1]
+				}
+				for _, v := range ids {
 					if id := b.want(m, syntax.Ident{Pos: e.Pos, Name: v}, "explained term", "term"); id != "" {
 						vals = append(vals, id)
 					}
 				}
 			}
 			m.out.Directives = append(m.out.Directives, ir.Directive{SceneID: c.id, Key: e.Key,
+				Values: vals, SrcID: b.srcID(e.Pos)})
+			if way != "" {
+				m.out.Directives = append(m.out.Directives, ir.Directive{SceneID: c.id, Key: "explain.via",
+					Values: append([]string{way}, vals...), SrcID: b.srcID(e.Pos)})
+			}
+		}
+		return "directive", c.id
+	case *syntax.Design:
+		for _, e := range n.Entries {
+			vals := append([]string{}, e.Values...)
+			switch e.Key {
+			case "goal":
+				id := b.want(m, syntax.Ident{Pos: e.Pos, Name: vals[0]}, "goal character", "character")
+				if id == "" {
+					continue
+				}
+				vals[0] = id
+			case "tempo":
+				if !slices.Contains([]string{"scene", "summary", "ellipsis"}, vals[0]) {
+					b.errf(e.Pos, "arg-kind", "tempo takes scene, summary or ellipsis")
+					continue
+				}
+			}
+			m.out.Directives = append(m.out.Directives, ir.Directive{SceneID: c.id, Key: "design." + e.Key,
 				Values: vals, SrcID: b.srcID(e.Pos)})
 		}
 		return "directive", c.id
