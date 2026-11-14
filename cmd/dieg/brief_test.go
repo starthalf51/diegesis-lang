@@ -47,7 +47,10 @@ func TestBriefSections(t *testing.T) {
 	if s := sec("## ①"); !strings.Contains(s, "문이 잠겼다") || strings.Contains(s, "배가 떠났다") {
 		t.Errorf("held section wrong:\n%s", s)
 	}
-	if s := sec("## ②"); !strings.Contains(s, "배가 떠났다") || strings.Contains(s, "문이 잠겼다") {
+	if s := sec("## ② 이 화가 세울 세계"); !strings.Contains(s, "칩: 손목 신분 칩") || strings.Contains(s, "족보") {
+		t.Errorf("new-terms section wrong (chip is first explained in scene 2, jokbo in scene 1):\n%s", s)
+	}
+	if s := sec("## ② 이 화가 독자에게"); !strings.Contains(s, "배가 떠났다") || strings.Contains(s, "문이 잠겼다") {
 		t.Errorf("handover section wrong:\n%s", s)
 	}
 	if s := sec("## ③"); strings.Contains(s, "배가 떠났다") || strings.Contains(s, "문이 잠겼다") {
@@ -90,7 +93,7 @@ func TestBriefMasksUnmet(t *testing.T) {
 	}
 	defer pool.Close()
 	defer pool.Exec(context.Background(), `DELETE FROM work WHERE id=$1`, work)
-	got, err := maskNames(context.Background(), pool, work, "2", "", "enter a, c\nCyd came; cache stays")
+	got, err := maskNames(context.Background(), pool, work, "2", toldOrd(context.Background(), pool, work, "3"), "", "enter a, c\nCyd came; cache stays")
 	if err != nil {
 		t.Fatal(err)
 	}

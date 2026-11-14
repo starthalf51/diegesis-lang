@@ -79,9 +79,13 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	} else if now != "" {
 		b.WriteString("\n## ⓪ 시계와 카운터 — 숫자는 정확히 이 값으로 쓴다\n" + now + "\n")
 	}
+	forged, err := forgedFacts(ctx, pool, work)
+	if err != nil {
+		return "", err
+	}
 	b.WriteString("## ① 독자가 이미 아는 것 — 다시 설명하지 않는다. 괄호는 독자가 그것을 안 날(S18)\n")
 	if t := before.Text(); t != "" {
-		b.WriteString(dateFacts(ctx, pool, work, t))
+		b.WriteString(labelForgedLines(forged, dateFacts(ctx, pool, work, t)))
 	} else {
 		b.WriteString("(없음: 첫 화다)\n")
 	}
@@ -122,7 +126,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 		return "", err
 	}
 	if places != "" {
-		b.WriteString("\n## ① 이 화의 장소 — 장면이 열릴 때 감각(빛·소리·냄새·사람들)으로 세운다\n" + places)
+		b.WriteString("\n## ① 이 화의 장소 — 재료다. 한두 가지를 인물의 행동에 붙여 장면 속에 흩는다. 다시 찾은 장소는 바뀐 것 하나만 쓴다\n" + places)
 	}
 	lived, err := povLived(ctx, pool, work, from, pov)
 	if err != nil {
@@ -131,10 +135,12 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	if len(lived) > 0 {
 		b.WriteString("\n## ① 화자가 직접 겪어 아는 것 — 독자도 화자와 함께 봤다. 숨길 것이 아니다\n")
 		for _, t := range lived {
-			if !known[t] {
-				fmt.Fprintf(&b, "- %s\n", t)
-			}
 			openly[t] = true
+			// S30: "it is not true that <forged record>" is already said by the forged-record label in ① and ②.
+			if known[t] || forged[strings.TrimPrefix(t, "It is not true that ")] {
+				continue
+			}
+			fmt.Fprintf(&b, "- %s\n", t)
 		}
 	}
 	// Spoken lines since `since` (S18): what the reader heard said, word for word, so names and threats carry over.
@@ -147,10 +153,19 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 		b.WriteString("\n## ① 앞에서 독자가 들은 말 — 별칭·약속·위협은 이 말 그대로 이어진다. 시점 인물이 없던 자리의 말은 시점 인물이 모른다\n" + lines)
 	}
 	if to != "" {
+		// S28: the terms this episode establishes are the world's premise for a first-time reader; give their gloss
+		// (as reference) and how the code says they should come across.
+		terms, err := newTerms(ctx, pool, work, from, to, before)
+		if err != nil {
+			return "", err
+		}
+		if terms != "" {
+			b.WriteString("\n## ② 이 화가 세울 세계 — 처음 읽는 독자가 이 화를 덮을 때 알아야 하는 전제. 풀이는 참고용이고 옮기지 않는다. 괄호의 방식으로 보인다\n" + terms)
+		}
 		b.WriteString("\n## ② 이 화가 독자에게 넘길 것 — 장면으로 짐작하게 한다. 문장을 그대로 옮기지 않는다\n")
 		for _, f := range after.Facts {
 			if !had[f.Text] {
-				fmt.Fprintf(&b, "- %s\n", f.Text)
+				fmt.Fprintf(&b, "- %s\n", forgedLabel(forged, f.Text))
 			}
 		}
 	}
@@ -192,7 +207,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	if err := rows.Err(); err != nil {
 		return "", err
 	}
-	b.WriteString("\n## ④ 쓰기 규칙\n- 회차 번호·'지난 화' 같은 연재 바깥 말을 원고에 쓰지 않는다.\n- 설계서의 사실 문장·용어 풀이를 원고에 옮겨 적지 않는다. 인물의 행동·대사·결과로 보인다.\n- ①에 없는 것은 독자가 모른다. 시점 인물은 ①과 ③에서 자기 이름이 붙은 것만 더 안다. 그것을 서술로 털어놓지 않고 행동의 이유로만 비친다.\n- 모르는 것은 쓰지 않거나 행동으로 남긴다. 화자가 추측을 풀어 쓰거나 '추측이었다'고 꼬리표를 달지 않는다.\n- 마지막 단락은 이 화가 남긴 위협이나 질문으로 닫는다. 잠·휴식으로 가라앉히지 않는다.\n- 설명하지 않는 것과 그리지 않는 것은 다르다. 규칙과 사연은 다시 풀지 않지만, 장소와 인물은 매 장면 눈앞에 보이게 그린다. 세계는 사람들의 일상 행동(줄 서기, 빌리기, 비켜서기)으로 보인다.\n")
+	b.WriteString("\n## ④ 쓰기 규칙\n- 회차 번호·'지난 화' 같은 연재 바깥 말을 원고에 쓰지 않는다.\n- 설계서의 사실 문장·용어 풀이를 원고에 옮겨 적지 않는다. 인물의 행동·대사·결과로 보인다.\n- ①에 없는 것은 독자가 모른다. 시점 인물은 ①과 ③에서 자기 이름이 붙은 것만 더 안다. 그것을 서술로 털어놓지 않고 행동의 이유로만 비친다.\n- 모르는 것은 쓰지 않거나 행동으로 남긴다. 화자가 추측을 풀어 쓰거나 '추측이었다'고 꼬리표를 달지 않는다.\n- 마지막 단락은 이 화가 남긴 위협이나 질문으로 닫는다. 잠·휴식으로 가라앉히지 않는다.\n- 설명하지 않는 것과 그리지 않는 것은 다르다. 규칙과 사연은 다시 풀지 않지만, 장소와 인물은 매 장면 눈앞에 보이게 그린다. 무대 위 단역 한두 명의 짧은 말로 이 세계의 셈(값·빚·두려움)을 들려준다.\n")
 	// S22: who each line is addressed to is often the scene's point; compile it instead of leaving it in raw code.
 	aud, err := spokenLines(ctx, pool, work, toldOrd(ctx, pool, work, from), toldOrd(ctx, pool, work, to), pov)
 	if err != nil {
@@ -207,7 +222,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	}
 	// ponytail: the SQL fact renderer spells negation in English; rewrite here until render_fact_text takes a language.
 	s := strings.ReplaceAll(b.String(), "It is not true that ", "(거짓) ")
-	return maskNames(ctx, pool, work, from, before.Text(), s)
+	return maskNames(ctx, pool, work, from, toldOrd(ctx, pool, work, to), after.Text(), s)
 }
 
 type briefOpts struct{ from, to, since, code, style, rules string }
