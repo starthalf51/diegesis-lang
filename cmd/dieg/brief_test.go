@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -212,5 +213,46 @@ func TestBriefOneClosingRule(t *testing.T) {
 	}
 	if strings.Contains(plain, "## ⓪ 시계와 카운터") {
 		t.Errorf("no empty clock section:\n%s", plain)
+	}
+}
+
+// Review fix: under every with an open day, the template whose value may move gives both branches, wherever it is.
+func TestCloseLinesOpenDayNotFirst(t *testing.T) {
+	tpl := []string{"[t] 누적 {n}/7", "[w] 남은 {d}일"}
+	maybe := map[string]span{"d": {start: "25", end: "25", maybe: "24"}, "n": {start: "3", end: "3"}}
+	got := closeLines(tpl, maybe, "every")
+	if !strings.Contains(got, "`[w] 남은 24일`") || !strings.Contains(got, "`[w] 남은 25일`") {
+		t.Errorf("the moving template's two branches:\n%s", got)
+	}
+}
+
+// Review fix: "first template" is the first declared, also across attr9/attr10 ids.
+func TestBriefFirstFrameCloseByDeclaration(t *testing.T) {
+	if os.Getenv("SL_PG_DSN") == "" {
+		t.Skip("SL_PG_DSN not set")
+	}
+	pool, err := pg.Connect(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	dir := t.TempDir()
+	extra := ""
+	for i := 1; i <= 7; i++ {
+		extra += fmt.Sprintf("attr c.x%d = \"v\"\n", i)
+	}
+	extra += "attr jokbo.frame_open = \"[기록] 열림\"\nattr jokbo.frame_close = \"[기록] 첫째\"\nattr jokbo.frame_close = \"[기록] 둘째\"\n"
+	os.WriteFile(filepath.Join(dir, "w.dieg.md"), []byte("---\nmodule: rs.s\nmode: authored\n---\n\n```sl\n"+rsWork+extra+"```\n"), 0o644)
+	work, err := load(dir, io.Discard)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Exec(context.Background(), `DELETE FROM work WHERE id=$1`, work)
+	got, err := briefText(context.Background(), pool, work, briefOpts{from: "2", to: "3", since: "1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, "`[기록] 첫째`") || strings.Contains(got, "`[기록] 둘째`") {
+		t.Errorf("first declared frame_close closes:\n%s", got)
 	}
 }

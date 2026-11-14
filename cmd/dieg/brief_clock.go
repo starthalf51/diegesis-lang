@@ -200,10 +200,10 @@ func num(v any) (string, bool) {
 // `frame_policy` (S31, plan 19).
 func frames(ctx context.Context, pool *pgxpool.Pool, work string, b *strings.Builder, vals map[string]span, first bool) error {
 	var policy string
-	if err := pool.QueryRow(ctx, `SELECT coalesce((SELECT value FROM attribute WHERE work_id = $1 AND key = 'frame_policy' ORDER BY id LIMIT 1), '')`, work).Scan(&policy); err != nil {
+	if err := pool.QueryRow(ctx, `SELECT coalesce((SELECT value FROM attribute WHERE work_id = $1 AND key = 'frame_policy' ORDER BY length(id), id LIMIT 1), '')`, work).Scan(&policy); err != nil {
 		return err
 	}
-	rows, err := pool.Query(ctx, `SELECT a.key, a.value FROM attribute a WHERE a.work_id = $1 AND a.key IN ('frame_open', 'frame_close') ORDER BY a.key DESC, a.id`, work)
+	rows, err := pool.Query(ctx, `SELECT a.key, a.value FROM attribute a WHERE a.work_id = $1 AND a.key IN ('frame_open', 'frame_close') ORDER BY a.key DESC, length(a.id), a.id`, work)
 	if err != nil {
 		return err
 	}
@@ -260,12 +260,16 @@ func closeLines(templates []string, vals map[string]span, policy string) string 
 	var b strings.Builder
 	var closes []string
 	certain := false
-	for _, t := range templates {
+	open := -1 // the first template whose value moves only if the scene passes midnight
+	for i, t := range templates {
 		if s, ch := fillFrame(t, vals, true, false); ch {
 			closes = append(closes, fmt.Sprintf("`%s`", s))
 			certain = true
 		} else if s, ch := fillFrame(t, vals, true, true); ch {
 			closes = append(closes, fmt.Sprintf("`%s` (자정을 넘기는 쪽으로 쓸 때)", s))
+			if open < 0 {
+				open = i
+			}
 		}
 	}
 	if certain {
@@ -282,9 +286,10 @@ func closeLines(templates []string, vals map[string]span, policy string) string 
 		}
 		return b.String()
 	}
-	if len(closes) > 0 {
-		maybeLine, _ := fillFrame(templates[0], vals, true, true)
-		fmt.Fprintf(&b, "- 닫는 줄(매 화 쓴다): 장면이 자정을 넘기면 `%s` / 넘기지 않으면 `%s`. 닫는 줄을 위해 자정을 끼워 넣지 않는다\n", maybeLine, same)
+	if open >= 0 {
+		maybeLine, _ := fillFrame(templates[open], vals, true, true)
+		sameLine, _ := fillFrame(templates[open], vals, true, false)
+		fmt.Fprintf(&b, "- 닫는 줄(매 화 쓴다): 장면이 자정을 넘기면 `%s` / 넘기지 않으면 `%s`. 닫는 줄을 위해 자정을 끼워 넣지 않는다\n", maybeLine, sameLine)
 	} else {
 		fmt.Fprintf(&b, "- 닫는 줄(그대로 쓴다): `%s`\n", same)
 	}
