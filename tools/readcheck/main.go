@@ -2,6 +2,7 @@
 // reference text, with fixed thresholds and a call budget.
 //
 //	go run ./tools/readcheck [--ref corpus-eval/readcheck/ref-dongbaek.txt] [--state f] [--model opus] [--budget N] [--cold-only] [--first] ep.md...
+//	go run ./tools/readcheck --orient [--model opus] [--budget N] ep.md   (what a first-time reader learned; writes ep.md.orient.json)
 //
 // An episode with a sibling <name>.state.txt (from `dieg reader-state`) is read by a reader who knows that state.
 // An episode with no state is judged by a first-time reader: a pass prints PASS(cold) and does not count for exit 0
@@ -209,9 +210,17 @@ func run(args []string, out io.Writer) int {
 	coldOnly := fs.Bool("cold-only", false, "first-time-reader test only (calibration)")
 	statePath := fs.String("state", "", "reader-state file for every episode (default: <episode>.state.txt beside each episode, if present)")
 	first := fs.Bool("first", false, "the first file is episode 1: it may be read without a state and still PASS")
+	orient := fs.Bool("orient", false, "first-time-reader quiz on one opening episode: writes <episode>.orient.json")
 	if fs.Parse(args) != nil || fs.NArg() == 0 {
 		fmt.Fprintln(out, "usage: readcheck --ref ref.txt [--model opus] [--budget N] [--cold-only] [--first] episode.md...")
 		return 2
+	}
+	if *orient {
+		if fs.NArg() != 1 {
+			fmt.Fprintln(out, "usage: readcheck --orient [--model opus] [--budget N] episode.md")
+			return 2
+		}
+		return runOrientMode(fs.Arg(0), *model, *budget, out)
 	}
 	if *refPath == "" {
 		*refPath = defaultRef

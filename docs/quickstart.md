@@ -81,4 +81,6 @@ dieg write "<idea>" -o out/hybrid --code-model ollama:gemma4:26b --finish-model 
 
 For a cumulative read, `dieg reader-state <work|dir> --until <scene> [--json]` prints what the reader was given before that scene (explained terms, characters seen, disclosed facts). Save it as `<episode>.state.txt` beside each episode (or pass `--state <file>`); `readcheck` prepends it to the reader prompt, and without a state file the episode is read cold: a pass then prints `PASS(cold)`, which does not count for exit 0. `--first` declares that the first file is episode 1, so it alone may pass cold.
 
+`go run ./tools/readcheck --orient <episode.md>` is a one-call first-time-reader quiz for an opening episode (name, situation, world rules, what the protagonist wants, next-episode interest, `dangling` information); it writes `<episode>.orient.json` and prints a summary, with no pass/fail.
+
 More: [docs index](README.md). Design notes and ADRs referenced there are not published.
