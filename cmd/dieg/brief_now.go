@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 
@@ -40,6 +41,8 @@ func spokenLines(ctx context.Context, pool *pgxpool.Pool, work string, lo, hi in
 	}
 	defer rows.Close()
 	var b strings.Builder
+	var prevWho string
+	var prevTo []string
 	for rows.Next() {
 		var who, place, q string
 		var to, near []string
@@ -47,6 +50,14 @@ func spokenLines(ctx context.Context, pool *pgxpool.Pool, work string, lo, hi in
 		if err := rows.Scan(&who, &to, &near, &place, &q, &heard); err != nil {
 			return "", err
 		}
+		// S43: an answer that goes to more people than the question it answers is often the scene's irony —
+		// asked of one, answered to all. Say it, so the writer does not open the channel to everyone at the start.
+		note := ""
+		if slices.Contains(prevTo, who) && len(to) > len(prevTo) && len(prevTo) <= 2 {
+			note = fmt.Sprintf("  · 대비: 바로 앞의 물음은 %s → %s, 그 사람에게만 갔다. 이 답은 %d명에게 한꺼번에 간다 — 묻는 쪽은 보낸 뒤에야 안다. 장면을 처음부터 모두가 듣는 자리로 열지 않는다\n",
+				prevWho, strings.Join(prevTo, ", "), len(to))
+		}
+		prevWho, prevTo = who, to
 		aud := strings.Join(to, ", ")
 		if len(to) > 3 {
 			aud = fmt.Sprintf("%s 외 %d명 (%d명 모두에게 한꺼번에)", to[0], len(to)-1, len(to))
@@ -65,7 +76,7 @@ func spokenLines(ctx context.Context, pool *pgxpool.Pool, work string, lo, hi in
 		if !heard {
 			line += " — 시점 인물은 이 자리에 없었다"
 		}
-		b.WriteString(line + "\n")
+		b.WriteString(line + "\n" + note)
 	}
 	return b.String(), rows.Err()
 }
@@ -183,7 +194,11 @@ func placeCards(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 			line += " — " + dealLook(look, scenes)
 		}
 		if talk != "" {
-			line += " / 그 자리 사람들이 하는 말: " + talk
+			if again { // P7: on a revisit, one of these, not the same three every time
+				line += " / 그 자리 사람들이 하는 말(이 중 하나만, 새 말로): " + talk
+			} else {
+				line += " / 그 자리 사람들이 하는 말: " + talk
+			}
 		}
 		b.WriteString(line + "\n")
 	}
@@ -403,7 +418,7 @@ func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 			parts = append(parts, "장면 시계 — "+clock+" (진행을 장면 안에서 두세 번 보인다)")
 		}
 		if risk != "" { // P20: the price of acting, so the key act takes more than one line
-			parts = append(parts, "위험 — "+risk+" (손을 쓰는 동안 그 위험이 보이게 한 박자 더 머문다)")
+			parts = append(parts, "위험 — "+risk+" (그 위험이 보이게 한 박자 더 머문다)")
 		}
 		fmt.Fprintf(&b, "- %s (%s): %s\n", id, place, strings.Join(parts, " / "))
 	}
