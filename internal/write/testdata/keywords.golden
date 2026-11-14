@@ -20,6 +20,7 @@
 - `info-flow` (warn): 인물이 그 전에 알게 된 적 없는 명제를 말한다
 - `letter-unknown-info` (warn): 쓴 사람이 쓰기 전에 믿지 않은 명제가 문서에 담겼다
 - `object-location` (warn): 사물이 있다고 선언된 곳과 다른 장소의 장면에서 그 사물을 다룬다
+- `opening-narrator-unnamed` (warn): 1인칭 화자가 오프닝 모듈에서 한 번도 이름으로 불리지 않는다
 - `pattern-missing` (warn): 작가가 선언한 서사 패턴이 작품에서 검출되지 않았다
 - `payoff-without-setup` (warn): 복선(setup)이 없거나 회수보다 앞서지 않는다
 - `pov-mind-leak` (error): 1인칭 장면에서 화자가 남의 속마음을 안다

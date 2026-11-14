@@ -254,3 +254,58 @@ func TestPromptSceneDesign(t *testing.T) {
 		t.Error("ellipsis wording")
 	}
 }
+
+func TestPromptHandoff(t *testing.T) {
+	s := mustLoad(t, "testdata/scenes/holmes-scandal-opening.json")
+	_, plain, _ := BuildPrompt(s, VariantIROnly, "en", nil)
+	if strings.Contains(plain, "Where the previous scene ended") {
+		t.Error("no handoff: no section")
+	}
+	tail := "Begin from this state. The previous scene has already told its last act; do not narrate it again. If this scene opens in another place or later, make the move or the time skip clear in the first lines. Characters not still there must enter before they act.\n"
+	// present characters need not be in this scene's cast; names come from the handoff itself, in the scene language
+	kim := Entity{ID: "kim", Names: map[string][]string{"ko": {"김"}, "en": {"Kim"}}}
+	lee := Entity{ID: "lee", Names: map[string][]string{"en": {"Lee"}}}
+	s.Previously = "Scene 1: x."
+	s.Handoff = &Handoff{Place: "the bridge", Last: &HandoffAct{Actor: kim, Verb: "tells", Text: "the door is open"}, Present: []Entity{kim, lee}}
+	_, u, _ := BuildPrompt(s, VariantIROnly, "en", nil)
+	want := "## Previously\nScene 1: x.\n\n## Where the previous scene ended\nPlace: the bridge\nLast act: Kim (tells): the door is open\nStill there: Kim, Lee\n" + tail
+	if !strings.Contains(u, want) {
+		t.Errorf("want\n%s\nin\n%s", want, u)
+	}
+	_, u, _ = BuildPrompt(s, VariantIROnly, "ko", nil)
+	if !strings.Contains(u, "Last act: 김 (tells): the door is open\nStill there: 김, lee\n") {
+		t.Errorf("ko names:\n%s", u)
+	}
+	s.Handoff.Last.Text = ""
+	_, u, _ = BuildPrompt(s, VariantIROnly, "en", nil)
+	if !strings.Contains(u, "Last act: Kim (tells)\n") {
+		t.Errorf("no fact: no trailing colon:\n%s", u)
+	}
+	s.Handoff.Last, s.Handoff.Present = nil, nil
+	_, u, _ = BuildPrompt(s, VariantIROnly, "en", nil)
+	if strings.Contains(u, "Last act") || !strings.Contains(u, "Place: the bridge\nStill there: no one\n"+tail) {
+		t.Errorf("no last act / no one:\n%s", u)
+	}
+}
+
+// Plan 18 T2: flesh "novel" tells the renderer to attach every added detail to the scene; flesh "" stays unchanged.
+func TestFleshDetailsConnectToScene(t *testing.T) {
+	const line = "- Every sensory detail, gesture and comparison must attach to a person, object or fact in this scene. Add no ambient decoration (noise, light, weather, décor) that connects to nothing, and draw comparisons only from the scene's own world.\n"
+	s := mustLoad(t, "testdata/scenes/"+firstScene(t))
+	novel := &StyleSample{ID: "x", Lang: "en", Rules: []string{"r"}, Flesh: "novel"}
+	empty := &StyleSample{ID: "x", Lang: "en", Rules: []string{"r"}}
+	sysN, _, err := BuildPrompt(s, VariantStyleDirectives, "en", novel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(sysN, line) {
+		t.Error("novel system prompt missing connected-detail rule")
+	}
+	sysE, _, err := BuildPrompt(s, VariantStyleDirectives, "en", empty)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(sysE, line) {
+		t.Error("flesh-empty system prompt must not carry the connected-detail rule")
+	}
+}

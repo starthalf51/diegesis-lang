@@ -1,6 +1,7 @@
 package render
 
 import (
+	"cmp"
 	"fmt"
 	"strings"
 )
@@ -43,6 +44,7 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 		sb.WriteString("- Narrate every act, in the given order. Do not omit any act.\n")
 		sb.WriteString("- After each key act (speech, discovery, decision, reveal), give the point-of-view character's reaction — body, feeling, or thought.\n")
 		sb.WriteString("- You may add: sensory detail, gestures, small movements within the same place, the point-of-view character's inner thoughts, atmosphere.\n")
+		sb.WriteString("- Every sensory detail, gesture and comparison must attach to a person, object or fact in this scene. Add no ambient decoration (noise, light, weather, décor) that connects to nothing, and draw comparisons only from the scene's own world.\n")
 		sb.WriteString("- Never add: new events; new facts; any change of possession, location (leaving the place), life or death, or relationship; new named characters or places; anything that contradicts the acts or facts; another character's unspoken thoughts in first person.\n")
 	} else {
 		sb.WriteString("- Narrate every act, in the given order. Do not omit any act and do not add events, actions, or facts that are not in the specification.\n")
@@ -127,6 +129,28 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 	fmt.Fprintf(&sb, "# Scene: %s\n", s.Title)
 	if s.Previously != "" {
 		fmt.Fprintf(&sb, "\n## Previously\n%s\n", s.Previously)
+	}
+	if h := s.Handoff; h != nil {
+		ename := func(e Entity) string {
+			if len(e.Names[lang]) > 0 {
+				return e.Names[lang][0]
+			}
+			return e.ID
+		}
+		still := make([]string, len(h.Present))
+		for i, e := range h.Present {
+			still[i] = ename(e)
+		}
+		fmt.Fprintf(&sb, "\n## Where the previous scene ended\nPlace: %s\n", h.Place)
+		if l := h.Last; l != nil {
+			fmt.Fprintf(&sb, "Last act: %s (%s)", ename(l.Actor), l.Verb)
+			if l.Text != "" {
+				fmt.Fprintf(&sb, ": %s", l.Text)
+			}
+			sb.WriteString("\n")
+		}
+		fmt.Fprintf(&sb, "Still there: %s\n", cmp.Or(strings.Join(still, ", "), "no one"))
+		sb.WriteString("Begin from this state. The previous scene has already told its last act; do not narrate it again. If this scene opens in another place or later, make the move or the time skip clear in the first lines. Characters not still there must enter before they act.\n")
 	}
 	fmt.Fprintf(&sb, "\n## Place\n%s\n\n## Characters\n", s.Place)
 	for _, e := range s.Cast {

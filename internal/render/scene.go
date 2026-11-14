@@ -71,6 +71,7 @@ type Scene struct {
 	Turn         Turn       `json:"turn"`                    // scene design: the value change across the scene
 	Tempo        string     `json:"tempo"`                   // scene design: "" | scene | summary | ellipsis
 	Opening      bool       `json:"opening,omitempty"`       // dieg render --opening: ask for a hooking first sentence
+	Handoff      *Handoff   `json:"handoff,omitempty"`       // where the previous scene ended (design scenes with a preceding shown scene only)
 	Flesh        string     `json:"-"`                       // the backend style's flesh mode; selects the re-extraction and card prompts
 }
 
@@ -214,4 +215,19 @@ type Goal struct {
 type Turn struct {
 	From string `json:"from"`
 	To   string `json:"to"`
+}
+
+// Handoff is the previous scene's end state, passed into the next scene's render prompt so the boundary does not break.
+// Characters carry their names so they resolve in the scene language even when absent from this scene's cast.
+type Handoff struct {
+	Place   string      `json:"place"`
+	Last    *HandoffAct `json:"last,omitempty"` // the previous scene's last act; absent when it had none
+	Present []Entity    `json:"present"`        // still on stage when the scene ended
+}
+
+// HandoffAct is an act: Text is its fact sentence, or its action text when it has no fact (may be empty).
+type HandoffAct struct {
+	Actor Entity `json:"actor"`
+	Verb  string `json:"verb"`
+	Text  string `json:"text,omitempty"`
 }

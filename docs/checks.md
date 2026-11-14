@@ -51,6 +51,7 @@
 | `term-re-explained` | warn | scene | A scene's `render explain` names a term an earlier scene in the telling already explains (use `recap`) |
 | `scene-no-turn` | warn | scene | In a module (file) that has a `design` block, a shown scene has no `turn` (silent in modules without one, so a work adopts design file by file) |
 | `scene-ends-passive` | warn | scene | A shown scene with a `design` block and a `pov` whose last act (beats included) is not an active act (does, says, tells, asks, orders, writes, sends, shows, lies, whispers, hails, decrees, enacts) by the pov character |
+| `opening-narrator-unnamed` | warn | scene | The module of the first shown scene has a `narration first-person` scene with a `pov`, yet the pov character's name appears in no quote and no fact sentence of that module (once per work) |
 | `pov-offstage` | error | scene | `render pov X` names a character who never enters the scene (no `enter`; `mention` does not count, a later `exit` is not considered) |
 | `pov-mind-leak` | error | act | In a `render narration first-person` scene, a `thinks` act belongs to someone other than the pov character |
 | `time-cycle` | warn | when | Time constraints form a cycle (derive) |
