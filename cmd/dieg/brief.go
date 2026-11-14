@@ -94,9 +94,10 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	// "인물이 그려지지 않음").
 	pov := povOf(ctx, pool, work, from)
 	openly := map[string]bool{}
+	var ids []string
 	cards, err := pool.Query(ctx, epSQL+`
-		SELECT render_name($1, c.entity_id, 'ko'), coalesce(string_agg(CASE a.key WHEN 'role' THEN '역할' WHEN 'want' THEN '원하는 것'
-		           WHEN 'look' THEN CASE WHEN c.entity_id = $4 THEN '겉모습(남이 보는 모습 — 1인칭 화자는 자기를 못 본다. 남의 눈·말·반사면으로만 보인다)' ELSE '겉모습' END WHEN 'voice' THEN '말투' ELSE '신조' END || ': ' || a.value, ' / '
+		SELECT c.entity_id, render_name($1, c.entity_id, 'ko'), coalesce(string_agg(CASE a.key WHEN 'role' THEN '역할' WHEN 'want' THEN '원하는 것'
+		           WHEN 'look' THEN CASE WHEN c.entity_id = $4 THEN '겉모습(남이 보는 모습 — 1인칭 화자는 자기를 못 본다. 남의 눈·말·반사면으로만 보인다)' ELSE '겉모습' END WHEN 'voice' THEN '말투' ELSE '신조(이 문장을 그대로 읊지 않는다. 자기 말로 한 번 비치거나 행동의 이유로)' END || ': ' || a.value, ' / '
 		         ORDER BY array_position(ARRAY['role', 'want', 'look', 'voice', 'creed'], a.key)), ''),
 		       coalesce(string_agg(a.value, '|') FILTER (WHERE a.key = 'creed'), '')
 		  FROM cast_ c LEFT JOIN attribute a ON a.work_id = $1 AND a.entity_id = c.entity_id AND a.key IN ('role', 'want', 'look', 'voice', 'creed')
@@ -104,10 +105,10 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	if err != nil {
 		return "", err
 	}
-	b.WriteString("\n## ① 이 화의 인물 — 처음 나올 때 겉모습과 몸으로 세우고, 원하는 것은 행동으로, 말투와 신조는 대사로 살린다\n")
+	b.WriteString("\n## ① 이 화의 인물 — 카드는 재료다. 문구를 그대로 옮기지 않고 한두 가지를 골라 자기 말로 쓴다. 처음 나올 때 몸으로 세우고, 원하는 것은 행동으로 보인다. 시점 밖 인물은 적힌 경로대로만 안다\n")
 	for cards.Next() {
-		var n, card, cr string
-		if err := cards.Scan(&n, &card, &cr); err != nil {
+		var id, n, card, cr string
+		if err := cards.Scan(&id, &n, &card, &cr); err != nil {
 			cards.Close()
 			return "", err
 		}
@@ -119,8 +120,19 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 		} else {
 			fmt.Fprintf(&b, "- %s — %s\n", n, card)
 		}
+		if id != pov {
+			ids = append(ids, id)
+		}
 	}
 	cards.Close()
+	// S34: what each off-POV character on stage knows of this episode's matter, and how they came to know it.
+	for _, id := range ids {
+		k, err := knowsLines(ctx, pool, work, from, to, id)
+		if err != nil {
+			return "", err
+		}
+		b.WriteString(k)
+	}
 	places, err := placeCards(ctx, pool, work, from, to)
 	if err != nil {
 		return "", err

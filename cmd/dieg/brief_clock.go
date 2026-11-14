@@ -220,6 +220,7 @@ func frames(ctx context.Context, pool *pgxpool.Pool, work string, b *strings.Bui
 		return t, changed
 	}
 	var closes []string
+	certain := false
 	haveClose := false
 	for rows.Next() {
 		var k, t string
@@ -234,6 +235,7 @@ func frames(ctx context.Context, pool *pgxpool.Pool, work string, b *strings.Bui
 		haveClose = true
 		if s, ch := fill(t, true, false); ch {
 			closes = append(closes, fmt.Sprintf("`%s`", s))
+			certain = true
 		} else if s, ch := fill(t, true, true); ch {
 			closes = append(closes, fmt.Sprintf("`%s` (자정을 넘기는 쪽으로 쓸 때)", s))
 		}
@@ -241,6 +243,9 @@ func frames(ctx context.Context, pool *pgxpool.Pool, work string, b *strings.Bui
 	switch {
 	case len(closes) > 0:
 		fmt.Fprintf(b, "- 닫는 줄 후보(이 화에서 바뀐 값, 하나를 고른다): %s\n", strings.Join(closes, " / "))
+		if !certain { // S35: the timeline leaves the day open; the frame line must not decide it
+			b.WriteString("  · 자정을 넘기지 않게 쓰면: 족보 창 줄 없이 장면의 마지막 행동으로 닫는다. 어느 쪽이든 장면의 흐름이 정한다 — 닫는 줄을 위해 자정을 끼워 넣지 않는다\n")
+		}
 	case haveClose:
 		b.WriteString("- 닫는 줄: 이 화에서 바뀌는 값이 없다(설계 경고: 작품 고정 장치는 매 화 한 값이 바뀌기를 요구한다). 닫는 줄을 여는 줄과 같은 값으로 되풀이하지 않는다 — 족보 창 줄 없이 장면의 마지막 행동으로 닫는다\n")
 	}

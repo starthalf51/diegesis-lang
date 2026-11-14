@@ -97,7 +97,7 @@ func TestBriefMasksUnmet(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := "enter a, (이름을 모르는 인물)\n(이름을 모르는 인물) came; cache stays"; got != want {
+	if want := "enter a, (이름을 모르는 인물 1)\n(이름을 모르는 인물 1) came; cache stays"; got != want {
 		t.Errorf("maskNames = %q, want %q", got, want)
 	}
 }

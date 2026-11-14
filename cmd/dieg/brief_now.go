@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -113,7 +114,11 @@ func maskNames(ctx context.Context, pool *pgxpool.Pool, work, from string, endOr
 		return "", err
 	}
 	defer rows.Close()
-	var pairs, ids []string
+	// S16/S29: a known_as replaces the name and the code identifier alike; each unmet character gets its own tag,
+	// so three hidden people stay three people.
+	var pairs []string
+	idTo := map[string]string{}
+	unmet := 0
 	for rows.Next() {
 		var name, short, alias string
 		var met bool
@@ -123,9 +128,12 @@ func maskNames(ctx context.Context, pool *pgxpool.Pool, work, from string, endOr
 		switch {
 		case alias != "":
 			pairs = append(pairs, name, alias)
+			idTo[short] = alias
 		case !met && !strings.Contains(held, name):
-			pairs = append(pairs, name, "(이름을 모르는 인물)")
-			ids = append(ids, regexp.QuoteMeta(short))
+			unmet++
+			tag := fmt.Sprintf("(이름을 모르는 인물 %d)", unmet)
+			pairs = append(pairs, name, tag)
+			idTo[short] = tag
 		}
 	}
 	if err := rows.Err(); err != nil {
@@ -133,8 +141,13 @@ func maskNames(ctx context.Context, pool *pgxpool.Pool, work, from string, endOr
 	}
 	// ponytail: names are plain substrings (a name inside another word is replaced too); ids are whole words.
 	s = strings.NewReplacer(pairs...).Replace(s)
-	if len(ids) > 0 {
-		s = regexp.MustCompile(`\b(`+strings.Join(ids, "|")+`)\b`).ReplaceAllString(s, "(이름을 모르는 인물)")
+	if len(idTo) > 0 {
+		var alt []string
+		for id := range idTo {
+			alt = append(alt, regexp.QuoteMeta(id))
+		}
+		sort.Strings(alt)
+		s = regexp.MustCompile(`\b(`+strings.Join(alt, "|")+`)\b`).ReplaceAllStringFunc(s, func(m string) string { return idTo[m] })
 	}
 	return s, nil
 }
@@ -279,4 +292,59 @@ func newTerms(ctx context.Context, pool *pgxpool.Pool, work, from, to string, be
 		fmt.Fprintf(&b, "- %s — 장면 %s · %s\n  풀이(참고): %s\n", n, scene, ev, gloss)
 	}
 	return b.String(), rows.Err()
+}
+
+// knowsLines is an off-POV character's knowledge that this episode's acts use (S34): each belief held by the
+// episode end with its path — the act it came from, background (held before the story), or flagged when the code
+// asserts it here with no path — plus what the character directly sees in the episode.
+func knowsLines(ctx context.Context, pool *pgxpool.Pool, work, from, to, who string) (string, error) {
+	rows, err := pool.Query(ctx, epSQL+`,
+		endpt AS (SELECT s.end_pt FROM scene s JOIN o ON o.scene_id = s.id WHERE s.id IN (SELECT scene_id FROM ep) ORDER BY o.ord DESC LIMIT 1),
+		used AS (SELECT DISTINCT a.prop_id FROM act a WHERE a.work_id = $1 AND a.scene_id IN (SELECT scene_id FROM ep) AND a.prop_id IS NOT NULL)
+		SELECT render_name($1, $4, 'ko'), render_fact_text($1, bl.prop_id),
+		       CASE WHEN ca.id IS NOT NULL THEN lint_short(ca.scene_id) || ' ' || coalesce(render_name($1, ca.actor_id, 'ko'), '') || ' ' || ca.verb
+		            WHEN bl.from_pt IS NULL OR bl.from_pt NOT LIKE '%#%' AND regexp_replace(bl.from_pt, '\.(start|end)$', '') NOT IN (SELECT scene_id FROM ep) THEN ''
+		            ELSE '!' END,
+		       bl.prop_id IN (SELECT * FROM used) AND EXISTS (SELECT 1 FROM act s WHERE s.work_id = $1 AND s.actor_id = $4 AND s.verb = 'sees'
+		         AND s.prop_id = bl.prop_id AND s.scene_id IN (SELECT scene_id FROM ep))
+		  FROM believes bl LEFT JOIN act ca ON ca.id = bl.cause_act
+		 WHERE bl.work_id = $1 AND bl.entity_id = $4 AND bl.value AND bl.prop_id IN (SELECT * FROM used)
+		   AND (bl.from_pt IS NULL OR bl.from_pt = (SELECT * FROM endpt) OR precedes($1, bl.from_pt, (SELECT * FROM endpt)) = 'yes')
+		 ORDER BY 2`, work, from, to, who)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	type line struct{ n, t, path string }
+	var ls []line
+	sees := false
+	for rows.Next() {
+		var l line
+		var seen bool
+		if err := rows.Scan(&l.n, &l.t, &l.path, &seen); err != nil {
+			return "", err
+		}
+		if seen {
+			l.path, sees = "이 화에서 직접 본다", true
+		}
+		ls = append(ls, l)
+	}
+	if err := rows.Err(); err != nil {
+		return "", err
+	}
+	var b strings.Builder
+	for _, l := range ls {
+		switch {
+		case l.path == "":
+			l.path = "처음부터 알던 것"
+		case l.path == "!" && sees:
+			l.path = "이 화에서 직접 보는 것에서 안다 — 장면이 그 보는 순간을 보여 준다"
+		case l.path == "!":
+			l.path = "⚠ 경로가 설계에 없다 — 장면이 어떻게 아는지 보여 주거나, 아는 척하지 않는다"
+		case !strings.HasPrefix(l.path, "이 화에서"):
+			l.path = "경로: " + l.path
+		}
+		fmt.Fprintf(&b, "  · %s가 아는 것: %s — %s\n", l.n, l.t, l.path)
+	}
+	return b.String(), nil
 }
