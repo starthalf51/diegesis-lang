@@ -17,7 +17,7 @@ func TestBriefSections(t *testing.T) {
 		t.Skip("SL_PG_DSN not set")
 	}
 	dir := t.TempDir()
-	src := "---\nmodule: rs.s\nmode: authored\n---\n\n```sl\n" + rsWork + "```\n"
+	src := "---\nmodule: rs.s\nmode: authored\n---\n\n```sl\n" + rsWork + "attr jokbo.rule = \"한 줄에 한 사람\"\n```\n"
 	os.WriteFile(filepath.Join(dir, "w.dieg.md"), []byte(src), 0o644)
 	work, err := load(dir, io.Discard)
 	if err != nil {
@@ -52,6 +52,9 @@ func TestBriefSections(t *testing.T) {
 	}
 	if s := sec("## ③"); strings.Contains(s, "배가 떠났다") || strings.Contains(s, "문이 잠겼다") {
 		t.Errorf("hidden section leaks known facts:\n%s", s)
+	}
+	if !strings.Contains(got, "- 족보: 한 줄에 한 사람") {
+		t.Errorf("rule missing:\n%s", got)
 	}
 	if !strings.HasSuffix(got, "CODE") {
 		t.Errorf("code not appended")

@@ -39,9 +39,40 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, code, st
 	// The brief is the writer's only source of knowledge (S12): no concept document rides beside it.
 	b.WriteString("너는 연재 소설 작가다. 아래 회차 설계서만으로 이 화 원고를 쓴다. 설계서에 없는 설정·과거·비밀을 지어내지 않는다. 감각·몸짓·짧은 대사·생활 세부는 자유롭게 쓴다.\n\n")
 	if style != "" {
-		b.WriteString("## 문체\n" + style + "\n\n")
+		b.WriteString(strings.TrimSpace(style) + "\n\n") // the style file carries its own heading
 	}
 	b.WriteString("# 회차 설계서\n\n")
+	// ⓪ now and the world's rules (S14, S15). Story time comes from the first scene's start point (seconds since start).
+	var lo, hi int64
+	if err := pool.QueryRow(ctx, `SELECT coalesce(p.earliest, 0), coalesce(p.latest, p.earliest, 0) FROM scene s JOIN point p ON p.id = s.start_pt
+		WHERE s.work_id = $1 AND (s.id = $2 OR lint_short(s.id) = $2)`, work, from).Scan(&lo, &hi); err == nil {
+		if d1, d2 := lo/86400+1, hi/86400+1; d1 == d2 {
+			fmt.Fprintf(&b, "## ⓪ 지금 — 이야기 시작 후 %d일째\n", d1)
+		} else {
+			fmt.Fprintf(&b, "## ⓪ 지금 — 이야기 시작 후 %d~%d일째. 앞 화의 '오늘'은 이미 지난 날이다\n", d1, d2)
+		}
+	}
+	// Rules are `attr <term>.rule = "..."`; only rules of terms the reader meets by the episode end are given.
+	rules, err := pool.Query(ctx, `SELECT render_name($1, a.entity_id, 'ko'), a.value FROM attribute a
+		WHERE a.work_id = $1 AND a.key = 'rule' AND (NOT EXISTS (SELECT 1 FROM term_explained_at($1) t WHERE t.term_id = a.entity_id)
+		  OR EXISTS (SELECT 1 FROM term_explained_at($1) t WHERE t.term_id = a.entity_id AND t.ord < $2))
+		ORDER BY a.entity_id, a.id`, work, toldOrd(ctx, pool, work, to))
+	if err != nil {
+		return "", err
+	}
+	var rb strings.Builder
+	for rules.Next() {
+		var n, v string
+		if err := rules.Scan(&n, &v); err != nil {
+			rules.Close()
+			return "", err
+		}
+		fmt.Fprintf(&rb, "- %s: %s\n", n, v)
+	}
+	rules.Close()
+	if rb.Len() > 0 {
+		b.WriteString("\n## ⓪ 세계 규칙 — 어기지 않는다. 설명문으로 옮기지 않고 인물이 규칙에 맞게 움직이게 한다\n" + rb.String() + "\n")
+	}
 	b.WriteString("## ① 독자가 이미 아는 것 — 다시 설명하지 않는다\n")
 	if t := before.Text(); t != "" {
 		b.WriteString(t)
@@ -58,7 +89,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, code, st
 	}
 	// Only truths this episode touches: believed by someone on stage, or carried by an act in its scenes. Far-future
 	// truths are not given to the writer at all; a writer who does not know cannot leak (S11).
-	// Beliefs count only once held by the episode end (from_pt scene told no later than the last scene of the range).
+	// A belief counts only if its point certainly precedes the episode end; an unordered point is dropped, not passed.
 	b.WriteString("\n## ③ 밝히지 않는다 — 이 화 인물이 쥐고 있지만 독자는 아직 모르는 진실. 인물은 이것을 알고 숨기며 움직인다\n")
 	rows, err := pool.Query(ctx, `WITH o AS (SELECT * FROM scene_told_ord($1)),
 		ep AS (SELECT o.scene_id FROM o WHERE o.ord >= (SELECT o2.ord FROM o o2 JOIN scene x ON x.id = o2.scene_id
@@ -66,8 +97,9 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, code, st
 		       AND ($3 = '' OR o.ord < (SELECT o3.ord FROM o o3 JOIN scene y ON y.id = o3.scene_id WHERE y.id = $3 OR lint_short(y.id) = $3))),
 		cast_ AS (SELECT DISTINCT p.entity_id FROM presence p JOIN entity e ON e.id = p.entity_id
 		          WHERE p.work_id = $1 AND e.kind = 'character' AND p.scene_id IN (SELECT scene_id FROM ep)),
+		endpt AS (SELECT s.end_pt FROM scene s JOIN o ON o.scene_id = s.id WHERE s.id IN (SELECT scene_id FROM ep) ORDER BY o.ord DESC LIMIT 1),
 		bl_ AS (SELECT bl.* FROM believes bl WHERE bl.work_id = $1 AND bl.entity_id IN (SELECT * FROM cast_)
-		        AND coalesce((SELECT o.ord FROM o WHERE o.scene_id = split_part(bl.from_pt, '#', 1)), 0) <= (SELECT max(o.ord) FROM o WHERE o.scene_id IN (SELECT scene_id FROM ep)))
+		        AND (bl.from_pt IS NULL OR bl.from_pt = (SELECT * FROM endpt) OR precedes($1, bl.from_pt, (SELECT * FROM endpt)) = 'yes'))
 		SELECT render_fact_text($1, f.id), coalesce((SELECT string_agg(DISTINCT render_name($1, bl.entity_id, 'ko'), ', ')
 		         FROM bl_ bl WHERE bl.prop_id = f.id AND bl.value), '')
 		  FROM fact f WHERE f.work_id = $1 AND render_fact_true($1, f.id)
@@ -95,7 +127,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, code, st
 	if err := rows.Err(); err != nil {
 		return "", err
 	}
-	b.WriteString("\n## ④ 쓰기 규칙\n- 회차 번호·'지난 화' 같은 연재 바깥 말을 원고에 쓰지 않는다.\n- 설계서의 사실 문장·용어 풀이를 원고에 옮겨 적지 않는다. 인물의 행동·대사·결과로 보인다.\n- ①에 없는 것은 시점 인물도 독자도 모른다. 추측은 추측으로만 쓴다.\n")
+	b.WriteString("\n## ④ 쓰기 규칙\n- 회차 번호·'지난 화' 같은 연재 바깥 말을 원고에 쓰지 않는다.\n- 설계서의 사실 문장·용어 풀이를 원고에 옮겨 적지 않는다. 인물의 행동·대사·결과로 보인다.\n- ①에 없는 것은 독자가 모른다. 시점 인물은 ①과 ③에서 자기 이름이 붙은 것만 더 안다. 그것을 서술로 털어놓지 않고 행동의 이유로만 비친다. 추측은 추측으로만 쓴다.\n")
 	if code != "" {
 		b.WriteString("\n## ⑤ 장면 설계 (디제시스 코드) — 장면 순서·장소·행위·등장/퇴장·누가 무엇을 아는지를 따른다. 감각·몸짓·세부는 자유\n")
 		b.WriteString(code)
@@ -159,4 +191,14 @@ func readOpt(path string) (string, error) {
 	}
 	b, err := os.ReadFile(path)
 	return string(b), err
+}
+
+// toldOrd is the telling position of scene id, or a position past every scene when id is "" or unknown.
+func toldOrd(ctx context.Context, pool *pgxpool.Pool, work, id string) int {
+	o := 1 << 30
+	if id != "" {
+		pool.QueryRow(ctx, `SELECT o.ord FROM scene_told_ord($1) o JOIN scene x ON x.id = o.scene_id
+			WHERE x.id = $2 OR lint_short(x.id) = $2`, work, id).Scan(&o)
+	}
+	return o
 }
