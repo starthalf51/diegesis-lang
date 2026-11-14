@@ -109,3 +109,13 @@ func TestSubj(t *testing.T) {
 		}
 	}
 }
+
+func TestDealLook(t *testing.T) {
+	got := dealLook("a · b · c · d · e", []string{"e1.3", "e1.1"})
+	if want := "e1.1에 쓸 재료: a · b / e1.3에 쓸 재료: c · d / 쓰지 않아도 되는 것: e"; got != want {
+		t.Errorf("dealLook = %q, want %q", got, want)
+	}
+	if got := dealLook("한 문장짜리 감각", []string{"e1"}); got != "한 문장짜리 감각" {
+		t.Errorf("sentence look changed: %q", got)
+	}
+}

@@ -158,7 +158,8 @@ func placeCards(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 	rows, err := pool.Query(ctx, epSQL+`
 		SELECT render_name($1, s.place_id, 'ko'), coalesce(min(a.value) FILTER (WHERE a.key = 'look'), ''),
 		       coalesce(min(a.value) FILTER (WHERE a.key = 'talk'), ''),
-		       EXISTS (SELECT 1 FROM scene sx JOIN o ox ON ox.scene_id = sx.id WHERE sx.place_id = s.place_id AND ox.ord < (SELECT min(o.ord) FROM o JOIN ep ON ep.scene_id = o.scene_id))
+		       EXISTS (SELECT 1 FROM scene sx JOIN o ox ON ox.scene_id = sx.id WHERE sx.place_id = s.place_id AND ox.ord < (SELECT min(o.ord) FROM o JOIN ep ON ep.scene_id = o.scene_id)),
+		       array_agg(DISTINCT lint_short(s.id))
 		  FROM scene s JOIN ep ON ep.scene_id = s.id
 		  LEFT JOIN attribute a ON a.work_id = $1 AND a.entity_id = s.place_id AND a.key IN ('look', 'talk')
 		 WHERE s.place_id IS NOT NULL GROUP BY s.place_id ORDER BY min(s.discourse_ord)`, work, from, to)
@@ -170,7 +171,8 @@ func placeCards(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 	for rows.Next() {
 		var n, look, talk string
 		var again bool
-		if err := rows.Scan(&n, &look, &talk, &again); err != nil {
+		var scenes []string
+		if err := rows.Scan(&n, &look, &talk, &again, &scenes); err != nil {
 			return "", err
 		}
 		line := "- " + n
@@ -178,7 +180,7 @@ func placeCards(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 		case again: // P7: a revisited place is not painted again from the card
 			line += " — 다시 찾은 장소. 처음처럼 다시 그리지 않는다. 이번에 달라진 것 하나만 쓴다"
 		case look != "":
-			line += " — " + look
+			line += " — " + dealLook(look, scenes)
 		}
 		if talk != "" {
 			line += " / 그 자리 사람들이 하는 말: " + talk
@@ -402,4 +404,47 @@ func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 		fmt.Fprintf(&b, "- %s (%s): %s\n", id, place, strings.Join(parts, " / "))
 	}
 	return b.String(), rows.Err()
+}
+
+// factMechanisms maps a fact text to the terms whose `shown_by` names it: the world devices that fact happens through.
+func factMechanisms(ctx context.Context, pool *pgxpool.Pool, work string) (map[string]string, error) {
+	rows, err := pool.Query(ctx, `SELECT render_fact_text($1, sb.value), string_agg(render_name($1, sb.entity_id, 'ko'), '·' ORDER BY sb.entity_id)
+		FROM attribute sb WHERE sb.work_id = $1 AND sb.key = 'shown_by' GROUP BY 1`, work)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	m := map[string]string{}
+	for rows.Next() {
+		var t, n string
+		if err := rows.Scan(&t, &n); err != nil {
+			return nil, err
+		}
+		m[t] = n
+	}
+	return m, rows.Err()
+}
+
+// dealLook hands a place's sense words (" · " separated) out two per scene, so the card stops reading as a
+// checklist to pour into the first paragraph (P7); words left over are optional. A sentence look is passed as is.
+func dealLook(look string, scenes []string) string {
+	words := strings.Split(look, " · ")
+	if len(words) < 3 {
+		return look
+	}
+	sort.Strings(scenes)
+	var parts []string
+	i := 0
+	for _, s := range scenes {
+		if i >= len(words) {
+			break
+		}
+		j := min(i+2, len(words))
+		parts = append(parts, s+"에 쓸 재료: "+strings.Join(words[i:j], " · "))
+		i = j
+	}
+	if i < len(words) {
+		parts = append(parts, "쓰지 않아도 되는 것: "+strings.Join(words[i:], " · "))
+	}
+	return strings.Join(parts, " / ")
 }

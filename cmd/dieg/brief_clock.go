@@ -27,7 +27,7 @@ type span struct{ start, end, maybe string }
 //     (last report before the episode, last one inside it) are the counter values.
 //   - frames: `attr <term>.frame_open` / `frame_close` templates with {key} placeholders (a clock's term id, a
 //     counter's data key) are filled in, so the writer gets finished lines instead of a format example.
-func nowSection(ctx context.Context, pool *pgxpool.Pool, work, from, to, rulesDir string) (string, error) {
+func nowSection(ctx context.Context, pool *pgxpool.Pool, work, from, to, rulesDir string, first bool) (string, error) {
 	var b strings.Builder
 	vals := map[string]span{}
 	rows, err := pool.Query(ctx, epSQL+`, last AS (SELECT s.end_pt FROM scene s JOIN o ON o.scene_id = s.id
@@ -67,7 +67,7 @@ func nowSection(ctx context.Context, pool *pgxpool.Pool, work, from, to, rulesDi
 			return "", err
 		}
 	}
-	if err := frames(ctx, pool, work, &b, vals); err != nil {
+	if err := frames(ctx, pool, work, &b, vals, first); err != nil {
 		return "", err
 	}
 	return b.String(), nil
@@ -198,7 +198,7 @@ func num(v any) (string, bool) {
 
 // frames fills `frame_open` with start values and each `frame_close` with end values; a closing line whose values
 // did not change in this episode is not offered as the closing line (S31).
-func frames(ctx context.Context, pool *pgxpool.Pool, work string, b *strings.Builder, vals map[string]span) error {
+func frames(ctx context.Context, pool *pgxpool.Pool, work string, b *strings.Builder, vals map[string]span, first bool) error {
 	rows, err := pool.Query(ctx, `SELECT a.key, a.value FROM attribute a WHERE a.work_id = $1 AND a.key IN ('frame_open', 'frame_close') ORDER BY a.key DESC, a.id`, work)
 	if err != nil {
 		return err
@@ -229,7 +229,11 @@ func frames(ctx context.Context, pool *pgxpool.Pool, work string, b *strings.Bui
 		}
 		if k == "frame_open" {
 			s, _ := fill(t, false, false)
-			fmt.Fprintf(b, "- 여는 줄(그대로 쓴다): `%s`\n", s)
+			if first { // S39: the device's first appearance may withhold its values and reveal them in the episode
+				fmt.Fprintf(b, "- 여는 줄: `%s` — 이 장치가 처음 나오는 화다. 값 칸을 ▒로 가려 열고, 가린 값은 이 화 안에서 장면으로 드러내도 된다. 닫는 줄은 글자 그대로\n", s)
+			} else {
+				fmt.Fprintf(b, "- 여는 줄(그대로 쓴다): `%s`\n", s)
+			}
 			continue
 		}
 		haveClose = true
@@ -242,9 +246,11 @@ func frames(ctx context.Context, pool *pgxpool.Pool, work string, b *strings.Bui
 	}
 	switch {
 	case len(closes) > 0:
-		fmt.Fprintf(b, "- 닫는 줄 후보(이 화에서 바뀐 값, 하나를 고른다): %s\n", strings.Join(closes, " / "))
-		if !certain { // S35: the timeline leaves the day open; the frame line must not decide it
-			b.WriteString("  · 자정을 넘기지 않게 쓰면: 족보 창 줄 없이 장면의 마지막 행동으로 닫는다. 어느 쪽이든 장면의 흐름이 정한다 — 닫는 줄을 위해 자정을 끼워 넣지 않는다\n")
+		if !certain { // S35/P16: the timeline leaves the day open; the default branch comes first, the frame must not decide it
+			b.WriteString("- 닫는 줄: 장면이 자정을 넘기지 않으면 족보 창 줄 없이 장면의 마지막 행동으로 닫는다(기본). 닫는 줄을 위해 자정을 끼워 넣지 않는다\n")
+			fmt.Fprintf(b, "  · 장면 흐름이 자연히 자정을 넘길 때만: %s\n", strings.Join(closes, " / "))
+		} else {
+			fmt.Fprintf(b, "- 닫는 줄 후보(이 화에서 바뀐 값, 하나를 고른다): %s\n", strings.Join(closes, " / "))
 		}
 	case haveClose:
 		b.WriteString("- 닫는 줄: 이 화에서 바뀌는 값이 없다(설계 경고: 작품 고정 장치는 매 화 한 값이 바뀌기를 요구한다). 닫는 줄을 여는 줄과 같은 값으로 되풀이하지 않는다 — 족보 창 줄 없이 장면의 마지막 행동으로 닫는다\n")

@@ -88,7 +88,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	if rb.Len() > 0 {
 		b.WriteString("\n## ⓪ 세계 규칙 — 어기지 않는다. 설명문으로 옮기지 않고 인물이 규칙에 맞게 움직이게 한다\n" + rb.String() + "\n")
 	}
-	if now, err := nowSection(ctx, pool, work, from, to, rulesDir); err != nil {
+	if now, err := nowSection(ctx, pool, work, from, to, rulesDir, before.Text() == ""); err != nil {
 		return "", err
 	} else if now != "" {
 		b.WriteString("\n## ⓪ 시계와 카운터 — 숫자는 정확히 이 값으로 쓴다\n" + now + "\n")
@@ -111,10 +111,10 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	var ids []string
 	cards, err := pool.Query(ctx, epSQL+`
 		SELECT c.entity_id, render_name($1, c.entity_id, 'ko'), coalesce(string_agg(CASE a.key WHEN 'role' THEN '역할' WHEN 'want' THEN '원하는 것'
-		           WHEN 'look' THEN CASE WHEN c.entity_id = $4 THEN '겉모습(남이 보는 모습 — 1인칭 화자는 자기를 못 본다. 남의 눈·말·반사면으로만 보인다)' ELSE '겉모습' END WHEN 'voice' THEN '말투' ELSE '신조(이 문장을 그대로 읊지 않는다. 자기 말로 한 번 비치거나 행동의 이유로)' END || ': ' || a.value, ' / '
-		         ORDER BY array_position(ARRAY['role', 'want', 'look', 'voice', 'creed'], a.key)), ''),
+		           WHEN 'look' THEN CASE WHEN c.entity_id = $4 THEN '겉모습(남이 보는 모습 — 1인칭 화자는 자기를 못 본다. 남의 눈·말·반사면으로만 보인다)' ELSE '겉모습' END WHEN 'voice' THEN '말투' WHEN 'unaware' THEN '모르는 것(아는 척하지 않는다)' ELSE '신조(이 문장을 그대로 읊지 않는다. 자기 말로 한 번 비치거나 행동의 이유로)' END || ': ' || a.value, ' / '
+		         ORDER BY array_position(ARRAY['role', 'want', 'look', 'voice', 'unaware', 'creed'], a.key)), ''),
 		       coalesce(string_agg(a.value, '|') FILTER (WHERE a.key = 'creed'), '')
-		  FROM cast_ c LEFT JOIN attribute a ON a.work_id = $1 AND a.entity_id = c.entity_id AND a.key IN ('role', 'want', 'look', 'voice', 'creed')
+		  FROM cast_ c LEFT JOIN attribute a ON a.work_id = $1 AND a.entity_id = c.entity_id AND a.key IN ('role', 'want', 'look', 'voice', 'unaware', 'creed')
 		 GROUP BY c.entity_id ORDER BY 1`, work, from, to, pov)
 	if err != nil {
 		return "", err
@@ -190,10 +190,20 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 		if terms != "" {
 			b.WriteString("\n## ② 이 화가 세울 세계 — 처음 읽는 독자가 이 화를 덮을 때 알아야 하는 전제. 풀이는 참고용이고 옮기지 않는다. 괄호의 방식으로 보인다\n" + terms)
 		}
+		// S5: a fact that a term's mechanism carries (`attr <term>.shown_by = <fact>`) says so on its own line, so the
+		// writer stages the device instead of summarising the fact.
+		via, err := factMechanisms(ctx, pool, work)
+		if err != nil {
+			return "", err
+		}
 		b.WriteString("\n## ② 이 화가 독자에게 넘길 것 — 장면으로 짐작하게 한다. 문장을 그대로 옮기지 않는다\n")
 		for _, f := range after.Facts {
 			if !had[f.Text] {
-				fmt.Fprintf(&b, "- %s\n", forgedLabel(forged, f.Text))
+				l := "- " + forgedLabel(forged, f.Text)
+				if m := via[f.Text]; m != "" {
+					l += " — " + m + "의 작동으로 일어난다: 그 장치가 장면에서 움직이게 보인다"
+				}
+				b.WriteString(l + "\n")
 			}
 		}
 	}
