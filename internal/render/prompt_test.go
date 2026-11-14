@@ -261,7 +261,7 @@ func TestPromptHandoff(t *testing.T) {
 	if strings.Contains(plain, "Where the previous scene ended") {
 		t.Error("no handoff: no section")
 	}
-	tail := "Begin from this state. If this scene opens in another place or later, make the move or the time skip clear in the first lines. Characters not still there must enter before they act.\n"
+	tail := "Begin from this state. The previous scene has already told its last act; do not narrate it again. If this scene opens in another place or later, make the move or the time skip clear in the first lines. Characters not still there must enter before they act.\n"
 	// present characters need not be in this scene's cast; names come from the handoff itself, in the scene language
 	kim := Entity{ID: "kim", Names: map[string][]string{"ko": {"김"}, "en": {"Kim"}}}
 	lee := Entity{ID: "lee", Names: map[string][]string{"en": {"Lee"}}}

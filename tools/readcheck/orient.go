@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 )
 
@@ -59,6 +60,7 @@ func runOrientMode(file, model string, budget int, out io.Writer) int {
 		fmt.Fprintf(out, "%s UNDECIDED (unparsable or budget exhausted)\n", file)
 		return 2
 	}
+	*o.Dangling = slices.DeleteFunc(*o.Dangling, func(s string) bool { return strings.TrimSpace(s) == "" }) // the prompt's template echo is not an item
 	jb, _ := json.MarshalIndent(o, "", " ")
 	dest := file + ".orient.json"
 	if err := os.WriteFile(dest, jb, 0o644); err != nil {

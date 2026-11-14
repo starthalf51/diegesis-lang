@@ -122,7 +122,8 @@ BEGIN
                            FROM name nm WHERE nm.work_id = w AND nm.owner_id = x AND nm.lang <> '' GROUP BY nm.lang) l),
                         jsonb_build_object('en', jsonb_build_array(render_name(w, x, 'en'))))),
                       'verb', a.verb,
-                      'text', coalesce(render_fact_text(w, a.prop_id), nullif(trim(replace(a.action, '_', ' ')), ''), '')))
+                      'text', coalesce(CASE WHEN lint_canon(w, a.prop_id) = ANY (held_c) THEN NULL ELSE render_fact_text(w, a.prop_id) END,
+                                       nullif(trim(replace(a.action, '_', ' ')), ''), '')))
                     FROM act a, LATERAL (SELECT coalesce(a.resolved_actor_id, a.actor_id) x) z
                    WHERE a.work_id = w AND a.scene_id = pv.id ORDER BY a.ord DESC LIMIT 1), '{}'::jsonb)
     INTO ho

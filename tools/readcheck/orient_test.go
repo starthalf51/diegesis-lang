@@ -65,3 +65,19 @@ func TestOrientPromptEnglish(t *testing.T) {
 		}
 	}
 }
+
+// The prompt's own template echo (`"dangling":[""]`) and blank strings are not dangling items.
+func TestOrientDropsBlankDangling(t *testing.T) {
+	code, out, ep := runOrient(t, []string{`{"name":"H","situation":"s","world":"w","want":"x","next":"yes","dangling":["", "  ", "a limp"]}`})
+	if code != 0 || !strings.Contains(out, "dangling=1\n") {
+		t.Fatalf("exit %d out %q", code, out)
+	}
+	var saved orientRead
+	if b, _ := os.ReadFile(ep + ".orient.json"); json.Unmarshal(b, &saved) != nil || len(*saved.Dangling) != 1 {
+		t.Errorf("orient.json dangling: %s", b)
+	}
+	code, out, _ = runOrient(t, []string{`{"name":"H","situation":"s","world":"w","want":"x","next":"yes","dangling":[""]}`})
+	if code != 0 || !strings.Contains(out, "dangling=0\n") {
+		t.Errorf("template echo: exit %d out %q", code, out)
+	}
+}

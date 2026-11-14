@@ -223,3 +223,17 @@ func TestRenderSceneHandoff(t *testing.T) {
 		t.Errorf("scene 4 handoff %+v", h4)
 	}
 }
+
+// A withheld fact never reaches the handoff: the last act's fact text falls back to the action text (here empty) while the fact is held.
+func TestRenderSceneHandoffWithheld(t *testing.T) {
+	pool := open(t)
+	id := compileLoad(t, pool, "fact secret \"SECRETXYZ\" true\nscene 1\n  enter a\n  withhold secret until 3\n  a sees: secret\nscene 2\n  enter a\n  design\n    turn \"x\" -> y\nscene 3\n  enter a\n  a tells a: secret\n")
+	b, err := pg.RenderScene(context.Background(), pool, id, "2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := render.ParseScene(b)
+	if err != nil || s.Handoff == nil || s.Handoff.Last == nil || s.Handoff.Last.Verb != "sees" || s.Handoff.Last.Text != "" {
+		t.Errorf("handoff %+v err %v", s.Handoff, err)
+	}
+}

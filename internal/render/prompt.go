@@ -150,7 +150,7 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 			sb.WriteString("\n")
 		}
 		fmt.Fprintf(&sb, "Still there: %s\n", cmp.Or(strings.Join(still, ", "), "no one"))
-		sb.WriteString("Begin from this state. If this scene opens in another place or later, make the move or the time skip clear in the first lines. Characters not still there must enter before they act.\n")
+		sb.WriteString("Begin from this state. The previous scene has already told its last act; do not narrate it again. If this scene opens in another place or later, make the move or the time skip clear in the first lines. Characters not still there must enter before they act.\n")
 	}
 	fmt.Fprintf(&sb, "\n## Place\n%s\n\n## Characters\n", s.Place)
 	for _, e := range s.Cast {
