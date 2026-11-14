@@ -376,7 +376,8 @@ func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 		SELECT lint_short(o.scene_id), coalesce(render_name($1, s.place_id, 'ko'), ''),
 		       coalesce((SELECT render_name($1, d."values"[1], 'ko') || ': ' || d."values"[2] FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.goal' LIMIT 1), ''),
 		       coalesce((SELECT '"' || d."values"[1] || '" → "' || d."values"[2] || '"' FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.turn' LIMIT 1), ''),
-		       coalesce((SELECT d."values"[1] FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.clock' LIMIT 1), '')
+		       coalesce((SELECT d."values"[1] FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.clock' LIMIT 1), ''),
+		       coalesce((SELECT d."values"[1] FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.risk' LIMIT 1), '')
 		  FROM o JOIN ep ON ep.scene_id = o.scene_id JOIN scene s ON s.id = o.scene_id ORDER BY o.ord`, work, from, to)
 	if err != nil {
 		return "", err
@@ -384,11 +385,11 @@ func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 	defer rows.Close()
 	var b strings.Builder
 	for rows.Next() {
-		var id, place, goal, turn, clock string
-		if err := rows.Scan(&id, &place, &goal, &turn, &clock); err != nil {
+		var id, place, goal, turn, clock, risk string
+		if err := rows.Scan(&id, &place, &goal, &turn, &clock, &risk); err != nil {
 			return "", err
 		}
-		if goal == "" && turn == "" && clock == "" {
+		if goal == "" && turn == "" && clock == "" && risk == "" {
 			continue
 		}
 		var parts []string
@@ -400,6 +401,9 @@ func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 		}
 		if clock != "" {
 			parts = append(parts, "장면 시계 — "+clock+" (진행을 장면 안에서 두세 번 보인다)")
+		}
+		if risk != "" { // P20: the price of acting, so the key act takes more than one line
+			parts = append(parts, "위험 — "+risk+" (손을 쓰는 동안 그 위험이 보이게 한 박자 더 머문다)")
 		}
 		fmt.Fprintf(&b, "- %s (%s): %s\n", id, place, strings.Join(parts, " / "))
 	}
@@ -447,4 +451,30 @@ func dealLook(look string, scenes []string) string {
 		parts = append(parts, "쓰지 않아도 되는 것: "+strings.Join(words[i:], " · "))
 	}
 	return strings.Join(parts, " / ")
+}
+
+// actedFacts is the set of fact texts some act of the episode carries (told, seen, written…).
+func actedFacts(ctx context.Context, pool *pgxpool.Pool, work, from, to string) (map[string]bool, error) {
+	rows, err := pool.Query(ctx, epSQL+` SELECT DISTINCT render_fact_text($1, a.prop_id) FROM act a
+		WHERE a.work_id = $1 AND a.prop_id IS NOT NULL AND a.scene_id IN (SELECT scene_id FROM ep)`, work, from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	m := map[string]bool{}
+	for rows.Next() {
+		var t string
+		if err := rows.Scan(&t); err != nil {
+			return nil, err
+		}
+		m[t] = true
+	}
+	return m, rows.Err()
+}
+
+// renderName is a character's Korean display name.
+func renderName(ctx context.Context, pool *pgxpool.Pool, work, id string) string {
+	var n string
+	pool.QueryRow(ctx, `SELECT render_name($1, $2, 'ko')`, work, id).Scan(&n)
+	return n
 }

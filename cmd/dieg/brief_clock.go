@@ -230,7 +230,7 @@ func frames(ctx context.Context, pool *pgxpool.Pool, work string, b *strings.Bui
 		if k == "frame_open" {
 			s, _ := fill(t, false, false)
 			if first { // S39: the device's first appearance may withhold its values and reveal them in the episode
-				fmt.Fprintf(b, "- 여는 줄: `%s` — 이 장치가 처음 나오는 화다. 값 칸을 ▒로 가려 열고, 가린 값은 이 화 안에서 장면으로 드러내도 된다. 닫는 줄은 글자 그대로\n", s)
+				fmt.Fprintf(b, "- 여는 줄: `%s` — 이 장치가 처음 나오는 화다. 값 칸을 ▒로 가려 열어도 된다 — 가린 칸은 화자도 아직 못 읽는다(줄이 흔들리거나 덮여서). 드러내는 장면에서 화자가 처음 읽는다. 닫는 줄은 글자 그대로\n", s)
 			} else {
 				fmt.Fprintf(b, "- 여는 줄(그대로 쓴다): `%s`\n", s)
 			}
