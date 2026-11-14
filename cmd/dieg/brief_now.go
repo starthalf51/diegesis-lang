@@ -54,8 +54,8 @@ func spokenLines(ctx context.Context, pool *pgxpool.Pool, work string, lo, hi in
 		// asked of one, answered to all. Say it, so the writer does not open the channel to everyone at the start.
 		note := ""
 		if slices.Contains(prevTo, who) && len(to) > len(prevTo) && len(prevTo) <= 2 {
-			note = fmt.Sprintf("  · 대비: 바로 앞의 물음은 %s → %s, 그 사람에게만 갔다. 이 답은 %d명에게 한꺼번에 간다 — 묻는 쪽은 보낸 뒤에야 안다. 장면을 처음부터 모두가 듣는 자리로 열지 않는다\n",
-				prevWho, strings.Join(prevTo, ", "), len(to))
+			note = fmt.Sprintf("  · 대비: 바로 앞의 물음은 %s → %s, 그 사람에게만 갔다. 이 답은 %d명에게 한꺼번에 간다 — 묻는 쪽은 보낸 뒤에야 안다. 장면을 처음부터 모두가 듣는 자리로 열지 않는다. 나머지 %d명은 물음을 듣지 못했다 — 답만 듣고, 누가 무엇을 물었는지 모른다\n",
+				prevWho, strings.Join(prevTo, ", "), len(to), len(to)-1)
 		}
 		prevWho, prevTo = who, to
 		aud := strings.Join(to, ", ")
@@ -278,7 +278,8 @@ func newTerms(ctx context.Context, pool *pgxpool.Pool, work, from, to string, be
 	rows, err := pool.Query(ctx, epSQL+`
 		SELECT render_name($1, t.term, 'ko'), coalesce(g.value, ''), coalesce(min(v.mode), ''), lint_short(min(d.scene_id)),
 		       coalesce((SELECT string_agg(render_fact_text($1, sb.value), ' / ') FROM attribute sb
-		                  WHERE sb.work_id = $1 AND sb.entity_id = t.term AND sb.key = 'shown_by'), '')
+		                  WHERE sb.work_id = $1 AND sb.entity_id = t.term AND sb.key = 'shown_by'), ''),
+		       coalesce((SELECT min(pn.value) FROM attribute pn WHERE pn.work_id = $1 AND pn.entity_id = t.term AND pn.key = 'proper'), '')
 		  FROM directive d JOIN ep ON ep.scene_id = d.scene_id CROSS JOIN LATERAL unnest(d."values") AS t(term)
 		  LEFT JOIN attribute g ON g.id = t.term || '#gloss'
 		  LEFT JOIN LATERAL (SELECT v."values"[1] AS mode FROM directive v WHERE v.work_id = $1 AND v.scene_id = d.scene_id
@@ -292,8 +293,8 @@ func newTerms(ctx context.Context, pool *pgxpool.Pool, work, from, to string, be
 	how := map[string]string{"sense": "감각으로", "consequence": "결과로", "dialogue": "대사로"}
 	var b strings.Builder
 	for rows.Next() {
-		var n, gloss, mode, scene, shown string
-		if err := rows.Scan(&n, &gloss, &mode, &scene, &shown); err != nil {
+		var n, gloss, mode, scene, shown, proper string
+		if err := rows.Scan(&n, &gloss, &mode, &scene, &shown, &proper); err != nil {
 			return "", err
 		}
 		if had[n] {
@@ -307,6 +308,9 @@ func newTerms(ctx context.Context, pool *pgxpool.Pool, work, from, to string, be
 			ev = "보여 줄 사건: " + shown
 		}
 		fmt.Fprintf(&b, "- %s — 장면 %s · %s\n  풀이(참고): %s\n", n, scene, ev, gloss)
+		if proper != "" { // S46: a definition stays hidden, a proper name may pass once
+			fmt.Fprintf(&b, "  고유명: %s — 인물의 입·간판·기록에서 한 번 스쳐도 된다(풀이는 옮기지 않는다)\n", proper)
+		}
 	}
 	return b.String(), rows.Err()
 }
@@ -399,6 +403,7 @@ func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 	}
 	defer rows.Close()
 	var b strings.Builder
+	var lines []string
 	for rows.Next() {
 		var id, place, goal, turn, clock, risk string
 		if err := rows.Scan(&id, &place, &goal, &turn, &clock, &risk); err != nil {
@@ -420,9 +425,20 @@ func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 		if risk != "" { // P20: the price of acting, so the key act takes more than one line
 			parts = append(parts, "위험 — "+risk+" (그 위험이 보이게 한 박자 더 머문다)")
 		}
-		fmt.Fprintf(&b, "- %s (%s): %s\n", id, place, strings.Join(parts, " / "))
+		lines = append(lines, fmt.Sprintf("- %s (%s): %s", id, place, strings.Join(parts, " / ")))
 	}
-	return b.String(), rows.Err()
+	if err := rows.Err(); err != nil {
+		return "", err
+	}
+	// S45: the episode's last beat holds its after-state through the close; a threat that withdraws first ends the
+	// cut on relief.
+	if n := len(lines); n > 0 {
+		lines[n-1] += " / 마지막 장면 — 전환 뒤 상태는 닫는 줄·마지막 행동까지 풀지 않는다. 위협(사람·기계·카운터)은 물러나지 않은 채 닫는다"
+	}
+	for _, l := range lines {
+		b.WriteString(l + "\n")
+	}
+	return b.String(), nil
 }
 
 // factMechanisms maps a fact text to the terms whose `shown_by` names it: the world devices that fact happens through.
