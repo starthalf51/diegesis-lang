@@ -176,3 +176,41 @@ func TestBriefOffstageSpeakerHasCard(t *testing.T) {
 		t.Errorf("a character both present and speaking appears once:\n%s", got)
 	}
 }
+
+// One closing rule per brief: with a frame closing line, ④ points at it; without one, ④ keeps the object close.
+// A work with no clocks, counters or frames gets no empty ⓪ clock section.
+func TestBriefOneClosingRule(t *testing.T) {
+	if os.Getenv("SL_PG_DSN") == "" {
+		t.Skip("SL_PG_DSN not set")
+	}
+	pool, err := pg.Connect(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	gen := func(extra string) string {
+		dir := t.TempDir()
+		os.WriteFile(filepath.Join(dir, "w.dieg.md"), []byte("---\nmodule: rs.s\nmode: authored\n---\n\n```sl\n"+rsWork+extra+"```\n"), 0o644)
+		work, err := load(dir, io.Discard)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer pool.Exec(context.Background(), `DELETE FROM work WHERE id=$1`, work)
+		got, err := briefText(context.Background(), pool, work, briefOpts{from: "2", to: "3", since: "1"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return got
+	}
+	framed := gen("attr jokbo.frame_open = \"[기록] 열림\"\nattr jokbo.frame_close = \"[기록] 닫힘\"\n")
+	if !strings.Contains(framed, "마지막 줄은 ⓪의 닫는 줄이다") || strings.Contains(framed, "마지막 단락은 이 화가 남긴") {
+		t.Errorf("framed work: ④ must point at the ⓪ closing line only:\n%s", framed)
+	}
+	plain := gen("")
+	if strings.Contains(plain, "마지막 줄은 ⓪의 닫는 줄이다") || !strings.Contains(plain, "마지막 단락은 이 화가 남긴") {
+		t.Errorf("plain work keeps the object close:\n%s", plain)
+	}
+	if strings.Contains(plain, "## ⓪ 시계와 카운터") {
+		t.Errorf("no empty clock section:\n%s", plain)
+	}
+}

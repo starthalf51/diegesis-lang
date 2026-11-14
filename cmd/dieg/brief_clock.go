@@ -290,3 +290,12 @@ func closeLines(templates []string, vals map[string]span, policy string) string 
 	}
 	return b.String()
 }
+
+// closingRule is ④'s one line on how the episode ends: when ⓪ gives a device closing line, that line is last and
+// the paragraph before it carries the threat; otherwise the last paragraph does (plan 19, one rule in one place).
+func closingRule(now string) string {
+	if strings.Contains(now, "- 닫는 줄(") || strings.Contains(now, "- 닫는 줄 후보") {
+		return "- 마지막 줄은 ⓪의 닫는 줄이다. 그 앞 단락에서 위협·질문을 사물 하나·행동 하나에 실어 닫는다. 예측문('…있을 것이다')이나 수사 의문으로 닫지 않는다. 잠·휴식으로 가라앉히지 않는다.\n"
+	}
+	return "- 마지막 단락은 이 화가 남긴 위협이나 질문을 사물 하나·행동 하나에 실어 닫는다(다시 찾은 장소의 바뀐 것이 좋은 후보). 예측문('…있을 것이다')이나 수사 의문으로 닫지 않는다. 잠·휴식으로 가라앉히지 않는다.\n"
+}
