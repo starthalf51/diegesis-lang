@@ -347,11 +347,12 @@ func (c *cur) belief() Node {
 	return b
 }
 
-// design entry: goal ident ":" string | turn (word|string) "->" (word|string) | tempo word
+// design entry: goal ident ":" string | turn (word|string) "->" (word|string) | tempo word | clock string
+// (clock: what must happen before what inside the scene — the scene's own deadline)
 func (c *cur) dentry() Node {
 	t := c.peek()
-	if t == nil || t.Kind != tWord || (t.Val != "goal" && t.Val != "turn" && t.Val != "tempo") {
-		c.fail("unknown design key %s (want goal, turn or tempo)", describe(t))
+	if t == nil || t.Kind != tWord || (t.Val != "goal" && t.Val != "turn" && t.Val != "tempo" && t.Val != "clock") {
+		c.fail("unknown design key %s (want goal, turn, tempo or clock)", describe(t))
 	}
 	c.k++
 	e := &RenderEntry{Pos: t.Pos, Key: t.Val}
@@ -374,6 +375,12 @@ func (c *cur) dentry() Node {
 		e.Values = append(e.Values, val("turn start"))
 		c.expect("->")
 		e.Values = append(e.Values, val("turn end"))
+	case "clock":
+		s, ok := c.str()
+		if !ok {
+			c.fail("clock needs a quoted text, found %s", describe(c.peek()))
+		}
+		e.Values = append(e.Values, s)
 	default:
 		e.Values = append(e.Values, c.word("tempo").Val)
 	}

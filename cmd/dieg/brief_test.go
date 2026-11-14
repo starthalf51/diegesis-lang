@@ -101,3 +101,11 @@ func TestBriefMasksUnmet(t *testing.T) {
 		t.Errorf("maskNames = %q, want %q", got, want)
 	}
 }
+
+func TestSubj(t *testing.T) {
+	for in, want := range map[string]string{"단속반원": "단속반원이", "축지": "축지가", "0419": "0419가", "춘섬": "춘섬이"} {
+		if got := subj(in); got != want {
+			t.Errorf("subj(%q) = %q, want %q", in, got, want)
+		}
+	}
+}

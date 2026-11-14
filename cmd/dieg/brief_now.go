@@ -285,7 +285,7 @@ func newTerms(ctx context.Context, pool *pgxpool.Pool, work, from, to string, be
 		if m := how[mode]; m != "" {
 			n += " (" + m + ")"
 		}
-		ev := "⚠ 보여 줄 사건이 지정되지 않았다 — 이 장면의 일로 뜻이 서지 않으면 이름만 스친다"
+		ev := "⚠ 보여 줄 사건이 지정되지 않았다 — 장면의 다른 일(절차의 진행, 사람들의 반응)로 뜻을 세우거나, 뜻 없이 이름만 스친다"
 		if shown != "" {
 			ev = "보여 줄 사건: " + shown
 		}
@@ -305,7 +305,7 @@ func knowsLines(ctx context.Context, pool *pgxpool.Pool, work, from, to, who str
 		       CASE WHEN ca.id IS NOT NULL THEN lint_short(ca.scene_id) || ' ' || coalesce(render_name($1, ca.actor_id, 'ko'), '') || ' ' || ca.verb
 		            WHEN bl.from_pt IS NULL OR bl.from_pt NOT LIKE '%#%' AND regexp_replace(bl.from_pt, '\.(start|end)$', '') NOT IN (SELECT scene_id FROM ep) THEN ''
 		            ELSE '!' END,
-		       bl.prop_id IN (SELECT * FROM used) AND EXISTS (SELECT 1 FROM act s WHERE s.work_id = $1 AND s.actor_id = $4 AND s.verb = 'sees'
+		       bl.prop_id IN (SELECT * FROM used) AND EXISTS (SELECT 1 FROM act s WHERE s.work_id = $1 AND s.actor_id = $4 AND s.verb IN ('sees', 'reads')
 		         AND s.prop_id = bl.prop_id AND s.scene_id IN (SELECT scene_id FROM ep))
 		  FROM believes bl LEFT JOIN act ca ON ca.id = bl.cause_act
 		 WHERE bl.work_id = $1 AND bl.entity_id = $4 AND bl.value AND bl.prop_id IN (SELECT * FROM used)
@@ -332,19 +332,74 @@ func knowsLines(ctx context.Context, pool *pgxpool.Pool, work, from, to, who str
 	if err := rows.Err(); err != nil {
 		return "", err
 	}
+	// S38: reading a document in the episode is a path too (a checker reading a forged record).
+	if !sees {
+		pool.QueryRow(ctx, epSQL+` SELECT EXISTS (SELECT 1 FROM act a WHERE a.work_id = $1 AND a.actor_id = $4
+			AND a.verb IN ('sees', 'reads') AND a.scene_id IN (SELECT scene_id FROM ep))`, work, from, to, who).Scan(&sees)
+	}
 	var b strings.Builder
 	for _, l := range ls {
 		switch {
 		case l.path == "":
 			l.path = "처음부터 알던 것"
 		case l.path == "!" && sees:
-			l.path = "이 화에서 직접 보는 것에서 안다 — 장면이 그 보는 순간을 보여 준다"
+			l.path = "이 화에서 직접 보거나 읽는 것에서 안다 — 장면이 그 순간을 보여 준다"
 		case l.path == "!":
 			l.path = "⚠ 경로가 설계에 없다 — 장면이 어떻게 아는지 보여 주거나, 아는 척하지 않는다"
 		case !strings.HasPrefix(l.path, "이 화에서"):
 			l.path = "경로: " + l.path
 		}
-		fmt.Fprintf(&b, "  · %s가 아는 것: %s — %s\n", l.n, l.t, l.path)
+		fmt.Fprintf(&b, "  · %s 아는 것: %s — %s\n", subj(l.n), l.t, l.path)
 	}
 	return b.String(), nil
+}
+
+// subj attaches the Korean subject particle 이/가 by the last syllable's final consonant (가 after a vowel or a
+// non-Hangul ending such as a number read as is).
+func subj(name string) string {
+	r := []rune(strings.TrimSpace(name))
+	if len(r) == 0 {
+		return name
+	}
+	if c := r[len(r)-1]; c >= 0xAC00 && c <= 0xD7A3 && (c-0xAC00)%28 != 0 {
+		return name + "이"
+	}
+	return name + "가"
+}
+
+// sceneBeats compiles each scene's `design` block into one line (S36, P15): goal, turn (the before-state is shown
+// in this scene first, then broken) and the scene's own clock (what must happen before what).
+func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to string) (string, error) {
+	rows, err := pool.Query(ctx, epSQL+`
+		SELECT lint_short(o.scene_id), coalesce(render_name($1, s.place_id, 'ko'), ''),
+		       coalesce((SELECT render_name($1, d."values"[1], 'ko') || ': ' || d."values"[2] FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.goal' LIMIT 1), ''),
+		       coalesce((SELECT '"' || d."values"[1] || '" → "' || d."values"[2] || '"' FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.turn' LIMIT 1), ''),
+		       coalesce((SELECT d."values"[1] FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.clock' LIMIT 1), '')
+		  FROM o JOIN ep ON ep.scene_id = o.scene_id JOIN scene s ON s.id = o.scene_id ORDER BY o.ord`, work, from, to)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	var b strings.Builder
+	for rows.Next() {
+		var id, place, goal, turn, clock string
+		if err := rows.Scan(&id, &place, &goal, &turn, &clock); err != nil {
+			return "", err
+		}
+		if goal == "" && turn == "" && clock == "" {
+			continue
+		}
+		var parts []string
+		if goal != "" {
+			parts = append(parts, "목표 — "+goal)
+		}
+		if turn != "" {
+			parts = append(parts, "전환 "+turn+" (앞 상태를 이 장면에서 먼저 보이고 나서 깬다)")
+		}
+		if clock != "" {
+			parts = append(parts, "장면 시계 — "+clock+" (진행을 장면 안에서 두세 번 보인다)")
+		}
+		fmt.Fprintf(&b, "- %s (%s): %s\n", id, place, strings.Join(parts, " / "))
+	}
+	return b.String(), rows.Err()
 }

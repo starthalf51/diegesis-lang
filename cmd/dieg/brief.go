@@ -44,13 +44,27 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	}
 	b.WriteString("# 회차 설계서\n\n")
 	// ⓪ now and the world's rules (S14, S15). Story time comes from the first scene's start point (seconds since start).
-	var lo, hi int64
-	if err := pool.QueryRow(ctx, `SELECT coalesce(p.earliest, 0), coalesce(p.latest, p.earliest, 0) FROM scene s JOIN point p ON p.id = s.start_pt
-		WHERE s.work_id = $1 AND (s.id = $2 OR lint_short(s.id) = $2)`, work, from).Scan(&lo, &hi); err == nil {
-		if d1, d2 := lo/86400+1, hi/86400+1; d1 == d2 {
-			fmt.Fprintf(&b, "## ⓪ 지금 — 이야기 시작 후 %d일째\n", d1)
-		} else {
-			fmt.Fprintf(&b, "## ⓪ 지금 — 이야기 시작 후 %d~%d일째. 앞 화의 '오늘'은 이미 지난 날이다\n", d1, d2)
+	// S37: whether the previous told scene's day is certainly earlier decides "yesterday"; the header says so only
+	// when it is (prevHi < lo), and warns when the two may share a day.
+	var lo, hi, prevHi int64 = 0, 0, -1
+	if err := pool.QueryRow(ctx, `WITH o AS (SELECT * FROM scene_told_ord($1)), me AS (SELECT o.ord FROM o JOIN scene x ON x.id = o.scene_id
+		  WHERE x.id = $2 OR lint_short(x.id) = $2)
+		SELECT coalesce(p.earliest, 0), coalesce(p.latest, p.earliest, 0),
+		       coalesce((SELECT coalesce(pe.latest, pe.earliest) FROM o JOIN scene y ON y.id = o.scene_id JOIN point pe ON pe.id = y.end_pt
+		                  WHERE o.ord < (SELECT * FROM me) ORDER BY o.ord DESC LIMIT 1), -1)
+		FROM scene s JOIN point p ON p.id = s.start_pt WHERE s.work_id = $1 AND (s.id = $2 OR lint_short(s.id) = $2)`, work, from).Scan(&lo, &hi, &prevHi); err == nil {
+		d1, d2 := lo/86400+1, hi/86400+1
+		day := fmt.Sprintf("%d일째", d1)
+		if d2 > d1 {
+			day = fmt.Sprintf("%d~%d일째", d1, d2)
+		}
+		switch {
+		case prevHi < 0:
+			fmt.Fprintf(&b, "## ⓪ 지금 — 이야기 시작 후 %s\n", day)
+		case prevHi/86400+1 < d1:
+			fmt.Fprintf(&b, "## ⓪ 지금 — 이야기 시작 후 %s. 앞 화의 '오늘'은 이미 지난 날이다\n", day)
+		default:
+			fmt.Fprintf(&b, "## ⓪ 지금 — 이야기 시작 후 %s. 앞 화와 같은 날일 수 있다 — 앞 화의 일을 '어제'로 쓰지 않는다\n", day)
 		}
 	}
 	// Rules are `attr <term>.rule = "..."`; only rules of terms the reader meets by the episode end are given.
@@ -106,6 +120,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 		return "", err
 	}
 	b.WriteString("\n## ① 이 화의 인물 — 카드는 재료다. 문구를 그대로 옮기지 않고 한두 가지를 골라 자기 말로 쓴다. 처음 나올 때 몸으로 세우고, 원하는 것은 행동으로 보인다. 시점 밖 인물은 적힌 경로대로만 안다\n")
+	var lines []string
 	for cards.Next() {
 		var id, n, card, cr string
 		if err := cards.Scan(&id, &n, &card, &cr); err != nil {
@@ -115,18 +130,19 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 		for _, c := range strings.Split(cr, "|") {
 			openly[c] = c != ""
 		}
-		if card == "" {
-			fmt.Fprintf(&b, "- %s\n", n)
-		} else {
-			fmt.Fprintf(&b, "- %s — %s\n", n, card)
+		l := "- " + n + "\n"
+		if card != "" {
+			l = fmt.Sprintf("- %s — %s\n", n, card)
 		}
-		if id != pov {
-			ids = append(ids, id)
-		}
+		ids, lines = append(ids, id), append(lines, l)
 	}
 	cards.Close()
-	// S34: what each off-POV character on stage knows of this episode's matter, and how they came to know it.
-	for _, id := range ids {
+	// S34/S38: each off-POV character's card is followed by what they know of this episode's matter and how.
+	for i, id := range ids {
+		b.WriteString(lines[i])
+		if id == pov {
+			continue
+		}
 		k, err := knowsLines(ctx, pool, work, from, to, id)
 		if err != nil {
 			return "", err
@@ -220,6 +236,13 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 		return "", err
 	}
 	b.WriteString("\n## ④ 쓰기 규칙\n- 회차 번호·'지난 화' 같은 연재 바깥 말을 원고에 쓰지 않는다.\n- 설계서의 사실 문장·용어 풀이를 원고에 옮겨 적지 않는다. 인물의 행동·대사·결과로 보인다.\n- ①에 없는 것은 독자가 모른다. 시점 인물은 ①과 ③에서 자기 이름이 붙은 것만 더 안다. 그것을 서술로 털어놓지 않고 행동의 이유로만 비친다.\n- 모르는 것은 쓰지 않거나 행동으로 남긴다. 화자가 추측을 풀어 쓰거나 '추측이었다'고 꼬리표를 달지 않는다.\n- 마지막 단락은 이 화가 남긴 위협이나 질문으로 닫는다. 잠·휴식으로 가라앉히지 않는다.\n- 설명하지 않는 것과 그리지 않는 것은 다르다. 규칙과 사연은 다시 풀지 않지만, 장소와 인물은 매 장면 눈앞에 보이게 그린다. 무대 위 단역 한두 명의 짧은 말로 이 세계의 셈(값·빚·두려움)을 들려준다.\n")
+	beats, err := sceneBeats(ctx, pool, work, from, to)
+	if err != nil {
+		return "", err
+	}
+	if beats != "" {
+		b.WriteString("\n## ⑤ 장면 비트 — 장면마다 목표·전환·장면 시계\n" + beats)
+	}
 	// S22: who each line is addressed to is often the scene's point; compile it instead of leaving it in raw code.
 	aud, err := spokenLines(ctx, pool, work, toldOrd(ctx, pool, work, from), toldOrd(ctx, pool, work, to), pov)
 	if err != nil {
