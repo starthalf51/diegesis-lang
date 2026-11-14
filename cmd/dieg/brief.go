@@ -85,19 +85,22 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	} else {
 		b.WriteString("(없음: 첫 화다)\n")
 	}
-	// Character cards (S13): who is on stage, from `attr <character>.role/voice/creed`. A creed is said openly, so it
-	// is never listed as a hidden truth below (S19).
+	// Character cards (S13): who is on stage, from `attr <character>.role/want/look/voice/creed`. A creed is said
+	// openly, so it is never listed as a hidden truth below (S19). want/look make the person visible (user 11/14:
+	// "인물이 그려지지 않음").
 	pov := povOf(ctx, pool, work, from)
-	creeds := map[string]bool{}
+	openly := map[string]bool{}
 	cards, err := pool.Query(ctx, epSQL+`
-		SELECT render_name($1, c.entity_id, 'ko'), coalesce(string_agg(CASE a.key WHEN 'role' THEN '역할' WHEN 'voice' THEN '말투' ELSE '신조' END
-		         || ': ' || a.value, ' / ' ORDER BY a.key DESC), ''), coalesce(string_agg(a.value, '|') FILTER (WHERE a.key = 'creed'), '')
-		  FROM cast_ c LEFT JOIN attribute a ON a.work_id = $1 AND a.entity_id = c.entity_id AND a.key IN ('role', 'voice', 'creed')
+		SELECT render_name($1, c.entity_id, 'ko'), coalesce(string_agg(CASE a.key WHEN 'role' THEN '역할' WHEN 'want' THEN '원하는 것'
+		           WHEN 'look' THEN '겉모습' WHEN 'voice' THEN '말투' ELSE '신조' END || ': ' || a.value, ' / '
+		         ORDER BY array_position(ARRAY['role', 'want', 'look', 'voice', 'creed'], a.key)), ''),
+		       coalesce(string_agg(a.value, '|') FILTER (WHERE a.key = 'creed'), '')
+		  FROM cast_ c LEFT JOIN attribute a ON a.work_id = $1 AND a.entity_id = c.entity_id AND a.key IN ('role', 'want', 'look', 'voice', 'creed')
 		 GROUP BY c.entity_id ORDER BY 1`, work, from, to)
 	if err != nil {
 		return "", err
 	}
-	b.WriteString("\n## ① 이 화의 인물 — 말투와 신조는 대사와 행동으로 살린다\n")
+	b.WriteString("\n## ① 이 화의 인물 — 처음 나올 때 겉모습과 몸으로 세우고, 원하는 것은 행동으로, 말투와 신조는 대사로 살린다\n")
 	for cards.Next() {
 		var n, card, cr string
 		if err := cards.Scan(&n, &card, &cr); err != nil {
@@ -105,7 +108,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 			return "", err
 		}
 		for _, c := range strings.Split(cr, "|") {
-			creeds[c] = c != ""
+			openly[c] = c != ""
 		}
 		if card == "" {
 			fmt.Fprintf(&b, "- %s\n", n)
@@ -114,6 +117,26 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 		}
 	}
 	cards.Close()
+	places, err := placeCards(ctx, pool, work, from, to)
+	if err != nil {
+		return "", err
+	}
+	if places != "" {
+		b.WriteString("\n## ① 이 화의 장소 — 장면이 열릴 때 감각(빛·소리·냄새·사람들)으로 세운다\n" + places)
+	}
+	lived, err := povLived(ctx, pool, work, from, pov)
+	if err != nil {
+		return "", err
+	}
+	if len(lived) > 0 {
+		b.WriteString("\n## ① 화자가 직접 겪어 아는 것 — 독자도 화자와 함께 봤다. 숨길 것이 아니다\n")
+		for _, t := range lived {
+			if !known[t] {
+				fmt.Fprintf(&b, "- %s\n", t)
+			}
+			openly[t] = true
+		}
+	}
 	// Spoken lines since `since` (S18): what the reader heard said, word for word, so names and threats carry over.
 	if since != "" {
 		// Who heard it matters (S21): a line the POV character was not there for is the reader's alone.
@@ -157,7 +180,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 		if err := rows.Scan(&t, &who); err != nil {
 			return "", err
 		}
-		if known[t] || creeds[t] || ruleSays(rb.String(), t) {
+		if known[t] || openly[t] || ruleSays(rb.String(), t) {
 			continue
 		}
 		if who != "" {
@@ -169,7 +192,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	if err := rows.Err(); err != nil {
 		return "", err
 	}
-	b.WriteString("\n## ④ 쓰기 규칙\n- 회차 번호·'지난 화' 같은 연재 바깥 말을 원고에 쓰지 않는다.\n- 설계서의 사실 문장·용어 풀이를 원고에 옮겨 적지 않는다. 인물의 행동·대사·결과로 보인다.\n- ①에 없는 것은 독자가 모른다. 시점 인물은 ①과 ③에서 자기 이름이 붙은 것만 더 안다. 그것을 서술로 털어놓지 않고 행동의 이유로만 비친다.\n- 모르는 것은 쓰지 않거나 행동으로 남긴다. 화자가 추측을 풀어 쓰거나 '추측이었다'고 꼬리표를 달지 않는다.\n- 마지막 단락은 이 화가 남긴 위협이나 질문으로 닫는다. 잠·휴식으로 가라앉히지 않는다.\n")
+	b.WriteString("\n## ④ 쓰기 규칙\n- 회차 번호·'지난 화' 같은 연재 바깥 말을 원고에 쓰지 않는다.\n- 설계서의 사실 문장·용어 풀이를 원고에 옮겨 적지 않는다. 인물의 행동·대사·결과로 보인다.\n- ①에 없는 것은 독자가 모른다. 시점 인물은 ①과 ③에서 자기 이름이 붙은 것만 더 안다. 그것을 서술로 털어놓지 않고 행동의 이유로만 비친다.\n- 모르는 것은 쓰지 않거나 행동으로 남긴다. 화자가 추측을 풀어 쓰거나 '추측이었다'고 꼬리표를 달지 않는다.\n- 마지막 단락은 이 화가 남긴 위협이나 질문으로 닫는다. 잠·휴식으로 가라앉히지 않는다.\n- 설명하지 않는 것과 그리지 않는 것은 다르다. 규칙과 사연은 다시 풀지 않지만, 장소와 인물은 매 장면 눈앞에 보이게 그린다. 세계는 사람들의 일상 행동(줄 서기, 빌리기, 비켜서기)으로 보인다.\n")
 	// S22: who each line is addressed to is often the scene's point; compile it instead of leaving it in raw code.
 	aud, err := spokenLines(ctx, pool, work, toldOrd(ctx, pool, work, from), toldOrd(ctx, pool, work, to), pov)
 	if err != nil {

@@ -21,21 +21,30 @@ import (
 //     episode and the last one inside it are the counter's value at the start and after this episode.
 func nowSection(ctx context.Context, pool *pgxpool.Pool, work, from, to, rulesDir string) (string, error) {
 	var b strings.Builder
-	rows, err := pool.Query(ctx, `SELECT render_name($1, a.entity_id, 'ko'), (pe.earliest - ps.earliest) / 86400
+	// S25: the clock at the start and at the episode's last scene end, so the closing line can carry the change.
+	rows, err := pool.Query(ctx, epSQL+`, last AS (SELECT s.end_pt FROM scene s JOIN o ON o.scene_id = s.id
+		    WHERE s.id IN (SELECT scene_id FROM ep) ORDER BY o.ord DESC LIMIT 1)
+		SELECT render_name($1, a.entity_id, 'ko'), (pe.earliest - ps.earliest) / 86400,
+		       (pe.earliest - coalesce(pl.latest, pl.earliest, ps.earliest)) / 86400
 		FROM attribute a JOIN point pe ON pe.work_id = $1 AND (pe.id = a.value || '.start' OR pe.id LIKE '%/' || a.value || '.start')
 		JOIN scene s ON s.work_id = $1 AND (s.id = $2 OR lint_short(s.id) = $2) JOIN point ps ON ps.id = s.start_pt
-		WHERE a.work_id = $1 AND a.key = 'clock' AND pe.earliest >= ps.earliest ORDER BY 2`, work, from)
+		LEFT JOIN point pl ON pl.id = (SELECT * FROM last)
+		WHERE a.work_id = $1 AND a.key = 'clock' AND pe.earliest >= ps.earliest ORDER BY 2`, work, from, to)
 	if err != nil {
 		return "", err
 	}
 	for rows.Next() {
 		var n string
-		var d int64
-		if err := rows.Scan(&n, &d); err != nil {
+		var d, e int64
+		if err := rows.Scan(&n, &d, &e); err != nil {
 			rows.Close()
 			return "", err
 		}
-		fmt.Fprintf(&b, "- %s: 이 화 시작 때 마감까지 %d일\n", n, d)
+		if e < d {
+			fmt.Fprintf(&b, "- %s: 이 화 시작 때 마감까지 %d일 → 이 화 끝에는 %d일\n", n, d, e)
+		} else {
+			fmt.Fprintf(&b, "- %s: 이 화 시작 때 마감까지 %d일 (이 화 안에서 날이 바뀌지 않는다)\n", n, d)
+		}
 	}
 	rows.Close()
 	if rulesDir == "" {
@@ -109,9 +118,9 @@ func nowSection(ctx context.Context, pool *pgxpool.Pool, work, from, to, rulesDi
 			s = "(아직 없음)"
 		}
 		if in == "" {
-			in = "이 화에서 바뀌지 않음"
+			in = "(이 화에서 바뀌지 않는다)"
 		}
-		fmt.Fprintf(&b, "- %s: 시작 %s → 이 화 %s\n", summary[id], s, in)
+		fmt.Fprintf(&b, "- %s: 시작 %s → 이 화 끝 %s\n", summary[id], s, in)
 	}
 	return b.String(), nil
 }
@@ -238,4 +247,54 @@ func maskNames(ctx context.Context, pool *pgxpool.Pool, work, from, held, s stri
 		s = regexp.MustCompile(`\b(`+strings.Join(ids, "|")+`)\b`).ReplaceAllString(s, "(이름을 모르는 인물)")
 	}
 	return s, nil
+}
+
+// placeCards lists the places of the episode's scenes with `attr <place>.look` (what the senses meet there).
+func placeCards(ctx context.Context, pool *pgxpool.Pool, work, from, to string) (string, error) {
+	rows, err := pool.Query(ctx, epSQL+`
+		SELECT render_name($1, s.place_id, 'ko'), coalesce(min(a.value), '') FROM scene s JOIN ep ON ep.scene_id = s.id
+		  LEFT JOIN attribute a ON a.work_id = $1 AND a.entity_id = s.place_id AND a.key = 'look'
+		 WHERE s.place_id IS NOT NULL GROUP BY s.place_id ORDER BY min(s.discourse_ord)`, work, from, to)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	var b strings.Builder
+	for rows.Next() {
+		var n, look string
+		if err := rows.Scan(&n, &look); err != nil {
+			return "", err
+		}
+		if look == "" {
+			fmt.Fprintf(&b, "- %s\n", n)
+		} else {
+			fmt.Fprintf(&b, "- %s — %s\n", n, look)
+		}
+	}
+	return b.String(), rows.Err()
+}
+
+// povLived is what the POV character came to believe in scenes told from their own point of view before `from`
+// (S24): in those scenes the reader stood behind their eyes, so it is shared knowledge, not a secret to keep.
+func povLived(ctx context.Context, pool *pgxpool.Pool, work, from, pov string) ([]string, error) {
+	if pov == "" {
+		return nil, nil
+	}
+	rows, err := pool.Query(ctx, `SELECT DISTINCT render_fact_text($1, bl.prop_id) FROM believes bl
+		JOIN scene_told_ord($1) o ON o.scene_id = regexp_replace(bl.from_pt, '(#.*|\.(start|end))$', '')
+		JOIN directive d ON d.work_id = $1 AND d.scene_id = o.scene_id AND d.key = 'pov' AND d."values"[1] = lint_short($3)
+		WHERE bl.work_id = $1 AND bl.entity_id = $3 AND bl.value AND o.ord < $2 ORDER BY 1`, work, toldOrd(ctx, pool, work, from), pov)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []string
+	for rows.Next() {
+		var t string
+		if err := rows.Scan(&t); err != nil {
+			return nil, err
+		}
+		out = append(out, t)
+	}
+	return out, rows.Err()
 }
