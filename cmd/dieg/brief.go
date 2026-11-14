@@ -287,13 +287,15 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 type briefOpts struct{ from, to, since, code, style, rules string }
 
 // epSQL opens a WITH clause: o (telling order), ep (scenes from $2 up to, not including, $3; to the end when $3 = ”),
-// cast_ (characters present in ep). $1 is the work.
+// cast_ (characters present in ep, or speaking into it from off stage). $1 is the work.
 const epSQL = `WITH o AS (SELECT * FROM scene_told_ord($1)),
 	ep AS (SELECT o.scene_id FROM o WHERE o.ord >= (SELECT o2.ord FROM o o2 JOIN scene x ON x.id = o2.scene_id
 	         WHERE x.id = $2 OR lint_short(x.id) = $2)
 	       AND ($3 = '' OR o.ord < (SELECT o3.ord FROM o o3 JOIN scene y ON y.id = o3.scene_id WHERE y.id = $3 OR lint_short(y.id) = $3))),
 	cast_ AS (SELECT DISTINCT p.entity_id FROM presence p JOIN entity e ON e.id = p.entity_id
-	          WHERE p.work_id = $1 AND e.kind = 'character' AND p.scene_id IN (SELECT scene_id FROM ep))`
+	          WHERE p.work_id = $1 AND e.kind = 'character' AND p.scene_id IN (SELECT scene_id FROM ep)
+	          UNION SELECT a.actor_id FROM act a JOIN entity e ON e.id = a.actor_id AND e.kind = 'character'
+	          WHERE a.work_id = $1 AND a.scene_id IN (SELECT scene_id FROM ep))`
 
 // ruleSays reports whether the world-rule lines already state fact t (its clause before " — "), so it is not hidden twice.
 func ruleSays(rules, t string) bool {

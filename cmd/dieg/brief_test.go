@@ -145,3 +145,34 @@ func TestCloseLinesPolicy(t *testing.T) {
 		t.Errorf("open day under every: both the midnight line and the same-day line:\n%s", got)
 	}
 }
+
+// A character who speaks into the episode without being on stage still gets a card, once.
+func TestBriefOffstageSpeakerHasCard(t *testing.T) {
+	if os.Getenv("SL_PG_DSN") == "" {
+		t.Skip("SL_PG_DSN not set")
+	}
+	dir := t.TempDir()
+	code := "work RSO \"T\"\ncharacter a \"Ann\"\ncharacter b \"Bob\"\nfact f1 \"문이 잠겼다\" true\nattr b.role = \"통신 너머의 사람\"\nattr a.role = \"문지기\"\n" +
+		"scene 1\n  enter a\n  #! allow offstage-speaker: \"voice\"\n  b tells a: f1\n  a tells a: f1\nscene 2\n  enter a\n"
+	os.WriteFile(filepath.Join(dir, "w.dieg.md"), []byte("---\nmodule: rso.s\nmode: authored\n---\n\n```sl\n"+code+"```\n"), 0o644)
+	work, err := load(dir, io.Discard)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pool, err := pg.Connect(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	defer pool.Exec(context.Background(), `DELETE FROM work WHERE id=$1`, work)
+	got, err := briefText(context.Background(), pool, work, briefOpts{from: "1", to: "2"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, "역할: 통신 너머의 사람") {
+		t.Errorf("an offstage speaker must get a card:\n%s", got)
+	}
+	if strings.Count(got, "역할: 문지기") != 1 {
+		t.Errorf("a character both present and speaking appears once:\n%s", got)
+	}
+}
