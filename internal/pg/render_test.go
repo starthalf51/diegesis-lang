@@ -180,16 +180,18 @@ func TestRenderSceneTermsReexplain(t *testing.T) {
 	}
 }
 
-// A design scene hands off the previous shown scene's end state (plan 18); the first scene and non-design scenes carry none. An exit that is the scene's last statement is not told apart from staying (presence.to_pt is the scene end either way).
+// A design scene hands off the previous shown scene's end state (plan 18); the first scene and non-design scenes carry none.
+// Characters carry names (so one absent from the design scene's cast still resolves); a last act without a fact falls back to its action text.
+// An exit that is the scene's last statement is not told apart from staying (presence.to_pt is the scene end either way).
 func TestRenderSceneHandoff(t *testing.T) {
 	pool := open(t)
-	id := compileLoad(t, pool, "scene 1\n  enter a, b\n  a tells b: p\n  exit b\n  a tells b: p\nscene 2\n  enter a\n  design\n    turn \"x\" -> y\nscene 3\n  enter a\n")
+	id := compileLoad(t, pool, "scene 1\n  enter a, b, c\n  a tells b: p\n  exit b\n  a tells b: p\nscene 2\n  enter a\n  design\n    turn \"x\" -> y\nscene 3\n  enter a\n  a does flee\nscene 4\n  enter a\n  design\n    turn \"x\" -> y\n")
 	card := func(sc string) render.Scene {
 		b, err := pg.RenderScene(context.Background(), pool, id, sc)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if sc != "2" && bytes.Contains(b, []byte(`"handoff"`)) {
+		if (sc == "1" || sc == "3") && bytes.Contains(b, []byte(`"handoff"`)) {
 			t.Errorf("scene %s: handoff key present:\n%s", sc, b)
 		}
 		s, err := render.ParseScene(b)
@@ -200,11 +202,24 @@ func TestRenderSceneHandoff(t *testing.T) {
 	}
 	card("1")
 	card("3")
-	h := card("2").Handoff
-	if h == nil {
-		t.Fatal("scene 2: no handoff")
+	ids := func(es []render.Entity) (out []string) {
+		for _, e := range es {
+			if len(e.Names["en"]) == 0 {
+				t.Errorf("entity %s has no names", e.ID)
+			}
+			out = append(out, e.ID)
+		}
+		return
 	}
-	if h.Place != "" || h.Last != "A (tells): P" || !slices.Equal(h.Present, []string{"a"}) {
+	h := card("2").Handoff
+	if h == nil || h.Last == nil {
+		t.Fatalf("scene 2: handoff %+v", h)
+	}
+	if h.Place != "" || h.Last.Actor.ID != "a" || h.Last.Actor.Names["en"][0] != "A" || h.Last.Verb != "tells" || h.Last.Text != "P" ||
+		!slices.Equal(ids(h.Present), []string{"a", "c"}) {
 		t.Errorf("handoff %+v", h)
+	}
+	if h4 := card("4").Handoff; h4 == nil || h4.Last == nil || h4.Last.Verb != "does" || h4.Last.Text != "flee" {
+		t.Errorf("scene 4 handoff %+v", h4)
 	}
 }

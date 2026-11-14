@@ -1,6 +1,7 @@
 package render
 
 import (
+	"cmp"
 	"fmt"
 	"strings"
 )
@@ -129,11 +130,25 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 		fmt.Fprintf(&sb, "\n## Previously\n%s\n", s.Previously)
 	}
 	if h := s.Handoff; h != nil {
-		still := "no one"
-		if len(h.Present) > 0 {
-			still = names(h.Present)
+		ename := func(e Entity) string {
+			if len(e.Names[lang]) > 0 {
+				return e.Names[lang][0]
+			}
+			return e.ID
 		}
-		fmt.Fprintf(&sb, "\n## Where the previous scene ended\nPlace: %s\nLast act: %s\nStill there: %s\n", h.Place, h.Last, still)
+		still := make([]string, len(h.Present))
+		for i, e := range h.Present {
+			still[i] = ename(e)
+		}
+		fmt.Fprintf(&sb, "\n## Where the previous scene ended\nPlace: %s\n", h.Place)
+		if l := h.Last; l != nil {
+			fmt.Fprintf(&sb, "Last act: %s (%s)", ename(l.Actor), l.Verb)
+			if l.Text != "" {
+				fmt.Fprintf(&sb, ": %s", l.Text)
+			}
+			sb.WriteString("\n")
+		}
+		fmt.Fprintf(&sb, "Still there: %s\n", cmp.Or(strings.Join(still, ", "), "no one"))
 		sb.WriteString("Begin from this state. If this scene opens in another place or later, make the move or the time skip clear in the first lines. Characters not still there must enter before they act.\n")
 	}
 	fmt.Fprintf(&sb, "\n## Place\n%s\n\n## Characters\n", s.Place)

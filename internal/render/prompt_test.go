@@ -261,17 +261,29 @@ func TestPromptHandoff(t *testing.T) {
 	if strings.Contains(plain, "Where the previous scene ended") {
 		t.Error("no handoff: no section")
 	}
+	tail := "Begin from this state. If this scene opens in another place or later, make the move or the time skip clear in the first lines. Characters not still there must enter before they act.\n"
+	// present characters need not be in this scene's cast; names come from the handoff itself, in the scene language
+	kim := Entity{ID: "kim", Names: map[string][]string{"ko": {"김"}, "en": {"Kim"}}}
+	lee := Entity{ID: "lee", Names: map[string][]string{"en": {"Lee"}}}
 	s.Previously = "Scene 1: x."
-	s.Handoff = &Handoff{Place: "the bridge", Last: "Holmes (tells): the door is open", Present: []string{s.Cast[0].ID}}
+	s.Handoff = &Handoff{Place: "the bridge", Last: &HandoffAct{Actor: kim, Verb: "tells", Text: "the door is open"}, Present: []Entity{kim, lee}}
 	_, u, _ := BuildPrompt(s, VariantIROnly, "en", nil)
-	want := "## Previously\nScene 1: x.\n\n## Where the previous scene ended\nPlace: the bridge\nLast act: Holmes (tells): the door is open\nStill there: " +
-		s.Cast[0].Names["en"][0] + "\nBegin from this state. If this scene opens in another place or later, make the move or the time skip clear in the first lines. Characters not still there must enter before they act.\n"
+	want := "## Previously\nScene 1: x.\n\n## Where the previous scene ended\nPlace: the bridge\nLast act: Kim (tells): the door is open\nStill there: Kim, Lee\n" + tail
 	if !strings.Contains(u, want) {
 		t.Errorf("want\n%s\nin\n%s", want, u)
 	}
-	s.Handoff.Present = nil
+	_, u, _ = BuildPrompt(s, VariantIROnly, "ko", nil)
+	if !strings.Contains(u, "Last act: 김 (tells): the door is open\nStill there: 김, lee\n") {
+		t.Errorf("ko names:\n%s", u)
+	}
+	s.Handoff.Last.Text = ""
 	_, u, _ = BuildPrompt(s, VariantIROnly, "en", nil)
-	if !strings.Contains(u, "Still there: no one\n") {
-		t.Errorf("empty present:\n%s", u)
+	if !strings.Contains(u, "Last act: Kim (tells)\n") {
+		t.Errorf("no fact: no trailing colon:\n%s", u)
+	}
+	s.Handoff.Last, s.Handoff.Present = nil, nil
+	_, u, _ = BuildPrompt(s, VariantIROnly, "en", nil)
+	if strings.Contains(u, "Last act") || !strings.Contains(u, "Place: the bridge\nStill there: no one\n"+tail) {
+		t.Errorf("no last act / no one:\n%s", u)
 	}
 }

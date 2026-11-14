@@ -218,9 +218,16 @@ type Turn struct {
 }
 
 // Handoff is the previous scene's end state, passed into the next scene's render prompt so the boundary does not break.
-// Last is preformatted "<name> (<verb>): <fact text or empty>"; Present holds the entity IDs still on stage when the scene ended.
+// Characters carry their names so they resolve in the scene language even when absent from this scene's cast.
 type Handoff struct {
-	Place   string   `json:"place"`
-	Last    string   `json:"last"`
-	Present []string `json:"present"`
+	Place   string      `json:"place"`
+	Last    *HandoffAct `json:"last,omitempty"` // the previous scene's last act; absent when it had none
+	Present []Entity    `json:"present"`        // still on stage when the scene ended
+}
+
+// HandoffAct is an act: Text is its fact sentence, or its action text when it has no fact (may be empty).
+type HandoffAct struct {
+	Actor Entity `json:"actor"`
+	Verb  string `json:"verb"`
+	Text  string `json:"text,omitempty"`
 }
