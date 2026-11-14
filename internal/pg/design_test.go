@@ -73,3 +73,25 @@ func TestSceneNoTurnModuleScope(t *testing.T) {
 		t.Errorf("got %v, want only t.s/2", got)
 	}
 }
+
+// opening-narrator-unnamed: a first-person pov narrator whose name never appears in the opening module's quotes or fact sentences.
+func TestOpeningNarratorUnnamed(t *testing.T) {
+	pool := open(t)
+	fp := "scene 1\n  enter a, b\n  render\n    pov a\n    narration first-person\n"
+	for _, tc := range []struct {
+		name, body string
+		want       []string
+	}{
+		{"first person, unnamed", fp + "  b says: \"hm\"\n", []string{"t.s/1/warn"}},
+		{"named in a quote", fp + "  b says: \"A, run\"\n", nil},
+		{"named in a fact sentence", "fact q \"A waits\" true\n" + fp + "  b tells c: q\n", nil},
+		{"no narration", "scene 1\n  enter a, b\n  render\n    pov a\n  b says: \"hm\"\n", nil},
+		{"third person", "scene 1\n  enter a, b\n  render\n    pov a\n    narration third-person\n  b says: \"hm\"\n", nil},
+		{"no pov", "scene 1\n  enter a, b\n  render\n    narration first-person\n  b says: \"hm\"\n", nil},
+	} {
+		id := compileLoad(t, pool, tc.body)
+		if got := of(lint(t, pool, id), "opening-narrator-unnamed", id); !slices.Equal(got, tc.want) {
+			t.Errorf("%s: got %v, want %v", tc.name, got, tc.want)
+		}
+	}
+}
