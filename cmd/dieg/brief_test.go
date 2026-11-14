@@ -29,7 +29,7 @@ func TestBriefSections(t *testing.T) {
 	}
 	defer pool.Close()
 	defer pool.Exec(context.Background(), `DELETE FROM work WHERE id=$1`, work)
-	got, err := briefText(context.Background(), pool, work, "2", "3", "CODE")
+	got, err := briefText(context.Background(), pool, work, "2", "3", "CODE", "")
 	if err != nil {
 		t.Fatal(err)
 	}
