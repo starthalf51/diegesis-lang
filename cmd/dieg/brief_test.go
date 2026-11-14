@@ -17,7 +17,7 @@ func TestBriefSections(t *testing.T) {
 		t.Skip("SL_PG_DSN not set")
 	}
 	dir := t.TempDir()
-	src := "---\nmodule: rs.s\nmode: authored\n---\n\n```sl\n" + rsWork + "attr jokbo.rule = \"한 줄에 한 사람\"\n```\n"
+	src := "---\nmodule: rs.s\nmode: authored\n---\n\n```sl\n" + rsWork + "attr jokbo.rule = \"한 줄에 한 사람\"\nattr a.role = \"문지기\"\n```\n"
 	os.WriteFile(filepath.Join(dir, "w.dieg.md"), []byte(src), 0o644)
 	work, err := load(dir, io.Discard)
 	if err != nil {
@@ -29,7 +29,7 @@ func TestBriefSections(t *testing.T) {
 	}
 	defer pool.Close()
 	defer pool.Exec(context.Background(), `DELETE FROM work WHERE id=$1`, work)
-	got, err := briefText(context.Background(), pool, work, "2", "3", "CODE", "")
+	got, err := briefText(context.Background(), pool, work, "2", "3", "1", "CODE", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,19 @@ func TestBriefSections(t *testing.T) {
 	if !strings.Contains(got, "- 족보: 한 줄에 한 사람") {
 		t.Errorf("rule missing:\n%s", got)
 	}
+	if !strings.Contains(got, "역할: 문지기") || !strings.Contains(got, "앞에서 독자가 들은 말") {
+		t.Errorf("card or heard lines missing:\n%s", got)
+	}
 	if !strings.HasSuffix(got, "CODE") {
 		t.Errorf("code not appended")
+	}
+}
+
+func TestBriefCardAndComments(t *testing.T) {
+	if got := stripCodeComments("# 8화\n```sl\nscene 1\n  # 작가 주석\n  enter a\n```\n"); strings.Contains(got, "작가 주석") || !strings.Contains(got, "# 8화") {
+		t.Errorf("stripCodeComments = %q", got)
+	}
+	if !ruleSays("- 삭제: 에이전트는 판정 없이 해칠 수 없다. 구금도", "에이전트는 판정 없이 해칠 수 없다 — 구금도 위해다") {
+		t.Error("ruleSays missed a rule-stated fact")
 	}
 }

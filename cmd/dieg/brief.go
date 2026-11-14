@@ -16,7 +16,7 @@ import (
 // re-explain), what this episode must hand over (facts first known by `to`, exclusive; omitted when to == ""), and
 // what stays hidden (facts true in the work the reader still lacks afterwards). The design code, if given, follows.
 // The brief is for an episode writer, not a renderer: it fixes knowledge, never sentences.
-func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, code, style string) (string, error) {
+func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, since, code, style string) (string, error) {
 	before, err := readerState(ctx, pool, work, from)
 	if err != nil {
 		return "", err
@@ -79,6 +79,53 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, code, st
 	} else {
 		b.WriteString("(없음: 첫 화다)\n")
 	}
+	// Character cards (S13): who is on stage, from `attr <character>.role/voice/creed`. A creed is said openly, so it
+	// is never listed as a hidden truth below (S19).
+	creeds := map[string]bool{}
+	cards, err := pool.Query(ctx, epSQL+`
+		SELECT render_name($1, c.entity_id, 'ko'), coalesce(string_agg(CASE a.key WHEN 'role' THEN '역할' WHEN 'voice' THEN '말투' ELSE '신조' END
+		         || ': ' || a.value, ' / ' ORDER BY a.key DESC), ''), coalesce(string_agg(a.value, '|') FILTER (WHERE a.key = 'creed'), '')
+		  FROM cast_ c LEFT JOIN attribute a ON a.work_id = $1 AND a.entity_id = c.entity_id AND a.key IN ('role', 'voice', 'creed')
+		 GROUP BY c.entity_id ORDER BY 1`, work, from, to)
+	if err != nil {
+		return "", err
+	}
+	b.WriteString("\n## ① 이 화의 인물 — 말투와 신조는 대사와 행동으로 살린다\n")
+	for cards.Next() {
+		var n, card, cr string
+		if err := cards.Scan(&n, &card, &cr); err != nil {
+			cards.Close()
+			return "", err
+		}
+		for _, c := range strings.Split(cr, "|") {
+			creeds[c] = c != ""
+		}
+		if card == "" {
+			fmt.Fprintf(&b, "- %s\n", n)
+		} else {
+			fmt.Fprintf(&b, "- %s — %s\n", n, card)
+		}
+	}
+	cards.Close()
+	// Spoken lines since `since` (S18): what the reader heard said, word for word, so names and threats carry over.
+	if since != "" {
+		qs, err := pool.Query(ctx, `SELECT render_name($1, a.actor_id, 'ko'), a.quote FROM act a JOIN scene_told_ord($1) o ON o.scene_id = a.scene_id
+			WHERE a.work_id = $1 AND coalesce(a.quote, '') <> '' AND a.verb IN ('says', 'tells', 'asks', 'lies', 'decrees')
+			  AND o.ord >= $2 AND o.ord < $3 ORDER BY o.ord, a.ord`, work, toldOrd(ctx, pool, work, since), toldOrd(ctx, pool, work, from))
+		if err != nil {
+			return "", err
+		}
+		b.WriteString("\n## ① 앞에서 독자가 들은 말 — 별칭·약속·위협은 이 말 그대로 이어진다\n")
+		for qs.Next() {
+			var who, q string
+			if err := qs.Scan(&who, &q); err != nil {
+				qs.Close()
+				return "", err
+			}
+			fmt.Fprintf(&b, "- %s: \"%s\"\n", who, q)
+		}
+		qs.Close()
+	}
 	if to != "" {
 		b.WriteString("\n## ② 이 화가 독자에게 넘길 것 — 장면으로 짐작하게 한다. 문장을 그대로 옮기지 않는다\n")
 		for _, f := range after.Facts {
@@ -91,12 +138,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, code, st
 	// truths are not given to the writer at all; a writer who does not know cannot leak (S11).
 	// A belief counts only if its point certainly precedes the episode end; an unordered point is dropped, not passed.
 	b.WriteString("\n## ③ 밝히지 않는다 — 이 화 인물이 쥐고 있지만 독자는 아직 모르는 진실. 인물은 이것을 알고 숨기며 움직인다\n")
-	rows, err := pool.Query(ctx, `WITH o AS (SELECT * FROM scene_told_ord($1)),
-		ep AS (SELECT o.scene_id FROM o WHERE o.ord >= (SELECT o2.ord FROM o o2 JOIN scene x ON x.id = o2.scene_id
-		         WHERE x.id = $2 OR lint_short(x.id) = $2)
-		       AND ($3 = '' OR o.ord < (SELECT o3.ord FROM o o3 JOIN scene y ON y.id = o3.scene_id WHERE y.id = $3 OR lint_short(y.id) = $3))),
-		cast_ AS (SELECT DISTINCT p.entity_id FROM presence p JOIN entity e ON e.id = p.entity_id
-		          WHERE p.work_id = $1 AND e.kind = 'character' AND p.scene_id IN (SELECT scene_id FROM ep)),
+	rows, err := pool.Query(ctx, epSQL+`,
 		endpt AS (SELECT s.end_pt FROM scene s JOIN o ON o.scene_id = s.id WHERE s.id IN (SELECT scene_id FROM ep) ORDER BY o.ord DESC LIMIT 1),
 		bl_ AS (SELECT bl.* FROM believes bl WHERE bl.work_id = $1 AND bl.entity_id IN (SELECT * FROM cast_)
 		        AND (bl.from_pt IS NULL OR bl.from_pt = (SELECT * FROM endpt) OR precedes($1, bl.from_pt, (SELECT * FROM endpt)) = 'yes'))
@@ -115,7 +157,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, code, st
 		if err := rows.Scan(&t, &who); err != nil {
 			return "", err
 		}
-		if known[t] {
+		if known[t] || creeds[t] || ruleSays(rb.String(), t) {
 			continue
 		}
 		if who != "" {
@@ -127,18 +169,51 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, code, st
 	if err := rows.Err(); err != nil {
 		return "", err
 	}
-	b.WriteString("\n## ④ 쓰기 규칙\n- 회차 번호·'지난 화' 같은 연재 바깥 말을 원고에 쓰지 않는다.\n- 설계서의 사실 문장·용어 풀이를 원고에 옮겨 적지 않는다. 인물의 행동·대사·결과로 보인다.\n- ①에 없는 것은 독자가 모른다. 시점 인물은 ①과 ③에서 자기 이름이 붙은 것만 더 안다. 그것을 서술로 털어놓지 않고 행동의 이유로만 비친다. 추측은 추측으로만 쓴다.\n")
+	b.WriteString("\n## ④ 쓰기 규칙\n- 회차 번호·'지난 화' 같은 연재 바깥 말을 원고에 쓰지 않는다.\n- 설계서의 사실 문장·용어 풀이를 원고에 옮겨 적지 않는다. 인물의 행동·대사·결과로 보인다.\n- ①에 없는 것은 독자가 모른다. 시점 인물은 ①과 ③에서 자기 이름이 붙은 것만 더 안다. 그것을 서술로 털어놓지 않고 행동의 이유로만 비친다.\n- 모르는 것은 쓰지 않거나 행동으로 남긴다. 화자가 추측을 풀어 쓰거나 '추측이었다'고 꼬리표를 달지 않는다.\n")
 	if code != "" {
 		b.WriteString("\n## ⑤ 장면 설계 (디제시스 코드) — 장면 순서·장소·행위·등장/퇴장·누가 무엇을 아는지를 따른다. 감각·몸짓·세부는 자유\n")
-		b.WriteString(code)
+		b.WriteString(stripCodeComments(code))
 	}
-	return b.String(), nil
+	// ponytail: the SQL fact renderer spells negation in English; rewrite here until render_fact_text takes a language.
+	return strings.ReplaceAll(b.String(), "It is not true that ", "(거짓) "), nil
 }
 
-// cmdBrief runs `dieg brief <work|dir> --from <scene> [--to <scene>] [--code <file>] [--style <file>]`.
+// epSQL opens a WITH clause: o (telling order), ep (scenes from $2 up to, not including, $3; to the end when $3 = ”),
+// cast_ (characters present in ep). $1 is the work.
+const epSQL = `WITH o AS (SELECT * FROM scene_told_ord($1)),
+	ep AS (SELECT o.scene_id FROM o WHERE o.ord >= (SELECT o2.ord FROM o o2 JOIN scene x ON x.id = o2.scene_id
+	         WHERE x.id = $2 OR lint_short(x.id) = $2)
+	       AND ($3 = '' OR o.ord < (SELECT o3.ord FROM o o3 JOIN scene y ON y.id = o3.scene_id WHERE y.id = $3 OR lint_short(y.id) = $3))),
+	cast_ AS (SELECT DISTINCT p.entity_id FROM presence p JOIN entity e ON e.id = p.entity_id
+	          WHERE p.work_id = $1 AND e.kind = 'character' AND p.scene_id IN (SELECT scene_id FROM ep))`
+
+// ruleSays reports whether the world-rule lines already state fact t (its clause before " — "), so it is not hidden twice.
+func ruleSays(rules, t string) bool {
+	head, _, _ := strings.Cut(t, " — ")
+	return len(head) > 10 && strings.Contains(rules, head)
+}
+
+// stripCodeComments drops `#` comment lines inside ```sl blocks: they are the author's notes, often the very
+// explanation the scene should leave to the reader (P3). Markdown headings outside the blocks stay.
+func stripCodeComments(md string) string {
+	var out []string
+	in := false
+	for _, l := range strings.Split(md, "\n") {
+		t := strings.TrimSpace(l)
+		if strings.HasPrefix(t, "```") {
+			in = !in
+		} else if in && strings.HasPrefix(t, "#") {
+			continue
+		}
+		out = append(out, l)
+	}
+	return strings.Join(out, "\n")
+}
+
+// cmdBrief runs `dieg brief <work|dir> --from <scene> [--to <scene>] [--since <scene>] [--code <file>] [--style <file>]`.
 func cmdBrief(args []string) int {
-	var target, from, to, codeFile, styleFile string
-	flags := map[string]*string{"--from": &from, "--to": &to, "--code": &codeFile, "--style": &styleFile}
+	var target, from, to, since, codeFile, styleFile string
+	flags := map[string]*string{"--from": &from, "--to": &to, "--since": &since, "--code": &codeFile, "--style": &styleFile}
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		switch {
@@ -175,7 +250,7 @@ func cmdBrief(args []string) int {
 		return 1
 	}
 	defer pool.Close()
-	s, err := briefText(ctx, pool, work, from, to, code, style)
+	s, err := briefText(ctx, pool, work, from, to, since, code, style)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1

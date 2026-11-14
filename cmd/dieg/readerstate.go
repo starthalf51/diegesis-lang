@@ -74,7 +74,7 @@ func readerState(ctx context.Context, pool *pgxpool.Pool, work, until string) (r
 		func(a, b string) { s.Terms = append(s.Terms, map[string]string{"surface": a, "gloss": b}) }); err != nil {
 		return s, err
 	}
-	if err := q(`SELECT render_name($1, p.entity_id, 'en'), '' FROM presence p JOIN entity e ON e.id = p.entity_id
+	if err := q(`SELECT render_name($1, p.entity_id, 'ko'), '' FROM presence p JOIN entity e ON e.id = p.entity_id
 		JOIN scene_told_ord($1) o ON o.scene_id = p.scene_id
 		WHERE e.kind = 'character' AND o.ord < $2 GROUP BY p.entity_id ORDER BY min(o.ord), p.entity_id`,
 		func(a, _ string) { s.Cast = append(s.Cast, a) }); err != nil {
