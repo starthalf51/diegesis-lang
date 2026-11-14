@@ -44,6 +44,7 @@ func BuildPrompt(s Scene, v Variant, lang string, style *StyleSample) (system, u
 		sb.WriteString("- Narrate every act, in the given order. Do not omit any act.\n")
 		sb.WriteString("- After each key act (speech, discovery, decision, reveal), give the point-of-view character's reaction — body, feeling, or thought.\n")
 		sb.WriteString("- You may add: sensory detail, gestures, small movements within the same place, the point-of-view character's inner thoughts, atmosphere.\n")
+		sb.WriteString("- Every sensory detail, gesture and comparison must attach to a person, object or fact in this scene. Add no ambient decoration (noise, light, weather, décor) that connects to nothing, and draw comparisons only from the scene's own world.\n")
 		sb.WriteString("- Never add: new events; new facts; any change of possession, location (leaving the place), life or death, or relationship; new named characters or places; anything that contradicts the acts or facts; another character's unspoken thoughts in first person.\n")
 	} else {
 		sb.WriteString("- Narrate every act, in the given order. Do not omit any act and do not add events, actions, or facts that are not in the specification.\n")

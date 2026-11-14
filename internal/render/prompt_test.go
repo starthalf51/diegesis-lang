@@ -287,3 +287,25 @@ func TestPromptHandoff(t *testing.T) {
 		t.Errorf("no last act / no one:\n%s", u)
 	}
 }
+
+// Plan 18 T2: flesh "novel" tells the renderer to attach every added detail to the scene; flesh "" stays unchanged.
+func TestFleshDetailsConnectToScene(t *testing.T) {
+	const line = "- Every sensory detail, gesture and comparison must attach to a person, object or fact in this scene. Add no ambient decoration (noise, light, weather, décor) that connects to nothing, and draw comparisons only from the scene's own world.\n"
+	s := mustLoad(t, "testdata/scenes/"+firstScene(t))
+	novel := &StyleSample{ID: "x", Lang: "en", Rules: []string{"r"}, Flesh: "novel"}
+	empty := &StyleSample{ID: "x", Lang: "en", Rules: []string{"r"}}
+	sysN, _, err := BuildPrompt(s, VariantStyleDirectives, "en", novel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(sysN, line) {
+		t.Error("novel system prompt missing connected-detail rule")
+	}
+	sysE, _, err := BuildPrompt(s, VariantStyleDirectives, "en", empty)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(sysE, line) {
+		t.Error("flesh-empty system prompt must not carry the connected-detail rule")
+	}
+}
