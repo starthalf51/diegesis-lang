@@ -260,7 +260,7 @@ func (b *builder) life(m *module, l *syntax.Life, w *walker) string {
 // at "" = true from the start. id values resolve to their declaration when there is one
 // (aliases are resolved in PG by lint_canon); an undeclared id is kept as a bare symbol.
 func (b *builder) attribute(m *module, a *syntax.Attribute, prefix, at, account string) string {
-	who := b.want(m, a.Entity, "attribute subject", "character", "group", "place", "thing", "faction", "thread")
+	who := b.want(m, a.Entity, "attribute subject", "character", "group", "place", "thing", "faction", "thread", "term")
 	if who == "" {
 		return ""
 	}

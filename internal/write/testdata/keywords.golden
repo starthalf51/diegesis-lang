@@ -14,6 +14,9 @@
 - `attribute-conflict` (warn): 같은 엔티티의 같은 속성이 서로 맞지 않는 값으로 단언된다
 - `because-unbelieved` (warn): `… because P` 인데 그 시점에 행위자가 P 를 믿지 않는다
 - `belief-contradiction` (warn): 직접 지각한 사실과 반대되는 명제를 진실하게 주장한다
+- `brief-card-missing` (info): 장면에 나오거나 말하는 인물에게 인물 카드(role·want·look·voice)가 없다
+- `brief-place-unseen` (info): 장면의 장소에 감각 낱말(look)이 없다
+- `brief-term-unshown` (info): 설명하는 용어에 그것을 보여 줄 사건(shown_by)이 없다
 - `dead-actor` (warn): 죽은 인물이 말하거나 행동한다
 - `fact-conflict` (warn): 같은 술어·같은 첫 인자인데 나머지 인자가 다른 참 사실이 둘 있다 (예: broke(lens, A) 와 broke(lens, B)), 또는 같은 선두 토큰의 텍스트 사실이 다른 파일에 둘 있다(후보)
 - `inferred-deception` (info): 쓴 사람이 거짓인 줄 알고 쓴 것으로 판정된 문서(007) — 작가의 실수인지 확인하라

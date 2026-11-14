@@ -9,6 +9,7 @@
 - [compiler](compiler.md) — compile pipeline, time model, knowledge derivation, CLI
 - [checks](checks.md) — error/warning layers, lint rules, narrative patterns, waivers, `dieg test`
 - [storage](storage.md) — PostgreSQL schema, migrations, reader model, metrics, AGE graph
+- [brief](brief.md) — `dieg brief` episode briefs for whole-episode writing, their attribute conventions, `dieg settle`, data-gap lint
 - [rendering](rendering.md) — renderer, verification card, world-state digest, sentence patches, style backends
 
 Start with the [quickstart](quickstart.md).
