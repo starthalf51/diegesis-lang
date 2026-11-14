@@ -75,6 +75,9 @@ func main() {
 	if args[0] == "curve" {
 		os.Exit(cmdCurve(args[1:]))
 	}
+	if args[0] == "settle" {
+		os.Exit(cmdSettle(args[1:]))
+	}
 	if args[0] == "brief" {
 		os.Exit(cmdBrief(args[1:]))
 	}

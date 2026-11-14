@@ -185,6 +185,14 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 		}
 		b.WriteString("\n## ① 앞에서 독자가 들은 말 — 별칭·약속·위협은 이 말 그대로 이어진다. 시점 인물이 없던 자리의 말은 시점 인물이 모른다\n" + lines)
 	}
+	// Plan 19: details earlier manuscripts fixed (dieg settle) carry into this episode unchanged.
+	if o.settled != "" {
+		s, err := settledSection(ctx, pool, work, from, o.settled, os.Stderr)
+		if err != nil {
+			return "", err
+		}
+		b.WriteString(s)
+	}
 	if to != "" {
 		// S28: the terms this episode establishes are the world's premise for a first-time reader; give their gloss
 		// (as reference) and how the code says they should come across.
@@ -284,7 +292,7 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	return maskNames(ctx, pool, work, from, toldOrd(ctx, pool, work, to), after.Text(), s)
 }
 
-type briefOpts struct{ from, to, since, code, style, rules string }
+type briefOpts struct{ from, to, since, code, style, rules, settled string }
 
 // epSQL opens a WITH clause: o (telling order), ep (scenes from $2 up to, not including, $3; to the end when $3 = ”),
 // cast_ (characters present in ep, or speaking into it from off stage). $1 is the work.
@@ -322,8 +330,8 @@ func stripCodeComments(md string) string {
 
 // cmdBrief runs `dieg brief <work|dir> --from <scene> [--to <scene>] [--since <scene>] [--code <file>] [--style <file>] [--rules <dir>]`.
 func cmdBrief(args []string) int {
-	var target, from, to, since, codeFile, styleFile, rulesDir string
-	flags := map[string]*string{"--from": &from, "--to": &to, "--since": &since, "--code": &codeFile, "--style": &styleFile, "--rules": &rulesDir}
+	var target, from, to, since, codeFile, styleFile, rulesDir, settledDir string
+	flags := map[string]*string{"--from": &from, "--to": &to, "--since": &since, "--code": &codeFile, "--style": &styleFile, "--rules": &rulesDir, "--settled": &settledDir}
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		switch {
@@ -360,7 +368,7 @@ func cmdBrief(args []string) int {
 		return 1
 	}
 	defer pool.Close()
-	s, err := briefText(ctx, pool, work, briefOpts{from, to, since, code, style, rulesDir})
+	s, err := briefText(ctx, pool, work, briefOpts{from, to, since, code, style, rulesDir, settledDir})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
