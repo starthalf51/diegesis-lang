@@ -32,7 +32,8 @@ func spokenLines(ctx context.Context, pool *pgxpool.Pool, work string, lo, hi in
 		    AND au.entity_id <> ALL (a.addr) AND au.entity_id IS DISTINCT FROM a.actor_id), '{}'),
 		  coalesce(render_name($1, s.place_id, 'ko'), ''), a.quote,
 		  $4 = '' OR a.actor_id = $4 OR $4 = ANY (a."to") OR EXISTS (SELECT 1 FROM audience au WHERE au.act_id = a.id AND au.entity_id = $4)
-		     OR EXISTS (SELECT 1 FROM presence p WHERE p.scene_id = a.scene_id AND p.entity_id = $4)
+		     OR EXISTS (SELECT 1 FROM presence p WHERE p.scene_id = a.scene_id AND p.entity_id = $4),
+		  EXISTS (SELECT 1 FROM attribute t WHERE t.work_id = $1 AND t.entity_id = a.actor_id AND t.key = 'target')
 		FROM x a JOIN scene s ON s.id = a.scene_id JOIN scene_told_ord($1) o ON o.scene_id = a.scene_id
 		WHERE a.work_id = $1 AND coalesce(a.quote, '') <> '' AND a.verb IN ('says', 'tells', 'asks', 'lies', 'decrees')
 		  AND o.ord >= $2 AND o.ord < $3 ORDER BY o.ord, a.ord`, work, lo, hi, pov)
@@ -46,8 +47,8 @@ func spokenLines(ctx context.Context, pool *pgxpool.Pool, work string, lo, hi in
 	for rows.Next() {
 		var who, place, q string
 		var to, near []string
-		var heard bool
-		if err := rows.Scan(&who, &to, &near, &place, &q, &heard); err != nil {
+		var heard, aimed bool
+		if err := rows.Scan(&who, &to, &near, &place, &q, &heard, &aimed); err != nil {
 			return "", err
 		}
 		// S43: an answer that goes to more people than the question it answers is often the scene's irony —
@@ -73,6 +74,9 @@ func spokenLines(ctx context.Context, pool *pgxpool.Pool, work string, lo, hi in
 			line += " [곁에서 들음: " + strings.Join(near, ", ") + "]"
 		}
 		line += fmt.Sprintf(": \"%s\"", q)
+		if aimed { // S41: a speaker with a declared target keeps their creed on that target, not on whoever this line is about
+			line += " — 이 인물의 신조는 겨누는 대상에게만 잇는다. 이 말이 다른 인물의 셈이면 신조를 덧붙이지 않는다"
+		}
 		if !heard {
 			line += " — 시점 인물은 이 자리에 없었다"
 		}
@@ -82,27 +86,36 @@ func spokenLines(ctx context.Context, pool *pgxpool.Pool, work string, lo, hi in
 }
 
 // dateFacts prefixes each "알려진 사실:" line of a reader-state text with the story day the reader learned it (S18).
-func dateFacts(ctx context.Context, pool *pgxpool.Pool, work, text string) string {
+func dateFacts(ctx context.Context, pool *pgxpool.Pool, work, pov, text string) string {
 	day := map[string]int64{}
-	rows, err := pool.Query(ctx, `SELECT DISTINCT ON (k.fact_id) render_fact_text($1, k.fact_id), coalesce(p.earliest, 0) / 86400 + 1
+	heard := map[string]bool{}
+	// S48: a fact first given in a scene the POV character was not in is hearsay to the narrator.
+	rows, err := pool.Query(ctx, `SELECT DISTINCT ON (k.fact_id) render_fact_text($1, k.fact_id), coalesce(p.earliest, 0) / 86400 + 1,
+		       $2 <> '' AND NOT EXISTS (SELECT 1 FROM presence pr WHERE pr.scene_id = s.id AND pr.entity_id = $2)
 		FROM reader_knows($1) k JOIN scene s ON s.work_id = $1 AND s.discourse_ord = k.from_ord JOIN point p ON p.id = s.start_pt
-		ORDER BY k.fact_id, k.from_ord`, work)
+		ORDER BY k.fact_id, k.from_ord`, work, pov)
 	if err != nil {
 		return text
 	}
 	for rows.Next() {
 		var t string
 		var d int64
-		if rows.Scan(&t, &d) == nil {
-			day[t] = d
+		var h bool
+		if rows.Scan(&t, &d, &h) == nil {
+			day[t], heard[t] = d, h
 		}
 	}
 	rows.Close()
 	var out []string
 	for _, l := range strings.Split(text, "\n") {
 		if rest, ok := strings.CutPrefix(l, "알려진 사실: "); ok {
-			if d, ok := day[strings.TrimPrefix(rest, "(사실 아님) ")]; ok {
-				l = fmt.Sprintf("알려진 사실(%d일째): %s", d, rest)
+			k := strings.TrimPrefix(rest, "(사실 아님) ")
+			if d, ok := day[k]; ok {
+				if heard[k] {
+					l = fmt.Sprintf("알려진 사실(%d일째, 화자는 그 자리에 없었다 — 전해 들은 일): %s", d, rest)
+				} else {
+					l = fmt.Sprintf("알려진 사실(%d일째): %s", d, rest)
+				}
 			}
 		}
 		out = append(out, l)
@@ -390,14 +403,16 @@ func subj(name string) string {
 
 // sceneBeats compiles each scene's `design` block into one line (S36, P15): goal, turn (the before-state is shown
 // in this scene first, then broken) and the scene's own clock (what must happen before what).
-func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to string) (string, error) {
+func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to, pov string) (string, error) {
 	rows, err := pool.Query(ctx, epSQL+`
 		SELECT lint_short(o.scene_id), coalesce(render_name($1, s.place_id, 'ko'), ''),
 		       coalesce((SELECT render_name($1, d."values"[1], 'ko') || ': ' || d."values"[2] FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.goal' LIMIT 1), ''),
 		       coalesce((SELECT '"' || d."values"[1] || '" → "' || d."values"[2] || '"' FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.turn' LIMIT 1), ''),
 		       coalesce((SELECT d."values"[1] FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.clock' LIMIT 1), ''),
-		       coalesce((SELECT d."values"[1] FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.risk' LIMIT 1), '')
-		  FROM o JOIN ep ON ep.scene_id = o.scene_id JOIN scene s ON s.id = o.scene_id ORDER BY o.ord`, work, from, to)
+		       coalesce((SELECT d."values"[1] FROM directive d WHERE d.scene_id = o.scene_id AND d.key = 'design.risk' LIMIT 1), ''),
+		       coalesce((SELECT string_agg(render_name($1, p.entity_id, 'ko'), ', ') FROM presence p WHERE p.scene_id = o.scene_id AND p.entity_id <> $4
+		          AND EXISTS (SELECT 1 FROM attribute t WHERE t.work_id = $1 AND t.entity_id = p.entity_id AND t.key = 'target')), '')
+		  FROM o JOIN ep ON ep.scene_id = o.scene_id JOIN scene s ON s.id = o.scene_id ORDER BY o.ord`, work, from, to, pov)
 	if err != nil {
 		return "", err
 	}
@@ -405,8 +420,8 @@ func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 	var b strings.Builder
 	var lines []string
 	for rows.Next() {
-		var id, place, goal, turn, clock, risk string
-		if err := rows.Scan(&id, &place, &goal, &turn, &clock, &risk); err != nil {
+		var id, place, goal, turn, clock, risk, hunters string
+		if err := rows.Scan(&id, &place, &goal, &turn, &clock, &risk, &hunters); err != nil {
 			return "", err
 		}
 		if goal == "" && turn == "" && clock == "" && risk == "" {
@@ -424,6 +439,9 @@ func sceneBeats(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 		}
 		if risk != "" { // P20: the price of acting, so the key act takes more than one line
 			parts = append(parts, "위험 — "+risk+" (그 위험이 보이게 한 박자 더 머문다)")
+		}
+		if hunters != "" { // S45: an antagonist leaving mid-episode leaves a promise tied to the counter
+			parts = append(parts, "퇴장 — "+hunters+"는 원하는 것을 카운터 값에 묶은 말이나 몸짓을 남기고 나간다(다음 등장의 약속)")
 		}
 		lines = append(lines, fmt.Sprintf("- %s (%s): %s", id, place, strings.Join(parts, " / ")))
 	}
