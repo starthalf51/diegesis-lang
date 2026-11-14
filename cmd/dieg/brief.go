@@ -96,11 +96,11 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts
 	openly := map[string]bool{}
 	cards, err := pool.Query(ctx, epSQL+`
 		SELECT render_name($1, c.entity_id, 'ko'), coalesce(string_agg(CASE a.key WHEN 'role' THEN '역할' WHEN 'want' THEN '원하는 것'
-		           WHEN 'look' THEN '겉모습' WHEN 'voice' THEN '말투' ELSE '신조' END || ': ' || a.value, ' / '
+		           WHEN 'look' THEN CASE WHEN c.entity_id = $4 THEN '겉모습(남이 보는 모습 — 1인칭 화자는 자기를 못 본다. 남의 눈·말·반사면으로만 보인다)' ELSE '겉모습' END WHEN 'voice' THEN '말투' ELSE '신조' END || ': ' || a.value, ' / '
 		         ORDER BY array_position(ARRAY['role', 'want', 'look', 'voice', 'creed'], a.key)), ''),
 		       coalesce(string_agg(a.value, '|') FILTER (WHERE a.key = 'creed'), '')
 		  FROM cast_ c LEFT JOIN attribute a ON a.work_id = $1 AND a.entity_id = c.entity_id AND a.key IN ('role', 'want', 'look', 'voice', 'creed')
-		 GROUP BY c.entity_id ORDER BY 1`, work, from, to)
+		 GROUP BY c.entity_id ORDER BY 1`, work, from, to, pov)
 	if err != nil {
 		return "", err
 	}

@@ -3,128 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/fs"
-	"os"
 	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"github.com/starthalf51/diegesis-lang/internal/pg"
-	"github.com/starthalf51/diegesis-lang/rules"
 )
-
-// nowSection compiles "where the story stands" at the episode start (S14): clocks and the work's own counters.
-//   - clocks: `attr <term>.clock = <event>` — days from the episode's first scene to that event's start.
-//   - counters: the work's project rules (--rules dir) that report per act or scene; the last message before the
-//     episode and the last one inside it are the counter's value at the start and after this episode.
-func nowSection(ctx context.Context, pool *pgxpool.Pool, work, from, to, rulesDir string) (string, error) {
-	var b strings.Builder
-	// S25/S27: days left at the start and at the last scene end, counted as story-day numbers (earliest / 86400), so a
-	// few-hour episode does not lose a day and a day passes only when the end certainly falls on a later day.
-	rows, err := pool.Query(ctx, epSQL+`, last AS (SELECT s.end_pt FROM scene s JOIN o ON o.scene_id = s.id
-		    WHERE s.id IN (SELECT scene_id FROM ep) ORDER BY o.ord DESC LIMIT 1)
-		SELECT render_name($1, a.entity_id, 'ko'), pe.earliest / 86400 - ps.earliest / 86400,
-		       pe.earliest / 86400 - coalesce(pl.earliest, ps.earliest) / 86400 -- S27: day numbers, not seconds; a day passes only if certain
-		FROM attribute a JOIN point pe ON pe.work_id = $1 AND (pe.id = a.value || '.start' OR pe.id LIKE '%/' || a.value || '.start')
-		JOIN scene s ON s.work_id = $1 AND (s.id = $2 OR lint_short(s.id) = $2) JOIN point ps ON ps.id = s.start_pt
-		LEFT JOIN point pl ON pl.id = (SELECT * FROM last)
-		WHERE a.work_id = $1 AND a.key = 'clock' AND pe.earliest >= ps.earliest ORDER BY 2`, work, from, to)
-	if err != nil {
-		return "", err
-	}
-	for rows.Next() {
-		var n string
-		var d, e int64
-		if err := rows.Scan(&n, &d, &e); err != nil {
-			rows.Close()
-			return "", err
-		}
-		if e < d {
-			fmt.Fprintf(&b, "- %s: 이 화 시작 때 마감까지 %d일 → 이 화 끝에는 %d일\n", n, d, e)
-		} else {
-			fmt.Fprintf(&b, "- %s: 이 화 시작 때 마감까지 %d일 (이 화 안에서 날이 바뀌지 않는다)\n", n, d)
-		}
-	}
-	rows.Close()
-	if rulesDir == "" {
-		return b.String(), nil
-	}
-	x := os.DirFS(rulesDir)
-	mine, err := pg.Rules(x)
-	if err != nil {
-		return "", err
-	}
-	summary := map[string]string{}
-	for _, r := range mine {
-		summary[r.ID] = r.Summary
-	}
-	ds, err := pg.Lint(ctx, pool, work, rules.FS, []fs.FS{x}...)
-	if err != nil {
-		return "", err
-	}
-	ord := map[string]int{}
-	o, err := pool.Query(ctx, `SELECT scene_id, ord FROM scene_told_ord($1)`, work)
-	if err != nil {
-		return "", err
-	}
-	for o.Next() {
-		var s string
-		var n int
-		if err := o.Scan(&s, &n); err != nil {
-			o.Close()
-			return "", err
-		}
-		ord[s] = n
-	}
-	o.Close()
-	lo, hi := toldOrd(ctx, pool, work, from), toldOrd(ctx, pool, work, to)
-	type pick struct {
-		ord int
-		msg string
-	}
-	start, inside := map[string]pick{}, map[string]pick{}
-	var ids []string
-	for _, d := range ds {
-		if _, ok := summary[d.Rule]; !ok || (d.TargetKind != "act" && d.TargetKind != "scene") {
-			continue
-		}
-		sc, _, _ := strings.Cut(d.TargetID, "#")
-		n, ok := ord[sc]
-		if !ok {
-			continue
-		}
-		m := start
-		if n >= lo && n < hi {
-			m = inside
-		} else if n >= hi {
-			continue
-		}
-		if p, seen := m[d.Rule]; !seen || n >= p.ord {
-			m[d.Rule] = pick{n, d.Message}
-		}
-	}
-	for id := range summary {
-		_, a := start[id]
-		_, c := inside[id]
-		if a || c {
-			ids = append(ids, id)
-		}
-	}
-	sort.Strings(ids)
-	for _, id := range ids {
-		s, in := start[id].msg, inside[id].msg
-		if s == "" {
-			s = "(아직 없음)"
-		}
-		if in == "" {
-			in = "(이 화에서 바뀌지 않는다)"
-		}
-		fmt.Fprintf(&b, "- %s: 시작 %s → 이 화 끝 %s\n", summary[id], s, in)
-	}
-	return b.String(), nil
-}
 
 // povOf is the POV character of scene `from` (its `render pov` directive), or "".
 func povOf(ctx context.Context, pool *pgxpool.Pool, work, from string) string {
@@ -261,7 +144,9 @@ func maskNames(ctx context.Context, pool *pgxpool.Pool, work, from string, endOr
 func placeCards(ctx context.Context, pool *pgxpool.Pool, work, from, to string) (string, error) {
 	rows, err := pool.Query(ctx, epSQL+`
 		SELECT render_name($1, s.place_id, 'ko'), coalesce(min(a.value) FILTER (WHERE a.key = 'look'), ''),
-		       coalesce(min(a.value) FILTER (WHERE a.key = 'talk'), '') FROM scene s JOIN ep ON ep.scene_id = s.id
+		       coalesce(min(a.value) FILTER (WHERE a.key = 'talk'), ''),
+		       EXISTS (SELECT 1 FROM scene sx JOIN o ox ON ox.scene_id = sx.id WHERE sx.place_id = s.place_id AND ox.ord < (SELECT min(o.ord) FROM o JOIN ep ON ep.scene_id = o.scene_id))
+		  FROM scene s JOIN ep ON ep.scene_id = s.id
 		  LEFT JOIN attribute a ON a.work_id = $1 AND a.entity_id = s.place_id AND a.key IN ('look', 'talk')
 		 WHERE s.place_id IS NOT NULL GROUP BY s.place_id ORDER BY min(s.discourse_ord)`, work, from, to)
 	if err != nil {
@@ -271,11 +156,15 @@ func placeCards(ctx context.Context, pool *pgxpool.Pool, work, from, to string) 
 	var b strings.Builder
 	for rows.Next() {
 		var n, look, talk string
-		if err := rows.Scan(&n, &look, &talk); err != nil {
+		var again bool
+		if err := rows.Scan(&n, &look, &talk, &again); err != nil {
 			return "", err
 		}
 		line := "- " + n
-		if look != "" {
+		switch {
+		case again: // P7: a revisited place is not painted again from the card
+			line += " — 다시 찾은 장소. 처음처럼 다시 그리지 않는다. 이번에 달라진 것 하나만 쓴다"
+		case look != "":
 			line += " — " + look
 		}
 		if talk != "" {
@@ -348,14 +237,18 @@ func labelForgedLines(forged map[string]bool, text string) string {
 	return strings.Join(lines, "\n")
 }
 
-// newTerms lists the terms first explained in the episode with their gloss and `explain … via <mode>` (S28).
+// newTerms lists the terms first explained in the episode with their gloss and `explain … via <mode>` (S28), the
+// scene that carries each, and the event that shows it (`attr <term>.shown_by = <fact>`, S32). A term with no such
+// event is flagged: nothing in the scene makes it mean anything, so it would arrive as a bare label.
 func newTerms(ctx context.Context, pool *pgxpool.Pool, work, from, to string, before readerSt) (string, error) {
 	had := map[string]bool{}
 	for _, t := range before.Terms {
 		had[t["surface"]] = true
 	}
 	rows, err := pool.Query(ctx, epSQL+`
-		SELECT render_name($1, t.term, 'ko'), coalesce(g.value, ''), coalesce(min(v.mode), '')
+		SELECT render_name($1, t.term, 'ko'), coalesce(g.value, ''), coalesce(min(v.mode), ''), lint_short(min(d.scene_id)),
+		       coalesce((SELECT string_agg(render_fact_text($1, sb.value), ' / ') FROM attribute sb
+		                  WHERE sb.work_id = $1 AND sb.entity_id = t.term AND sb.key = 'shown_by'), '')
 		  FROM directive d JOIN ep ON ep.scene_id = d.scene_id CROSS JOIN LATERAL unnest(d."values") AS t(term)
 		  LEFT JOIN attribute g ON g.id = t.term || '#gloss'
 		  LEFT JOIN LATERAL (SELECT v."values"[1] AS mode FROM directive v WHERE v.work_id = $1 AND v.scene_id = d.scene_id
@@ -369,8 +262,8 @@ func newTerms(ctx context.Context, pool *pgxpool.Pool, work, from, to string, be
 	how := map[string]string{"sense": "감각으로", "consequence": "결과로", "dialogue": "대사로"}
 	var b strings.Builder
 	for rows.Next() {
-		var n, gloss, mode string
-		if err := rows.Scan(&n, &gloss, &mode); err != nil {
+		var n, gloss, mode, scene, shown string
+		if err := rows.Scan(&n, &gloss, &mode, &scene, &shown); err != nil {
 			return "", err
 		}
 		if had[n] {
@@ -379,7 +272,11 @@ func newTerms(ctx context.Context, pool *pgxpool.Pool, work, from, to string, be
 		if m := how[mode]; m != "" {
 			n += " (" + m + ")"
 		}
-		fmt.Fprintf(&b, "- %s: %s\n", n, gloss)
+		ev := "⚠ 보여 줄 사건이 지정되지 않았다 — 이 장면의 일로 뜻이 서지 않으면 이름만 스친다"
+		if shown != "" {
+			ev = "보여 줄 사건: " + shown
+		}
+		fmt.Fprintf(&b, "- %s — 장면 %s · %s\n  풀이(참고): %s\n", n, scene, ev, gloss)
 	}
 	return b.String(), rows.Err()
 }

@@ -47,7 +47,7 @@ func TestBriefSections(t *testing.T) {
 	if s := sec("## ①"); !strings.Contains(s, "문이 잠겼다") || strings.Contains(s, "배가 떠났다") {
 		t.Errorf("held section wrong:\n%s", s)
 	}
-	if s := sec("## ② 이 화가 세울 세계"); !strings.Contains(s, "칩: 손목 신분 칩") || strings.Contains(s, "족보") {
+	if s := sec("## ② 이 화가 세울 세계"); !strings.Contains(s, "풀이(참고): 손목 신분 칩") || !strings.Contains(s, "⚠ 보여 줄 사건") || strings.Contains(s, "족보") {
 		t.Errorf("new-terms section wrong (chip is first explained in scene 2, jokbo in scene 1):\n%s", s)
 	}
 	if s := sec("## ② 이 화가 독자에게"); !strings.Contains(s, "배가 떠났다") || strings.Contains(s, "문이 잠겼다") {
