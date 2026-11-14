@@ -196,64 +196,97 @@ func num(v any) (string, bool) {
 	return fmt.Sprint(int64(f)), true
 }
 
-// frames fills `frame_open` with start values and each `frame_close` with end values; a closing line whose values
-// did not change in this episode is not offered as the closing line (S31).
+// frames fills `frame_open` with start values and hands the `frame_close` templates to closeLines with the work's
+// `frame_policy` (S31, plan 19).
 func frames(ctx context.Context, pool *pgxpool.Pool, work string, b *strings.Builder, vals map[string]span, first bool) error {
+	var policy string
+	if err := pool.QueryRow(ctx, `SELECT coalesce((SELECT value FROM attribute WHERE work_id = $1 AND key = 'frame_policy' ORDER BY id LIMIT 1), '')`, work).Scan(&policy); err != nil {
+		return err
+	}
 	rows, err := pool.Query(ctx, `SELECT a.key, a.value FROM attribute a WHERE a.work_id = $1 AND a.key IN ('frame_open', 'frame_close') ORDER BY a.key DESC, a.id`, work)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
-	fill := func(t string, end, maybe bool) (string, bool) {
-		changed := false
-		for k, v := range vals {
-			x := v.start
-			if end {
-				x = v.end
-				if maybe && v.maybe != "" {
-					x = v.maybe
-				}
-				changed = changed || (strings.Contains(t, "{"+k+"}") && x != v.start)
-			}
-			t = strings.ReplaceAll(t, "{"+k+"}", x)
-		}
-		return t, changed
-	}
-	var closes []string
-	certain := false
-	haveClose := false
+	var closeTpls []string
 	for rows.Next() {
 		var k, t string
 		if err := rows.Scan(&k, &t); err != nil {
 			return err
 		}
-		if k == "frame_open" {
-			s, _ := fill(t, false, false)
-			if first { // S39: the device's first appearance may withhold its values and reveal them in the episode
-				fmt.Fprintf(b, "- 여는 줄: `%s` — 이 장치가 처음 나오는 화다. 값 칸을 ▒로 가려 열어도 된다 — 가린 칸은 화자도 아직 못 읽고 세지도 못한다(줄이 흔들리거나 덮여서). 이 화의 마지막 장면에서 화자가 처음 읽는다. 닫는 줄은 글자 그대로\n", s)
-			} else {
-				fmt.Fprintf(b, "- 여는 줄(그대로 쓴다): `%s`\n", s)
-			}
+		if k == "frame_close" {
+			closeTpls = append(closeTpls, t)
 			continue
 		}
-		haveClose = true
-		if s, ch := fill(t, true, false); ch {
+		s, _ := fillFrame(t, vals, false, false)
+		if first { // S39: the device's first appearance may withhold its values and reveal them in the episode
+			fmt.Fprintf(b, "- 여는 줄: `%s` — 이 장치가 처음 나오는 화다. 값 칸을 ▒로 가려 열어도 된다 — 가린 칸은 화자도 아직 못 읽고 세지도 못한다(줄이 흔들리거나 덮여서). 이 화의 마지막 장면에서 화자가 처음 읽는다. 닫는 줄은 글자 그대로\n", s)
+		} else {
+			fmt.Fprintf(b, "- 여는 줄(그대로 쓴다): `%s`\n", s)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	b.WriteString(closeLines(closeTpls, vals, policy))
+	return nil
+}
+
+// fillFrame puts start (or end, or the open-day end) values into a frame template and reports whether a value it
+// uses moved from the start.
+func fillFrame(t string, vals map[string]span, end, maybe bool) (string, bool) {
+	changed := false
+	for k, v := range vals {
+		x := v.start
+		if end {
+			x = v.end
+			if maybe && v.maybe != "" {
+				x = v.maybe
+			}
+			changed = changed || (strings.Contains(t, "{"+k+"}") && x != v.start)
+		}
+		t = strings.ReplaceAll(t, "{"+k+"}", x)
+	}
+	return t, changed
+}
+
+// closeLines writes the closing-line paragraph. A changed value is offered as a candidate. When nothing changed
+// for certain, policy decides: "on_change" closes without a device line; anything else ("every", empty, unknown)
+// closes with the first template as is — both branches when the day is open.
+func closeLines(templates []string, vals map[string]span, policy string) string {
+	if len(templates) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	var closes []string
+	certain := false
+	for _, t := range templates {
+		if s, ch := fillFrame(t, vals, true, false); ch {
 			closes = append(closes, fmt.Sprintf("`%s`", s))
 			certain = true
-		} else if s, ch := fill(t, true, true); ch {
+		} else if s, ch := fillFrame(t, vals, true, true); ch {
 			closes = append(closes, fmt.Sprintf("`%s` (자정을 넘기는 쪽으로 쓸 때)", s))
 		}
 	}
-	switch {
-	case len(closes) > 0:
-		if !certain { // S35/P16: the timeline leaves the day open; the default branch comes first, the frame must not decide it
-			b.WriteString("- 닫는 줄: 장면이 자정을 넘기지 않으면 족보 창 줄 없이 장면의 마지막 행동으로 닫는다(기본). 닫는 줄을 위해 자정을 끼워 넣지 않는다\n")
-			fmt.Fprintf(b, "  · 장면 흐름이 자연히 자정을 넘길 때만: %s\n", strings.Join(closes, " / "))
-		} else {
-			fmt.Fprintf(b, "- 닫는 줄 후보(이 화에서 바뀐 값, 하나를 고른다): %s\n", strings.Join(closes, " / "))
-		}
-	case haveClose:
-		b.WriteString("- 닫는 줄: 이 화에서 바뀌는 값이 없다(설계 경고: 작품 고정 장치는 매 화 한 값이 바뀌기를 요구한다). 닫는 줄을 여는 줄과 같은 값으로 되풀이하지 않는다 — 족보 창 줄 없이 장면의 마지막 행동으로 닫는다\n")
+	if certain {
+		fmt.Fprintf(&b, "- 닫는 줄 후보(이 화에서 바뀐 값, 하나를 고른다): %s\n", strings.Join(closes, " / "))
+		return b.String()
 	}
-	return rows.Err()
+	same, _ := fillFrame(templates[0], vals, true, false)
+	if policy == "on_change" {
+		if len(closes) > 0 { // S35/P16: the timeline leaves the day open; the default branch comes first
+			b.WriteString("- 닫는 줄: 장면이 자정을 넘기지 않으면 장치 줄 없이 장면의 마지막 행동으로 닫는다(기본). 닫는 줄을 위해 자정을 끼워 넣지 않는다\n")
+			fmt.Fprintf(&b, "  · 장면 흐름이 자연히 자정을 넘길 때만: %s\n", strings.Join(closes, " / "))
+		} else {
+			b.WriteString("- 닫는 줄: 이 화에서 바뀌는 값이 없다. 닫는 줄을 여는 줄과 같은 값으로 되풀이하지 않는다 — 장치 줄 없이 장면의 마지막 행동으로 닫는다\n")
+		}
+		return b.String()
+	}
+	if len(closes) > 0 {
+		maybeLine, _ := fillFrame(templates[0], vals, true, true)
+		fmt.Fprintf(&b, "- 닫는 줄(매 화 쓴다): 장면이 자정을 넘기면 `%s` / 넘기지 않으면 `%s`. 닫는 줄을 위해 자정을 끼워 넣지 않는다\n", maybeLine, same)
+	} else {
+		fmt.Fprintf(&b, "- 닫는 줄(그대로 쓴다): `%s`\n", same)
+	}
+	return b.String()
 }

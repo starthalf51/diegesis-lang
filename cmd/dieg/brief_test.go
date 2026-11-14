@@ -119,3 +119,29 @@ func TestDealLook(t *testing.T) {
 		t.Errorf("sentence look changed: %q", got)
 	}
 }
+
+// The frame closing rule is work data (frame_policy); only on_change drops the closing line when nothing moved.
+func TestCloseLinesPolicy(t *testing.T) {
+	tpl := []string{"[w] 남은 {d}일", "[t] 누적 {n}/7"}
+	same := map[string]span{"d": {start: "25", end: "25"}, "n": {start: "3", end: "3"}}
+	if got := closeLines(tpl, same, "every"); !strings.Contains(got, "`[w] 남은 25일`") || strings.Contains(got, "줄 없이") {
+		t.Errorf("every with no change must still close with the first template:\n%s", got)
+	}
+	if got := closeLines(tpl, same, ""); !strings.Contains(got, "`[w] 남은 25일`") {
+		t.Errorf("empty policy = every:\n%s", got)
+	}
+	if got := closeLines(tpl, same, "bogus"); !strings.Contains(got, "`[w] 남은 25일`") {
+		t.Errorf("unknown policy = every:\n%s", got)
+	}
+	if got := closeLines(tpl, same, "on_change"); !strings.Contains(got, "바뀌는 값이 없다") {
+		t.Errorf("on_change with no change keeps the no-line close:\n%s", got)
+	}
+	moved := map[string]span{"d": {start: "25", end: "25"}, "n": {start: "3", end: "4"}}
+	if got := closeLines(tpl, moved, "every"); !strings.Contains(got, "`[t] 누적 4/7`") {
+		t.Errorf("a changed value is offered:\n%s", got)
+	}
+	maybe := map[string]span{"d": {start: "25", end: "25", maybe: "24"}, "n": {start: "3", end: "3"}}
+	if got := closeLines(tpl, maybe, "every"); !strings.Contains(got, "`[w] 남은 24일`") || !strings.Contains(got, "`[w] 남은 25일`") {
+		t.Errorf("open day under every: both the midnight line and the same-day line:\n%s", got)
+	}
+}
