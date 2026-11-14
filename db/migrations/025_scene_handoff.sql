@@ -111,12 +111,12 @@ BEGIN
                            FROM name nm WHERE nm.work_id = w AND nm.owner_id = x AND nm.lang <> '' GROUP BY nm.lang) l),
                         jsonb_build_object('en', jsonb_build_array(render_name(w, x, 'en'))))) ORDER BY x)
                       FROM unnest(ARRAY(
-                        -- still on stage after the last exit; like on_stage (009), a character with no presence row in the scene counts as there
+                        -- still on stage after the last exit; like on_stage (009), a scene with no presence rows at all counts its acting characters as there
                         SELECT p.entity_id FROM presence p WHERE p.work_id = w AND p.scene_id = pv.id AND p.to_pt IS NOT DISTINCT FROM pv.end_pt
                         UNION
-                        SELECT t FROM act a, LATERAL unnest(ARRAY[coalesce(a.resolved_actor_id, a.actor_id)] || a.objects || a."to") t
-                         WHERE a.work_id = w AND a.scene_id = pv.id AND EXISTS (SELECT 1 FROM entity e WHERE e.id = t AND e.kind <> 'place')
-                           AND NOT EXISTS (SELECT 1 FROM presence p WHERE p.scene_id = pv.id AND p.entity_id = t))) x), '[]'))
+                        SELECT coalesce(a.resolved_actor_id, a.actor_id) FROM act a
+                         WHERE a.work_id = w AND a.scene_id = pv.id AND NOT EXISTS (SELECT 1 FROM presence p WHERE p.scene_id = pv.id)
+                           AND EXISTS (SELECT 1 FROM entity e WHERE e.id = coalesce(a.resolved_actor_id, a.actor_id) AND e.kind IN ('character', 'group')))) x), '[]'))
          || coalesce((SELECT jsonb_build_object('last', jsonb_build_object('actor', jsonb_build_object('id', lint_short(x), 'names', coalesce(
                         (SELECT jsonb_object_agg(l.lang, l.texts) FROM (SELECT nm.lang, jsonb_agg(nm.text ORDER BY nm.ord) texts
                            FROM name nm WHERE nm.work_id = w AND nm.owner_id = x AND nm.lang <> '' GROUP BY nm.lang) l),

@@ -185,7 +185,7 @@ func TestRenderSceneTermsReexplain(t *testing.T) {
 // An exit that is the scene's last statement is not told apart from staying (presence.to_pt is the scene end either way).
 func TestRenderSceneHandoff(t *testing.T) {
 	pool := open(t)
-	id := compileLoad(t, pool, "scene 1\n  enter a, b, c\n  a tells b: p\n  exit b\n  a tells b: p\nscene 2\n  enter a\n  design\n    turn \"x\" -> y\nscene 3\n  enter a\n  a does flee\nscene 4\n  enter a\n  design\n    turn \"x\" -> y\n")
+	id := compileLoad(t, pool, "scene 1\n  enter a, b, c\n  a tells b: p\n  exit b\n  a tells b: p\n  a reads letter\n  a tells m: p\nscene 2\n  enter a\n  design\n    turn \"x\" -> y\nscene 3\n  enter a\n  a does flee\nscene 4\n  enter a\n  design\n    turn \"x\" -> y\n")
 	card := func(sc string) render.Scene {
 		b, err := pg.RenderScene(context.Background(), pool, id, sc)
 		if err != nil {
