@@ -29,7 +29,7 @@ func TestBriefSections(t *testing.T) {
 	}
 	defer pool.Close()
 	defer pool.Exec(context.Background(), `DELETE FROM work WHERE id=$1`, work)
-	got, err := briefText(context.Background(), pool, work, "2", "3", "1", "CODE", "")
+	got, err := briefText(context.Background(), pool, work, briefOpts{from: "2", to: "3", since: "1", code: "CODE"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,5 +70,31 @@ func TestBriefCardAndComments(t *testing.T) {
 	}
 	if !ruleSays("- 삭제: 에이전트는 판정 없이 해칠 수 없다. 구금도", "에이전트는 판정 없이 해칠 수 없다 — 구금도 위해다") {
 		t.Error("ruleSays missed a rule-stated fact")
+	}
+}
+
+// Unmet characters lose both name and identifier; a short id is replaced only as a whole word.
+func TestBriefMasksUnmet(t *testing.T) {
+	if os.Getenv("SL_PG_DSN") == "" {
+		t.Skip("SL_PG_DSN not set")
+	}
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "w.dieg.md"), []byte("---\nmodule: rs.s\nmode: authored\n---\n\n```sl\n"+rsWork+"```\n"), 0o644)
+	work, err := load(dir, io.Discard)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pool, err := pg.Connect(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	defer pool.Exec(context.Background(), `DELETE FROM work WHERE id=$1`, work)
+	got, err := maskNames(context.Background(), pool, work, "2", "", "enter a, c\nCyd came; cache stays")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "enter a, (이름을 모르는 인물)\n(이름을 모르는 인물) came; cache stays"; got != want {
+		t.Errorf("maskNames = %q, want %q", got, want)
 	}
 }

@@ -16,7 +16,8 @@ import (
 // re-explain), what this episode must hand over (facts first known by `to`, exclusive; omitted when to == ""), and
 // what stays hidden (facts true in the work the reader still lacks afterwards). The design code, if given, follows.
 // The brief is for an episode writer, not a renderer: it fixes knowledge, never sentences.
-func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, since, code, style string) (string, error) {
+func briefText(ctx context.Context, pool *pgxpool.Pool, work string, o briefOpts) (string, error) {
+	from, to, since, code, style, rulesDir := o.from, o.to, o.since, o.code, o.style, o.rules
 	before, err := readerState(ctx, pool, work, from)
 	if err != nil {
 		return "", err
@@ -73,14 +74,20 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, since, c
 	if rb.Len() > 0 {
 		b.WriteString("\n## ⓪ 세계 규칙 — 어기지 않는다. 설명문으로 옮기지 않고 인물이 규칙에 맞게 움직이게 한다\n" + rb.String() + "\n")
 	}
-	b.WriteString("## ① 독자가 이미 아는 것 — 다시 설명하지 않는다\n")
+	if now, err := nowSection(ctx, pool, work, from, to, rulesDir); err != nil {
+		return "", err
+	} else if now != "" {
+		b.WriteString("\n## ⓪ 시계와 카운터 — 숫자는 정확히 이 값으로 쓴다\n" + now + "\n")
+	}
+	b.WriteString("## ① 독자가 이미 아는 것 — 다시 설명하지 않는다. 괄호는 독자가 그것을 안 날(S18)\n")
 	if t := before.Text(); t != "" {
-		b.WriteString(t)
+		b.WriteString(dateFacts(ctx, pool, work, t))
 	} else {
 		b.WriteString("(없음: 첫 화다)\n")
 	}
 	// Character cards (S13): who is on stage, from `attr <character>.role/voice/creed`. A creed is said openly, so it
 	// is never listed as a hidden truth below (S19).
+	pov := povOf(ctx, pool, work, from)
 	creeds := map[string]bool{}
 	cards, err := pool.Query(ctx, epSQL+`
 		SELECT render_name($1, c.entity_id, 'ko'), coalesce(string_agg(CASE a.key WHEN 'role' THEN '역할' WHEN 'voice' THEN '말투' ELSE '신조' END
@@ -109,22 +116,12 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, since, c
 	cards.Close()
 	// Spoken lines since `since` (S18): what the reader heard said, word for word, so names and threats carry over.
 	if since != "" {
-		qs, err := pool.Query(ctx, `SELECT render_name($1, a.actor_id, 'ko'), a.quote FROM act a JOIN scene_told_ord($1) o ON o.scene_id = a.scene_id
-			WHERE a.work_id = $1 AND coalesce(a.quote, '') <> '' AND a.verb IN ('says', 'tells', 'asks', 'lies', 'decrees')
-			  AND o.ord >= $2 AND o.ord < $3 ORDER BY o.ord, a.ord`, work, toldOrd(ctx, pool, work, since), toldOrd(ctx, pool, work, from))
+		// Who heard it matters (S21): a line the POV character was not there for is the reader's alone.
+		lines, err := spokenLines(ctx, pool, work, toldOrd(ctx, pool, work, since), toldOrd(ctx, pool, work, from), pov)
 		if err != nil {
 			return "", err
 		}
-		b.WriteString("\n## ① 앞에서 독자가 들은 말 — 별칭·약속·위협은 이 말 그대로 이어진다\n")
-		for qs.Next() {
-			var who, q string
-			if err := qs.Scan(&who, &q); err != nil {
-				qs.Close()
-				return "", err
-			}
-			fmt.Fprintf(&b, "- %s: \"%s\"\n", who, q)
-		}
-		qs.Close()
+		b.WriteString("\n## ① 앞에서 독자가 들은 말 — 별칭·약속·위협은 이 말 그대로 이어진다. 시점 인물이 없던 자리의 말은 시점 인물이 모른다\n" + lines)
 	}
 	if to != "" {
 		b.WriteString("\n## ② 이 화가 독자에게 넘길 것 — 장면으로 짐작하게 한다. 문장을 그대로 옮기지 않는다\n")
@@ -147,7 +144,10 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, since, c
 		  FROM fact f WHERE f.work_id = $1 AND render_fact_true($1, f.id)
 		   AND (EXISTS (SELECT 1 FROM bl_ bl WHERE bl.prop_id = f.id)
 		     OR EXISTS (SELECT 1 FROM act a WHERE a.work_id = $1 AND a.prop_id = f.id AND a.scene_id IN (SELECT scene_id FROM ep)))
-		 ORDER BY f.id`, work, from, to)
+		   -- S24: a negation of something the reader already holds (a forged record they watched being made) is not hidden.
+		   AND NOT EXISTS (SELECT 1 FROM reader_knows($1) k JOIN scene sk ON sk.work_id = $1 AND sk.discourse_ord = k.from_ord
+		         JOIN o ok ON ok.scene_id = sk.id WHERE k.fact_id IN (f.id, f.def->>'not') AND ok.ord < $4)
+		 ORDER BY f.id`, work, from, to, toldOrd(ctx, pool, work, to))
 	if err != nil {
 		return "", err
 	}
@@ -169,14 +169,25 @@ func briefText(ctx context.Context, pool *pgxpool.Pool, work, from, to, since, c
 	if err := rows.Err(); err != nil {
 		return "", err
 	}
-	b.WriteString("\n## ④ 쓰기 규칙\n- 회차 번호·'지난 화' 같은 연재 바깥 말을 원고에 쓰지 않는다.\n- 설계서의 사실 문장·용어 풀이를 원고에 옮겨 적지 않는다. 인물의 행동·대사·결과로 보인다.\n- ①에 없는 것은 독자가 모른다. 시점 인물은 ①과 ③에서 자기 이름이 붙은 것만 더 안다. 그것을 서술로 털어놓지 않고 행동의 이유로만 비친다.\n- 모르는 것은 쓰지 않거나 행동으로 남긴다. 화자가 추측을 풀어 쓰거나 '추측이었다'고 꼬리표를 달지 않는다.\n")
+	b.WriteString("\n## ④ 쓰기 규칙\n- 회차 번호·'지난 화' 같은 연재 바깥 말을 원고에 쓰지 않는다.\n- 설계서의 사실 문장·용어 풀이를 원고에 옮겨 적지 않는다. 인물의 행동·대사·결과로 보인다.\n- ①에 없는 것은 독자가 모른다. 시점 인물은 ①과 ③에서 자기 이름이 붙은 것만 더 안다. 그것을 서술로 털어놓지 않고 행동의 이유로만 비친다.\n- 모르는 것은 쓰지 않거나 행동으로 남긴다. 화자가 추측을 풀어 쓰거나 '추측이었다'고 꼬리표를 달지 않는다.\n- 마지막 단락은 이 화가 남긴 위협이나 질문으로 닫는다. 잠·휴식으로 가라앉히지 않는다.\n")
+	// S22: who each line is addressed to is often the scene's point; compile it instead of leaving it in raw code.
+	aud, err := spokenLines(ctx, pool, work, toldOrd(ctx, pool, work, from), toldOrd(ctx, pool, work, to), pov)
+	if err != nil {
+		return "", err
+	}
+	if aud != "" {
+		b.WriteString("\n## ⑤ 이 화의 말과 청중 — 누가 누구에게 말하는지가 장면의 일이다\n" + aud)
+	}
 	if code != "" {
 		b.WriteString("\n## ⑤ 장면 설계 (디제시스 코드) — 장면 순서·장소·행위·등장/퇴장·누가 무엇을 아는지를 따른다. 감각·몸짓·세부는 자유\n")
 		b.WriteString(stripCodeComments(code))
 	}
 	// ponytail: the SQL fact renderer spells negation in English; rewrite here until render_fact_text takes a language.
-	return strings.ReplaceAll(b.String(), "It is not true that ", "(거짓) "), nil
+	s := strings.ReplaceAll(b.String(), "It is not true that ", "(거짓) ")
+	return maskNames(ctx, pool, work, from, before.Text(), s)
 }
+
+type briefOpts struct{ from, to, since, code, style, rules string }
 
 // epSQL opens a WITH clause: o (telling order), ep (scenes from $2 up to, not including, $3; to the end when $3 = ”),
 // cast_ (characters present in ep). $1 is the work.
@@ -210,10 +221,10 @@ func stripCodeComments(md string) string {
 	return strings.Join(out, "\n")
 }
 
-// cmdBrief runs `dieg brief <work|dir> --from <scene> [--to <scene>] [--since <scene>] [--code <file>] [--style <file>]`.
+// cmdBrief runs `dieg brief <work|dir> --from <scene> [--to <scene>] [--since <scene>] [--code <file>] [--style <file>] [--rules <dir>]`.
 func cmdBrief(args []string) int {
-	var target, from, to, since, codeFile, styleFile string
-	flags := map[string]*string{"--from": &from, "--to": &to, "--since": &since, "--code": &codeFile, "--style": &styleFile}
+	var target, from, to, since, codeFile, styleFile, rulesDir string
+	flags := map[string]*string{"--from": &from, "--to": &to, "--since": &since, "--code": &codeFile, "--style": &styleFile, "--rules": &rulesDir}
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		switch {
@@ -250,7 +261,7 @@ func cmdBrief(args []string) int {
 		return 1
 	}
 	defer pool.Close()
-	s, err := briefText(ctx, pool, work, from, to, since, code, style)
+	s, err := briefText(ctx, pool, work, briefOpts{from, to, since, code, style, rulesDir})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "dieg:", err)
 		return 1
